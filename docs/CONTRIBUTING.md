@@ -8,7 +8,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 ### Repostiory Layout
 
 ```
-|-- web                         # Wwb application specific components: static web assets, server side templates and SPAs.
+|-- web                         # web application specific components: static web assets, server side templates and SPAs.
 |   |-- client                  # frontend
 |   |-- server                  # backend
 |   `--
