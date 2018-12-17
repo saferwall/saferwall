@@ -49,6 +49,20 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
+
+// UniqueSlice delete duplicate strings from an array of strings
+func UniqueSlice(slice []string) []string {
+	cleaned := []string{}
+
+	for _, value := range slice {
+		if !StringInSlice(value, cleaned) {
+			cleaned = append(cleaned, value)
+		}
+	}
+	return cleaned
+}
+
+
 // ExecCommand runs cmd on file
 func ExecCommand(name string, args ...string) (string, error) {
 
