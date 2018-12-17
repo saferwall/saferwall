@@ -5,7 +5,6 @@
 package exiftool
 
 import (
-	"log"
 	"strings"
 
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -17,22 +16,20 @@ const (
 	Command = "exiftool"
 )
 
-// Scan a file using TRiD Scanner
-// This will execute trid command line tool and read the output from stdout
+// Scan a file using exiftool
+// This will execute exigtool command line tool and read the stdout
 func Scan(FilePath string) (map[string]string, error) {
 
-	Args := []string{FilePath}
-
-	output, err := utils.ExecCommand(Command, Args...)
+	args := []string{FilePath}
+	output, err := utils.ExecCommand(Command, args...)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
 	return ParseOutput(output), nil
 }
 
-// ParseOutput convert exiftool output into JSON
+// ParseOutput convert exiftool output into map of string|string
 func ParseOutput(exifout string) map[string]string {
 
 	var ignoreTags = []string{

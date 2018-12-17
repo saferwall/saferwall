@@ -49,11 +49,11 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-// RunCommand runs cmd on file
+// ExecCommand runs cmd on file
 func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create a new context and add a timeout to it
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
 
 	// Create the command with our context
