@@ -84,8 +84,8 @@ func ScanURL(url string) (string, error) {
 	return result, nil
 }
 
-// IsDetected returns true if file is not clean
-func IsDetected(result string) bool {
+// IsInfected returns true if file is not clean
+func IsInfected(result string) bool {
 	if !strings.Contains(result, "[OK]") {
 		return false
 	} else {

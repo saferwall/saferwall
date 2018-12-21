@@ -1,5 +1,8 @@
 FROM debian:buster-slim
+
 LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.1"
+LABEL description="F-Secure for Linux in a docker container"
 
 
 ##### Install Prerequisites #####
