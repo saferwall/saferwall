@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -49,7 +50,6 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-
 // UniqueSlice delete duplicate strings from an array of strings
 func UniqueSlice(slice []string) []string {
 	cleaned := []string{}
@@ -62,19 +62,19 @@ func UniqueSlice(slice []string) []string {
 	return cleaned
 }
 
-
 // ExecCommand runs cmd on file
 func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create a new context and add a timeout to it
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
 
 	// Create the command with our context
 	cmd := exec.CommandContext(ctx, name, args...)
 
-	// This time we can simply use Output() to get the result.
-	out, err := cmd.Output()
+	// We use CombinedOutput() instead of Output()
+	// which returns standard output and standard error.
+	out, err := cmd.CombinedOutput()
 
 	// We want to check the context error to see if the timeout was executed.
 	// The error returned by cmd.Output() will be OS specific based on what
@@ -86,4 +86,9 @@ func ExecCommand(name string, args ...string) (string, error) {
 
 	// If there's no context error, we know the command completed (or errored).
 	return string(out), err
+}
+
+// Getwd returns the directory where the process is running from
+func Getwd() (string, error) {
+	return filepath.Abs(filepath.Dir(os.Args[0]))
 }
