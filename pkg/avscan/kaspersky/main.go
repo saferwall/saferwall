@@ -15,10 +15,10 @@ const (
 	kav4fs = "/opt/kaspersky/kav4fs/bin/kav4fs-control"
 )
 
-// Detection represents detection results
-type Detection struct {
+// Result represents detection results
+type Result struct {
 	Infected bool   `json:"infected"`
-	Result   string `json:"version"`
+	Output   string `json:"output"`
 }
 
 // Version represents database components' versions
@@ -76,7 +76,7 @@ func GetDatabaseVersion() (Version, error) {
 }
 
 // ScanFile a file with Kaspersky scanner
-func ScanFile(filePath string) (Detection, error) {
+func ScanFile(filePath string) (Result, error) {
 
 	// Run now
 	kav4fsOut, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
@@ -93,7 +93,7 @@ func ScanFile(filePath string) (Detection, error) {
 	// Scan errors:         0
 	// Password protected:  0
 	if err != nil {
-		return Detection{}, err
+		return Result{}, err
 	}
 
 	// Check if file is infected
@@ -104,7 +104,7 @@ func ScanFile(filePath string) (Detection, error) {
 
 	// If not infected, return immediately
 	if !infected {
-		return Detection{}, nil
+		return Result{}, nil
 	}
 
 	// Grab detection name with a separate cmd
@@ -113,16 +113,16 @@ func ScanFile(filePath string) (Detection, error) {
 	// Virus name:       Trojan-Ransom.Win32.Locky.d
 	// Infected objects: 1
 	if err != nil {
-		return Detection{}, err
+		return Result{}, err
 	}
 
-	d := Detection{Infected: true}
+	r := Result{Infected: true}
 	lines := strings.Split(kavOut, "\n")
 	if len(lines) > 0 {
-		d.Result = strings.TrimSpace(strings.Split(lines[1], ":")[1])
+		r.Output = strings.TrimSpace(strings.Split(lines[1], ":")[1])
 	}
 
 	// Clean the states
 	utils.ExecCommand(kav4fs, "--clean-stat")
-	return d, nil
+	return r, nil
 }

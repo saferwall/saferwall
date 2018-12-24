@@ -16,8 +16,8 @@ const (
 	fsav = "/opt/f-secure/fsav/bin/fsav"
 )
 
-// Detection represents detection results
-type Detection struct {
+// Result represents detection results
+type Result struct {
 	Infected bool   `json:"infected"`
 	Version  string `json:"version"`
 	FSE      string `json:"fse"`
@@ -35,7 +35,7 @@ type Version struct {
 }
 
 // ScanFile a file with FSecure scanner
-func ScanFile(filePath string) (Detection, error) {
+func ScanFile(filePath string) (Result, error) {
 
 	// Run now
 	fsavOut, err := utils.ExecCommand(fsav, "--virus-action1=report",
@@ -57,7 +57,7 @@ func ScanFile(filePath string) (Detection, error) {
 	infectedExitCodes := []string{"exit status 3", "exit status 4",
 		"exit status 6", "exit status 8"}
 	if err != nil && !utils.StringInSlice(err.Error(), infectedExitCodes) {
-		return Detection{}, err
+		return Result{}, err
 	}
 
 	// Parse fsav output
@@ -74,7 +74,7 @@ func ScanFile(filePath string) (Detection, error) {
 	// 1 file scanned
 	// 1 file infected
 
-	d := Detection{}
+	r := Result{}
 	reg := regexp.MustCompile(` \(.*\)`)
 	lines := strings.Split(fsavOut, "\n")
 
@@ -83,12 +83,12 @@ func ScanFile(filePath string) (Detection, error) {
 			parts := strings.Split(line, "Infected: ")
 			detection := parts[len(parts)-1]
 			if strings.Contains(detection, " [Aquarius]") {
-				d.Aquarius = strings.TrimSuffix(detection, " [Aquarius]")
-				d.Infected = true
+				r.Aquarius = strings.TrimSuffix(detection, " [Aquarius]")
+				r.Infected = true
 				continue
 			} else if strings.Contains(detection, " [FSE]") {
-				d.FSE = strings.TrimSuffix(detection, " [FSE]")
-				d.Infected = true
+				r.FSE = strings.TrimSuffix(detection, " [FSE]")
+				r.Infected = true
 				continue
 			}
 		}
@@ -98,23 +98,23 @@ func ScanFile(filePath string) (Detection, error) {
 			detection := parts[len(parts)-1]
 			if strings.Contains(detection, " [Aquarius]") {
 				detection = strings.TrimSuffix(detection, " [Aquarius]")
-				d.Aquarius = reg.ReplaceAllString(detection, "")
-				d.Infected = true
+				r.Aquarius = reg.ReplaceAllString(detection, "")
+				r.Infected = true
 				continue
 			} else if strings.Contains(detection, " [FSE]") {
 				detection = strings.TrimSuffix(detection, " [FSE]")
-				d.FSE = reg.ReplaceAllString(detection, "")
-				d.Infected = true
+				r.FSE = reg.ReplaceAllString(detection, "")
+				r.Infected = true
 				continue
 			}
 		}
 
 		if strings.Contains(line, "Database version: ") {
-			d.Version = strings.TrimPrefix(line, "Database version: ")
+			r.Version = strings.TrimPrefix(line, "Database version: ")
 		}
 	}
 
-	return d, nil
+	return r, nil
 }
 
 // GetVersion get Anti-Virus scanner version
@@ -143,28 +143,28 @@ func GetVersion() (Version, error) {
 		return Version{}, err
 	}
 
-	r := Version{}
+	v := Version{}
 	lines := strings.Split(fsavOut, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Database version: ") {
-			r.DatabaseVersion = strings.TrimPrefix(line, "Database version: ")
+			v.DatabaseVersion = strings.TrimPrefix(line, "Database version: ")
 		} else if strings.Contains(line, "F-Secure Linux Security version ") {
-			r.FSecureVersion = strings.TrimSpace(
+			v.FSecureVersion = strings.TrimSpace(
 				strings.TrimPrefix(line, "F-Secure Linux Security version "))
 		} else if strings.Contains(line, "Hydra engine version") {
-			r.HydraEngineVersion = strings.TrimSpace(
+			v.HydraEngineVersion = strings.TrimSpace(
 				strings.TrimPrefix(line, "\tF-Secure Corporation Hydra engine version "))
 		} else if strings.Contains(line, "Hydra database version") {
-			r.HydraDatabaseVersion = strings.TrimSpace(
+			v.HydraDatabaseVersion = strings.TrimSpace(
 				strings.TrimPrefix(line, "\tF-Secure Corporation Hydra database version "))
 		} else if strings.Contains(line, "Aquarius engine version") {
-			r.AquariusEngineVersion = strings.TrimSpace(
+			v.AquariusEngineVersion = strings.TrimSpace(
 				strings.TrimPrefix(line, "\tF-Secure Corporation Aquarius engine version "))
 		} else if strings.Contains(line, "Aquarius database version") {
-			r.AquariusDatabaseVersion = strings.TrimSpace(
+			v.AquariusDatabaseVersion = strings.TrimSpace(
 				strings.TrimPrefix(line, "\tF-Secure Corporation Aquarius database version "))
 		}
 	}
 
-	return r, nil
+	return v, nil
 }
