@@ -16,12 +16,12 @@ import (
 const (
 	loadlibraryPath = "/usr/local/loadlibrary"
 	mpclient        = "./mpclient"
+	mpenginedll     = "/engine/mpengine.dll"
 )
-
 
 // GetVersion returns update version
 func GetVersion() (string, error) {
-	mpenginedll := path.Join(loadlibraryPath, "/engine/mpengine.dll")
+	mpenginedll := path.Join(loadlibraryPath, mpenginedll)
 	versionOut, err := utils.ExecCommand("exiftool", "-ProductVersion", mpenginedll)
 	if err != nil {
 		return "", err
