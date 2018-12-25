@@ -92,3 +92,31 @@ func ExecCommand(name string, args ...string) (string, error) {
 func Getwd() (string, error) {
 	return filepath.Abs(filepath.Dir(os.Args[0]))
 }
+
+// ReadAll reads the entire file into memory
+func ReadAll(filePath string) ([]byte, error) {
+	// Start by getting a file descriptor over the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Get the file size to know how much we need to allocate
+	fileinfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	filesize := fileinfo.Size()
+	buffer := make([]byte, filesize)
+
+	// Read the whole binary
+	bytesread, err := file.Read(buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(bytesread)
+	return buffer, nil
+
+}
