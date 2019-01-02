@@ -11,18 +11,25 @@ import (
 )
 
 const (
-	cmd = "/bin/scan"
+	cmd          = "/bin/scan"
+	avastService = "/etc/init.d/avast"
 )
+
+// Result represents detection results
+type Result struct {
+	Infected bool   `json:"infected"`
+	Output   string `json:"output"`
+}
 
 // GetVPSVersion returns Avast VPS version
 func GetVPSVersion() (string, error) {
 
 	// Run the scanner to grab the version
-	vpsOut, err := utils.ExecCommand(cmd, "-V")
+	out, err := utils.ExecCommand(cmd, "-V")
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(vpsOut), nil
+	return strings.TrimSpace(out), nil
 }
 
 // GetProgramVersion returns Avast Program version
@@ -37,7 +44,7 @@ func GetProgramVersion() (string, error) {
 }
 
 // ScanFile scans a given file
-func ScanFile(filepath string) (string, error) {
+func ScanFile(filepath string) (Result, error) {
 
 	// Execute the scanner with the given file path
 	// -a         Print all scanned files/URLs, not only infected.
@@ -45,19 +52,28 @@ func ScanFile(filepath string) (string, error) {
 	// -f         Scan full files.
 	// -u         Report potentionally unwanted programs (PUP).
 
-	avastOut, err := utils.ExecCommand(cmd, "-abfu", filepath)
+	out, err := utils.ExecCommand(cmd, "-abfu", filepath)
 
-	// From Avast linux technical documentation:
-	// The exit status is 0 if no infected files are found and 1
-	// otherwise. If an error occurred, the exit status is 2.
+	// 	Exit status:
+	// 0 - no infections were found
+	// 1 - some infected file was found
+	// 2 - an error occurred
+	res := Result{}
 	if err != nil && err.Error() != "exit status 1" {
-		return "", err
+		return res, err
 	}
 
-	// Sanitize the output and return
-	str := strings.Split(avastOut, "\t")
-	result := strings.TrimSpace(str[1])
-	return result, nil
+	// Check if the file is infected
+	if strings.Contains(out, "[OK]") {
+		res.Infected = false
+		return res, nil
+	}
+
+	// Sanitize the detection output
+	det := strings.Split(out, "\t")
+	res.Output = strings.TrimSpace(det[1])
+	res.Infected = true
+	return res, nil
 }
 
 // ScanURL scans a given URL
@@ -66,9 +82,10 @@ func ScanURL(url string) (string, error) {
 	// Execute the scanner with the given URL
 	avastOut, err := utils.ExecCommand(cmd, "-U", url)
 
-	// From Avast linux technical documentation:
-	// The exit status is 0 if no infected files are found and 1
-	// otherwise. If an error occurred, the exit status is 2.
+	// 	Exit status:
+	// 0 - no infections were found
+	// 1 - some infected file was found
+	// 2 - an error occurred
 	if err != nil && err.Error() != "exit status 1" {
 		return "", err
 	}
@@ -84,11 +101,24 @@ func ScanURL(url string) (string, error) {
 	return result, nil
 }
 
-// IsInfected returns true if file is not clean
-func IsInfected(result string) bool {
-	if !strings.Contains(result, "[OK]") {
-		return false
-	} else {
-		return true
+// IsLicenseExpired returns true if license was expired
+func IsLicenseExpired() (bool, error) {
+	out, err := utils.ExecCommand(avastService, "status")
+	if err != nil {
+		return false, err
 	}
+
+	if strings.Contains(out, "License expired") {
+		return true, nil
+	}
+	return false, nil
+}
+
+// RestartDaemon re-starts the Avast daemon, needed to apply the license
+func RestartDaemon() error {
+	_, err := utils.ExecCommand(avastService, "restart")
+	if err != nil {
+		return err
+	}
+	return nil
 }

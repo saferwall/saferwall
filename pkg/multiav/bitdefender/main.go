@@ -27,20 +27,20 @@ type Result struct {
 func GetProgramVersion() (string, error) {
 
 	//  Run now
-	versionOut, err := utils.ExecCommand(bdscan, "--version")
+	out, err := utils.ExecCommand(bdscan, "--version")
 	if err != nil {
 		return "", err
 	}
 	// BitDefender Antivirus Scanner for Unices v7.141118 Linux-amd64
 	// Copyright (C) 1996-2014 BitDefender. All rights reserved.
 
-	version := ""
-	lines := strings.Split(versionOut, "\n")
+	ver := ""
+	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
 		re := regexp.MustCompile("\\w+ v([\\d.]+) .*")
-		version = re.FindStringSubmatch(lines[0])[1]
+		ver = re.FindStringSubmatch(lines[0])[1]
 	}
-	return version, nil
+	return ver, nil
 
 }
 
@@ -48,11 +48,12 @@ func GetProgramVersion() (string, error) {
 func ScanFile(filePath string) (Result, error) {
 
 	//  Run now
-	bdscanOut, err := utils.ExecCommand(bdscan, "--action=ignore", filePath)
+	out, err := utils.ExecCommand(bdscan, "--action=ignore", filePath)
 	// --action=[disinfect|quarantine|delete|ignore]
 
+	res := Result{}
 	if err != nil && err.Error() != "exit status 1" {
-		return Result{}, err
+		return res, err
 	}
 
 	// BitDefender Antivirus Scanner for Unices v7.141118 Linux-amd64
@@ -65,21 +66,20 @@ func ScanFile(filePath string) (Result, error) {
 
 	// /home/linux/malware/locky  infected: Trojan.GenericKD.3048400
 
-	lines := strings.Split(bdscanOut, "\n")
+	lines := strings.Split(out, "\n")
 	if len(lines) == 0 {
-		return Result{}, errors.New("we got an empty output")
+		return res, errors.New("we got an empty output")
 	}
 
 	//  Grab detection name
-	r := Result{}
 	for _, line := range lines {
 		if strings.Contains(line, "infected: ") {
 			parts := strings.Split(line, "infected: ")
-			r.Output = parts[len(parts)-1]
-			r.Infected = true
+			res.Output = parts[len(parts)-1]
+			res.Infected = true
 			break
 		}
 	}
 
-	return r, nil
+	return res, nil
 }

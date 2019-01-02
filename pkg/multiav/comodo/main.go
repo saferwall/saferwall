@@ -42,8 +42,9 @@ func ScanFile(filePath string) (Result, error) {
 	cmdscanOut, err := utils.ExecCommand(cmdscan, "-v", "-s", filePath)
 	// -s: scan a file or directory
 	// -v: verbose mode, display more detailed output
+	res := Result{}
 	if err != nil {
-		return Result{}, err
+		return res, err
 	}
 
 	// -----== Scan Start ==-----
@@ -54,25 +55,24 @@ func ScanFile(filePath string) (Result, error) {
 
 	lines := strings.Split(cmdscanOut, "\n")
 	if len(lines) == 0 {
-		return Result{}, errors.New("we got an empty output")
+		return res, errors.New("we got an empty output")
 	}
 
 	// Check if file is infected
-	r := Result{}
 	if strings.HasSuffix(lines[1], "---> Not Virus") {
-		r.Infected = false
+		res.Infected = false
 	} else {
-		r.Infected = true
+		res.Infected = true
 	}
 
 	// Grab detection name
 	// Viruses found: 1
 	// Virus name:       Trojan-Ransom.Win32.Locky.d
 	// Infected objects: 1
-	if r.Infected {
+	if res.Infected {
 		detection := strings.Split(lines[1], "Malware Name is ")
-		r.Output = detection[len(detection)-1]
+		res.Output = detection[len(detection)-1]
 	}
 
-	return r, nil
+	return res, nil
 }

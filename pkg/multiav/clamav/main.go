@@ -14,12 +14,18 @@ const (
 	clamdscan = "/usr/bin/clamdscan"
 )
 
+// Result represents detection results
+type Result struct {
+	Infected bool   `json:"infected"`
+	Output   string `json:"output"`
+}
+
 // ScanFile performs antivirus scan
-func ScanFile(filePath string) (string, error) {
+func ScanFile(filePath string) (Result, error) {
 
 	// Execute the scanner with the given file path
 	// --no-summary   Disable summary at end of scanning
-	clamscanOut, err := utils.ExecCommand(clamdscan, "--no-summary", filePath)
+	out, err := utils.ExecCommand(clamdscan, "--no-summary", filePath)
 
 	// clamscan return values (documented from man clamscan)
 	//  0 : No virus found.
@@ -38,41 +44,40 @@ func ScanFile(filePath string) (string, error) {
 	// 64: Can't write to temporary directory (please specify another one).
 	// 70: Can't allocate memory (calloc).
 	// 71: Can't allocate memory (malloc).
+	res := Result{}
 	if err != nil && err.Error() != "exit status 1" {
-		return "", err
+		return res, err
 	}
 
 	// samples/locky: Win.Malware.Locky-5540 FOUND
 	// samples/putty: OK
-	infected := false
-	if strings.HasSuffix(clamscanOut, "OK\n") {
-		infected = false
-	} else if strings.HasSuffix(clamscanOut, "FOUND\n") {
-		infected = true
+	if strings.HasSuffix(out, "OK\n") {
+		res.Infected = false
+	} else if strings.HasSuffix(out, "FOUND\n") {
+		res.Infected = true
 	}
 
 	// Extract detection name if infected
-	detection := ""
-	if infected {
-		parts := strings.Split(clamscanOut, ": ")
-		detection = parts[len(parts)-1]
-		detection = strings.TrimSuffix(detection, " FOUND\n")
+	if res.Infected {
+		parts := strings.Split(out, ": ")
+		det:= parts[len(parts)-1]
+		res.Output = strings.TrimSuffix(det, " FOUND\n")
 	}
 
-	return detection, nil
+	return res, nil
 }
 
 // GetVersion returns program version
 func GetVersion() (string, error) {
 
 	// Execute the scanner with the given file path
-	versionOut, err := utils.ExecCommand(clamdscan, "--version")
+	out, err := utils.ExecCommand(clamdscan, "--version")
 	if err != nil {
 		return "", err
 	}
 
 	// Extract the version
-	version := strings.Split(versionOut, "/")[0]
-	version = strings.Split(version, " ")[1]
-	return version, nil
+	ver := strings.Split(out, "/")[0]
+	ver = strings.Split(ver, " ")[1]
+	return ver, nil
 }

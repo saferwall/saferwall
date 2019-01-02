@@ -14,6 +14,12 @@ const (
 	cmd = "/opt/mcafee/uvscan"
 )
 
+// Result represents detection results
+type Result struct {
+	Infected bool   `json:"infected"`
+	Output   string `json:"output"`
+}
+
 // Version represents all mcafee components' versions
 type Version struct {
 	AVEngineVersion string `json:"scancl_version"`
@@ -48,7 +54,7 @@ func GetVersion() (Version, error) {
 }
 
 // ScanFile scans a given file
-func ScanFile(filepath string) (string, error) {
+func ScanFile(filepath string) (Result, error) {
 
 	// Execute the scanner with the given file path
 	// --ANALYZE                  : Turn on heuristic analysis for programs and macros
@@ -60,20 +66,21 @@ func ScanFile(filepath string) (string, error) {
 	uvscanOut, err := utils.ExecCommand(cmd, "--ANALYZE", "--ASCII",
 		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filepath)
 
-		// 0 The scanner found no viruses or other potentially unwanted software, and returned no errors.
-		// 2 Integrity check on DAT file failed.
-		// 6 A general problem occurred.
-		// 8 The scanner was unable to find a DAT file.
-		// 10 A virus was found in memory.
-		// 12 The scanner tried to clean a file, the attempt failed, and the file is still infected.
-		// 13 The scanner found one or more viruses or hostile objects — such as a Trojan-horse program, joke program, or test file.
-		// 15 The scanner’s self-check failed; the scanner may be infected or damaged.
-		// 19 The scanner succeeded in cleaning all infected files.
-		// 20 Scanning was prevented because of the /FREQUENCY option.
-		// 21 Computer requires a reboot to clean the infection.
+	// 0 The scanner found no viruses or other potentially unwanted software, and returned no errors.
+	// 2 Integrity check on DAT file failed.
+	// 6 A general problem occurred.
+	// 8 The scanner was unable to find a DAT file.
+	// 10 A virus was found in memory.
+	// 12 The scanner tried to clean a file, the attempt failed, and the file is still infected.
+	// 13 The scanner found one or more viruses or hostile objects — such as a Trojan-horse program, joke program, or test file.
+	// 15 The scanner’s self-check failed; the scanner may be infected or damaged.
+	// 19 The scanner succeeded in cleaning all infected files.
+	// 20 Scanning was prevented because of the /FREQUENCY option.
+	// 21 Computer requires a reboot to clean the infection.
 
-	if err != nil  && err.Error() != "exit status 13"{
-		return "", err
+	res := Result{}
+	if err != nil && err.Error() != "exit status 13" {
+		return res, err
 	}
 
 	// McAfee VirusScan Command Line for Linux64 Version: 6.0.4.564
@@ -89,11 +96,10 @@ func ScanFile(filepath string) (string, error) {
 	// Time: 00:00.00
 
 	// Grab the detection result
-	detection := ""
 	re := regexp.MustCompile("Found the (.*) \\w+ !!!")
 	l := re.FindStringSubmatch(uvscanOut)
 	if len(l) > 0 {
-		detection = l[1]
+		res.Output = l[1]
 	}
-	return detection, nil
+	return res, nil
 }

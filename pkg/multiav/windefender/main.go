@@ -19,6 +19,12 @@ const (
 	mpenginedll     = "/engine/mpengine.dll"
 )
 
+// Result represents detection results
+type Result struct {
+	Infected bool   `json:"infected"`
+	Output   string `json:"output"`
+}
+
 // GetVersion returns update version
 func GetVersion() (string, error) {
 	mpenginedll := path.Join(loadlibraryPath, mpenginedll)
@@ -30,17 +36,19 @@ func GetVersion() (string, error) {
 }
 
 // ScanFile a file with Windows Defender scanner
-func ScanFile(filePath string) (string, error) {
+func ScanFile(filePath string) (Result, error) {
+
+	res := Result{}
 
 	// get current working directory
 	dir, err := utils.Getwd()
 	if err != nil {
-		return "", err
+		return res, err
 	}
 
 	// mpclient requires us to run from loadlibrary folder or it fails
 	if err := os.Chdir(loadlibraryPath); err != nil {
-		return "", err
+		return res, err
 	}
 	defer os.Chdir(dir)
 
@@ -48,23 +56,22 @@ func ScanFile(filePath string) (string, error) {
 	// main(): usage: ./mpclient [filenames...]
 	mpclientOut, err := utils.ExecCommand(mpclient, filePath)
 	if err != nil {
-		return "", err
+		return res, err
 	}
 
 	// main(): Scanning /samples/locky...
 	// EngineScanCallback(): Scanning input
 	// EngineScanCallback(): Threat Ransom:Win32/Locky.A identified.
-	detection := ""
 	lines := strings.Split(mpclientOut, "\n")
 	for _, line := range lines {
 		if !strings.Contains(line, "EngineScanCallback(): Threat ") {
 			continue
 		}
 
-		detection = strings.TrimPrefix(line, "EngineScanCallback(): Threat ")
-		detection = strings.TrimSuffix(detection, " identified.")
+		detection := strings.TrimPrefix(line, "EngineScanCallback(): Threat ")
+		res.Output = strings.TrimSuffix(detection, " identified.")
 		break
 	}
 
-	return detection, nil
+	return res, nil
 }

@@ -19,7 +19,6 @@ const (
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
-	Version  string `json:"version"`
 }
 
 // Version represents all sophos components' versions
@@ -52,17 +51,17 @@ func ScanFile(filePath string) (Result, error) {
 	}
 
 	lines := strings.Split(savscanOut, "\n")
-	r := Result{}
+	res := Result{}
 	for _, line := range lines {
 		if strings.HasPrefix(line, ">>> Virus ") {
 			detection := strings.Split(line, " ")[2]
-			r.Output = detection[1 : len(detection)-1]
-			r.Infected = true
+			res.Output = detection[1 : len(detection)-1]
+			res.Infected = true
 			break
 		}
 	}
 
-	return r, nil
+	return res, nil
 }
 
 // GetVersion returns Sophos components' version

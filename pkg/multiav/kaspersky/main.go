@@ -33,13 +33,13 @@ type Version struct {
 func GetProgramVersion() (string, error) {
 
 	// Run kav4s to grab the version
-	versionOut, err := utils.ExecCommand(kav4fs, "-S", "--app-info")
+	out, err := utils.ExecCommand(kav4fs, "-S", "--app-info")
 	if err != nil {
 		return "", err
 	}
 
 	version := ""
-	lines := strings.Split(versionOut, "\n")
+	lines := strings.Split(out, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Version:") {
 			version = strings.TrimSpace(strings.TrimPrefix(line, "Version:"))
@@ -55,31 +55,32 @@ func GetDatabaseVersion() (Version, error) {
 
 	// Run kav4s to grab the database update version
 	databaseOut, err := utils.ExecCommand(kav4fs, "--get-stat", "Update")
+
+	ver := Version{}
 	if err != nil {
-		return Version{}, nil
+		return ver, nil
 	}
 
-	v := Version{}
 	lines := strings.Split(databaseOut, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Current AV databases date") {
-			v.CurrentAVDatabasesDate = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases date:"))
+			ver.CurrentAVDatabasesDate = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases date:"))
 		} else if strings.Contains(line, "Last AV databases update date") {
-			v.LastAVDatabasesUpdateDate = strings.TrimSpace(strings.TrimPrefix(line, "Last AV databases update date:"))
+			ver.LastAVDatabasesUpdateDate = strings.TrimSpace(strings.TrimPrefix(line, "Last AV databases update date:"))
 		} else if strings.Contains(line, "Current AV databases state") {
-			v.CurrentAVDatabasesState = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases state:"))
+			ver.CurrentAVDatabasesState = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases state:"))
 		} else if strings.Contains(line, "Current AV databases records") {
-			v.CurrentAVDatabasesRecords = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases records:"))
+			ver.CurrentAVDatabasesRecords = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases records:"))
 		}
 	}
-	return v, nil
+	return ver, nil
 }
 
 // ScanFile a file with Kaspersky scanner
 func ScanFile(filePath string) (Result, error) {
 
 	// Run now
-	kav4fsOut, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
+	out, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
 	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
 	// Objects scanned:     1
 	// Threats found:       1
@@ -92,19 +93,21 @@ func ScanFile(filePath string) (Result, error) {
 	// Not cured:           0
 	// Scan errors:         0
 	// Password protected:  0
+
+	res := Result{}
 	if err != nil {
-		return Result{}, err
+		return res, err
 	}
 
 	// Check if file is infected
-	infected := false
-	if strings.Contains(kav4fsOut, "Threats found:       1") {
-		infected = true
+	if !strings.Contains(out, "Threats found:       1") {
+		return res, nil
 	}
 
-	// If not infected, return immediately
-	if !infected {
-		return Result{}, nil
+	// Clean the states
+	_, stateError := utils.ExecCommand(kav4fs, "--clean-stat")
+	if err != nil {
+		return res, stateError
 	}
 
 	// Grab detection name with a separate cmd
@@ -113,16 +116,14 @@ func ScanFile(filePath string) (Result, error) {
 	// Virus name:       Trojan-Ransom.Win32.Locky.d
 	// Infected objects: 1
 	if err != nil {
-		return Result{}, err
+		return res, err
 	}
 
-	r := Result{Infected: true}
 	lines := strings.Split(kavOut, "\n")
 	if len(lines) > 0 {
-		r.Output = strings.TrimSpace(strings.Split(lines[1], ":")[1])
+		res.Output = strings.TrimSpace(strings.Split(lines[1], ":")[1])
+		res.Infected = true
 	}
 
-	// Clean the states
-	utils.ExecCommand(kav4fs, "--clean-stat")
-	return r, nil
+	return res, nil
 }

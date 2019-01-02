@@ -15,8 +15,14 @@ const (
 	cmd = "/opt/eset/esets/sbin/esets_scan"
 )
 
+// Result represents detection results
+type Result struct {
+	Infected bool   `json:"infected"`
+	Output   string `json:"output"`
+}
+
 // ScanFile performs antivirus scan
-func ScanFile(filePath string) (string, error) {
+func ScanFile(filePath string) (Result, error) {
 
 	// Execute the scanner with the given file path
 	// --unsafe                  scan for potentially unsafe applications
@@ -24,7 +30,6 @@ func ScanFile(filePath string) (string, error) {
 	// --clean-mode=MODE         use cleaning MODE for infected objects.
 	// 							 Available options: none, standard (default),
 	// 							 strict, rigorous, delete
-
 	esetOut, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
 		"--clean-mode=NONE", filePath)
 
@@ -35,25 +40,30 @@ func ScanFile(filePath string) (string, error) {
 	// 50   threat found
 	// 100  error
 
+	res := Result{}
 	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 50" {
-		return "", err
+		return res, err
 	}
 
 	// Scan started at:   Tue Jan  1 01:32:57 2019
 	// name="/samples/aa.exx", threat="a variant of Win32/Injector.BIIZ trojan", action="", info=""
 
-	detection := ""
 	re := regexp.MustCompile(`threat="([\s\w/.]+)"`)
 	l := re.FindStringSubmatch(esetOut)
-	if len(l) > 0 {
-		detection = l[1]
+	if len(l) < 1 {
+		return res, nil
 	}
 
 	// Clean up detection name
-	detection = strings.TrimPrefix(detection, "a variant of ")
-	detection = strings.TrimSuffix(detection, "  potentially unwanted application")
-	detection = strings.TrimSuffix(detection, "  potentially unsafe application")
-	return detection, nil
+	det := l[1]
+	det = strings.TrimPrefix(det, "a variant of ")
+	det = strings.TrimSuffix(det, "  potentially unwanted application")
+	det = strings.TrimSuffix(det, "  potentially unsafe application")
+
+	res.Infected = true
+	res.Output = det
+
+	return res, nil
 }
 
 // GetProgramVersion returns program version
