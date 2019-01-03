@@ -4,11 +4,11 @@ COMODO_INSTALL_DIR = /etc/COMODO
 COMODO_LIB_SSL = http://security.ubuntu.com/ubuntu/pool/universe/o/openssl098/libssl0.9.8_0.9.8o-7ubuntu3.2.14.04.1_amd64.deb
 
 install-comodo:			## install Comodo Antivirus for Linux
-	wget $(COMODO_LIB_SSL) -P /tmp/			# Download and install the trusty package manually
+	wget $(COMODO_LIB_SSL) -P /tmp			# Download and install the trusty package manually
 	wget  $(COMODO_URL) -P /tmp
 	sudo dpkg -i /tmp/libssl0.9.8_0.9.8o-7ubuntu3.2.14.04.1_amd64.deb
-	ar x /tmp/cav-linux_x64.deb
-	sudo tar zxvf data.tar.gz -C /
+	cd /tmp && ar x cav-linux_x64.deb
+	sudo tar /tmp/zxvf data.tar.gz -C /
 	make update-comodo
 
 update-comodo:			## update Comodo Antivirus for Linux
