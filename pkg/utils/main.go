@@ -120,3 +120,28 @@ func ReadAll(filePath string) ([]byte, error) {
 	return buffer, nil
 
 }
+
+// WalkAllFilesInDir returns list of files in directory
+func WalkAllFilesInDir(dir string) ([]string, error) {
+
+	fileList := []string{}
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, e error) error {
+		if e != nil {
+			return e
+		}
+
+		// check if it is a regular file (not dir)
+		if info.Mode().IsRegular() {
+			fmt.Println("file name:", info.Name())
+			fmt.Println("file path:", path)
+
+			fileList = append(fileList, path)
+
+		}
+		return nil
+	})
+
+	return fileList, err
+
+}
