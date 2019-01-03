@@ -13,3 +13,4 @@ include avast.mk
 include avira.mk
 include bitdefender.mk
 include clamav.mk
+include comodo.mk
