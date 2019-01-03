@@ -19,4 +19,5 @@ include fsecure.mk
 include kaspersky.mk
 include mcafee.mk
 include sophos.mk
+include symantec.mk
 include windefender.mk
