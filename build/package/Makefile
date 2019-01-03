@@ -15,3 +15,8 @@ include bitdefender.mk
 include clamav.mk
 include comodo.mk
 include eset.mk
+include fsecure.mk
+include kaspersky.mk
+include mcafee.mk
+include sophos.mk
+include windefender.mk

@@ -12,9 +12,10 @@ install-eset:		## install ESET File Server Security for Linux, Please Provide ES
 	sudo sed -i -e 's/#av_update_password = \"\"/av_update_password = \"$$(ESET_PWD)\"/' $(ESET_CONFIG_DIR)/esets/esets.cfg
 	sudo cp $(ESET_LICENSE) $(ESET_CONFIG_DIR)/esets/license/ERA-Endpoint.lic
 	sudo $(ESET_INSTALL_DIR)/esets/sbin/esets_lic --import=$(ESET_INSTALL_DIR)/esets/etc/license/
+	sudo rm -rf /tmp/*
 	make update-eset
 
-update-etset:		## update ESET File Server Security for Linux
+update-eset:		## update ESET File Server Security for Linux
 	sudo /opt/eset/esets/sbin/esets_update
 
 uninstall-eset:		## uninstall EST File Server Security for Linux

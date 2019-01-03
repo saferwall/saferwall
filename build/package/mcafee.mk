@@ -16,4 +16,5 @@ update-mcafee: 		## update McAfee VirusScan Command Line Scanner
 	sudo rm -rf /tmp/*
 
 uninstall-mcafee:	## uninstall McAfee VirusScan Command Line Scanner
-	echo 'y' | $(MCAFEE_INSTALL_DIR)/uninstall-uvscan
+	echo 'y' | sudo $(MCAFEE_INSTALL_DIR)/uninstall-uvscan
+	sudo rm -rf $(MCAFEE_INSTALL_DIR)

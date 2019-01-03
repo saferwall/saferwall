@@ -23,5 +23,5 @@ update-kaspersky:		## update Kaspersky Anti-Virus for Linux File Servers
 	$(KASPERSKY_BIN) --progress 6
 	$(KASPERSKY_BIN) --get-stat Update
 
-uninstall_kaspersky:	## uninstall Kaspersky Anti-Virus for Linux File Servers
+uninstall-kaspersky:	## uninstall Kaspersky Anti-Virus for Linux File Servers
 	sudo apt remove kav4fs -y
