@@ -7,6 +7,7 @@ install-avira:				## install Avira Linux Version
 	tar zxvf /tmp/scancl-linux_glibc22.tar.gz -C /tmp
 	sudo mkdir -p /opt/avira
 	sudo mv /tmp/scancl-1.9.161.2/* $(AVIRA_INSTALL_DIR)
+	sudo cp ./multiav/avira/hbedv.key $(AVIRA_INSTALL_DIR)
 	make update-avira
 
 update-avira:				## update Avira Linux Version
