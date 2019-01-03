@@ -12,7 +12,7 @@ install-bitdefender:		## install Bitdefender Scanner for Unices/Unix
 	(echo 'accept' ; echo 'n') | sudo sh /tmp/$(BITDEFENDER_INSTALLER) --nox11
 	make update-bitdefender
 
-update-bitdefender:			## update Bitdefender Scanner for Unices/Unix
+update-bitdefender:         ## update Bitdefender Scanner for Unices/Unix
 	sudo bdscan --update
 	sudo rm -rf /tmp/*
 

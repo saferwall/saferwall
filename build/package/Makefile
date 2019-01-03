@@ -9,6 +9,7 @@ help: ## This help message
 	@echo -e "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s :)"
 
 
--include avast.make
--include avira.make
--include bitdefender.make
+include avast.mk
+include avira.mk
+include bitdefender.mk
+include clamav.mk
