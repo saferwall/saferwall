@@ -12,7 +12,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -174,4 +176,17 @@ func WriteBytesFile(filename string, r io.Reader) (int, error) {
 	}
 
 	return bytesWritten, nil
+}
+
+// ChownFileUsername executes chown username:username filename
+func ChownFileUsername(filename, username string) error {
+	group, err := user.Lookup(username)
+	if err != nil {
+		return err
+	}
+	uid, _ := strconv.Atoi(group.Uid)
+	gid, _ := strconv.Atoi(group.Gid)
+
+	err = os.Chown(filename, uid, gid)
+	return err
 }
