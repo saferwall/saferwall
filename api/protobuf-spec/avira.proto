@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package api;
+
+// The avira scanner service definition.
+service AviraScanner {
+  // Scan a file
+  rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
+  // Activate product license
+  rpc ActivateLicense(LicenseRequest) returns (LicenseResponse) {}
+}
+
+// The scan file request message containing the file path to scan.
+message ScanFileRequest { string filepath = 1; }
+
+// The scan response message containing detection results of the antiVirus.
+message ScanResponse {
+  string output = 1;
+  bool infected = 2;
+}
+
+// The license request message contains the license in binary format.
+message LicenseRequest { bytes license = 1; }
+
+// The license response message.
+message LicenseResponse {}
