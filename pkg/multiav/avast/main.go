@@ -5,6 +5,7 @@
 package avast
 
 import (
+	"os"
 	"strings"
 
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -46,19 +47,22 @@ func GetProgramVersion() (string, error) {
 // ScanFile scans a given file
 func ScanFile(filepath string) (Result, error) {
 
-	// Execute the scanner with the given file path
-	// -a         Print all scanned files/URLs, not only infected.
-	// -b         Report decompression bombs as infections.
-	// -f         Scan full files.
-	// -u         Report potentionally unwanted programs (PUP).
+	res := Result{}
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return res, err
+	}
 
+	// Execute the scanner with the given file path
+	//  -a         Print all scanned files/URLs, not only infected.
+	//  -b         Report decompression bombs as infections.
+	//  -f         Scan full files.
+	//  -u         Report potentionally unwanted programs (PUP).
 	out, err := utils.ExecCommand(cmd, "-abfu", filepath)
 
-	// 	Exit status:
-	// 0 - no infections were found
-	// 1 - some infected file was found
-	// 2 - an error occurred
-	res := Result{}
+	// Exit status:
+	//  0 - no infections were found
+	//  1 - some infected file was found
+	//  2 - an error occurred
 	if err != nil && err.Error() != "exit status 1" {
 		return res, err
 	}
@@ -112,13 +116,4 @@ func IsLicenseExpired() (bool, error) {
 		return true, nil
 	}
 	return false, nil
-}
-
-// RestartDaemon re-starts the Avast daemon, needed to apply the license
-func RestartDaemon() error {
-	_, err := utils.ExecCommand(avastService, "restart")
-	if err != nil {
-		return err
-	}
-	return nil
 }
