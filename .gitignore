@@ -13,3 +13,7 @@
 
 # IDE
 .vscode/
+
+# AV license files
+license.avastlic
+hbedv.key
