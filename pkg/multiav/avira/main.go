@@ -6,6 +6,7 @@ package avira
 
 import (
 	"errors"
+	"io"
 	"regexp"
 	"strings"
 	"time"
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	cmd = "/opt/avira/scancl"
+	cmd         = "/opt/avira/scancl"
+	licenseFile = "/opt/avira/hbedv.key"
 )
 
 // Result represents detection results
@@ -167,4 +169,24 @@ func IsLicenseExpired() (bool, error) {
 	}
 
 	return false, nil
+}
+
+// ActivateLicense activate the license.
+func ActivateLicense(r io.Reader) error {
+	// Write the license file to disk
+	_, err := utils.WriteBytesFile(licenseFile, r)
+	if err != nil {
+		return err
+	}
+
+	isExpired, err := IsLicenseExpired()
+	if err != nil {
+		return err
+	}
+
+	if isExpired {
+		return errors.New("License is expird ")
+	}
+
+	return nil
 }
