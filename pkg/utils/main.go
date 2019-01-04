@@ -7,6 +7,8 @@ package utils
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -143,5 +145,33 @@ func WalkAllFilesInDir(dir string) ([]string, error) {
 	})
 
 	return fileList, err
+}
 
+// WriteBytesFile write Bytes to a File.
+func WriteBytesFile(filename string, r io.Reader) (int, error) {
+
+	// Open a new file for writing only
+	file, err := os.OpenFile(
+		filename,
+		os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
+		0666,
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	// Read for the reader bytes to file
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return 0, err
+	}
+
+	// Write bytes to disk
+	bytesWritten, err := file.Write(b)
+	if err != nil {
+		return 0, err
+	}
+
+	return bytesWritten, nil
 }
