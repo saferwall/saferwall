@@ -5,7 +5,7 @@ BITDEFENDER_ROOT_URL = http://download.bitdefender.com/SMB/Workstation_Security_
 BITDEFENDER_URL = $(BITDEFENDER_ROOT_URL)/BitDefender-Antivirus-Scanner-$(BITDEFENDER_VERSION)-linux-amd64.deb.run
 BITDEFENDER_INSTALLER = BitDefender-Antivirus-Scanner-${BITDEFENDER_VERSION}-linux-amd64.deb.run
 
-install:		## install Bitdefender Scanner for Unices/Unix
+install:	## install Bitdefender Scanner for Unices/Unix
 	apt-get update
 	apt-get install wget psmisc -y
 	wget $(BITDEFENDER_URL) -P /tmp
@@ -16,9 +16,9 @@ install:		## install Bitdefender Scanner for Unices/Unix
 	(echo 'accept' ; echo 'n') | sh /tmp/$(BITDEFENDER_INSTALLER) --nox11
 	make update
 
-update:         ## update Bitdefender Scanner for Unices/Unix
+update:		## update Bitdefender Scanner for Unices/Unix
 	bdscan --update
 	rm -rf /tmp/*
 
-uninstall:		## uninstall Bitdefender Scanner for Unices/Unix
+uninstall:	## uninstall Bitdefender Scanner for Unices/Unix
 	echo 'y' | sh /tmp/$(BITDEFENDER_INSTALLER) --uninstall --nox11
