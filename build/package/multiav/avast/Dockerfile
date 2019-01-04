@@ -6,10 +6,9 @@ LABEL description="Avast for Linux in a docker container"
 # Install dependencies
 RUN apt-get update && apt-get install make -y
 
-# Use the make file itself to install Avira
+# Use make inside the container to install Avast
 COPY Makefile ./
 RUN make install
-
 
 # Copy the server binary
 COPY server /bin/server

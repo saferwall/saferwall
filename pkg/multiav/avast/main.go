@@ -5,6 +5,8 @@
 package avast
 
 import (
+	"errors"
+	"io"
 	"os"
 	"strings"
 
@@ -14,6 +16,7 @@ import (
 const (
 	cmd          = "/bin/scan"
 	avastService = "/etc/init.d/avast"
+	licenseFile  = "/etc/avast/license.avastlic"
 )
 
 // Result represents detection results
@@ -116,4 +119,46 @@ func IsLicenseExpired() (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+// ActivateLicense activate the license.
+func ActivateLicense(r io.Reader) error {
+	// Write the license file to disk
+	_, err := utils.WriteBytesFile(licenseFile, r)
+	if err != nil {
+		return err
+	}
+
+	// Change the owner of the license file to `avast` user
+	err = utils.ChownFileUsername(licenseFile, "avast")
+	if err != nil {
+		return err
+	}
+
+	// Restart the daemon to apply the license
+	err = RestartDaemon()
+	if err != nil {
+		return err
+	}
+
+	isExpired, err := IsLicenseExpired()
+	if err != nil {
+		return err
+	}
+
+	if isExpired {
+		return errors.New("License is expird ")
+	}
+
+	return nil
+}
+
+
+// RestartDaemon re-starts the Avast daemon, needed to apply the license.
+func RestartDaemon() error {
+	_, err := utils.ExecCommand(avastService, "restart")
+	if err != nil {
+		return err
+	}
+	return nil
 }

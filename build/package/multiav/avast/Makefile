@@ -1,7 +1,7 @@
 -include ../../common.mk
 
 AVAST_GPG = http://files.avast.com/files/resellers/linux/avast.gpg
-AVAST_LICENSE_FILE = ./multiav/avast/license.avastlic
+AVAST_LICENSE_FILE = license.avastlic
 
 install:	## install Avast Security for Linux
 	echo 'deb http://deb.avast.com/lin/repo debian release' | tee --append /etc/apt/sources.list
@@ -10,12 +10,12 @@ install:	## install Avast Security for Linux
 	apt-get install avast -y
 	old='^DOWNLOAD=(.*)$$' && new='DOWNLOAD="curl -L -s -f"' \
 		&& sed -i "s|$$old|$$new|g" /var/lib/avast/Setup/avast.setup
-ifdef SFW_DEV
-	$(AVAST_LICENSE_FILE) /etc/avast/license.avastlic
+ifdef SAFERWALL_DEV
+	cp $(AVAST_LICENSE_FILE) /etc/avast/license.avastlic
 	chown avast:avast /etc/avast/license.avastlic
 endif
 
-update: 	## update Avast Security for Linux
+update:		## update Avast Security for Linux
 	/var/lib/avast/Setup/avast.vpsupdate
 
 uninstall:	## uninstall Avast Security for Linux

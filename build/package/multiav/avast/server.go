@@ -5,6 +5,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"net"
 
@@ -38,6 +39,13 @@ func (s *server) GetProgramVersion(ctx context.Context, in *pb.VersionRequest) (
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	res, err := avast.ScanFile(in.Filepath)
 	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
+}
+
+// ActivateLicense implements avast.AvastScanner.
+func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseActivationRequest) (*pb.LicenseActivationResponse, error) {
+	r := bytes.NewReader(in.License)
+	err := avast.ActivateLicense(r)
+	return &pb.LicenseActivationResponse{}, err
 }
 
 // main start a gRPC server and waits for connection.
