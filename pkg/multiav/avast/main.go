@@ -17,6 +17,7 @@ const (
 	cmd          = "/bin/scan"
 	avastService = "/etc/init.d/avast"
 	licenseFile  = "/etc/avast/license.avastlic"
+	vpsUpdate    = "/var/lib/avast/Setup/avast.vpsupdate"
 )
 
 // Result represents detection results
@@ -108,6 +109,12 @@ func ScanURL(url string) (string, error) {
 	return result, nil
 }
 
+// UpdateVPS performs a VPS update.
+func UpdateVPS() error {
+	_, err := utils.ExecCommand(vpsUpdate)
+	return err
+}
+
 // IsLicenseExpired returns true if license was expired
 func IsLicenseExpired() (bool, error) {
 	out, err := utils.ExecCommand(avastService, "status")
@@ -136,7 +143,7 @@ func ActivateLicense(r io.Reader) error {
 	}
 
 	// Restart the daemon to apply the license
-	err = RestartDaemon()
+	err = RestartService()
 	if err != nil {
 		return err
 	}
@@ -153,12 +160,20 @@ func ActivateLicense(r io.Reader) error {
 	return nil
 }
 
-
-// RestartDaemon re-starts the Avast daemon, needed to apply the license.
-func RestartDaemon() error {
-	_, err := utils.ExecCommand(avastService, "restart")
-	if err != nil {
+// RestartService re-starts the Avast service.
+func RestartService() error {
+	// check if service is running
+	_, err := utils.ExecCommand(avastService, "status")
+	if err != nil && err.Error() != "exit status 3" {
 		return err
 	}
-	return nil
+
+	// exit code 3 means program is not running
+	if err.Error() == "exit status 3" {
+		_, err = utils.ExecCommand(avastService, "start")
+	} else {
+		_, err = utils.ExecCommand(avastService, "restart")
+	}
+
+	return err
 }
