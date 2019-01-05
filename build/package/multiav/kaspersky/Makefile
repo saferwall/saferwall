@@ -15,8 +15,10 @@ install:	## install Kaspersky Anti-Virus for Linux File Servers
 	dpkg -i /tmp/kav4fs_$(KASPERSKY_VERSION)_i386.deb
 	chmod a+s $(KASPERSKY_BIN)
 	mkdir -m 777 $(KASPERSKY_INSTALL_DIR)
+ifdef SAFERWALL_DEV
 	cp license.key $(KASPERSKY_LICENSE)
 	$(KASPERSKY_BIN) --install-active-key $(KASPERSKY_LICENSE)
+endif
 	$(KASPERSKY_SETUP) --auto-install install.conf
 	rm -rf /tmp/*
 

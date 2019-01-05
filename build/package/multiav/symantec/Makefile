@@ -1,7 +1,7 @@
 -include ../../common.mk
 
-SYMANTEC_DEB 			= ./multiav/symantec/sep-deb.zip
-SYMANTEC_SAV			= /opt/Symantec/symantec_antivirus/sav
+SYMANTEC_DEB 	= sep-deb.zip
+SYMANTEC_SAV	= /opt/Symantec/symantec_antivirus/sav
 
 install:	## install Symantec Endpoint Protection Linux Client	
 	apt-get update
