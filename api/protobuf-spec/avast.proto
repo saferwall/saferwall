@@ -4,18 +4,29 @@ package api;
 
 // The avast scanner service definition.
 service AvastScanner {
-  // Scan a file
-  rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
+  // Scan a file from a file path
+  rpc ScanFilePath(ScanFileRequest) returns (ScanResponse) {}
+  // Scan a file from a binary blob
+  rpc ScanFileBinary(ScanFileBinaryRequest) returns (ScanResponse) {}
   // Get program version
   rpc GetProgramVersion(VersionRequest) returns (VersionResponse) {}
   // Get VPS version
   rpc GetVPSVersion(VersionRequest) returns (VersionResponse) {}
   // Activate product license
-  rpc ActivateLicense(LicenseActivationRequest) returns (LicenseActivationResponse) {}
+  rpc ActivateLicense(LicenseActivationRequest)
+      returns (LicenseActivationResponse) {}
+  // Check license status
+  rpc GetLicenseStatus(LicenseStatusRequest) returns (LicenseStatusResponse) {}
+  // Update VPS
+  rpc UpdateVPS(UpdateVPSRequest) returns (UpdateVPSResponse) {}
 }
 
 // The scan file request message containing the file path to scan.
 message ScanFileRequest { string filepath = 1; }
+
+// The scan file binary request message containing the binary data of the file
+// to scan.
+message ScanFileBinaryRequest { bytes file = 1; }
 
 // The scan response message containing detection results of the AntiVirus.
 message ScanResponse {
@@ -34,3 +45,15 @@ message LicenseActivationRequest { bytes license = 1; }
 
 // The license response message.
 message LicenseActivationResponse {}
+
+// The update vps request.
+message UpdateVPSRequest {}
+
+// The pdate vps request response.
+message UpdateVPSResponse {}
+
+// The license status request.
+message LicenseStatusRequest {}
+
+// The license status response.
+message LicenseStatusResponse { bool expired = 1; }
