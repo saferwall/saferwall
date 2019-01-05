@@ -8,6 +8,7 @@ install:	## install Avast Security for Linux
 	apt-key adv --fetch-keys $(AVAST_GPG)
 	apt-get update
 	apt-get install avast -y
+	touch /etc/avast/whitelist
 	old='^DOWNLOAD=(.*)$$' && new='DOWNLOAD="curl -L -s -f"' \
 		&& sed -i "s|$$old|$$new|g" /var/lib/avast/Setup/avast.setup
 ifdef SAFERWALL_DEV
