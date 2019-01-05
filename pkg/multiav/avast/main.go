@@ -48,8 +48,8 @@ func GetProgramVersion() (string, error) {
 	return strings.TrimSpace(versionOut), nil
 }
 
-// ScanFile scans a given file
-func ScanFile(filepath string) (Result, error) {
+// ScanFilePath scans a given file
+func ScanFilePath(filepath string) (Result, error) {
 
 	res := Result{}
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
@@ -117,9 +117,14 @@ func UpdateVPS() error {
 
 // IsLicenseExpired returns true if license was expired
 func IsLicenseExpired() (bool, error) {
+
+	if _, err := os.Stat(licenseFile); os.IsNotExist(err) {
+		return true, errors.New("License not found")
+	}
+	  
 	out, err := utils.ExecCommand(avastService, "status")
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	if strings.Contains(out, "License expired") {
@@ -176,4 +181,15 @@ func RestartService() error {
 	}
 
 	return err
+}
+
+// ScanFileBinary receives a binary files, write it to disk then scan it
+func ScanFileBinary(r io.Reader) (Result, error) {
+	// Write the license file to disk
+	_, err := utils.WriteBytesFile("sample", r)
+	if err != nil {
+		return Result{Output: ""}, err
+	}
+
+	return ScanFilePath("sample")
 }
