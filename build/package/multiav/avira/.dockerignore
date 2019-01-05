@@ -1,0 +1,4 @@
+*.md
+**/*.go
+Makefile
+hbedv.key

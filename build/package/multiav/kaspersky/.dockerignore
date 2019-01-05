@@ -1,0 +1,4 @@
+*.md
+**/*.go
+Makefile
+license.key
