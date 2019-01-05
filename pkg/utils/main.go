@@ -115,12 +115,10 @@ func ReadAll(filePath string) ([]byte, error) {
 	buffer := make([]byte, filesize)
 
 	// Read the whole binary
-	bytesread, err := file.Read(buffer)
+	_, err = file.Read(buffer)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(bytesread)
 	return buffer, nil
 
 }
@@ -137,9 +135,6 @@ func WalkAllFilesInDir(dir string) ([]string, error) {
 
 		// check if it is a regular file (not dir)
 		if info.Mode().IsRegular() {
-			fmt.Println("file name:", info.Name())
-			fmt.Println("file path:", path)
-
 			fileList = append(fileList, path)
 
 		}
@@ -189,4 +184,13 @@ func ChownFileUsername(filename, username string) error {
 
 	err = os.Chown(filename, uid, gid)
 	return err
+}
+
+// IsDirectory returns true if path is a directory
+func IsDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	return fileInfo.IsDir(), err
 }
