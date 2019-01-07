@@ -15,4 +15,5 @@ gem 'jekyll-feed'
 
 gem "jekyll-assets"
 
+gem 'autoprefixer-rails'
 gem 'jekyll-autoprefixer'
