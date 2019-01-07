@@ -1,0 +1,103 @@
+.page-big-title{
+	font-size:36px;
+	color:rgba($dark-blue, .25);
+	font-weight:300;
+	margin-bottom:50px;
+	font-family:$montserrat;
+
+	&.no-margin{
+		margin-bottom: 0;
+	}
+}
+
+.paragraph-title{
+	color:$dark-blue;
+	font-size:16px;
+	font-family:$montserrat;
+	margin-bottom:20px;  
+
+	&.no-margin{
+		margin-bottom: 0;
+	}
+}
+
+.thin-paragraph{
+	font-weight:200;
+	font-size:15px;
+}
+
+p + p{
+	margin-bottom:20px;
+}
+
+a{
+	color:$primary-color;
+	text-decoration:none;
+}
+
+.blue-text{color:$primary-color!important}
+.dark-blue-text{color:$dark-blue!important}
+.red-text{color:$red!important}
+.dark-red-text{color:$dark-red!important}
+.black-text{color:$black!important}
+.white-text{color:white!important}
+
+.doc{
+	.doc-section-title{
+		font-size: 24px;
+		color:#373c44;
+		font-weight: 600;
+		padding-bottom: 15px;
+		margin-bottom: 20px;
+		position:relative;
+
+		&:not(:first-child){
+			margin-top: 30px;
+		}
+
+		&:after{
+			content:"";
+			position:absolute;
+			bottom:0;
+			left:0;
+			width:30px;
+			height:1px;
+			background-color: $primary-color;
+		}
+	}
+
+	p{
+		margin-bottom: 20px;
+		line-height: 24px;
+		font-weight: 200
+	}
+
+	.hljs{
+		border-radius:4px;
+		padding-left:20px;
+	}
+}
+
+mark{
+	&.danger{
+		background-color:rgba($red, .1);
+		color:$red;
+		display:inline-block;
+		padding:0 3px;
+	}
+}
+
+.bordered-box{
+	padding:10px;
+	border:solid 1px rgba($black, .25);
+	border-radius:2px;
+
+	.box-title{
+		font-weight: 600;
+		margin-bottom: 10px;
+	}
+
+	.box-text, code{
+		font-weight: 200
+	}
+}

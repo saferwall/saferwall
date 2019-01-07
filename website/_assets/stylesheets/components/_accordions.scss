@@ -1,0 +1,45 @@
+.collapsible{
+	&.faq{
+		box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 0 0 0 transparent;
+		border:0!important;
+
+		li{
+			position:relative;
+
+			&:after{
+				content:"\f2c7";
+				font-family: "Ionicons";
+				position:absolute;
+				right:10px;
+				top:15px;
+				color:$primary-color;
+				font-size: 20px;
+				z-index: 0
+			}
+
+			&.active{
+				&:after{
+					content:"\f209";
+				}
+			}
+
+			.collapsible-header{
+				height:auto;
+				line-height: normal;
+				padding:20px 5px;
+
+				.icon{
+					color:$primary-color;
+					line-height: normal;
+					font-size: 20px;
+				}
+			}
+
+			.collapsible-body{
+				p:not(:last-child){
+					margin-bottom: 20px;
+				}
+			}
+		}
+	}
+}
