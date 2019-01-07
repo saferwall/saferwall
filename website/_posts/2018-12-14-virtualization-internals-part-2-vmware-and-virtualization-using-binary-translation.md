@@ -6,6 +6,7 @@ title:  "Virtualization Internals Part 2 - VMWare and Full Virtualization using 
 page-title: "Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation"
 categories: virtualization
 excerpt_separator: <!--more-->
+comments: true
 ---
 In the previous chapter, we have introduced some basic concepts about hypervisors and briefly touched upon the different techniques to virtualize x86: full virtualization using binary translation, paravirtualization and hardware virtualization. Today, we will dig deeper into full virtualization and particularly how early versions of VMWare Workstation successfully bringed virtualization back to x86 regardless the lack of virtualization support back in time and the deep complexity of the architecture.
 <!--more-->

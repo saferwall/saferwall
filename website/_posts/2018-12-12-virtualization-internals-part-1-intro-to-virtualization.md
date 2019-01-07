@@ -6,6 +6,7 @@ title:  "Virtualization Internals Part 1 - Intro to Virtualization"
 page-title: "Virtualization Internals Part 1 - Intro to Virtualization"
 categories: virtualization
 excerpt_separator: <!--more-->
+comments: true
 ---
 The purpose of this series of articles is to explain how x86 virtualization internally works. I find most of the information dispatched in acamedical work and reserch papers, which is pretty hard to understand for beginners, I will try to start from scratch and build knowledge as needed. This could be useful for understanding how virtualization works, or writing your own hypervisor or in other scenarios such as attacking hypervisors security.
 <!--more-->
