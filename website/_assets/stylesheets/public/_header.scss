@@ -1,0 +1,169 @@
+header.main-header{
+	height:85px;
+	line-height:85px;
+	width:100%;
+	float:left;
+	box-shadow: 0 0 50px rgba($black, .05);
+	margin-bottom:50px;
+
+	.logo{
+		color: $black;
+
+		img{
+			vertical-align: middle;
+			height:85px;
+			// height:50px;
+		}
+	}
+
+	nav.main-nav{
+		width:auto;
+		background-color: transparent;
+		float:right;
+		box-shadow:0 0 0 0 transparent;
+		height:85px;
+
+		ul.main-links{
+			display:inline-block;
+
+			li{
+				display:inline-block;
+				height:85px;
+				line-height: 85px;
+				padding:0 15px;
+				background-color:transparent;
+
+				a{
+					display:inline-block;
+					color:$black;
+					text-transform: capitalize;
+					font-size: 13px;
+					font-weight: 600;
+					line-height: normal;
+					padding:0;
+					position:relative;
+
+					&:after{
+						content:"";
+						position:absolute;
+						bottom:-10px;
+						left:0;
+						width:100%;
+						height:1px;
+						background-color : $primary-color;
+						opacity:0;
+						transition: all .2s;
+					}
+
+					&:hover{
+						background-color:transparent;
+						color:$primary-color;
+					}
+				}
+
+				&.active{
+					a{
+						color:$primary-color;
+						
+						&:after{
+							content:"";
+							position:absolute;
+							bottom:-3px;
+							left:0;
+							width:100%;
+							height:1px;
+							background-color:$primary-color;
+							opacity: 1;
+						}
+					}
+				}
+
+				&:not(.active){
+					a{
+						&:hover{
+							&:after{
+								bottom:-3px;
+								opacity: 1;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		ul.login-links{
+			display:inline-block;
+
+			li{
+				display:inline-block;
+				height:85px;
+				line-height: 85px;
+				padding:0 5px;
+				background-color:transparent;
+
+				a{
+					display:inline-block;
+					color:rgba(white, .75);
+					text-transform: capitalize;
+					font-size: 13px;
+					font-weight: 600;
+					height:40px;
+					line-height: 40px;
+					padding:0 15px;
+					border-radius:4px;
+					background-color:$secondary-color;
+					// background-color:#333333;
+					transition: all .2s;
+
+					&:hover{
+						color:#fff;
+					}
+
+					&.signin{
+						background-color:$primary-color;
+					}
+				}
+			}
+		}
+
+		@media screen and (max-width:906px){
+			display:none;
+		}
+	}
+
+	.mobile-nav-icon{
+		float:right;
+		color:$primary-color;
+		font-size: 36px;
+		display:none;
+
+		@media screen and (max-width: 906px){
+			display:block;
+		}
+	}
+
+	.mobile-nav{
+		position:absolute;
+		top:85px;
+		left:0;
+		width:100%;
+		padding:10px;
+		background-color: $red;
+		z-index: 9999;
+		text-align: center;
+		display:none;
+
+		ul{
+			li{
+				line-height: 45px;
+				a{
+					width:100%;
+					line-height: 45px;
+					display:inline-block;
+					color:#fff;
+					text-transform: capitalize;
+				}
+			}
+		}
+	}
+}

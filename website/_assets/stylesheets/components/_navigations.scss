@@ -1,0 +1,40 @@
+.nav{
+	&.vertical-nav{
+		.nav-title{
+			font-size: 12px;
+			text-transform: uppercase;
+			color:rgba($black, .4);
+			margin-bottom: 10px;
+		}
+
+		ul{
+			&:not(:last-child){
+				margin-bottom: 20px;
+			}
+
+			li{
+				&:not(:last-child){
+					margin-bottom: 5px;
+				}
+
+				a{
+					display:inline-block;
+					line-height: 35px;
+					padding:0 5px;
+					border-radius:4px;
+					transition: all .2s;
+					width:100%;
+
+					&.active{
+						background-color: $primary-color;
+						color:#fff;
+					}
+
+					&:not(.active):hover{
+						background-color:rgba($primary-color, .05);
+					}
+				}
+			}
+		}
+	}
+}

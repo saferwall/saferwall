@@ -1,0 +1,27 @@
+---
+layout: public-atf
+footer-space: true
+current: blog
+page-title: Blog
+---
+<div class="container">
+    <div class="row">
+        <div class="col m8 s12">
+            {% for post in site.posts %}
+            <div class="blog-article">
+                <div class="section-title about">
+                    <a href="{{post.url}}">{{post.title}}</a>
+                    <div class="section-subtitle">Lord Noteworthy - {{post.date | date_to_string}}</div>
+                </div>
+                <p class="about-text">
+                    {{post.excerpt}}
+                </p>
+                <a href="" class="read-more">Read more...</a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col m3 offset-m1 s12">
+            {% include public/blog-sidebar.html %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+---
+---
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Saferwall</title>
+	{% asset sign.css %}
+</head>
+<body>
+<div class="sign">
+	<div class="container">
+		<header class="main-header">
+			<a href="/public/index.html" class="logo">
+				{% asset saferwall.png width:'auto' height:'auto' %}
+			</a>
+		</header>
+
+		<div class="sign-title">
+			Sign in
+		</div>
+
+		<div class="sign-form">
+			<form>
+				<div class="sign-field">
+					<div class="field-icon">
+						<i class="icon ion-ios-person"></i>
+					</div>
+					<input type="text" placeholder="Username">
+				</div>
+				<div class="sign-field">
+					<div class="field-icon">
+						<i class="icon ion-android-lock"></i>
+					</div>
+					<input type="password" placeholder="Password">
+					<div class="preview">
+						<i class="icon ion-eye"></i>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col m6 s12">
+						<a href="" class="forgot">Forgot Password?</a>
+					</div>
+					<div class="col m6 s12">
+						<a class="button blue right" href="">Sign in</a>
+					</div>
+				</div>
+			</form>
+
+			<div class="or">
+				<span>Or</span>	
+			</div>
+
+			<ul class="auth-buttons">
+				<li>
+					<a href="" class="facebook">
+						<i class="icon ion-social-facebook"></i>
+						<span>Login with Facebook</span>
+					</a>
+				</li>
+				<li>
+					<a href="" class="google">
+						<i class="icon ion-social-google"></i>
+						<span>Login with Google</span>
+					</a>
+				</li>
+				<li>
+					<a href="" class="twitter">
+						<i class="icon ion-social-twitter"></i>
+						<span>Login with Twitter</span>
+					</a>
+				</li>
+			</ul>
+
+			<div class="not-member">
+				Not a member? <a href="/public/signup.html">Sign up Here</a>.
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% asset sign.js %}
+</body>
+</html>
