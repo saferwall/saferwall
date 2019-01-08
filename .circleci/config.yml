@@ -24,9 +24,17 @@ jobs:
               cd build/package/multiav/avast
               sudo --preserve-env make install
             fi
-  
+
       - run:
-          name: "Install crypo pkg dependencies"
+          name: "Install Avira"
+          command: |
+            if [ -f "/tmp/avira.circleci" ]; then
+              cd build/package/multiav/avira
+              sudo --preserve-env make install
+            fi
+
+      - run:
+          name: "Install Crypo pkg dependencies"
           command: |
             if [ -f "/tmp/crypto.circleci" ]; then
               go get -d github.com/saferwall/saferwall/pkg/crypto
@@ -39,15 +47,21 @@ jobs:
       working_directory: /go/src/github.com/saferwall/saferwall
       steps:
         - run:
-            name: "Running unit tests"
+            name: "Running Avast unit tests"
             command: |
               if [ -f "/tmp/avast.circleci" ]; then
-                go get -d github.com/saferwall/saferwall/pkg/multiav/avast
                 go test -v github.com/saferwall/saferwall/pkg/multiav/avast
               fi
 
         - run:
-            name: "Running unit tests"
+            name: "Running Avira unit tests"
+            command: |
+              if [ -f "/tmp/avira.circleci" ]; then
+                go test -v github.com/saferwall/saferwall/pkg/multiav/avira
+              fi
+
+        - run:
+            name: "Running Crypto unit tests"
             command: |
               if [ -f "/tmp/crypto.circleci" ]; then
                 go get -d github.com/saferwall/saferwall/pkg/crypto
@@ -59,5 +73,6 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - test
-  
+      - test:
+          requires:
+            - build
