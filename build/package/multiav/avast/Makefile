@@ -1,7 +1,7 @@
 -include ../../common.mk
 
 AVAST_GPG = http://files.avast.com/files/resellers/linux/avast.gpg
-AVAST_LICENSE_FILE = license.avastlic
+AVAST_LICENSE_PATH = /etc/avast/license.avastlic
 
 
 install:	## install Avast Security for Linux
@@ -14,13 +14,13 @@ install:	## install Avast Security for Linux
 		&& sed -i "s|$$old|$$new|g" /var/lib/avast/Setup/avast.setup
 ifdef SAFERWALL_DEV
 	@echo "Using Dev"
-	cp $(AVAST_LICENSE_FILE) /etc/avast/license.avastlic
-	chown avast:avast /etc/avast/license.avastlic
+	cp license.avastlic $(AVAST_LICENSE_PATH) 
+	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif
 ifdef SAFERWALL_TEST
 	make install-vault
-	vault read -field=avast multiav/avast | base64 -d > /etc/avast/license.avastlic
-	chown avast:avast /etc/avast/license.avastlic
+	vault read -field=avast multiav/avast | base64 -d > $(AVAST_LICENSE_PATH)
+	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif
 	service avast start
 
