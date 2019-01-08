@@ -5,8 +5,9 @@
 package crypto
 
 import (
-	"github.com/glaslos/ssdeep"
 	"testing"
+
+	"github.com/glaslos/ssdeep"
 
 	"github.com/saferwall/saferwall/pkg/utils"
 )
@@ -128,7 +129,6 @@ func TestGetSha512(t *testing.T) {
 		})
 	}
 }
-
 
 func TestGetSsdeep(t *testing.T) {
 	for _, tt := range ssdeeptests {
