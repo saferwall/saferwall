@@ -18,11 +18,18 @@ jobs:
             ./scripts/commit_check.sh
 
       - run:
-          name: "Installing Avast"
+          name: "Install Avast"
           command: |
             if [ -f "/tmp/avast.circleci" ]; then
               cd build/package/multiav/avast
               sudo --preserve-env make install
+            fi
+  
+      - run:
+          name: "Install crypo pkg dependencies"
+          command: |
+            if [ -f "/tmp/crypto.circleci" ]; then
+              go get -d github.com/saferwall/saferwall/pkg/crypto
             fi
   
   test:
@@ -37,6 +44,14 @@ jobs:
               if [ -f "/tmp/avast.circleci" ]; then
                 go get -d github.com/saferwall/saferwall/pkg/multiav/avast
                 go test -v github.com/saferwall/saferwall/pkg/multiav/avast
+              fi
+
+        - run:
+            name: "Running unit tests"
+            command: |
+              if [ -f "/tmp/crypto.circleci" ]; then
+                go get -d github.com/saferwall/saferwall/pkg/crypto
+                go test -v github.com/saferwall/saferwall/pkg/crypto
               fi
 
 workflows:
