@@ -17,6 +17,7 @@
 # multiav go pkg
 **/*.key
 **/*.lic
-license.avastlic
+license.avastlic*
+hbedv.key*
 sav-linux-free-9.tgz
 sep-deb.zip

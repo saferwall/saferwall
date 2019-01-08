@@ -67,3 +67,12 @@ jobs:
                 go get -d github.com/saferwall/saferwall/pkg/crypto
                 go test -v github.com/saferwall/saferwall/pkg/crypto
               fi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
