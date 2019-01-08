@@ -57,7 +57,7 @@ jobs:
             name: "Running Avira unit tests"
             command: |
               if [ -f "/tmp/avira.circleci" ]; then
-                go test -v github.com/saferwall/saferwall/pkg/multiav/avira
+                sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
               fi
 
         - run:

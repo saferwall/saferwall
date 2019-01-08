@@ -17,12 +17,6 @@ help: ## This help.
 CURRENT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 ROOT_DIR := $(CURRENT_DIR)/../..
 
--include docker.mk
--include vault.mk
-
-mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
-
 	
 api:	## Generates protocol buffers definitions files. 
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \

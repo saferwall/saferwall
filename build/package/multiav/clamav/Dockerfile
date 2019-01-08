@@ -21,4 +21,3 @@ EXPOSE 50051
 
 # Entry point
 ENTRYPOINT ["/bin/server"]
-
