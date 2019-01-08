@@ -19,16 +19,16 @@ const (
 	port = ":50051"
 )
 
-// server is used to implement bitdefender.AvastScanner.
+// server is used to implement api.BitdefenderScanner.
 type server struct{}
 
-// GetProgramVersion implements bitdefender.AvastScanner.
+// GetProgramVersion implements api.BitdefenderScanner.
 func (s *server) GetProgramVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
 	version, err := bitdefender.GetProgramVersion()
 	return &pb.VersionResponse{Version: version}, err
 }
 
-// ScanFile implements bitdefender.AvastScanner.
+// ScanFile implements api.BitdefenderScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	res, err := bitdefender.ScanFile(in.Filepath)
 	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
@@ -46,7 +46,7 @@ func main() {
 	// create a gRPC server object
 	s := grpc.NewServer()
 
-	// attach the AvastScanner service to the server
+	// attach the BitdefenderScanner service to the server
 	pb.RegisterBitdefenderScannerServer(s, &server{})
 
 	// register reflection service on gRPC server.
