@@ -14,9 +14,19 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
+var (
+	// ErrNoLicenseFound is returned when no license is found
+	ErrNoLicenseFound = errors.New("No License Found")
+
+	// ErrInvalidLicense is returned when invalid license is found
+	ErrInvalidLicense = errors.New("Invalid License")
+)
+
 const (
-	cmd         = "/opt/avira/scancl"
-	licenseFile = "/opt/avira/hbedv.key"
+	cmd = "/opt/avira/scancl"
+
+	// LicenseKeyPath points to the location of the license.
+	LicenseKeyPath = "/opt/avira/hbedv.key"
 )
 
 // Result represents detection results
@@ -144,9 +154,9 @@ func IsLicenseExpired() (bool, error) {
 	}
 
 	if strings.Contains(out, "No license found") {
-		return true, errors.New("No License Found")
-	} else if strings.Contains(out, "has encounterd an invalid license") {
-		return true, errors.New("Invalid License")
+		return true, ErrNoLicenseFound
+	} else if strings.Contains(out, "invalid license") {
+		return true, ErrInvalidLicense
 	} else if strings.Contains(out, "key expires") {
 		// key file:           /opt/avira/hbedv.key
 		// registered user:    Free
@@ -174,7 +184,7 @@ func IsLicenseExpired() (bool, error) {
 // ActivateLicense activate the license.
 func ActivateLicense(r io.Reader) error {
 	// Write the license file to disk
-	_, err := utils.WriteBytesFile(licenseFile, r)
+	_, err := utils.WriteBytesFile(LicenseKeyPath, r)
 	if err != nil {
 		return err
 	}

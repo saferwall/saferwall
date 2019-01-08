@@ -5,8 +5,11 @@
 package avira
 
 import (
+	"os"
 	"regexp"
 	"testing"
+
+	"github.com/saferwall/saferwall/pkg/multiav/avira"
 )
 
 type filePathTest struct {
@@ -62,5 +65,20 @@ func TestIsLicenseExpired(t *testing.T) {
 	}
 	if isExpired {
 		t.Errorf("TestIsLicenseExpired failed, license expired")
+	}
+}
+
+func TestIsLicenseExpiredNoLicenseFound(t *testing.T) {
+	// Deliberately removing the license file
+	err := os.Remove(avira.LicenseKeyPath)
+	if err != nil {
+		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
+	}
+
+	
+	_, err := IsLicenseExpired()
+	if err != avira.ErrNoLicenseFound {
+		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
+
 	}
 }
