@@ -9,17 +9,22 @@ import (
 	"io"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 var (
 	// ErrNoLicenseFound is returned when no license is found
-	ErrNoLicenseFound = errors.New("No License Found")
+	ErrNoLicenseFound = errors.New("No license found")
 
 	// ErrInvalidLicense is returned when invalid license is found
-	ErrInvalidLicense = errors.New("Invalid License")
+	ErrInvalidLicense = errors.New("Invalid license")
+
+	// ErrExpiredLicense is returned when license is expired
+	ErrExpiredLicense = errors.New("License expired")
+
+	// ErrLicenseUnknowError is returned when unknow error occured
+	ErrLicenseUnknowError = errors.New("License parsing failed")
 )
 
 const (
@@ -146,18 +151,20 @@ func ScanFile(filepath string) (Result, error) {
 	return res, nil
 }
 
-// IsLicenseExpired returns true if license was expired
-func IsLicenseExpired() (bool, error) {
+// GetLicenseStatus checks the validity of the license
+func GetLicenseStatus() (string, error) {
 	out, err := utils.ExecCommand(cmd, "-v")
 	if err != nil {
-		return true, err
+		return "", err
 	}
 
 	if strings.Contains(out, "No license found") {
-		return true, ErrNoLicenseFound
+		return "", ErrNoLicenseFound
 	} else if strings.Contains(out, "invalid license") {
-		return true, ErrInvalidLicense
-	} else if strings.Contains(out, "key expires") {
+		return "", ErrInvalidLicense
+	} else if strings.Contains(out, "This key has expired") {
+		return "", ErrExpiredLicense
+	} else if strings.Contains(out, "key expires:") {
 		// key file:           /opt/avira/hbedv.key
 		// registered user:    Free
 		// serial number:      0000149996
@@ -166,19 +173,11 @@ func IsLicenseExpired() (bool, error) {
 		re := regexp.MustCompile(`key expires:        ([\w\s]+)\n\n`)
 		l := re.FindStringSubmatch(out)
 		if len(l) > 0 {
-			expiresAt, err := time.Parse("Jan 02 2006", l[1])
-			if err != nil {
-				return true, err
-			}
-			now := time.Now()
-			diff := expiresAt.Sub(now)
-			if diff < 0 {
-				return true, nil
-			}
+			return l[1], nil
 		}
 	}
 
-	return false, nil
+	return "", ErrLicenseUnknowError
 }
 
 // ActivateLicense activate the license.
@@ -189,13 +188,9 @@ func ActivateLicense(r io.Reader) error {
 		return err
 	}
 
-	isExpired, err := IsLicenseExpired()
+	expireAt, err := GetLicenseStatus()
 	if err != nil {
 		return err
-	}
-
-	if isExpired {
-		return errors.New("License was expird")
 	}
 
 	return nil

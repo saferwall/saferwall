@@ -39,25 +39,31 @@ jobs:
             if [ -f "/tmp/crypto.circleci" ]; then
               go get -d github.com/saferwall/saferwall/pkg/crypto
             fi
+  
+  test:
+      docker:
+        # specify the version
+        - image: circleci/golang:1.11
+      working_directory: /go/src/github.com/saferwall/saferwall
+      steps:
+        - run:
+            name: "Running Avast unit tests"
+            command: |
+              if [ -f "/tmp/avast.circleci" ]; then
+                go test -v github.com/saferwall/saferwall/pkg/multiav/avast
+              fi
 
-      - run:
-          name: "Running Avast unit tests"
-          command: |
-            if [ -f "/tmp/avast.circleci" ]; then
-              go test -v github.com/saferwall/saferwall/pkg/multiav/avast
-            fi
+        - run:
+            name: "Running Avira unit tests"
+            command: |
+              if [ -f "/tmp/avira.circleci" ]; then
+                sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
+              fi
 
-      - run:
-          name: "Running Avira unit tests"
-          command: |
-            if [ -f "/tmp/avira.circleci" ]; then
-              go test -v github.com/saferwall/saferwall/pkg/multiav/avira
-            fi
-
-      - run:
-          name: "Running Crypto unit tests"
-          command: |
-            if [ -f "/tmp/crypto.circleci" ]; then
-              go get -d github.com/saferwall/saferwall/pkg/crypto
-              go test -v github.com/saferwall/saferwall/pkg/crypto
-            fi
+        - run:
+            name: "Running Crypto unit tests"
+            command: |
+              if [ -f "/tmp/crypto.circleci" ]; then
+                go get -d github.com/saferwall/saferwall/pkg/crypto
+                go test -v github.com/saferwall/saferwall/pkg/crypto
+              fi

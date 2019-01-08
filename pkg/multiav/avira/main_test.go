@@ -56,17 +56,14 @@ func TestScanFile(t *testing.T) {
 	}
 }
 
-func TestIsLicenseExpired(t *testing.T) {
-	isExpired, err := IsLicenseExpired()
+func TestGetLicenceStatus(t *testing.T) {
+	_, err := GetLicenseStatus()
 	if err != nil {
-		t.Errorf("TestIsLicenseExpired failed, err: %s", err)
-	}
-	if isExpired {
-		t.Errorf("TestIsLicenseExpired failed, license expired")
+		t.Errorf("TestGetLicenceStatus failed, err: %s", err)
 	}
 }
 
-func TestIsLicenseExpiredNoLicenseFound(t *testing.T) {
+func TestGetLicenceStatusNoLicenseFound(t *testing.T) {
 
 	// Deliberately removing the license file
 	err := os.Remove(LicenseKeyPath)
@@ -74,7 +71,7 @@ func TestIsLicenseExpiredNoLicenseFound(t *testing.T) {
 		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
 	}
 
-	_, err = IsLicenseExpired()
+	_, err = GetLicenseStatus()
 	if err != ErrNoLicenseFound {
 		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
 
