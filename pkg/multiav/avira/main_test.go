@@ -23,7 +23,6 @@ func TestGetVersion(t *testing.T) {
 	ver, err := GetVersion()
 	if err != nil {
 		t.Errorf("TestGetVersion failed, got: %s", err)
-
 	}
 
 	re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
@@ -42,6 +41,7 @@ func TestGetVersion(t *testing.T) {
 		t.Errorf("VDF version was incorrect, got: %s, want something similar to: 7.15.16.96", ver)
 	}
 }
+
 func TestScanFile(t *testing.T) {
 	for _, tt := range filepathScanTest {
 		t.Run(tt.filepath, func(t *testing.T) {
@@ -67,6 +67,7 @@ func TestIsLicenseExpired(t *testing.T) {
 }
 
 func TestIsLicenseExpiredNoLicenseFound(t *testing.T) {
+
 	// Deliberately removing the license file
 	err := os.Remove(LicenseKeyPath)
 	if err != nil {
