@@ -1,10 +1,12 @@
--include ../../common.mk
+include ../../common.mk
+include ../../vault.mk
 
 AVIRA_URL = http://professional.avira-update.com/package/scancl/linux_glibc22/en/scancl-linux_glibc22.tar.gz
 AVIRA_FUSEBUNDLE = http://install.avira-update.com/package/fusebundlegen/linux_glibc22/en/avira_fusebundlegen-linux_glibc22-en.zip
 AVIRA_INSTALL_DIR = /opt/avira
 
 install:	## install Avira Linux Version
+	make install-vault
 	apt-get update
 	apt-get install wget unzip libc6-i386 -y
 	wget $(AVIRA_URL) -P /tmp
