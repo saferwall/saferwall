@@ -11,6 +11,38 @@ jobs:
     steps:
       - checkout
 
-      # specify any bash command here prefixed with `run: `
-      - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run:
+          name: "Determine which packages need to be built"
+          command: |
+            chmod +x scripts/commit_check.sh
+            ./scripts/commit_check.sh
+
+      - run:
+          name: "Installing Avast"
+          command: |
+            if [ -f "/tmp/avast.circleci" ]; then
+              cd build/package/multiav/avast
+              sudo --preserve-env make install
+            fi
+  
+  test:
+      docker:
+        # specify the version
+        - image: circleci/golang:1.11
+      working_directory: /go/src/github.com/saferwall/saferwall
+      steps:
+        - run:
+            name: "Running unit tests"
+            command: |
+              if [ -f "/tmp/avast.circleci" ]; then
+                go get -d github.com/saferwall/saferwall/pkg/multiav/avast
+                go test -v github.com/saferwall/saferwall/pkg/multiav/avast
+              fi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test
+  
