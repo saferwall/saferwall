@@ -55,7 +55,7 @@ client -s /malwares
 2019/01/05 12:10:42 Scan Result: [CLEAN]
 ```
 
-You can also consume the service programmatically by writing your own client in any language you wish by using the protobuf spec available [here](https://github.com/saferwall/saferwall/blob/master/api/protobuf-spec/avast.proto)
+You can also consume the service programmatically by writing your own client in any language you wish by using the protobuf spec available [here](https://github.com/saferwall/saferwall/blob/master/api/protobuf-spec/avast.proto).
 
 
 
