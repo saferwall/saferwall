@@ -14,6 +14,10 @@ install:	## install Avira Linux Version
 ifdef SAFERWALL_DEV
 	cp hbedv.key $(AVIRA_INSTALL_DIR)
 endif
+ifdef SAFERWALL_TEST
+	make install-vault
+	vault read -field=avira multiav/avira | base64 -d > $(AVIRA_INSTALL_DIR)/hbedv.key
+endif
 	make update
 
 update:		## update Avira Linux Version

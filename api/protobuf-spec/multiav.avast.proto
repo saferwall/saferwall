@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api;
+package avast.api;
 
 // The avast scanner service definition.
 service AvastScanner {

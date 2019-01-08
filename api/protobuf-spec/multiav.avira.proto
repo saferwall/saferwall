@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api;
+package avira.api;
 
 // The avira scanner service definition.
 service AviraScanner {

@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"hash/crc32"
+	"log"
 
 	"github.com/glaslos/ssdeep"
 )
@@ -63,18 +64,14 @@ func GetSha512(b []byte) string {
 
 // GetSsdeep returns ssdeep fuzzy hash
 func GetSsdeep(b []byte) (FuzzyHash string, err error) {
-	h1, err := ssdeep.FuzzyBytes(b)
-	if err != nil {
-		return "", err
-	}
-	return h1, nil
+	return ssdeep.FuzzyBytes(b)
 }
 
 // HashBytes run all crypto modules and return results
 func HashBytes(data []byte) Result {
 	FuzzyHash, err := GetSsdeep(data)
-	if err != nil {
-		fmt.Println("Something went wrong ! ", err)
+	if err != nil && err != ssdeep.ErrFileTooSmall {
+		log.Printf("GetSsdeep() failed, got %s", err)
 	}
 	r := Result{
 		Crc32:  GetCrc32(data),
