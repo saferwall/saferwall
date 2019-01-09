@@ -17,9 +17,9 @@ jobs:
             ./scripts/commit_check.sh
 
       - persist_to_workspace:
-          root: /tmp/
+          root: /tmp/saferwall
           paths:
-            - saferwall
+            - cirleci
 
       - run:
           name: "Build Avast"
@@ -27,32 +27,36 @@ jobs:
             sudo --preserve-env sh ./scripts/build_multiav_avast.sh
 
   test:
-      docker:
-        - image: circleci/golang:1.11
-      working_directory: /go/src/github.com/saferwall/saferwall
-      steps:
-        - run:
-            name: "Running Avast unit tests"
-            command: |
-              ls /tmp
-              if [ -f "/tmp/saferwall/avast.circleci" ]; then
-                go test -v github.com/saferwall/saferwall/pkg/multiav/avast
-              fi
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/saferwall/saferwall
+    steps:
 
-        - run:
-            name: "Running Avira unit tests"
-            command: |
-              if [ -f "/tmp/avira.circleci" ]; then
-                sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
-              fi
+      - attach_workspace:
+          at: /tmp/saferwall
 
-        - run:
-            name: "Running Crypto unit tests"
-            command: |
-              if [ -f "/tmp/crypto.circleci" ]; then
-                go get -d github.com/saferwall/saferwall/pkg/crypto
-                go test -v github.com/saferwall/saferwall/pkg/crypto
-              fi
+      - run:
+          name: "Running Avast unit tests"
+          command: |
+            ls /tmp
+            if [ -f "/tmp/saferwall/circleci/avast" ]; then
+              go test -v github.com/saferwall/saferwall/pkg/multiav/avast
+            fi
+
+      - run:
+          name: "Running Avira unit tests"
+          command: |
+            if [ -f "/tmp/avira.circleci" ]; then
+              sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
+            fi
+
+      - run:
+          name: "Running Crypto unit tests"
+          command: |
+            if [ -f "/tmp/crypto.circleci" ]; then
+              go get -d github.com/saferwall/saferwall/pkg/crypto
+              go test -v github.com/saferwall/saferwall/pkg/crypto
+            fi
 
 workflows:
   version: 2

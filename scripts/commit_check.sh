@@ -12,19 +12,19 @@ PKG_AVIRA_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
 # create a directory to store the state of changed files
-mkdir /tmp/saferwall 
+mkdir -p /tmp/saferwall/circleci
 
 if [ $PKG_AVAST_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avast has changed"
-	touch /tmp/saferwall/avast.circleci
+	touch /tmp/saferwall/circleci/avast
 fi
 
 if [ $PKG_AVIRA_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avira has changed"
-	touch /tmp/saferwall/avira.circleci
+	touch /tmp/saferwall/circleci/avira
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/crypto has changed"
-	touch /tmp/saferwall/crypto.circleci
+	touch /tmp/saferwall/circleci/crypto
 fi

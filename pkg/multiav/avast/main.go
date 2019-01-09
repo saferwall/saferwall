@@ -102,10 +102,10 @@ func ScanURL(url string) (string, error) {
 	// Execute the scanner with the given URL
 	out, err := utils.ExecCommand(cmd, "-U", url)
 
-	// 	Exit status:
-	// 0 - no infections were found
-	// 1 - some infected file was found
-	// 2 - an error occurred
+	// Exit status:
+	//  0 - no infections were found
+	//  1 - some infected file was found
+	//  2 - an error occurred
 	if err != nil && err.Error() != "exit status 1" {
 		return "", err
 	}
