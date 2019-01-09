@@ -20,13 +20,13 @@ const (
 	vpsUpdate    = "/var/lib/avast/Setup/avast.vpsupdate"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
 }
 
-// GetVPSVersion returns Avast VPS version
+// GetVPSVersion returns VPS version.
 func GetVPSVersion() (string, error) {
 
 	// Run the scanner to grab the version
@@ -37,18 +37,18 @@ func GetVPSVersion() (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
-// GetProgramVersion returns Avast Program version
+// GetProgramVersion returns program version.
 func GetProgramVersion() (string, error) {
 
 	// Run the scanner to grab the version
-	versionOut, err := utils.ExecCommand(cmd, "-v")
+	out, err := utils.ExecCommand(cmd, "-v")
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(versionOut), nil
+	return strings.TrimSpace(out), nil
 }
 
-// ScanFilePath scans a given file
+// ScanFilePath scans from a filepath.
 func ScanFilePath(filepath string) (Result, error) {
 
 	res := Result{}
@@ -88,7 +88,7 @@ func ScanFilePath(filepath string) (Result, error) {
 func ScanURL(url string) (string, error) {
 
 	// Execute the scanner with the given URL
-	avastOut, err := utils.ExecCommand(cmd, "-U", url)
+	out, err := utils.ExecCommand(cmd, "-U", url)
 
 	// 	Exit status:
 	// 0 - no infections were found
@@ -99,12 +99,12 @@ func ScanURL(url string) (string, error) {
 	}
 
 	// Check if we got a clean URL
-	if avastOut == "" {
+	if out == "" {
 		return "[OK]", nil
 	}
 
 	// Sanitize the output and return
-	str := strings.Split(avastOut, "\t")
+	str := strings.Split(out, "\t")
 	result := strings.TrimSpace(str[1])
 	return result, nil
 }

@@ -181,17 +181,17 @@ func GetLicenseStatus() (string, error) {
 }
 
 // ActivateLicense activate the license.
-func ActivateLicense(r io.Reader) error {
+func ActivateLicense(r io.Reader) (string, error) {
 	// Write the license file to disk
 	_, err := utils.WriteBytesFile(LicenseKeyPath, r)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	expireAt, err := GetLicenseStatus()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return expireAt, nil
 }

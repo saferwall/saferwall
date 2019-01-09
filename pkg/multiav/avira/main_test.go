@@ -83,12 +83,12 @@ func TestGetLicenceStatusExpiredLicense(t *testing.T) {
 	// Deliberately copy an expired license
 	err := os.Remove(LicenseKeyPath)
 	if err != nil {
-		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
+		t.Errorf("TestGetLicenceStatusExpiredLicense failed, err: %s", err)
 	}
 
 	_, err = GetLicenseStatus()
 	if err != ErrNoLicenseFound {
-		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
+		t.Errorf("TestGetLicenceStatusExpiredLicense failed, err: %s", err)
 
 	}
 }
