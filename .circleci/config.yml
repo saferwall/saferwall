@@ -58,7 +58,7 @@ jobs:
       - run:
           name: "Test Avira go pkg"
           command: |
-            sh ./scripts/test_multiav.sh avira
+            sudo sh ./scripts/test_multiav.sh avira
 
 workflows:
   version: 2

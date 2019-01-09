@@ -34,12 +34,12 @@ func TestGetVersion(t *testing.T) {
 
 	l = re.FindStringSubmatch(ver.CoreVersion)
 	if len(l) == 0 {
-		t.Errorf("Core version was incorrect, got: %s, want something similar to: 1.9.2.0", ver)
+		t.Fatalf("Core version was incorrect, got: %s, want something similar to: 1.9.2.0", ver)
 	}
 
 	l = re.FindStringSubmatch(ver.VDFVersion)
 	if len(l) == 0 {
-		t.Errorf("VDF version was incorrect, got: %s, want something similar to: 7.15.16.96", ver)
+		t.Fatalf("VDF version was incorrect, got: %s, want something similar to: 7.15.16.96", ver)
 	}
 }
 
