@@ -19,7 +19,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp/saferwall
           paths:
-            - cirleci/*
+            - circleci/*
 
       - run:
           name: "Build Avast"

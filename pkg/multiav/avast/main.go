@@ -127,7 +127,7 @@ func UpdateVPS() error {
 	return err
 }
 
-// IsLicenseExpired returns true if license was expired
+// IsLicenseExpired returns true if license was expired.
 func IsLicenseExpired() (bool, error) {
 
 	if _, err := os.Stat(licenseFile); os.IsNotExist(err) {
