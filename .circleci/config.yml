@@ -20,7 +20,7 @@ jobs:
       - run:
           name: "Build Avast"
           command: |
-            ./scripts/build_multiav_avast.sh
+            sudo ./scripts/build_multiav_avast.sh
 
   
   test:

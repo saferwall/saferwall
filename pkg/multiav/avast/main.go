@@ -183,7 +183,7 @@ func RestartService() error {
 	return err
 }
 
-// ScanFileBinary receives a binary files, write it to disk then scan it
+// ScanFileBinary receives a binary files, write it to disk then scan it.
 func ScanFileBinary(r io.Reader) (Result, error) {
 	// Write the license file to disk
 	_, err := utils.WriteBytesFile("sample", r)
