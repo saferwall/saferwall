@@ -48,7 +48,7 @@ func TestScanFile(t *testing.T) {
 		t.Run(tt.filepath, func(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
-				t.Errorf("TestScanFile(%s) failed, err: %s", tt.filepath, err)
+				t.Fatalf("TestScanFile(%s) failed, err: %s", tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFile(%s) got %v, want %v", tt.filepath, got, tt.want)

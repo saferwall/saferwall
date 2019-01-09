@@ -1,6 +1,8 @@
 #!/bin/bash
 
 export PATH=$PATH:/usr/local/go/bin
+export GOPATH=/go/
+
 
 if [ -f "/tmp/saferwall/circleci/avast" ]  && [ "$1" = "avast" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/avast

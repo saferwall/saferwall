@@ -42,7 +42,7 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{1}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Errorf("Program version was incorrect, got: %s, want something similar to: 2.2.0", version)
+		t.Fatalf("Program version was incorrect, got: %s, want something similar to: 2.2.0", version)
 	}
 }
 
