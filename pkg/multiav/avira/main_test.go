@@ -29,7 +29,7 @@ func TestGetVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
 	l := re.FindStringSubmatch(ver.ScanCLVersion)
 	if len(l) == 0 {
-		t.Errorf("ScanCL version was incorrect, got: %s, want something similar to: 1.9.161.2", ver)
+		t.Fatalf("ScanCL version was incorrect, got: %s, want something similar to: 1.9.161.2", ver)
 	}
 
 	l = re.FindStringSubmatch(ver.CoreVersion)

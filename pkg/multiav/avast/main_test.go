@@ -36,7 +36,7 @@ func TestGetVPSVersion(t *testing.T) {
 func TestGetProgramVersion(t *testing.T) {
 	version, err := GetProgramVersion()
 	if err != nil {
-		t.Errorf("TestGetProgramVersion failed, got: %s", err)
+		t.Fatalf("TestGetProgramVersion failed, got: %s", err)
 	}
 
 	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{1}`)

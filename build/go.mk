@@ -1,5 +1,3 @@
-export PATH=$PATH:/usr/local/go/bin
-
 GOFLAGS :=  -ldflags -s -w
 
 go-compile: go-clean go-get go-build
