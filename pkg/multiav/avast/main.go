@@ -115,7 +115,7 @@ func ScanURL(url string) (string, error) {
 		return "[OK]", nil
 	}
 
-	// Sanitize the output and return
+	// Sanitize the output
 	str := strings.Split(out, "\t")
 	result := strings.TrimSpace(str[1])
 	return result, nil

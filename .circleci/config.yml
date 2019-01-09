@@ -32,6 +32,9 @@ jobs:
     working_directory: /go/src/github.com/saferwall/saferwall
     steps:
 
+      - attach_workspace:
+          at: /tmp/saferwall
+
       - run:
           name: "Running Avast unit tests"
           command: |
