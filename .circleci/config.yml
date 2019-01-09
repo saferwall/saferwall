@@ -40,7 +40,7 @@ jobs:
       - run:
           name: "Test Avast go pkg"
           command: |
-            sudo --preserve-env sh ./scripts/test_multiav_avast.sh
+            sh ./scripts/test_multiav_avast.sh
 
 
 workflows:

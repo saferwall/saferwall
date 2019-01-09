@@ -86,7 +86,6 @@ func ScanFilePath(filepath string) (Result, error) {
 
 // ScanFileBinary scan from a given buffer of bytes.
 func ScanFileBinary(r io.Reader) (Result, error) {
-	// Write the license file to disk
 	_, err := utils.WriteBytesFile("sample", r)
 	if err != nil {
 		return Result{Output: ""}, err
