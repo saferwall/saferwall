@@ -15,6 +15,7 @@ type filePathTest struct {
 	want     Result
 }
 
+
 var filepathScanTest = []filePathTest{
 	{"../../../test/multiav/eicar.com", Result{Infected: true, Output: "Eicar-Test-Signature"}},
 }
@@ -74,21 +75,5 @@ func TestGetLicenceStatusNoLicenseFound(t *testing.T) {
 	_, err = GetLicenseStatus()
 	if err != ErrNoLicenseFound {
 		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
-
-	}
-}
-
-func TestGetLicenceStatusExpiredLicense(t *testing.T) {
-
-	// Deliberately copy an expired license
-	err := os.Remove(LicenseKeyPath)
-	if err != nil {
-		t.Errorf("TestGetLicenceStatusExpiredLicense failed, err: %s", err)
-	}
-
-	_, err = GetLicenseStatus()
-	if err != ErrNoLicenseFound {
-		t.Errorf("TestGetLicenceStatusExpiredLicense failed, err: %s", err)
-
 	}
 }

@@ -14,8 +14,7 @@ help: ## This help.
 .DEFAULT_GOAL := help
 
 # Retrieve the root directory of the project
-CURRENT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-ROOT_DIR := $(CURRENT_DIR)/../..
+ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Include our internals makefiles
 include build/docker.mk

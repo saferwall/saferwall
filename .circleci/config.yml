@@ -42,6 +42,23 @@ jobs:
           command: |
             sh ./scripts/test_multiav_avast.sh
 
+  multiav_avira:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Avira AV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav_avira.sh
+
+      - run:
+          name: "Test Avira go pkg"
+          command: |
+            sh ./scripts/test_multiav_avira.sh
 
 workflows:
   version: 2
