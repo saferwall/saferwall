@@ -13,15 +13,15 @@ PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
 if [ $PKG_AVAST_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avast has changed"
-	touch /tmp/avast.circleci
+	touch /tmp/saferwall/avast.circleci
 fi
 
 if [ $PKG_AVIRA_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avira has changed"
-	touch /tmp/avira.circleci
+	touch /tmp/saferwall/avira.circleci
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/crypto has changed"
-	touch /tmp/crypto.circleci
+	touch /tmp/saferwall/crypto.circleci
 fi

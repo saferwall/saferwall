@@ -5,7 +5,6 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/saferwall/saferwall
     steps:
@@ -17,6 +16,11 @@ jobs:
             chmod +x scripts/commit_check.sh
             ./scripts/commit_check.sh
 
+      - persist_to_workspace:
+          root: /tmp/
+          paths:
+            - saferwall
+
       - run:
           name: "Build Avast"
           command: |
@@ -24,7 +28,6 @@ jobs:
 
   test:
       docker:
-        # specify the version
         - image: circleci/golang:1.11
       working_directory: /go/src/github.com/saferwall/saferwall
       steps:
@@ -32,7 +35,7 @@ jobs:
             name: "Running Avast unit tests"
             command: |
               ls /tmp
-              if [ -f "/tmp/avast.circleci" ]; then
+              if [ -f "/tmp/saferwall/avast.circleci" ]; then
                 go test -v github.com/saferwall/saferwall/pkg/multiav/avast
               fi
 

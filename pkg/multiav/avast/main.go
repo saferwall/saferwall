@@ -171,7 +171,7 @@ func ActivateLicense(r io.Reader) error {
 	}
 
 	if isExpired {
-		return errors.New("License is expired ")
+		return errors.New("License was expired ")
 	}
 
 	return nil
