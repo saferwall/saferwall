@@ -54,7 +54,7 @@ func TestScanFilePath(t *testing.T) {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s", tt.filepath, err)
 			}
 			if got != tt.want {
-				t.Fatalf("TestScanFilePath(%s) got %v, want %v", tt.filepath, got, tt.want)
+				t.Errorf("TestScanFilePath(%s) got %v, want %v", tt.filepath, got, tt.want)
 			}
 		})
 	}
