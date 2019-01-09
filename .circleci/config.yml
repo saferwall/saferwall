@@ -22,7 +22,6 @@ jobs:
           command: |
             sudo --preserve-env sh ./scripts/build_multiav_avast.sh
 
-  
   test:
       docker:
         # specify the version
@@ -32,6 +31,7 @@ jobs:
         - run:
             name: "Running Avast unit tests"
             command: |
+              ls /tmp
               if [ -f "/tmp/avast.circleci" ]; then
                 go test -v github.com/saferwall/saferwall/pkg/multiav/avast
               fi
