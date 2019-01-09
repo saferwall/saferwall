@@ -21,9 +21,7 @@ const (
 
 	// grpc library default is 4MB
 	maxMsgSize = 1024 * 1024 * 20
-
 )
-
 
 // DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
 func DefaultServerOpts() []grpc.ServerOption {
@@ -84,7 +82,6 @@ func (s *server) UpdateVPS(ctx context.Context, in *pb.UpdateVPSRequest) (*pb.Up
 func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 	return grpc.NewServer(append(DefaultServerOpts(), opts...)...)
 }
-
 
 // main start a gRPC server and waits for connection.
 func main() {

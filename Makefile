@@ -17,13 +17,8 @@ help: ## This help.
 CURRENT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 ROOT_DIR := $(CURRENT_DIR)/../..
 
-	
-api:	## Generates protocol buffers definitions files. 
-	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \
-		-I${GOPATH}/src \
-		--go_out=plugins=grpc:$(ROOT_DIR)/api/protobuf-spec/ \
-		$(ROOT_DIR)/api/protobuf-spec/multiav.$(AV_VENDOR).proto
-
-compile: api	## Compile gRPC server
-	go build -ldflags "-s -w" -o bin/server server/main.go 
-
+# Include our internals makefiles
+include build/docker.mk
+include build/vault.mk
+include build/multiav.mk
+include build/go.mk

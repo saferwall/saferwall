@@ -18,27 +18,10 @@ jobs:
             ./scripts/commit_check.sh
 
       - run:
-          name: "Install Avast"
+          name: "Build Avast"
           command: |
-            if [ -f "/tmp/avast.circleci" ]; then
-              cd build/package/multiav/avast
-              sudo --preserve-env make install
-            fi
+            ./scripts/build_multiav_avast.sh.sh
 
-      - run:
-          name: "Install Avira"
-          command: |
-            if [ -f "/tmp/avira.circleci" ]; then
-              cd build/package/multiav/avira
-              sudo --preserve-env make install
-            fi
-
-      - run:
-          name: "Install Crypo pkg dependencies"
-          command: |
-            if [ -f "/tmp/crypto.circleci" ]; then
-              go get -d github.com/saferwall/saferwall/pkg/crypto
-            fi
   
   test:
       docker:

@@ -1,14 +1,14 @@
 FROM ubuntu:xenial
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.1"
-LABEL description="Avira Linux Version in a docker container"
+LABEL description="Avast for Linux in a docker container"
 
 # Install dependencies
 RUN apt-get update && apt-get install make -y
 
-# Use make inside the container to install Avira
+# Use make inside the container to install Avast
 COPY Makefile ./
-RUN make install
+RUN make install-avast
 
 # Copy the server binary
 COPY ./bin/server /bin/server
@@ -25,4 +25,4 @@ RUN apt-get purge -y --auto-remove make \
 EXPOSE 50051
 
 # Entry point
-ENTRYPOINT ["/bin/server"]
+ENTRYPOINT service avast start && /bin/server
