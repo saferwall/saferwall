@@ -2,14 +2,17 @@
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
+
+defaults: &defaults
+  docker:
+    - image: circleci/golang:1.11
+  working_directory: /go/src/github.com/saferwall/saferwall
+  
 jobs:
-  build:
-    docker:
-      - image: circleci/golang:1.11
-    working_directory: /go/src/github.com/saferwall/saferwall
+  clone_and_hash:
+    <<: *defaults
     steps:
       - checkout
-
       - run:
           name: "Determine which packages need to be built"
           command: |
@@ -21,26 +24,31 @@ jobs:
           paths:
             - circleci/*
 
-      - run:
-          name: "Build Avast"
-          command: |
-            sudo --preserve-env sh ./scripts/build_multiav_avast.sh
-
-  test:
-    docker:
-      - image: circleci/golang:1.11
-    working_directory: /go/src/github.com/saferwall/saferwall
+  multiav-avast:
+    <<: *defaults
     steps:
+      - checkout
 
       - attach_workspace:
           at: /tmp/saferwall
 
       - run:
-          name: "Running Avast unit tests"
+          name: "Install Avast AV"
           command: |
-            ls /tmp
-            ls /tmp/saferwall
-            ls /tmp/saferwall/circleci
+            sudo --preserve-env sh ./scripts/build_multiav_avast.sh
+
+      - run:
+          name: "Test Avast go pkg"
+          command: |
+            sudo --preserve-env sh ./scripts/test_multiav_avast.sh
+
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/saferwall/saferwall
+
+    steps:
+      - checkout
 
       - attach_workspace:
           at: /tmp/saferwall

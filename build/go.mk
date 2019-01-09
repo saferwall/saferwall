@@ -15,4 +15,4 @@ go-build:	## Compile packages and dependencies
 	go build $(GOFLAGS) -o $(GOBIN)/$(PROJECTNAME) $(GOFILES)
 
 go-test:	## Test packages
-	go test $(GOPKG)
+	go test -v $(GOPKG)
