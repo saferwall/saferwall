@@ -19,7 +19,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp/saferwall
           paths:
-            - cirleci
+            - cirleci/*
 
       - run:
           name: "Build Avast"
@@ -31,6 +31,13 @@ jobs:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/saferwall/saferwall
     steps:
+
+      - run:
+          name: "Running Avast unit tests"
+          command: |
+            ls /tmp
+            ls /tmp/saferwall
+            ls /tmp/saferwall/circleci
 
       - attach_workspace:
           at: /tmp/saferwall
