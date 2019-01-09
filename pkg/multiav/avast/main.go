@@ -84,6 +84,18 @@ func ScanFilePath(filepath string) (Result, error) {
 	return res, nil
 }
 
+// ScanFileBinary receives a binary files, write it to disk then scan it.
+func ScanFileBinary(r io.Reader) (Result, error) {
+	// Write the license file to disk
+	_, err := utils.WriteBytesFile("sample", r)
+	if err != nil {
+		return Result{Output: ""}, err
+	}
+
+	return ScanFilePath("sample")
+}
+
+
 // ScanURL scans a given URL
 func ScanURL(url string) (string, error) {
 
@@ -181,15 +193,4 @@ func RestartService() error {
 	}
 
 	return err
-}
-
-// ScanFileBinary receives a binary files, write it to disk then scan it.
-func ScanFileBinary(r io.Reader) (Result, error) {
-	// Write the license file to disk
-	_, err := utils.WriteBytesFile("sample", r)
-	if err != nil {
-		return Result{Output: ""}, err
-	}
-
-	return ScanFilePath("sample")
 }
