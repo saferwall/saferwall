@@ -96,7 +96,7 @@ func ScanFileBinary(r io.Reader) (Result, error) {
 }
 
 
-// ScanURL scans a given URL
+// ScanURL scans a given URL.
 func ScanURL(url string) (string, error) {
 
 	// Execute the scanner with the given URL

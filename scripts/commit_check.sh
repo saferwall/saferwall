@@ -11,6 +11,9 @@ PKG_AVAST_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avast/)
 PKG_AVIRA_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
+# create a directory to store the state of changed files
+mkdir /tmp/saferwall 
+
 if [ $PKG_AVAST_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avast has changed"
 	touch /tmp/saferwall/avast.circleci
