@@ -147,7 +147,7 @@ func ActivateLicense(r io.Reader) error {
 		return err
 	}
 
-	// Restart the daemon to apply the license
+	// Restart the service to apply the license
 	err = RestartService()
 	if err != nil {
 		return err
