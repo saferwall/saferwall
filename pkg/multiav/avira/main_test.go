@@ -23,7 +23,7 @@ var filepathScanTest = []filePathTest{
 func TestGetVersion(t *testing.T) {
 	ver, err := GetVersion()
 	if err != nil {
-		t.Errorf("TestGetVersion failed, got: %s", err)
+		t.Fatalf("TestGetVersion failed, got: %s", err)
 	}
 
 	re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)

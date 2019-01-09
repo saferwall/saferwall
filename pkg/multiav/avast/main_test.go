@@ -22,7 +22,7 @@ var filepathScanTest = []filePathTest{
 func TestGetVPSVersion(t *testing.T) {
 	version, err := GetVPSVersion()
 	if err != nil {
-		t.Errorf("TestGetVPSVersion failed, got: %s", err)
+		t.Fatalf("TestGetVPSVersion failed, got: %s", err)
 
 	}
 

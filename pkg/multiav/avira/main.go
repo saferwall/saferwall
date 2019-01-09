@@ -154,13 +154,16 @@ func ScanFile(filepath string) (Result, error) {
 // GetLicenseStatus checks the validity of the license
 func GetLicenseStatus() (string, error) {
 	out, err := utils.ExecCommand(cmd, "-v")
+	// exit code 214 means No valid license found
 	if err != nil {
+		if err.Error() == "exit status 214" {
+			return "", ErrNoLicenseFound
+		}
+
 		return "", err
 	}
 
-	if strings.Contains(out, "No license found") {
-		return "", ErrNoLicenseFound
-	} else if strings.Contains(out, "invalid license") {
+	if strings.Contains(out, "invalid license") {
 		return "", ErrInvalidLicense
 	} else if strings.Contains(out, "This key has expired") {
 		return "", ErrExpiredLicense
