@@ -35,12 +35,12 @@ jobs:
       - run:
           name: "Install Avast AV"
           command: |
-            sudo --preserve-env sh ./scripts/build_multiav_avast.sh
+            sudo --preserve-env sh ./scripts/build_multiav.sh avast
 
       - run:
           name: "Test Avast go pkg"
           command: |
-            sh ./scripts/test_multiav_avast.sh
+            sh ./scripts/test_multiav.sh avast
 
   multiav_avira:
     <<: *defaults
@@ -53,12 +53,12 @@ jobs:
       - run:
           name: "Install Avira AV"
           command: |
-            sudo --preserve-env sh ./scripts/build_multiav_avira.sh
+            sudo --preserve-env sh ./scripts/build_multiav.sh avira
 
       - run:
           name: "Test Avira go pkg"
           command: |
-            sh ./scripts/test_multiav_avira.sh
+            sh ./scripts/test_multiav.sh avira
 
 workflows:
   version: 2
@@ -66,5 +66,8 @@ workflows:
     jobs:
       - clone_and_hash
       - multiav_avast:
+          requires:
+            - clone_and_hash
+      - multiav_avira:
           requires:
             - clone_and_hash
