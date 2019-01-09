@@ -20,7 +20,7 @@ jobs:
       - run:
           name: "Build Avast"
           command: |
-            sudo sh ./scripts/build_multiav_avast.sh
+            sudo sh --preserve-env ./scripts/build_multiav_avast.sh
 
   
   test:

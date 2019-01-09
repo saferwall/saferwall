@@ -71,7 +71,7 @@ func ScanFilePath(filepath string) (Result, error) {
 		return res, err
 	}
 
-	// Check if the file is infected
+	// Check if the file is clean
 	if strings.Contains(out, "[OK]") {
 		res.Infected = false
 		return res, nil
