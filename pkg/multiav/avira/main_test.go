@@ -15,6 +15,7 @@ type filePathTest struct {
 	want     Result
 }
 
+
 var filepathScanTest = []filePathTest{
 	{"../../../test/multiav/eicar.com", Result{Infected: true, Output: "Eicar-Test-Signature"}},
 }
@@ -22,7 +23,7 @@ var filepathScanTest = []filePathTest{
 func TestGetVersion(t *testing.T) {
 	ver, err := GetVersion()
 	if err != nil {
-		t.Errorf("TestGetVersion failed, got: %s", err)
+		t.Fatalf("TestGetVersion failed, got: %s", err)
 	}
 
 	re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
@@ -47,7 +48,7 @@ func TestScanFile(t *testing.T) {
 		t.Run(tt.filepath, func(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
-				t.Errorf("TestScanFile(%s) failed, err: %s", tt.filepath, err)
+				t.Fatalf("TestScanFile(%s) failed, err: %s", tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFile(%s) got %v, want %v", tt.filepath, got, tt.want)
@@ -74,21 +75,5 @@ func TestGetLicenceStatusNoLicenseFound(t *testing.T) {
 	_, err = GetLicenseStatus()
 	if err != ErrNoLicenseFound {
 		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
-
-	}
-}
-
-func TestGetLicenceStatusExpiredLicense(t *testing.T) {
-
-	// Deliberately copy an expired license
-	err := os.Remove(LicenseKeyPath)
-	if err != nil {
-		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
-	}
-
-	_, err = GetLicenseStatus()
-	if err != ErrNoLicenseFound {
-		t.Errorf("TestIsLicenseExpiredNoLicenseFound failed, err: %s", err)
-
 	}
 }

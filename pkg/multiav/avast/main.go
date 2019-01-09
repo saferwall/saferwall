@@ -20,13 +20,13 @@ const (
 	vpsUpdate    = "/var/lib/avast/Setup/avast.vpsupdate"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
 }
 
-// GetVPSVersion returns Avast VPS version
+// GetVPSVersion returns VPS version.
 func GetVPSVersion() (string, error) {
 
 	// Run the scanner to grab the version
@@ -37,18 +37,18 @@ func GetVPSVersion() (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
-// GetProgramVersion returns Avast Program version
+// GetProgramVersion returns program version.
 func GetProgramVersion() (string, error) {
 
 	// Run the scanner to grab the version
-	versionOut, err := utils.ExecCommand(cmd, "-v")
+	out, err := utils.ExecCommand(cmd, "-v")
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(versionOut), nil
+	return strings.TrimSpace(out), nil
 }
 
-// ScanFilePath scans a given file
+// ScanFilePath scans from a filepath.
 func ScanFilePath(filepath string) (Result, error) {
 
 	res := Result{}
@@ -71,7 +71,7 @@ func ScanFilePath(filepath string) (Result, error) {
 		return res, err
 	}
 
-	// Check if the file is infected
+	// Check if the file is clean
 	if strings.Contains(out, "[OK]") {
 		res.Infected = false
 		return res, nil
@@ -84,27 +84,38 @@ func ScanFilePath(filepath string) (Result, error) {
 	return res, nil
 }
 
-// ScanURL scans a given URL
+// ScanFileBinary scan from a given buffer of bytes.
+func ScanFileBinary(r io.Reader) (Result, error) {
+	_, err := utils.WriteBytesFile("sample", r)
+	if err != nil {
+		return Result{Output: ""}, err
+	}
+
+	return ScanFilePath("sample")
+}
+
+
+// ScanURL scans a given URL.
 func ScanURL(url string) (string, error) {
 
 	// Execute the scanner with the given URL
-	avastOut, err := utils.ExecCommand(cmd, "-U", url)
+	out, err := utils.ExecCommand(cmd, "-U", url)
 
-	// 	Exit status:
-	// 0 - no infections were found
-	// 1 - some infected file was found
-	// 2 - an error occurred
+	// Exit status:
+	//  0 - no infections were found
+	//  1 - some infected file was found
+	//  2 - an error occurred
 	if err != nil && err.Error() != "exit status 1" {
 		return "", err
 	}
 
 	// Check if we got a clean URL
-	if avastOut == "" {
+	if out == "" {
 		return "[OK]", nil
 	}
 
-	// Sanitize the output and return
-	str := strings.Split(avastOut, "\t")
+	// Sanitize the output
+	str := strings.Split(out, "\t")
 	result := strings.TrimSpace(str[1])
 	return result, nil
 }
@@ -115,7 +126,7 @@ func UpdateVPS() error {
 	return err
 }
 
-// IsLicenseExpired returns true if license was expired
+// IsLicenseExpired returns true if license was expired.
 func IsLicenseExpired() (bool, error) {
 
 	if _, err := os.Stat(licenseFile); os.IsNotExist(err) {
@@ -147,7 +158,7 @@ func ActivateLicense(r io.Reader) error {
 		return err
 	}
 
-	// Restart the daemon to apply the license
+	// Restart the service to apply the license
 	err = RestartService()
 	if err != nil {
 		return err
@@ -159,7 +170,7 @@ func ActivateLicense(r io.Reader) error {
 	}
 
 	if isExpired {
-		return errors.New("License is expird ")
+		return errors.New("License was expired ")
 	}
 
 	return nil
@@ -181,15 +192,4 @@ func RestartService() error {
 	}
 
 	return err
-}
-
-// ScanFileBinary receives a binary files, write it to disk then scan it
-func ScanFileBinary(r io.Reader) (Result, error) {
-	// Write the license file to disk
-	_, err := utils.WriteBytesFile("sample", r)
-	if err != nil {
-		return Result{Output: ""}, err
-	}
-
-	return ScanFilePath("sample")
 }

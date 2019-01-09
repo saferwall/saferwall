@@ -154,13 +154,16 @@ func ScanFile(filepath string) (Result, error) {
 // GetLicenseStatus checks the validity of the license
 func GetLicenseStatus() (string, error) {
 	out, err := utils.ExecCommand(cmd, "-v")
+	// exit code 214 means No valid license found
 	if err != nil {
+		if err.Error() == "exit status 214" {
+			return "", ErrNoLicenseFound
+		}
+
 		return "", err
 	}
 
-	if strings.Contains(out, "No license found") {
-		return "", ErrNoLicenseFound
-	} else if strings.Contains(out, "invalid license") {
+	if strings.Contains(out, "invalid license") {
 		return "", ErrInvalidLicense
 	} else if strings.Contains(out, "This key has expired") {
 		return "", ErrExpiredLicense
@@ -181,17 +184,17 @@ func GetLicenseStatus() (string, error) {
 }
 
 // ActivateLicense activate the license.
-func ActivateLicense(r io.Reader) error {
+func ActivateLicense(r io.Reader) (string, error) {
 	// Write the license file to disk
 	_, err := utils.WriteBytesFile(LicenseKeyPath, r)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	expireAt, err := GetLicenseStatus()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return expireAt, nil
 }

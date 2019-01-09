@@ -1,10 +1,8 @@
--include ../../common.mk
-
 AVAST_GPG = http://files.avast.com/files/resellers/linux/avast.gpg
 AVAST_LICENSE_PATH = /etc/avast/license.avastlic
 
 
-install:	## install Avast Security for Linux
+install-avast:	## install Avast Security for Linux
 	echo 'deb http://deb.avast.com/lin/repo debian release' | tee --append /etc/apt/sources.list
 	apt-key adv --fetch-keys $(AVAST_GPG)
 	apt-get update
@@ -13,19 +11,18 @@ install:	## install Avast Security for Linux
 	old='^DOWNLOAD=(.*)$$' && new='DOWNLOAD="curl -L -s -f"' \
 		&& sed -i "s|$$old|$$new|g" /var/lib/avast/Setup/avast.setup
 ifdef SAFERWALL_DEV
-	@echo "Using Dev"
-	cp license.avastlic $(AVAST_LICENSE_PATH) 
+	cp $(ROOT_DIR)/build/multiav/avast/license.avastlic $(AVAST_LICENSE_PATH) 
 	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif
 ifdef SAFERWALL_TEST
 	make install-vault
-	vault read -field=avast multiav/avast | base64 -d > $(AVAST_LICENSE_PATH)
+	vault read -field=license.avastlic multiav/avast | base64 -d > $(AVAST_LICENSE_PATH)
 	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif
 	service avast start
 
-update:		## update Avast Security for Linux
+update-avast:		## update Avast Security for Linux
 	/var/lib/avast/Setup/avast.vpsupdate
 
-uninstall:	## uninstall Avast Security for Linux
+uninstall-avast:	## uninstall Avast Security for Linux
 	apt-get remove avast -y

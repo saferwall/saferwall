@@ -2,77 +2,72 @@
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
+
+defaults: &defaults
+  docker:
+    - image: circleci/golang:1.11
+  working_directory: /go/src/github.com/saferwall/saferwall
+  
 jobs:
-  build:
-    docker:
-      # specify the version
-      - image: circleci/golang:1.11
-    working_directory: /go/src/github.com/saferwall/saferwall
+  clone_and_hash:
+    <<: *defaults
     steps:
       - checkout
-
       - run:
           name: "Determine which packages need to be built"
           command: |
             chmod +x scripts/commit_check.sh
             ./scripts/commit_check.sh
 
-      - run:
-          name: "Install Avast"
-          command: |
-            if [ -f "/tmp/avast.circleci" ]; then
-              cd build/package/multiav/avast
-              sudo --preserve-env make install
-            fi
+      - persist_to_workspace:
+          root: /tmp/saferwall
+          paths:
+            - circleci/*
+
+  multiav_avast:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
 
       - run:
-          name: "Install Avira"
+          name: "Install Avast AV"
           command: |
-            if [ -f "/tmp/avira.circleci" ]; then
-              cd build/package/multiav/avira
-              sudo --preserve-env make install
-            fi
+            sudo --preserve-env sh ./scripts/build_multiav.sh avast
 
       - run:
-          name: "Install Crypo pkg dependencies"
+          name: "Test Avast go pkg"
           command: |
-            if [ -f "/tmp/crypto.circleci" ]; then
-              go get -d github.com/saferwall/saferwall/pkg/crypto
-            fi
-  
-  test:
-      docker:
-        # specify the version
-        - image: circleci/golang:1.11
-      working_directory: /go/src/github.com/saferwall/saferwall
-      steps:
-        - run:
-            name: "Running Avast unit tests"
-            command: |
-              if [ -f "/tmp/avast.circleci" ]; then
-                go test -v github.com/saferwall/saferwall/pkg/multiav/avast
-              fi
+            sh ./scripts/test_multiav.sh avast
 
-        - run:
-            name: "Running Avira unit tests"
-            command: |
-              if [ -f "/tmp/avira.circleci" ]; then
-                sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
-              fi
+  multiav_avira:
+    <<: *defaults
+    steps:
+      - checkout
 
-        - run:
-            name: "Running Crypto unit tests"
-            command: |
-              if [ -f "/tmp/crypto.circleci" ]; then
-                go get -d github.com/saferwall/saferwall/pkg/crypto
-                go test -v github.com/saferwall/saferwall/pkg/crypto
-              fi
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Avira AV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh avira
+
+      - run:
+          name: "Test Avira go pkg"
+          command: |
+            sudo sh ./scripts/test_multiav.sh avira
 
 workflows:
   version: 2
-  build_and_test:
+  build_test_deploy:
     jobs:
-      - build
-      - test:
+      - clone_and_hash
+      - multiav_avast:
           requires:
-            - build
+            - clone_and_hash
+      - multiav_avira:
+          requires:
+            - clone_and_hash

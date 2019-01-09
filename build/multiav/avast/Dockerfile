@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install make -y
 
 # Use make inside the container to install Avast
 COPY Makefile ./
-RUN make install
+RUN make install-avast
 
 # Copy the server binary
 COPY ./bin/server /bin/server
