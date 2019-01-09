@@ -17,6 +17,7 @@ mkdir -p /tmp/saferwall/circleci
 if [ $PKG_AVAST_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avast has changed"
 	touch /tmp/saferwall/circleci/avast
+	ls /tmp/saferwall/circleci/
 fi
 
 if [ $PKG_AVIRA_COMMIT = $LATEST_COMMIT ]; then
