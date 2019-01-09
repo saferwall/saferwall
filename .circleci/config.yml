@@ -18,6 +18,7 @@ jobs:
           command: |
             chmod +x scripts/commit_check.sh
             ./scripts/commit_check.sh
+            echo $GOPATH
 
       - persist_to_workspace:
           root: /tmp/saferwall
