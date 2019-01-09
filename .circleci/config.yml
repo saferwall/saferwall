@@ -24,7 +24,7 @@ jobs:
           paths:
             - circleci/*
 
-  multiav-avast:
+  multiav_avast:
     <<: *defaults
     steps:
       - checkout
@@ -42,45 +42,12 @@ jobs:
           command: |
             sudo --preserve-env sh ./scripts/test_multiav_avast.sh
 
-  test:
-    docker:
-      - image: circleci/golang:1.11
-    working_directory: /go/src/github.com/saferwall/saferwall
-
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: /tmp/saferwall
-
-      - run:
-          name: "Running Avast unit tests"
-          command: |
-            ls /tmp
-            if [ -f "/tmp/saferwall/circleci/avast" ]; then
-              go test -v github.com/saferwall/saferwall/pkg/multiav/avast
-            fi
-
-      - run:
-          name: "Running Avira unit tests"
-          command: |
-            if [ -f "/tmp/avira.circleci" ]; then
-              sudo go test -v github.com/saferwall/saferwall/pkg/multiav/avira
-            fi
-
-      - run:
-          name: "Running Crypto unit tests"
-          command: |
-            if [ -f "/tmp/crypto.circleci" ]; then
-              go get -d github.com/saferwall/saferwall/pkg/crypto
-              go test -v github.com/saferwall/saferwall/pkg/crypto
-            fi
 
 workflows:
   version: 2
-  build_and_test:
+  build_test_deploy:
     jobs:
-      - build
-      - test:
+      - clone_and_hash
+      - multiav_avast:
           requires:
-            - build
+            - clone_and_hash
