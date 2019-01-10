@@ -70,13 +70,13 @@ func ScanFile(filePath string) (Result, error) {
 func GetProgramVersion() (string, error) {
 
 	// Execute the scanner with the given file path
-	versionOut, err := utils.ExecCommand(cmd, "--version")
+	out, err := utils.ExecCommand(cmd, "--version")
 	if err != nil {
 		return "", err
 	}
 
 	// Extract the version
-	version := strings.Split(versionOut, " ")[2]
+	version := strings.Split(out, " ")[2]
 	version = strings.TrimSuffix(version, "\n")
 	return version, nil
 }

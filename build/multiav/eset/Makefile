@@ -8,7 +8,7 @@ install-eset:	## install ESET File Server Security for Linux, ESET_USER / ESET_P
 	apt-get update
 	apt-get install wget libc6-i386 -y
 	mkdir -p $(ESET_TEMP)
-	wget $(ESET_URL) --user=$(ESET_USER) --password=$(ESET_PWD) -P $(ESET_TEMP)
+	wget -N $(ESET_URL) --user=$(ESET_USER) --password=$(ESET_PWD) -P $(ESET_TEMP)
 	chmod +x $(ESET_TEMP)/esets.amd64.deb.bin
 	$(ESET_TEMP)/esets.amd64.deb.bin --skip-license
 	sed -i -e 's/#av_update_username = \"\"/av_update_username = \"$(ESET_USER)\"/' $(ESET_CONFIG_DIR)/esets/esets.cfg

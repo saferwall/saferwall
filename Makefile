@@ -17,10 +17,7 @@ help: ## This help.
 ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Include our env file
-include .env
-
-# Make sure variables are exported
-export $(shell sed 's/=.*//' .env)
+include $(ROOT_DIR)/.env
 
 # Include our internals makefiles
 include build/docker.mk
