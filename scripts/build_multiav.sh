@@ -3,7 +3,10 @@
 BASE_DIR=$(dirname "$0")
 
 # Install vault to pull secrets
-make install-vault
+VAULT_ZIP = vault_1.0.1_linux_amd64.zip
+wget https://releases.hashicorp.com/vault/1.0.1/vault_1.0.1_linux_amd64.zip
+unzip -o $VAULT_ZIP -d /usr/bin
+rm -f $VAULT_ZIP
 
 # Pull .env file
 vault read -field=.env secret/.env | base64 -d > $BASE_DIR/../.env

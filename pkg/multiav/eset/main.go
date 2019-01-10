@@ -62,7 +62,6 @@ func ScanFile(filePath string) (Result, error) {
 
 	res.Infected = true
 	res.Output = det
-
 	return res, nil
 }
 
