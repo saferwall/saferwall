@@ -60,6 +60,23 @@ jobs:
           command: |
             sudo sh ./scripts/test_multiav.sh avira
 
+  multiav_bitdefender:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Bitdefender AV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh bitdefender
+
+      - run:
+          name: "Test Bitdefender go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh bitdefender
 workflows:
   version: 2
   build_test_deploy:

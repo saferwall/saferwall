@@ -1,6 +1,6 @@
 FROM ubuntu:xenial
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="Avast for Linux in a docker container"
 
 # Install dependencies

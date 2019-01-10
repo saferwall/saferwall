@@ -1,5 +1,6 @@
 -include build/multiav/avast/Makefile
 -include build/multiav/avira/Makefile
+-include build/multiav/bitdefender/Makefile
 
 api:	## Generates protocol buffers definitions files. 
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \

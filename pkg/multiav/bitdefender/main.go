@@ -6,6 +6,7 @@ package bitdefender
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -34,11 +35,13 @@ func GetProgramVersion() (string, error) {
 	// BitDefender Antivirus Scanner for Unices v7.141118 Linux-amd64
 	// Copyright (C) 1996-2014 BitDefender. All rights reserved.
 
+	fmt.Print(out)
 	ver := ""
 	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
-		re := regexp.MustCompile("\\w+ v([\\d.]+) .*")
-		ver = re.FindStringSubmatch(lines[0])[1]
+		re := regexp.MustCompile(`v\d\.\d{6}`)
+		match := re.FindStringSubmatch(lines[0])
+		ver = match[0]
 	}
 	return ver, nil
 
