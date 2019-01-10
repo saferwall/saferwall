@@ -112,7 +112,7 @@ func ScanFile(filePath string) (Result, error) {
 	return res, nil
 }
 
-// GetVersion get Anti-Virus scanner version
+// GetVersion get Anti-Virus scanner version.
 func GetVersion() (Version, error) {
 
 	fsavOut, err := utils.ExecCommand(fsav, "--version")
