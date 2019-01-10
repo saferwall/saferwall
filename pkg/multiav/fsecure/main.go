@@ -37,7 +37,7 @@ type Version struct {
 func ScanFile(filePath string) (Result, error) {
 
 	// Run now
-	fsavOut, err := utils.ExecCommand(fsav, "--virus-action1=report",
+	out, err := utils.ExecCommand(fsav, "--virus-action1=report",
 		"--suspected-action1=report", filePath)
 
 	// FSAV has the following exit codes:
@@ -75,7 +75,7 @@ func ScanFile(filePath string) (Result, error) {
 
 	res := Result{}
 	reg := regexp.MustCompile(` \(.*\)`)
-	lines := strings.Split(fsavOut, "\n")
+	lines := strings.Split(out, "\n")
 
 	for _, line := range lines {
 		if strings.Contains(line, "Infected: ") {

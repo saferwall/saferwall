@@ -15,7 +15,7 @@ install-fsecure:	## install FSecure Linux Security
 update-fsecure:		## update FSecure Linux Security
 	wget $(FSECURE_UPDATE) -P /tmp
 	mv /tmp/fsdbupdate9.run $(FSECURE_INSTALL_DIR)
-	$(FSECURE_INSTALL_DIR)/fsav/bin/dbupdate $(FSECURE_INSTALL_DIR)/fsdbupdate9.run
+	$(FSECURE_INSTALL_DIR)/fsav/bin/dbupdate $(FSECURE_INSTALL_DIR)/fsdbupdate9.run ; exit 0
 	rm -rf /tmp/*
 
 uninstall-fsecure:	## uninstall FSecure Linux Security
