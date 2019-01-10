@@ -11,7 +11,7 @@ install-kaspersky:	## install Kaspersky Anti-Virus for Linux File Servers
 	apt-get install wget libc6-i386 -y
 	mkdir -p $(KASPERSKY_TMP)
 	wget -N $(KASPERSKY_URL) -P $(KASPERSKY_TMP)
-	dpkg -i $(KASPERSKY_TMP)/kav4fs_$(KASPERSKY_VERSION)_i386.deb
+	dpkg -i --force-architecture  $(KASPERSKY_TMP)/kav4fs_$(KASPERSKY_VERSION)_i386.deb
 	chmod a+s $(KASPERSKY_BIN)
 	mkdir -p -m 777 $(KASPERSKY_INSTALL_DIR)
 ifdef SAFERWALL_DEV

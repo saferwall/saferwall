@@ -105,7 +105,7 @@ func ScanFile(filePath string) (Result, error) {
 		return res, err
 	}
 
-	// Check if file is infected
+	// Check if infected
 	if !strings.Contains(out, "Threats found:       1") {
 		return res, nil
 	}
