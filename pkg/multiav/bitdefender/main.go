@@ -6,7 +6,6 @@ package bitdefender
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -35,7 +34,6 @@ func GetProgramVersion() (string, error) {
 	// BitDefender Antivirus Scanner for Unices v7.141118 Linux-amd64
 	// Copyright (C) 1996-2014 BitDefender. All rights reserved.
 
-	fmt.Print(out)
 	ver := ""
 	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {

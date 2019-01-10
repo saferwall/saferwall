@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package comdo
+package comodo
 
 import (
 	"errors"
@@ -42,6 +42,8 @@ func ScanFile(filePath string) (Result, error) {
 	cmdscanOut, err := utils.ExecCommand(cmdscan, "-v", "-s", filePath)
 	// -s: scan a file or directory
 	// -v: verbose mode, display more detailed output
+	lines := strings.Split(cmdscanOut, "\n")
+
 	res := Result{}
 	if err != nil {
 		return res, err
@@ -53,26 +55,22 @@ func ScanFile(filePath string) (Result, error) {
 	// Number of Scanned Files: 1
 	// Number of Found Viruses: 1
 
-	lines := strings.Split(cmdscanOut, "\n")
+	lines = strings.Split(cmdscanOut, "\n")
 	if len(lines) == 0 {
 		return res, errors.New("we got an empty output")
 	}
 
 	// Check if file is infected
 	if strings.HasSuffix(lines[1], "---> Not Virus") {
-		res.Infected = false
-	} else {
-		res.Infected = true
+		return res, nil
 	}
 
 	// Grab detection name
 	// Viruses found: 1
 	// Virus name:       Trojan-Ransom.Win32.Locky.d
 	// Infected objects: 1
-	if res.Infected {
-		detection := strings.Split(lines[1], "Malware Name is ")
-		res.Output = detection[len(detection)-1]
-	}
-
+	detection := strings.Split(lines[1], "Malware Name is ")
+	res.Output = detection[len(detection)-1]
+	res.Infected = true
 	return res, nil
 }

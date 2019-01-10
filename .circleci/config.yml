@@ -96,6 +96,23 @@ jobs:
           command: |
             sh ./scripts/test_multiav.sh clamav
 
+  multiav_comodo:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install COMODO"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh comodo
+
+      - run:
+          name: "Test COMODO go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh comodo
 
 workflows:
   version: 2
@@ -112,5 +129,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_clamav:
+          requires:
+            - clone_and_hash
+      - multiav_comodo:
           requires:
             - clone_and_hash

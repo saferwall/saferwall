@@ -11,6 +11,8 @@ elif [ -f "/tmp/saferwall/circleci/avira" ]  && [ "$1" = "avira" ]; then
 elif [ -f "/tmp/saferwall/circleci/bitdefender" ] && [ "$1" = "bitdefender" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/bitdefender
 elif [ -f "/tmp/saferwall/circleci/clamav" ] && [ "$1" = "clamav" ]; then
-	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/clamav	
+	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/clamav
+elif [ -f "/tmp/saferwall/circleci/comodo" ] && [ "$1" = "comodo" ]; then
+	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/comodo
 fi
 
