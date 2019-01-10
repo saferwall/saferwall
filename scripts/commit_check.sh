@@ -7,11 +7,11 @@ set -e
 LATEST_COMMIT=$(git rev-parse HEAD)
 
 # latest commit where a folder was changed
-PKG_AVAST_COMMIT = $(git log -1 --format=format:%H --full-diff pkg/multiav/avast/)
-PKG_AVIRA_COMMIT = $(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
-PKG_BITDEFENDER_COMMIT = $(git log -1 --format=format:%H --full-diff pkg/multiav/bitdefender/)
-PKG_CLAMAV_COMMIT = $(git log -1 --format=format:%H --full-diff pkg/multiav/clamav/)
-PKG_CRYPTO_COMMIT = $(git log -1 --format=format:%H --full-diff pkg/crypto/)
+PKG_AVAST_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avast/)
+PKG_AVIRA_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
+PKG_BITDEFENDER_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/bitdefender/)
+PKG_CLAMAV_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/clamav/)
+PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
 # create a directory to store the state of changed files
 mkdir -p /tmp/saferwall/circleci
