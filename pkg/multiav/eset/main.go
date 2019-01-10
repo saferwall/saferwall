@@ -34,11 +34,11 @@ func ScanFile(filePath string) (Result, error) {
 		"--clean-mode=NONE", filePath)
 
 	// Exit codes:
-	// 0    no threat found
-	// 1    threat found and cleaned
-	// 10   some files could not be scanned (may be threats)
-	// 50   threat found
-	// 100  error
+	//  0    no threat found
+	//  1    threat found and cleaned
+	//  10   some files could not be scanned (may be threats)
+	//  50   threat found
+	//  100  error
 
 	res := Result{}
 	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 50" {

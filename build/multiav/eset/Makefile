@@ -17,6 +17,10 @@ ifdef SAFERWALL_DEV
 	cp $(ROOT_DIR)/build/multiav/eset/$(ESET_LICENSE) $(ESET_CONFIG_DIR)/esets/license/ERA-Endpoint.lic
 	$(ESET_INSTALL_DIR)/esets/sbin/esets_lic --import=$(ESET_INSTALL_DIR)/esets/etc/license/
 endif
+ifdef SAFERWALL_TEST
+	vault read -field=ERA-Endpoint.lic multiav/eset | base64 -d > $(ESET_CONFIG_DIR)/esets/license/ERA-Endpoint.lic
+	$(ESET_INSTALL_DIR)/esets/sbin/esets_lic --import=$(ESET_INSTALL_DIR)/esets/etc/license/
+endif
 	rm -rf $(ESET_TEMP)
 	make update-eset
 
