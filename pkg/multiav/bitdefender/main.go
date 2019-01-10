@@ -23,7 +23,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// GetProgramVersion returns Bitdefender Anti-Virus version
+// GetProgramVersion returns Bitdefender Anti-Virus version.
 func GetProgramVersion() (string, error) {
 
 	//  Run now
@@ -37,14 +37,15 @@ func GetProgramVersion() (string, error) {
 	ver := ""
 	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
-		re := regexp.MustCompile("\\w+ v([\\d.]+) .*")
-		ver = re.FindStringSubmatch(lines[0])[1]
+		re := regexp.MustCompile(`v\d\.\d{6}`)
+		match := re.FindStringSubmatch(lines[0])
+		ver = match[0]
 	}
 	return ver, nil
 
 }
 
-// ScanFile a file with COMODO scanner
+// ScanFile a file with Bitdefender scanner.
 func ScanFile(filePath string) (Result, error) {
 
 	//  Run now

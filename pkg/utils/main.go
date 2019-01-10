@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -136,7 +137,6 @@ func WalkAllFilesInDir(dir string) ([]string, error) {
 		// check if it is a regular file (not dir)
 		if info.Mode().IsRegular() {
 			fileList = append(fileList, path)
-
 		}
 		return nil
 	})
@@ -253,4 +253,11 @@ func copyFileContents(src, dst string) (err error) {
 	}
 	err = out.Sync()
 	return
+}
+
+// GetRootProjectDir retrieves `saferwall` root src project directory.
+func GetRootProjectDir() (string) {
+	gopath := os.Getenv("GOPATH")
+	sfwRootDir := path.Join(gopath, "src", "github.com", "saferwall", "saferwall")
+	return sfwRootDir
 }

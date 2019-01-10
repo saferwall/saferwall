@@ -9,6 +9,9 @@ LATEST_COMMIT=$(git rev-parse HEAD)
 # latest commit where a folder was changed
 PKG_AVAST_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avast/)
 PKG_AVIRA_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
+PKG_BITDEFENDER_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/bitdefender/)
+PKG_CLAMAV_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/clamav/)
+PKG_COMODO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/comodo/)
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
 # create a directory to store the state of changed files
@@ -23,6 +26,21 @@ fi
 if [ $PKG_AVIRA_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/avira has changed"
 	touch /tmp/saferwall/circleci/avira
+fi
+
+if [ $PKG_BITDEFENDER_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/bitdefender has changed"
+	touch /tmp/saferwall/circleci/bitdefender
+fi
+
+if [ $PKG_CLAMAV_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/clamav has changed"
+	touch /tmp/saferwall/circleci/clamav
+fi
+
+if [ $PKG_COMODO_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/comodo has changed"
+	touch /tmp/saferwall/circleci/comodo
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then

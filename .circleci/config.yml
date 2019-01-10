@@ -60,6 +60,60 @@ jobs:
           command: |
             sudo sh ./scripts/test_multiav.sh avira
 
+  multiav_bitdefender:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Bitdefender AV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh bitdefender
+
+      - run:
+          name: "Test Bitdefender go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh bitdefender
+
+  multiav_clamav:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install ClamAV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh clamav
+
+      - run:
+          name: "Test ClamAV go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh clamav
+
+  multiav_comodo:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install COMODO"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh comodo
+
+      - run:
+          name: "Test COMODO go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh comodo
+
 workflows:
   version: 2
   build_test_deploy:
@@ -69,5 +123,14 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_avira:
+          requires:
+            - clone_and_hash
+      - multiav_bitdefender:
+          requires:
+            - clone_and_hash
+      - multiav_clamav:
+          requires:
+            - clone_and_hash
+      - multiav_comodo:
           requires:
             - clone_and_hash

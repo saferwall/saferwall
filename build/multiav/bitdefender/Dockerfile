@@ -1,17 +1,17 @@
 FROM ubuntu:xenial
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
-LABEL description="Avast for Linux in a docker container"
+LABEL version="0.1"
+LABEL description="Bitdefender Scanner for Unices/Unix in a docker container"
 
 # Install dependencies
 RUN apt-get update && apt-get install make -y
 
-# Use make inside the container to install Avast
+# Use make inside the container to install Bitdefender
 COPY Makefile ./
-RUN make install-avast
+RUN make install-bitdefender
 
 # Copy the server binary
-COPY ./bin/server /bin/server
+COPY server /bin/server
 
 # Add the EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt /samples/eicar
@@ -25,4 +25,4 @@ RUN apt-get purge -y --auto-remove make \
 EXPOSE 50051
 
 # Entry point
-ENTRYPOINT service avast start && /bin/server
+ENTRYPOINT ["/bin/server"]
