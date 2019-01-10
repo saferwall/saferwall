@@ -30,7 +30,7 @@ func ScanFile(filePath string) (Result, error) {
 	// --clean-mode=MODE         use cleaning MODE for infected objects.
 	// 							 Available options: none, standard (default),
 	// 							 strict, rigorous, delete
-	esetOut, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
+	out, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
 		"--clean-mode=NONE", filePath)
 
 	// Exit codes:
@@ -49,7 +49,7 @@ func ScanFile(filePath string) (Result, error) {
 	// name="/samples/aa.exx", threat="a variant of Win32/Injector.BIIZ trojan", action="", info=""
 
 	re := regexp.MustCompile(`threat="([\s\w/.]+)"`)
-	l := re.FindStringSubmatch(esetOut)
+	l := re.FindStringSubmatch(out)
 	if len(l) < 1 {
 		return res, nil
 	}
