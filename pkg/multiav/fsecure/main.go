@@ -134,11 +134,11 @@ func GetVersion() (Version, error) {
 	// 	F-Secure Corporation Aquarius engine version 1.0 build 8
 	// 	F-Secure Corporation Aquarius database version 2018-12-21_08
 
+	ver := Version{}
 	if err != nil {
-		return Version{}, err
+		return ver, err
 	}
 
-	ver := Version{}
 	lines := strings.Split(fsavOut, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Database version: ") {

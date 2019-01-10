@@ -53,7 +53,7 @@ fi
 
 if [ $PKG_FSECURE_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/fsecure has changed"
-	touch /tmp/saferwall/circleci/eset
+	touch /tmp/saferwall/circleci/fsecure
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then
