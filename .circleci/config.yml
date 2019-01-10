@@ -152,6 +152,6 @@ workflows:
       - multiav_comodo:
           requires:
             - clone_and_hash
-        - multiav_eset:
+      - multiav_eset:
           requires:
             - clone_and_hash

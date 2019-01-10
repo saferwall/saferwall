@@ -15,7 +15,7 @@ const (
 	cmd = "/opt/eset/esets/sbin/esets_scan"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
