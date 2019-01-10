@@ -21,7 +21,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// ScanFile performs antivirus scan
+// ScanFile performs antivirus scan.
 func ScanFile(filePath string) (Result, error) {
 
 	// Execute the scanner with the given file path

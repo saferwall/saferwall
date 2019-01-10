@@ -15,7 +15,6 @@ ifdef SAFERWALL_DEV
 	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif
 ifdef SAFERWALL_TEST
-	make install-vault
 	vault read -field=license.avastlic multiav/avast | base64 -d > $(AVAST_LICENSE_PATH)
 	chown avast:avast $(AVAST_LICENSE_PATH) 
 endif

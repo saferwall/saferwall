@@ -4,14 +4,10 @@ ESET_CONFIG_DIR 	= /etc/opt/eset
 ESET_INSTALL_DIR 	= /opt/eset
 ESET_TEMP			= /tmp/eset
 
-install-eset:	## install ESET File Server Security for Linux, Please Provide ESET_USER and ESET_PWD as arguments
+install-eset:	## install ESET File Server Security for Linux, ESET_USER / ESET_PWD are read from .env
 	apt-get update
 	apt-get install wget libc6-i386 -y
 	mkdir -p $(ESET_TEMP)
-ifdef SAFERWALL_TEST
-	make install-vault
-	vault read -field=.env secret/.env | base64 -d > $(ROOT_DIR)/.env
-endif
 	wget $(ESET_URL) --user=$(ESET_USER) --password=$(ESET_PWD) -P $(ESET_TEMP)
 	chmod +x $(ESET_TEMP)/esets.amd64.deb.bin
 	$(ESET_TEMP)/esets.amd64.deb.bin --skip-license
@@ -20,10 +16,6 @@ endif
 ifdef SAFERWALL_DEV
 	cp $(ROOT_DIR)/build/multiav/eset/$(ESET_LICENSE) $(ESET_CONFIG_DIR)/esets/license/ERA-Endpoint.lic
 	$(ESET_INSTALL_DIR)/esets/sbin/esets_lic --import=$(ESET_INSTALL_DIR)/esets/etc/license/
-endif
-ifdef SAFERWALL_TEST
-	make install-vault
-	vault read -field=.env secret/.env | base64 -d > .env
 endif
 	rm -rf $(ESET_TEMP)
 	make update-eset
