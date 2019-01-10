@@ -21,7 +21,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// Version represents database components' versions
+// Version represents database components' versions.
 type Version struct {
 	CurrentAVDatabasesDate    string `json:"current_av_db_ate"`
 	LastAVDatabasesUpdateDate string `json:"last_av_db_update_date"`
@@ -29,7 +29,7 @@ type Version struct {
 	CurrentAVDatabasesRecords string `json:"current_av_db_records"`
 }
 
-// GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version
+// GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version.
 func GetProgramVersion() (string, error) {
 
 	// Run kav4s to grab the version
@@ -79,6 +79,13 @@ func GetDatabaseVersion() (Version, error) {
 // ScanFile a file with Kaspersky scanner
 func ScanFile(filePath string) (Result, error) {
 
+	// Clean the states
+	res := Result{}
+	_, err := utils.ExecCommand(kav4fs, "--clean-stat")
+	if err != nil {
+		return res, err
+	}
+	
 	// Run now
 	out, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
 	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
@@ -94,20 +101,13 @@ func ScanFile(filePath string) (Result, error) {
 	// Scan errors:         0
 	// Password protected:  0
 
-	res := Result{}
 	if err != nil {
 		return res, err
 	}
 
-	// Check if file is infected
+	// Check if infected
 	if !strings.Contains(out, "Threats found:       1") {
 		return res, nil
-	}
-
-	// Clean the states
-	_, stateError := utils.ExecCommand(kav4fs, "--clean-stat")
-	if err != nil {
-		return res, stateError
 	}
 
 	// Grab detection name with a separate cmd

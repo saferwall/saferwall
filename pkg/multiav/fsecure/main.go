@@ -37,7 +37,7 @@ type Version struct {
 func ScanFile(filePath string) (Result, error) {
 
 	// Run now
-	fsavOut, err := utils.ExecCommand(fsav, "--virus-action1=report",
+	out, err := utils.ExecCommand(fsav, "--virus-action1=report",
 		"--suspected-action1=report", filePath)
 
 	// FSAV has the following exit codes:
@@ -75,7 +75,7 @@ func ScanFile(filePath string) (Result, error) {
 
 	res := Result{}
 	reg := regexp.MustCompile(` \(.*\)`)
-	lines := strings.Split(fsavOut, "\n")
+	lines := strings.Split(out, "\n")
 
 	for _, line := range lines {
 		if strings.Contains(line, "Infected: ") {
@@ -112,7 +112,7 @@ func ScanFile(filePath string) (Result, error) {
 	return res, nil
 }
 
-// GetVersion get Anti-Virus scanner version
+// GetVersion get Anti-Virus scanner version.
 func GetVersion() (Version, error) {
 
 	fsavOut, err := utils.ExecCommand(fsav, "--version")
@@ -134,11 +134,11 @@ func GetVersion() (Version, error) {
 	// 	F-Secure Corporation Aquarius engine version 1.0 build 8
 	// 	F-Secure Corporation Aquarius database version 2018-12-21_08
 
+	ver := Version{}
 	if err != nil {
-		return Version{}, err
+		return ver, err
 	}
 
-	ver := Version{}
 	lines := strings.Split(fsavOut, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Database version: ") {
