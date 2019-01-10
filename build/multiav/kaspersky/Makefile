@@ -14,6 +14,7 @@ install-kaspersky:	## install Kaspersky Anti-Virus for Linux File Servers
 	dpkg -i --force-architecture  $(KASPERSKY_TMP)/kav4fs_$(KASPERSKY_VERSION)_i386.deb
 	chmod a+s $(KASPERSKY_BIN)
 	mkdir -p -m 777 $(KASPERSKY_INSTALL_DIR)
+
 ifdef SAFERWALL_DEV
 	cp $(ROOT_DIR)/build/multiav/kaspersky/license.key $(KASPERSKY_LICENSE)
 	$(KASPERSKY_BIN) --install-active-key $(KASPERSKY_LICENSE)
@@ -22,7 +23,8 @@ ifdef SAFERWALL_TEST
 	vault read -field=license.key multiav/kaspersky | base64 -d > $(KASPERSKY_LICENSE)
 	$(KASPERSKY_BIN) --install-active-key $(KASPERSKY_LICENSE)
 endif
-	$(KASPERSKY_SETUP) --auto-install install.conf
+
+	$(KASPERSKY_SETUP) --auto-install $(ROOT_DIR)/build/multiav/kaspersky/install.conf
 	rm -rf $(KASPERSKY_TMP)
 
 update-kaspersky:		## update Kaspersky Anti-Virus for Linux File Servers

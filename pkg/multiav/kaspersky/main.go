@@ -21,7 +21,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// Version represents database components' versions
+// Version represents database components' versions.
 type Version struct {
 	CurrentAVDatabasesDate    string `json:"current_av_db_ate"`
 	LastAVDatabasesUpdateDate string `json:"last_av_db_update_date"`
