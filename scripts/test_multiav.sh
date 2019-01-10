@@ -14,5 +14,7 @@ elif [ -f "/tmp/saferwall/circleci/clamav" ] && [ "$1" = "clamav" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/clamav
 elif [ -f "/tmp/saferwall/circleci/comodo" ] && [ "$1" = "comodo" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/comodo
+elif [ -f "/tmp/saferwall/circleci/eset" ] && [ "$1" = "eset" ]; then
+	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/eset
 fi
 

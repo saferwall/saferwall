@@ -10,4 +10,6 @@ elif [ -f "/tmp/saferwall/circleci/clamav" ] && [ "$1" = "clamav" ]; then
 	make install-clamav
 elif [ -f "/tmp/saferwall/circleci/comodo" ] && [ "$1" = "comodo" ]; then
 	make install-comodo
+elif [ -f "/tmp/saferwall/circleci/eset" ] && [ "$1" = "eset" ]; then
+	make install-eset
 fi

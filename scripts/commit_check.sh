@@ -12,6 +12,7 @@ PKG_AVIRA_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/avira/)
 PKG_BITDEFENDER_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/bitdefender/)
 PKG_CLAMAV_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/clamav/)
 PKG_COMODO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/comodo/)
+PKG_ESET_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/eset/)
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
 # create a directory to store the state of changed files
@@ -41,6 +42,11 @@ fi
 if [ $PKG_COMODO_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/comodo has changed"
 	touch /tmp/saferwall/circleci/comodo
+fi
+
+if [ $PKG_ESET_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/eset has changed"
+	touch /tmp/saferwall/circleci/eset
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then

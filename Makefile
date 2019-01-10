@@ -16,6 +16,12 @@ help: ## This help.
 # Retrieve the root directory of the project
 ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+# Include our env file
+include .env
+
+# Make sure variables are exported
+$(eval export $(shell sed -ne 's/ *#.*$//; /./ s/=.*$$// p' .env))
+
 # Include our internals makefiles
 include build/docker.mk
 include build/vault.mk
