@@ -13,6 +13,7 @@ PKG_BITDEFENDER_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/b
 PKG_CLAMAV_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/clamav/)
 PKG_COMODO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/comodo/)
 PKG_ESET_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/eset/)
+PKG_KASPERSKY_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/kaspersky/)
 PKG_FSECURE_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/fsecure/)
 
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
@@ -54,6 +55,11 @@ fi
 if [ $PKG_FSECURE_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/fsecure has changed"
 	touch /tmp/saferwall/circleci/fsecure
+fi
+
+if [ $PKG_KASPERSKY_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/kaspersky has changed"
+	touch /tmp/saferwall/circleci/kaspersky
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then

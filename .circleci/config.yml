@@ -150,6 +150,24 @@ jobs:
           command: |
             sh ./scripts/test_multiav.sh fsecure
 
+  multiav_kaspersky:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Kaspersky"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh kaspersky
+
+      - run:
+          name: "Test Kaspersky go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh kaspersky
+
 workflows:
   version: 2
   build_test_deploy:
@@ -174,5 +192,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_fsecure:
+          requires:
+            - clone_and_hash
+      - multiav_kaspersky:
           requires:
             - clone_and_hash

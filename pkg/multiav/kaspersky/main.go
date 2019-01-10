@@ -79,6 +79,13 @@ func GetDatabaseVersion() (Version, error) {
 // ScanFile a file with Kaspersky scanner
 func ScanFile(filePath string) (Result, error) {
 
+	// Clean the states
+	res := Result{}
+	_, err := utils.ExecCommand(kav4fs, "--clean-stat")
+	if err != nil {
+		return res, err
+	}
+	
 	// Run now
 	out, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
 	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
@@ -94,7 +101,6 @@ func ScanFile(filePath string) (Result, error) {
 	// Scan errors:         0
 	// Password protected:  0
 
-	res := Result{}
 	if err != nil {
 		return res, err
 	}
@@ -102,12 +108,6 @@ func ScanFile(filePath string) (Result, error) {
 	// Check if file is infected
 	if !strings.Contains(out, "Threats found:       1") {
 		return res, nil
-	}
-
-	// Clean the states
-	_, stateError := utils.ExecCommand(kav4fs, "--clean-stat")
-	if err != nil {
-		return res, stateError
 	}
 
 	// Grab detection name with a separate cmd

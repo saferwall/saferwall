@@ -26,4 +26,6 @@ elif [ -f "/tmp/saferwall/circleci/eset" ] && [ "$1" = "eset" ]; then
 	make install-eset
 elif [ -f "/tmp/saferwall/circleci/fsecure" ] && [ "$1" = "fsecure" ]; then
 	make install-fsecure
+elif [ -f "/tmp/saferwall/circleci/kaspersky" ] && [ "$1" = "kaspersky" ]; then
+	make install-kaspersky
 fi
