@@ -35,7 +35,7 @@ func GetProgramVersion() (string, error) {
 	return string(version), nil
 }
 
-// ScanFile a file with COMODO scanner
+// ScanFile a file with COMODO scanner.
 func ScanFile(filePath string) (Result, error) {
 
 	// Run now

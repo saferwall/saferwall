@@ -11,11 +11,11 @@ install-comodo:	## install Comodo Antivirus for Linux
 	dpkg -i /tmp/libssl0.9.8_0.9.8o-7ubuntu3.2.14.04.1_amd64.deb
 	cd /tmp && ar x cav-linux_x64.deb
 	tar zxvf /tmp/data.tar.gz -C /
-	rm /tmp/cav-linux_x64.deb
+	rm -f /tmp/cav-linux_x64.deb
 	make update-comodo
 
 update-comodo:		## update Comodo Antivirus for Linux
-	wget $(COMODO_UPDATE) -P $(COMODO_INSTALL_DIR)/scanners/
+	wget -N $(COMODO_UPDATE) -P $(COMODO_INSTALL_DIR)/scanners/
 
 uninstall-comodo:	## uninstall Comodo Antivirus for Linux
 	rm -rf $(COMODO_INSTALL_DIR)
