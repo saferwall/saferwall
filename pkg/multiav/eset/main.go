@@ -39,7 +39,6 @@ func ScanFile(filePath string) (Result, error) {
 	// 10   some files could not be scanned (may be threats)
 	// 50   threat found
 	// 100  error
-
 	res := Result{}
 	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 50" {
 		return res, err
