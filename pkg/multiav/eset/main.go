@@ -76,7 +76,7 @@ func GetProgramVersion() (string, error) {
 	}
 
 	// Extract the version
-	version := strings.Split(out, " ")[2]
-	version = strings.TrimSuffix(version, "\n")
-	return version, nil
+	ver := strings.Split(out, " ")[2]
+	ver = strings.TrimSuffix(ver, "\n")
+	return ver, nil
 }

@@ -1,10 +1,12 @@
 #!/bin/bash
 
+BASE_DIR=$(dirname "$0")
+
 # Install vault to pull secrets
 make install-vault
 
 # Pull .env file
-vault read -field=.env secret/.env | base64 -d > .env
+vault read -field=.env secret/.env | base64 -d > $BASE_DIR/../.env
 
 if [ -f "/tmp/saferwall/circleci/avast" ] && [ "$1" = "avast" ]; then
 	make install-avast
