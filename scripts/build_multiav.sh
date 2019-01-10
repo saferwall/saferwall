@@ -24,4 +24,6 @@ elif [ -f "/tmp/saferwall/circleci/comodo" ] && [ "$1" = "comodo" ]; then
 	make install-comodo
 elif [ -f "/tmp/saferwall/circleci/eset" ] && [ "$1" = "eset" ]; then
 	make install-eset
+elif [ -f "/tmp/saferwall/circleci/fsecure" ] && [ "$1" = "fsecure" ]; then
+	make install-fsecure
 fi

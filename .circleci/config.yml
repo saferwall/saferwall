@@ -132,6 +132,24 @@ jobs:
           command: |
             sh ./scripts/test_multiav.sh eset
 
+  multiav_fsecure:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install FSecure"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh fsecure
+
+      - run:
+          name: "Test FSecure go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh fsecure
+
 workflows:
   version: 2
   build_test_deploy:
@@ -153,5 +171,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_eset:
+          requires:
+            - clone_and_hash
+      - multiav_fsecure:
           requires:
             - clone_and_hash
