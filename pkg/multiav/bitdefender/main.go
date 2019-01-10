@@ -47,7 +47,7 @@ func GetProgramVersion() (string, error) {
 
 }
 
-// ScanFile a file with COMODO scanner
+// ScanFile a file with Bitdefender scanner.
 func ScanFile(filePath string) (Result, error) {
 
 	//  Run now
