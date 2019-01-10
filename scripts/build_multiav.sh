@@ -4,7 +4,7 @@
 make install-vault
 
 # Pull .env file
-vault read -field=.env secret/.env | base64 -d > $(ROOT_DIR)/.env
+vault read -field=.env secret/.env | base64 -d > ../.env
 
 if [ -f "/tmp/saferwall/circleci/avast" ] && [ "$1" = "avast" ]; then
 	make install-avast

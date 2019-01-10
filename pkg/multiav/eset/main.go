@@ -66,7 +66,7 @@ func ScanFile(filePath string) (Result, error) {
 	return res, nil
 }
 
-// GetProgramVersion returns program version
+// GetProgramVersion returns program version.
 func GetProgramVersion() (string, error) {
 
 	// Execute the scanner with the given file path
