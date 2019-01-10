@@ -15,13 +15,13 @@ const (
 	cmd = "/opt/eset/esets/sbin/esets_scan"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
 }
 
-// ScanFile performs antivirus scan
+// ScanFile performs antivirus scan.
 func ScanFile(filePath string) (Result, error) {
 
 	// Execute the scanner with the given file path
@@ -30,15 +30,15 @@ func ScanFile(filePath string) (Result, error) {
 	// --clean-mode=MODE         use cleaning MODE for infected objects.
 	// 							 Available options: none, standard (default),
 	// 							 strict, rigorous, delete
-	esetOut, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
+	out, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
 		"--clean-mode=NONE", filePath)
 
 	// Exit codes:
-	// 0    no threat found
-	// 1    threat found and cleaned
-	// 10   some files could not be scanned (may be threats)
-	// 50   threat found
-	// 100  error
+	//  0    no threat found
+	//  1    threat found and cleaned
+	//  10   some files could not be scanned (may be threats)
+	//  50   threat found
+	//  100  error
 
 	res := Result{}
 	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 50" {
@@ -49,7 +49,7 @@ func ScanFile(filePath string) (Result, error) {
 	// name="/samples/aa.exx", threat="a variant of Win32/Injector.BIIZ trojan", action="", info=""
 
 	re := regexp.MustCompile(`threat="([\s\w/.]+)"`)
-	l := re.FindStringSubmatch(esetOut)
+	l := re.FindStringSubmatch(out)
 	if len(l) < 1 {
 		return res, nil
 	}
@@ -62,21 +62,20 @@ func ScanFile(filePath string) (Result, error) {
 
 	res.Infected = true
 	res.Output = det
-
 	return res, nil
 }
 
-// GetProgramVersion returns program version
+// GetProgramVersion returns program version.
 func GetProgramVersion() (string, error) {
 
 	// Execute the scanner with the given file path
-	versionOut, err := utils.ExecCommand(cmd, "--version")
+	out, err := utils.ExecCommand(cmd, "--version")
 	if err != nil {
 		return "", err
 	}
 
 	// Extract the version
-	version := strings.Split(versionOut, " ")[2]
-	version = strings.TrimSuffix(version, "\n")
-	return version, nil
+	ver := strings.Split(out, " ")[2]
+	ver = strings.TrimSuffix(ver, "\n")
+	return ver, nil
 }

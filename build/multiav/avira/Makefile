@@ -14,7 +14,6 @@ ifdef SAFERWALL_DEV
 	cp  $(ROOT_DIR)/build/multiav/avira/hbedv.key $(AVIRA_INSTALL_DIR)
 endif
 ifdef SAFERWALL_TEST
-	make install-vault
 	vault read -field=hbedv.key multiav/avira | base64 -d > $(AVIRA_INSTALL_DIR)/hbedv.key
 endif
 	make update-avira

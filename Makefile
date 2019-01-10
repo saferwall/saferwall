@@ -16,6 +16,9 @@ help: ## This help.
 # Retrieve the root directory of the project
 ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+# Include our env file
+include $(ROOT_DIR)/.env
+
 # Include our internals makefiles
 include build/docker.mk
 include build/vault.mk

@@ -3,6 +3,7 @@
 -include build/multiav/bitdefender/Makefile
 -include build/multiav/clamav/Makefile
 -include build/multiav/comodo/Makefile
+-include build/multiav/eset/Makefile
 
 api:	## Generates protocol buffers definitions files. 
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \
