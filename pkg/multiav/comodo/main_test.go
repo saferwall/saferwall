@@ -31,7 +31,7 @@ func TestGetProgramVersion(t *testing.T) {
 		t.Fatalf("TestGetProgramVersion failed, got: %s", err)
 	}
 
-	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{5}\.\d{1}`)
+	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{6}\.\d{1}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
 		t.Fatalf("Program version was incorrect, got: %s, want something similar to: 1.1.268025.1", version)
