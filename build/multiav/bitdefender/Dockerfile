@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install make -y
 
 # Use make inside the container to install Bitdefender
 COPY Makefile ./
-RUN make install
+RUN make install-bitdefender
 
 # Copy the server binary
 COPY server /bin/server

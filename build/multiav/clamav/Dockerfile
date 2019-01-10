@@ -1,17 +1,17 @@
 FROM ubuntu:xenial
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.1"
-LABEL description="Avira Linux Version in a docker container"
+LABEL description="The Open Source ClamAV Antivirus in a docker container"
 
 # Install dependencies
 RUN apt-get update && apt-get install make -y
 
-# Use make inside the container to install Avira
+# Use make inside the container to install ClamAV
 COPY Makefile ./
-RUN make install-avira
+RUN make install-clamav
 
 # Copy the server binary
-COPY ./bin/server /bin/server
+COPY server /bin/server
 
 # Add the EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt /samples/eicar

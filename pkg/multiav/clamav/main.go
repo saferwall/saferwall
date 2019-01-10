@@ -76,6 +76,9 @@ func GetVersion() (string, error) {
 		return "", err
 	}
 
+	// ClamAV 0.100.2/25284/Wed Jan  9 18:42:45 2019
+
+
 	// Extract the version
 	ver := strings.Split(out, "/")[0]
 	ver = strings.Split(ver, " ")[1]

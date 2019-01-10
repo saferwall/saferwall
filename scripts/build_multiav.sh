@@ -6,4 +6,6 @@ elif [ -f "/tmp/saferwall/circleci/avira" ] && [ "$1" = "avira" ]; then
 	make install-avira
 elif [ -f "/tmp/saferwall/circleci/bitdefender" ] && [ "$1" = "bitdefender" ]; then
 	make install-bitdefender
+elif [ -f "/tmp/saferwall/circleci/clamav" ] && [ "$1" = "clamav" ]; then
+	make install-clamav
 fi

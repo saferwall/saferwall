@@ -77,6 +77,26 @@ jobs:
           name: "Test Bitdefender go pkg"
           command: |
             sh ./scripts/test_multiav.sh bitdefender
+
+  multiav_clamav:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install ClamAV"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh clamav
+
+      - run:
+          name: "Test ClamAV go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh clamav
+
+
 workflows:
   version: 2
   build_test_deploy:
@@ -89,5 +109,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_bitdefender:
+          requires:
+            - clone_and_hash
+      - multiav_clamav:
           requires:
             - clone_and_hash
