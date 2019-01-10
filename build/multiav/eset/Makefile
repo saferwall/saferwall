@@ -6,7 +6,7 @@ ESET_TEMP			= /tmp/eset
 
 install-eset:	## install ESET File Server Security for Linux, ESET_USER / ESET_PWD are read from .env
 	apt-get update
-	apt-get install wget libc6-i386 -y
+	apt-get install wget libc6-i386 ed -y
 	mkdir -p $(ESET_TEMP)
 	wget -N $(ESET_URL) --user=$(ESET_USER) --password=$(ESET_PWD) -P $(ESET_TEMP)
 	chmod +x $(ESET_TEMP)/esets.amd64.deb.bin
