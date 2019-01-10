@@ -29,7 +29,7 @@ type Version struct {
 	CurrentAVDatabasesRecords string `json:"current_av_db_records"`
 }
 
-// GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version
+// GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version.
 func GetProgramVersion() (string, error) {
 
 	// Run kav4s to grab the version

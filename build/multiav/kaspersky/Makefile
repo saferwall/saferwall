@@ -7,6 +7,7 @@ KASPERSKY_URL 			= "https://products.s.kaspersky-labs.com/multilanguage/file_ser
 KASPERSKY_TMP			= /tmp/kaspersky
 
 install-kaspersky:	## install Kaspersky Anti-Virus for Linux File Servers
+	sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen && locale-gen
 	apt-get update
 	apt-get install wget libc6-i386 -y
 	mkdir -p $(KASPERSKY_TMP)
