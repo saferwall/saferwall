@@ -24,7 +24,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// GetProgramVersion returns Bitdefender Anti-Virus version
+// GetProgramVersion returns Bitdefender Anti-Virus version.
 func GetProgramVersion() (string, error) {
 
 	//  Run now

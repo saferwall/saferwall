@@ -88,3 +88,6 @@ workflows:
       - multiav_avira:
           requires:
             - clone_and_hash
+      - multiav_bitdefender:
+          requires:
+            - clone_and_hash
