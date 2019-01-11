@@ -27,7 +27,7 @@ type Version struct {
 	ProgramVersion  string `json:"program_version"`
 }
 
-// GetVersion get Anti-Virus scanner version
+// GetVersion get Anti-Virus scanner version.
 func GetVersion() (Version, error) {
 
 	versionOut, err := utils.ExecCommand(cmd, "--version")
