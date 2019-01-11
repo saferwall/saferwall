@@ -53,7 +53,7 @@ func GetVersion() (Version, error) {
 	return v, nil
 }
 
-// ScanFile scans a given file
+// ScanFile scans a given file.
 func ScanFile(filepath string) (Result, error) {
 
 	// Execute the scanner with the given file path

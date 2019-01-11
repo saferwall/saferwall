@@ -6,6 +6,7 @@ MCAFEE_TMP 			= 	/tmp/mcafee
 install-mcafee:	## install McAfee VirusScan Command Line Scanner 
 	apt-get update
 	apt-get install wget unzip -y
+	mkdir -p $(MCAFEE_TMP)
 	wget -N $(MCAFEE_URL) -P $(MCAFEE_TMP)
 	mkdir -p $(MCAFEE_INSTALL_DIR)
 	tar zxvf $(MCAFEE_TMP)/vscl-l64-604-e.tar.gz -C $(MCAFEE_INSTALL_DIR)
