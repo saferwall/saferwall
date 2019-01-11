@@ -15,7 +15,7 @@ const (
 	savscan = "/opt/sophos/bin/savscan"
 )
 
-// Result represent detection results
+// Result represent detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`

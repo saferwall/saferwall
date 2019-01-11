@@ -238,3 +238,6 @@ workflows:
       - multiav_mcafee:
           requires:
             - clone_and_hash
+      - multiav_sophos:
+          requires:
+            - clone_and_hash
