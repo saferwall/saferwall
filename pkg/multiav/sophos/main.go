@@ -29,7 +29,7 @@ type Version struct {
 	UserInterfaceVersion string `json:"user_interface_version"`
 }
 
-// ScanFile a file with Sophos scanner.
+// ScanFile a file with Sophos scanner
 func ScanFile(filePath string) (Result, error) {
 
 	//  Scan parameters
