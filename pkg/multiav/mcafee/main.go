@@ -66,17 +66,18 @@ func ScanFile(filepath string) (Result, error) {
 	uvscanOut, err := utils.ExecCommand(cmd, "--ANALYZE", "--ASCII",
 		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filepath)
 
-	// 0 The scanner found no viruses or other potentially unwanted software, and returned no errors.
-	// 2 Integrity check on DAT file failed.
-	// 6 A general problem occurred.
-	// 8 The scanner was unable to find a DAT file.
-	// 10 A virus was found in memory.
-	// 12 The scanner tried to clean a file, the attempt failed, and the file is still infected.
-	// 13 The scanner found one or more viruses or hostile objects — such as a Trojan-horse program, joke program, or test file.
-	// 15 The scanner’s self-check failed; the scanner may be infected or damaged.
-	// 19 The scanner succeeded in cleaning all infected files.
-	// 20 Scanning was prevented because of the /FREQUENCY option.
-	// 21 Computer requires a reboot to clean the infection.
+	// Exit codes:
+	//  0 The scanner found no viruses or other potentially unwanted software, and returned no errors.
+	//  2 Integrity check on DAT file failed.
+	//  6 A general problem occurred.
+	//  8 The scanner was unable to find a DAT file.
+	//  10 A virus was found in memory.
+	//  12 The scanner tried to clean a file, the attempt failed, and the file is still infected.
+	//  13 The scanner found one or more viruses or hostile objects — such as a Trojan-horse program, joke program, or test file.
+	//  15 The scanner’s self-check failed; the scanner may be infected or damaged.
+	//  19 The scanner succeeded in cleaning all infected files.
+	//  20 Scanning was prevented because of the /FREQUENCY option.
+	//  21 Computer requires a reboot to clean the infection.
 
 	res := Result{}
 	if err != nil && err.Error() != "exit status 13" {

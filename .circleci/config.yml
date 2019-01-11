@@ -184,7 +184,7 @@ jobs:
       - run:
           name: "Test mcafee go pkg"
           command: |
-            sh ./scripts/test_multiav.sh mcafee
+            sudo sh ./scripts/test_multiav.sh mcafee
 
 workflows:
   version: 2
