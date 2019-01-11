@@ -96,10 +96,11 @@ func ScanFile(filepath string) (Result, error) {
 	// Time: 00:00.00
 
 	// Grab the detection result
-	re := regexp.MustCompile("Found the (.*) \\w+ !!!")
+	re := regexp.MustCompile(`Found the (.*) trojan`)
 	l := re.FindStringSubmatch(uvscanOut)
 	if len(l) > 0 {
 		res.Output = l[1]
+		res.Infected = true
 	}
 	return res, nil
 }

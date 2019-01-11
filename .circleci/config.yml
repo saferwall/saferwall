@@ -167,6 +167,24 @@ jobs:
           name: "Test Kaspersky go pkg"
           command: |
             sh ./scripts/test_multiav.sh kaspersky
+  
+  multiav_mcafee:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install McAfee"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh mcafee
+
+      - run:
+          name: "Test mcafee go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh mcafee
 
 workflows:
   version: 2
@@ -195,5 +213,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_kaspersky:
+          requires:
+            - clone_and_hash
+      - multiav_mcafee:
           requires:
             - clone_and_hash
