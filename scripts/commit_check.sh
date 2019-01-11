@@ -16,6 +16,7 @@ PKG_ESET_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/eset/)
 PKG_KASPERSKY_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/kaspersky/)
 PKG_FSECURE_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/fsecure/)
 PKG_MCAFEE_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/mcafee/)
+PKG_SOPHOS_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/sophos/)
 
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
@@ -66,6 +67,11 @@ fi
 if [ $PKG_MCAFEE_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/mcafee has changed"
 	touch /tmp/saferwall/circleci/mcafee
+fi
+
+if [ $PKG_SOPHOS_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/sophos has changed"
+	touch /tmp/saferwall/circleci/sophos
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then

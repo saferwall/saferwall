@@ -22,4 +22,6 @@ elif [ -f "/tmp/saferwall/circleci/kaspersky" ] && [ "$1" = "kaspersky" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/kaspersky
 elif [ -f "/tmp/saferwall/circleci/mcafee" ] && [ "$1" = "mcafee" ]; then
 	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/mcafee
+elif [ -f "/tmp/saferwall/circleci/sophos" ] && [ "$1" = "sophos" ]; then
+	make go-test GOPKG=github.com/saferwall/saferwall/pkg/multiav/sophos
 fi

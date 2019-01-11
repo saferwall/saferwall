@@ -186,6 +186,26 @@ jobs:
           command: |
             sudo sh ./scripts/test_multiav.sh mcafee
 
+  multiav_sophos:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Sophos"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh sophos
+
+      - run:
+          name: "Test Sophos go pkg"
+          command: |
+            sh ./scripts/test_multiav.sh sophos
+
+
+
 workflows:
   version: 2
   build_test_deploy:
@@ -216,5 +236,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_mcafee:
+          requires:
+            - clone_and_hash
+      - multiav_sophos:
           requires:
             - clone_and_hash
