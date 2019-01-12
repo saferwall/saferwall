@@ -23,7 +23,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// GetProgramVersion returns Avast Program version
+// GetProgramVersion returns Symantec Program version
 func GetProgramVersion() (string, error) {
 
 	// Run the scanner to grab the version
