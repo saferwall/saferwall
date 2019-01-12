@@ -17,6 +17,8 @@ PKG_KASPERSKY_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/kas
 PKG_FSECURE_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/fsecure/)
 PKG_MCAFEE_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/mcafee/)
 PKG_SOPHOS_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/sophos/)
+PKG_SYMANTEC_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/symantec/)
+PKG_WINDOWS_DEFENDER_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/multiav/windefender/)
 
 PKG_CRYPTO_COMMIT=$(git log -1 --format=format:%H --full-diff pkg/crypto/)
 
@@ -72,6 +74,16 @@ fi
 if [ $PKG_SOPHOS_COMMIT = $LATEST_COMMIT ]; then
 	echo "files in pkg/multiav/sophos has changed"
 	touch /tmp/saferwall/circleci/sophos
+fi
+
+if [ $PKG_SYMANTEC_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/symantec has changed"
+	touch /tmp/saferwall/circleci/symantec
+fi
+
+if [ $PKG_WINDOWS_DEFENDER_COMMIT = $LATEST_COMMIT ]; then
+	echo "files in pkg/multiav/windefender has changed"
+	touch /tmp/saferwall/circleci/windows-defender
 fi
 
 if [ $PKG_CRYPTO_COMMIT = $LATEST_COMMIT ]; then

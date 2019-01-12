@@ -17,21 +17,21 @@ const (
 	logsDir = "/var/symantec/sep/Logs/"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
 }
 
-// GetProgramVersion returns Avast Program version
+// GetProgramVersion returns Symantec Program version
 func GetProgramVersion() (string, error) {
 
 	// Run the scanner to grab the version
-	versionOut, err := utils.ExecCommand(cmd, "info", "-p")
+	out, err := utils.ExecCommand(cmd, "info", "-p")
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSuffix(versionOut, "\n"), nil
+	return strings.TrimSuffix(out, "\n"), nil
 }
 
 // ScanFile scans a given file
@@ -58,7 +58,7 @@ func ScanFile(filepath string) (Result, error) {
 		return res, err
 	}
 
-	// Check if infecyed
+	// Check if infected.
 	savOut := string(data)
 	if strings.Contains(savOut, "Scan Complete:  Threats: 0") {
 		return res, nil

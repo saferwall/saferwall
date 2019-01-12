@@ -8,6 +8,8 @@
 -include build/multiav/kaspersky/Makefile
 -include build/multiav/mcafee/Makefile
 -include build/multiav/sophos/Makefile
+-include build/multiav/symantec/Makefile
+-include build/multiav/windows-defender/Makefile
 
 api:	## Generates protocol buffers definitions files. 
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \

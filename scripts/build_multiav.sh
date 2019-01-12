@@ -32,4 +32,8 @@ elif [ -f "/tmp/saferwall/circleci/mcafee" ] && [ "$1" = "mcafee" ]; then
 	make install-mcafee
 elif [ -f "/tmp/saferwall/circleci/sophos" ] && [ "$1" = "sophos" ]; then
 	make install-sophos
+elif [ -f "/tmp/saferwall/circleci/symantec" ] && [ "$1" = "symantec" ]; then
+	make install-symantec
+elif [ -f "/tmp/saferwall/circleci/windows-defender" ] && [ "$1" = "windows-defender" ]; then
+	make install-windows-defender
 fi
