@@ -34,7 +34,7 @@ func GetProgramVersion() (string, error) {
 	return strings.TrimSuffix(out, "\n"), nil
 }
 
-// ScanFile scans a given file.
+// ScanFile scans a given file
 func ScanFile(filepath string) (Result, error) {
 
 	// Cleanup
