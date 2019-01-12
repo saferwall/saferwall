@@ -3,7 +3,6 @@ SOPHOS_INSTALL_ARGS 	=  --update-free --acceptlicence --autostart=False --enable
 SOPHOS_TMP				=   /tmp/sophos
 SOPHOS_INSTALL_SCRIPT 	= 	$(SOPHOS_TMP)/sophos-av/install.sh
 SOPHOS_INSTALL_ARCHIVE 	= 	$(SOPHOS_TMP)/sav-linux-free
-SOPHOS_URL				= 	https://www.dropbox.com/s/d9cx2wddeiqff59/sav-linux-free
 
 install-sophos:	## install Sophos Anti-Virus for Linux
 	mkdir -p $(SOPHOS_TMP)

@@ -204,7 +204,23 @@ jobs:
           command: |
             sh ./scripts/test_multiav.sh sophos
 
+  multiav_symantec:
+    <<: *defaults
+    steps:
+      - checkout
 
+      - attach_workspace:
+          at: /tmp/saferwall
+
+      - run:
+          name: "Install Symantec"
+          command: |
+            sudo --preserve-env sh ./scripts/build_multiav.sh symantec
+
+      - run:
+          name: "Test Symantec go pkg"
+          command: |
+            sudo sh ./scripts/test_multiav.sh symantec
 
 workflows:
   version: 2
@@ -239,5 +255,8 @@ workflows:
           requires:
             - clone_and_hash
       - multiav_sophos:
+          requires:
+            - clone_and_hash
+      - multiav_symantec:
           requires:
             - clone_and_hash
