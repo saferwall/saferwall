@@ -58,7 +58,7 @@ func ScanFile(filepath string) (Result, error) {
 		return res, err
 	}
 
-	// Check if infecyed
+	// Check if infected
 	savOut := string(data)
 	if strings.Contains(savOut, "Scan Complete:  Threats: 0") {
 		return res, nil
