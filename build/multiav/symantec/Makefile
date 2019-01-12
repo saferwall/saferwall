@@ -14,7 +14,7 @@ ifdef SAFERWALL_TEST
 endif
 	unzip -o $(SYMANTEC_TMP)/$(SYMANTEC_DEB) -d $(SYMANTEC_TMP)
 	$(SYMANTEC_TMP)/install.sh -i
-	echo "Sleeping 2 minutes for updates to be applied"
+	echo "Sleeping 4 minutes for updates to be applied"
 	sleep 4m
 	$(SYMANTEC_SAV) info --defs
 	rm -rf $(SYMANTEC_TMP)

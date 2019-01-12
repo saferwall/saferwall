@@ -14,7 +14,7 @@ type filePathTest struct {
 }
 
 var filepathScanTest = []filePathTest{
-	{"../../../test/multiav/eicar.com", Result{Infected: true, Output: "EICAR Test String"}},
+	{"../../../test/multiav/clean/eicar.com", Result{Infected: true, Output: "EICAR Test String"}},
 }
 
 func TestScanFilePath(t *testing.T) {
