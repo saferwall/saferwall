@@ -27,11 +27,11 @@ type Result struct {
 func GetProgramVersion() (string, error) {
 
 	// Run the scanner to grab the version
-	versionOut, err := utils.ExecCommand(cmd, "info", "-p")
+	out, err := utils.ExecCommand(cmd, "info", "-p")
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSuffix(versionOut, "\n"), nil
+	return strings.TrimSuffix(out, "\n"), nil
 }
 
 // ScanFile scans a given file.
