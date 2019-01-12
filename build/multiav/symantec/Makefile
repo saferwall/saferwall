@@ -16,7 +16,7 @@ endif
 	$(SYMANTEC_TMP)/install.sh -i
 	$(SYMANTEC_SAV) info --defs
 	@echo "Sleeping 2 minutes for updates to be applied"
-	sleep 2m
+	timeout 120
 	$(SYMANTEC_SAV) info --defs
 	rm -rf $(SYMANTEC_TMP)
 
@@ -25,4 +25,4 @@ update-symantec:		## update Symantec Endpoint Protection Linux Client
 	$(SYMANTEC_SAV) info --defs
 
 uninstall-symantec:	## uninstall Symantec Endpoint Protection Linux Client
-	/opt/Symantec/symantec_antivirus/uninstall.sh
+	echo 'Y' | /opt/Symantec/symantec_antivirus/uninstall.sh

@@ -233,12 +233,12 @@ jobs:
       - run:
           name: "Install windefender"
           command: |
-            sudo --preserve-env sh ./scripts/build_multiav.sh windefender
+            sudo --preserve-env sh ./scripts/build_multiav.sh windows-defender
 
       - run:
           name: "Test windefender go pkg"
           command: |
-            sudo sh ./scripts/test_multiav.sh windefender
+            sudo sh ./scripts/test_multiav.sh windows-defender
 
 workflows:
   version: 2
