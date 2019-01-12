@@ -14,6 +14,9 @@ ifdef SAFERWALL_TEST
 endif
 	unzip -o $(SYMANTEC_TMP)/$(SYMANTEC_DEB) -d $(SYMANTEC_TMP)
 	$(SYMANTEC_TMP)/install.sh -i; exit 0
+	$(SYMANTEC_SAV) info --defs
+	sleep 2m
+	$(SYMANTEC_SAV) info --defs
 	rm -rf $(SYMANTEC_TMP)
 
 update-symantec:		## update Symantec Endpoint Protection Linux Client
