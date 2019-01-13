@@ -14,7 +14,10 @@
 # IDE
 .vscode/
 
-# multiav go pkg
+# ENV
+.env
+
+# MultiAV pkg
 **/*.key
 **/*.lic
 license.avastlic*
