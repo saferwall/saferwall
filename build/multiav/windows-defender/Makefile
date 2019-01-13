@@ -1,5 +1,5 @@
 WINDOWS_DEFENDER_UPDATE = https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86
-WINDOWS_DEFENDER_LOADLIBRARY_GIT = https://github.com/taviso/loadlibrary.git
+WINDOWS_DEFENDER_LOADLIBRARY = https://codeload.github.com/taviso/loadlibrary/zip/master
 WINDOWS_DEFENDER_INSTALL_DIR = /opt/windowsdefender
 WINDOWS_DEFENDER_TMP	= /tmp/windowsdefender
 
@@ -7,9 +7,10 @@ install-windows-defender:	## install Windows Defender
 	apt-get update
 	apt-get install wget unzip libc6-i386 exiftool cabextract -y
 	mkdir -p $(WINDOWS_DEFENDER_TMP)
-	cd $(WINDOWS_DEFENDER_TMP) && git clone $(WINDOWS_DEFENDER_LOADLIBRARY_GIT)
-	cd $(WINDOWS_DEFENDER_TMP)/loadlibrary && make
-	mv $(WINDOWS_DEFENDER_TMP)/loadlibrary $(WINDOWS_DEFENDER_INSTALL_DIR)
+	wget $(WINDOWS_DEFENDER_LOADLIBRARY) -P $(WINDOWS_DEFENDER_TMP)
+	cd $(WINDOWS_DEFENDER_TMP) && unzip -o $(WINDOWS_DEFENDER_TMP)/master
+	cd $(WINDOWS_DEFENDER_TMP)/loadlibrary-master && make
+	mv $(WINDOWS_DEFENDER_TMP)/loadlibrary-master $(WINDOWS_DEFENDER_INSTALL_DIR)
 	make update-windows-defender
 
 update-windows-defender:		## update Windows Defender

@@ -35,7 +35,7 @@ func GetVersion() (string, error) {
 	return strings.TrimSpace(strings.Split(versionOut, ":")[1]), nil
 }
 
-// ScanFile a file with Windows Defender scanner
+// ScanFile a file with Windows Defender scanner.
 func ScanFile(filePath string) (Result, error) {
 
 	res := Result{}
