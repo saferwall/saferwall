@@ -14,7 +14,7 @@ import (
 
 // Our consts
 const (
-	loadlibraryPath = "/opt/windowsdefender/loadlibrary"
+	loadlibraryPath = "/opt/windowsdefender/"
 	mpclient        = "./mpclient"
 	mpenginedll     = "/engine/mpengine.dll"
 )
@@ -70,6 +70,7 @@ func ScanFile(filePath string) (Result, error) {
 
 		detection := strings.TrimPrefix(line, "EngineScanCallback(): Threat ")
 		res.Output = strings.TrimSuffix(detection, " identified.")
+		res.Infected = true
 		break
 	}
 
