@@ -14,18 +14,18 @@ import (
 
 // Our consts
 const (
-	loadlibraryPath = "/opt/windowsdefender/loadlibrary"
+	loadlibraryPath = "/opt/windowsdefender/"
 	mpclient        = "./mpclient"
 	mpenginedll     = "/engine/mpengine.dll"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
 }
 
-// GetVersion returns update version
+// GetVersion returns update version.
 func GetVersion() (string, error) {
 	mpenginedll := path.Join(loadlibraryPath, mpenginedll)
 	versionOut, err := utils.ExecCommand("exiftool", "-ProductVersion", mpenginedll)
@@ -35,7 +35,7 @@ func GetVersion() (string, error) {
 	return strings.TrimSpace(strings.Split(versionOut, ":")[1]), nil
 }
 
-// ScanFile a file with Windows Defender scanner
+// ScanFile a file with Windows Defender scanner.
 func ScanFile(filePath string) (Result, error) {
 
 	res := Result{}
@@ -70,6 +70,7 @@ func ScanFile(filePath string) (Result, error) {
 
 		detection := strings.TrimPrefix(line, "EngineScanCallback(): Threat ")
 		res.Output = strings.TrimSuffix(detection, " identified.")
+		res.Infected = true
 		break
 	}
 
