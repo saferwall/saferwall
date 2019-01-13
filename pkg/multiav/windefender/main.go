@@ -19,7 +19,7 @@ const (
 	mpenginedll     = "/engine/mpengine.dll"
 )
 
-// Result represents detection results
+// Result represents detection results.
 type Result struct {
 	Infected bool   `json:"infected"`
 	Output   string `json:"output"`
