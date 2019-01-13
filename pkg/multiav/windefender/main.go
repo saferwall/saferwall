@@ -25,7 +25,7 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
-// GetVersion returns update version
+// GetVersion returns update version.
 func GetVersion() (string, error) {
 	mpenginedll := path.Join(loadlibraryPath, mpenginedll)
 	versionOut, err := utils.ExecCommand("exiftool", "-ProductVersion", mpenginedll)

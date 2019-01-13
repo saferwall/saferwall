@@ -5,7 +5,7 @@ WINDOWS_DEFENDER_TMP	= /tmp/windowsdefender
 
 install-windows-defender:	## install Windows Defender
 	apt-get update
-	apt-get install wget unzip libc6-i386 exiftool cabextract -y
+	apt-get install wget unzip libc6-i386 gcc-multilib exiftool cabextract -y
 	mkdir -p $(WINDOWS_DEFENDER_TMP)
 	wget $(WINDOWS_DEFENDER_LOADLIBRARY) -P $(WINDOWS_DEFENDER_TMP)
 	cd $(WINDOWS_DEFENDER_TMP) && unzip -o $(WINDOWS_DEFENDER_TMP)/master
