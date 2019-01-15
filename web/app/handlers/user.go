@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/saferwall/saferwall/web/server/app/common/utils"
-	"github.com/saferwall/saferwall/web/server/app/models/user"
-	"github.com/saferwall/saferwall/web/server/app/schemas"
+	"github.com/saferwall/saferwall/web/app/common/utils"
+	"github.com/saferwall/saferwall/web/app/models/user"
+	"github.com/saferwall/saferwall/web/app/schemas"
 	"github.com/xeipuuv/gojsonschema"
 )
 

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/saferwall/saferwall/web/server/app"
-	"github.com/saferwall/saferwall/web/server/app/common/database"
-	"github.com/saferwall/saferwall/web/server/app/router"
-	"github.com/saferwall/saferwall/web/server/app/schemas"
-	"github.com/saferwall/saferwall/web/server/config"
+	"github.com/saferwall/saferwall/web/app"
+	"github.com/saferwall/saferwall/web/app/common/database"
+	"github.com/saferwall/saferwall/web/app/router"
+	"github.com/saferwall/saferwall/web/app/schemas"
+	"github.com/saferwall/saferwall/web/config"
 )
 
 func main() {

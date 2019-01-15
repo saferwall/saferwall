@@ -5,7 +5,7 @@ import (
 	"time"
 	"log"
 
-	db "github.com/saferwall/saferwall/web/server/app/common/database"
+	db "github.com/saferwall/saferwall/web/app/common/database"
 )
 
 // AV vendor
