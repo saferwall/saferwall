@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/saferwall/saferwall/web/server/app"
+	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/pkg/crypto"
-	f "github.com/saferwall/saferwall/web/server/app/models/file"
+	f "github.com/saferwall/saferwall/web/app/models/file"
 )
 
 // Response JSON

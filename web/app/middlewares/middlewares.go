@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/saferwall/saferwall/web/server/app/middlewares/auth"
+	"github.com/saferwall/saferwall/web/app/middlewares/auth"
 )
 
 func requireJSON(next echo.HandlerFunc) echo.HandlerFunc {

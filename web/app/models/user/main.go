@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/saferwall/saferwall/web/server/app/common/database"
+	"github.com/saferwall/saferwall/web/app/common/database"
 	"gopkg.in/couchbase/gocb.v1"
 )
 

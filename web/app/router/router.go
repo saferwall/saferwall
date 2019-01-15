@@ -2,8 +2,8 @@ package router
 
 import (
 	"github.com/labstack/echo"
-	"github.com/saferwall/saferwall/web/server/app/handlers"
-	"github.com/saferwall/saferwall/web/server/app/middlewares"
+	"github.com/saferwall/saferwall/web/app/handlers"
+	"github.com/saferwall/saferwall/web/app/middlewares"
 )
 
 // New create an echo insance
