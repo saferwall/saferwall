@@ -1,3 +1,7 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package user
 
 import (
@@ -7,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/saferwall/saferwall/web/app/common/database"
-	"gopkg.in/couchbase/gocb.v1"
+	"github.com/saferwall/saferwall/web/app/common/db"
+	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 // User represent a user
@@ -64,7 +68,7 @@ func (u *User) SelectFields(fields ...string) map[string]interface{} {
 
 // NewUser add a user to a database
 func NewUser(newUser User) {
-	database.UsersBucket.Upsert(newUser.Username, newUser, 0)
+	db.UsersBucket.Upsert(newUser.Username, newUser, 0)
 }
 
 // GetAllUsers return all users (optional: selecting fields)
@@ -90,7 +94,7 @@ func GetAllUsers(fields []string) ([]User, error) {
 
 	// Execute our query
 	query := gocb.NewN1qlQuery(statement)
-	rows, err := database.UsersBucket.ExecuteN1qlQuery(query, nil)
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, nil)
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 	}
@@ -110,7 +114,7 @@ func GetAllUsers(fields []string) ([]User, error) {
 // DeleteAllUsers will empty users bucket
 func DeleteAllUsers() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	database.UsersBucket.Manager("", "").Flush()
+	db.UsersBucket.Manager("", "").Flush()
 }
 
 // GetUserByUsername return user document
@@ -118,7 +122,7 @@ func GetUserByUsername(username string) (User, error) {
 
 	// get our user
 	user := User{}
-	cas, err := database.UsersBucket.Get(username, &user)
+	cas, err := db.UsersBucket.Get(username, &user)
 	if err != nil {
 		fmt.Println(err, cas)
 		return user, err
@@ -159,7 +163,7 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 	var row User
 
 	// Execute Query
-	rows, err := database.UsersBucket.ExecuteN1qlQuery(query, myParams)
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, myParams)
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err
@@ -179,7 +183,7 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 func DeleteUser(username string) error {
 
 	// delete document
-	cas, err := database.UsersBucket.Remove(username, 0)
+	cas, err := db.UsersBucket.Remove(username, 0)
 	fmt.Println(cas, err)
 	return err
 }
