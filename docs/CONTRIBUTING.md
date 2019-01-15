@@ -6,12 +6,10 @@ email, or any other method with the owners of this repository before making a ch
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
 ### Repostiory Layout
+* __pkg__ : library code to use by external applications.
+* __website__ : saferwall website and documentation.
+* __ui__ : (frontend) vue.js dashboard.
+* __web__ : (backend) go web application.
+* __build__ : docker files, makefiles, kubernetes deployements.
+* __api__ : proto buffer specs.
 
-```
-|-- web                         # web application specific components: static web assets, server side templates and SPAs.
-|   |-- client                  # frontend
-|   |-- server                  # backend
-|   `--
-`-- pkg                         # library code that's ok to use by external applications
-`-- website                     # saferwall website and documentation
-```
