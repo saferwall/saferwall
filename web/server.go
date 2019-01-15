@@ -1,8 +1,12 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
 	"github.com/saferwall/saferwall/web/app"
-	"github.com/saferwall/saferwall/web/app/common/database"
+	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/router"
 	"github.com/saferwall/saferwall/web/app/schemas"
 	"github.com/saferwall/saferwall/web/config"
@@ -17,7 +21,7 @@ func main() {
 	app.Init()
 
 	// Connect to the database
-	database.Connect()
+	db.Connect()
 
 	// Load schemas
 	schemas.Load()
@@ -26,5 +30,5 @@ func main() {
 	e := router.New()
 
 	// Start the server
-	e.Logger.Fatal(e.Start(":80"))
+	e.Logger.Fatal(e.Start(":8080"))
 }

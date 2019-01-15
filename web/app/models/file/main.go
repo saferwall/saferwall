@@ -1,11 +1,15 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package file
 
 import (
 	"fmt"
-	"time"
 	"log"
+	"time"
 
-	db "github.com/saferwall/saferwall/web/app/common/database"
+	"github.com/saferwall/saferwall/web/app/common/db"
 )
 
 // AV vendor
@@ -27,7 +31,7 @@ type File struct {
 }
 
 // Create creates a new file
-func  (file *File) Create(documentID string) (error) {
+func (file *File) Create(documentID string) error {
 	_, error := db.FilesBucket.Upsert(documentID, file, 0)
 	if error != nil {
 		log.Fatal(error)

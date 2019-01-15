@@ -63,7 +63,7 @@ func GetSha512(b []byte) string {
 }
 
 // GetSsdeep returns ssdeep fuzzy hash
-func GetSsdeep(b []byte) (FuzzyHash string, err error) {
+func GetSsdeep(b []byte) (string, error) {
 	return ssdeep.FuzzyBytes(b)
 }
 
