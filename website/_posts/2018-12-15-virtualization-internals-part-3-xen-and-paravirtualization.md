@@ -11,6 +11,8 @@ comments: true
 
 Welcome to chapter 3 of virtualization internals. We have seen previously how VMWare achieved full virtualization using binary translation. In this chapter, we will explore another technique of virtualization referred as paravirtualization. One major hypervisor vendor which leverages paravirtualization is Xen.
 
+<!--more-->
+
 - [Virtualization Internals Part 1 - Intro to Virtualization](https://saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
 - [Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation](https://saferwall.com/blog/virtualization-internals-part-2-vmware-and-virtualization-using-binary-translation)
 - Virtualization Internals Part 3 - Xen and Paravirtualization (current)

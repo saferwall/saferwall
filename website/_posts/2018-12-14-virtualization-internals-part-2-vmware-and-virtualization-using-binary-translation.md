@@ -11,6 +11,8 @@ comments: true
 
 In the previous chapter, we have introduced some basic concepts about hypervisors and briefly touched upon the different techniques to virtualize x86: full virtualization using binary translation, paravirtualization and hardware virtualization. Today, we will dig deeper into full virtualization and particularly how early versions of VMWare Workstation successfully bringed virtualization back to x86 regardless the lack of virtualization support back in time and the deep complexity of the architecture.
 
+<!--more-->
+
 - [Virtualization Internals Part 1 - Intro to Virtualization](https://saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
 - Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation (current)
 - [Virtualization Internals Part 3 - Xen and Paravirtualization](https://saferwall.com/blog/virtualization-internals-part-3-xen-and-paravirtualization)
