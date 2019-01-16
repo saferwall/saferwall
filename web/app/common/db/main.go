@@ -53,6 +53,6 @@ func Connect() {
 	FilesBucket = bucketFiles
 
 	/* Create primary indexs */
-	UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
-	FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	// UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	// FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
 }
