@@ -1,3 +1,7 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -8,6 +12,9 @@ import (
 	"syscall"
 
 	nsq "github.com/bitly/go-nsq"
+)
+const (
+	addr = "127.0.0.1:4161"
 )
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
@@ -39,7 +46,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Let's log our message!
-	log.Print(m.Body)
+	log.Print(string(m.Body))
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd
@@ -85,7 +92,7 @@ func main() {
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
 	// nsqlds := []string{"nsqlookupd1.local", "nsqlookupd2.local", "nsqlookupd3.local"}
-	if err := consumer.ConnectToNSQLookupd("172.17.0.3:4160"); err != nil {
+	if err := consumer.ConnectToNSQLookupd(addr); err != nil {
 		log.Fatal(err)
 	}
 

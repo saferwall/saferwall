@@ -55,6 +55,4 @@ docker-rm-images:	## Delete all images
 	docker rmi $$(docker images -q)
 
 docker-get-ip:		## Get container IP addr
-	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(DOCKER_CONTAINER)
-
-`
+	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(DOCKER_IMG)
