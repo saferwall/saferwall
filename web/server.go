@@ -7,8 +7,8 @@ package main
 import (
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
-	"github.com/saferwall/saferwall/web/app/router"
-	"github.com/saferwall/saferwall/web/app/schemas"
+	"github.com/saferwall/saferwall/web/app/route"
+	"github.com/saferwall/saferwall/web/app/schema"
 	"github.com/saferwall/saferwall/web/config"
 )
 
@@ -24,10 +24,10 @@ func main() {
 	db.Connect()
 
 	// Load schemas
-	schemas.Load()
+	schema.Load()
 
 	// Create echo instance and load all routes
-	e := router.New()
+	e := route.New()
 
 	// Start the server
 	e.Logger.Fatal(e.Start(":8080"))

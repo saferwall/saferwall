@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package schemas
+package schema
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func Load() {
 		log.Fatal(err)
 	}
 
-	out := path.Join(dir, "app", "schemas", "user.json")
+	out := path.Join(dir, "app", "schema", "user.json")
 	out = fmt.Sprintf("file:///%s", out)
 	schemaLoader := gojsonschema.NewReferenceLoader(out)
 	userSchema, err := gojsonschema.NewSchema(schemaLoader)

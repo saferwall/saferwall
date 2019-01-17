@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package middlewares
+package middleware
 
 import (
 	"fmt"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/saferwall/saferwall/web/app/middlewares/auth"
 )
 
 func requireJSON(next echo.HandlerFunc) echo.HandlerFunc {
@@ -22,6 +21,12 @@ func requireJSON(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return next(c)
 	}
+}
+
+// ValidateAPIKey will check if API key is allowed
+func ValidateAPIKey(key string, ctx echo.Context) (bool, error) {
+
+	return true, nil
 }
 
 // Init middlewares
@@ -42,9 +47,9 @@ func Init(e *echo.Echo) {
 	// e.Use(requireJSON)
 
 	// authorization
-	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		KeyLookup: "query:api-key",
-		Validator: middleware.KeyAuthValidator(auth.ValidateAPIKey),
-	}))
+	// e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+	// 	KeyLookup: "query:api-key",
+	// 	Validator: middleware.KeyAuthValidator(ValidateAPIKey),
+	// }))
 
 }
