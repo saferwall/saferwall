@@ -1,0 +1,8 @@
+[db]
+server = "couchbase://localhost/"
+username = "couchbase_username"
+password = "couchbase_password"
+
+[storage]
+tmp_samples = "/tmp/samples"
+max_file_size = 64000000 # 64MB

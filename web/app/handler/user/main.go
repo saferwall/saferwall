@@ -15,9 +15,10 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
-	"github.com/saferwall/saferwall/web/app/schema"
+	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
@@ -78,6 +79,7 @@ func (u *User) Create() {
 
 	u.MemberSince = time.Now().UTC()
 	db.UsersBucket.Upsert(u.Username, u, 0)
+	log.Infof("User was created successefuly: %s", u.Username)
 }
 
 // DeleteAllUsers will empty users bucket
@@ -253,7 +255,7 @@ func PostUsers(c echo.Context) error {
 
 	// Validate JSON
 	l := gojsonschema.NewBytesLoader(b)
-	result, err := schema.UserSchemaLoader.Validate(l)
+	result, err := app.UserSchemaLoader.Validate(l)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}

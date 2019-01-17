@@ -5,11 +5,9 @@
 package db
 
 import (
-	"fmt"
-	"log"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"gopkg.in/couchbase/gocb.v1"
+	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 var (
@@ -27,7 +25,7 @@ func Connect() {
 	connectStr := viper.GetString("db.server")
 	cluster, err := gocb.Connect(connectStr)
 	if err != nil {
-		fmt.Println("Error while connecting to couchbase server")
+		log.Error(err)
 	}
 
 	/* Authenticate cluster */
@@ -41,18 +39,21 @@ func Connect() {
 	/* Open the `users` bucket */
 	bucketUsers, err := cluster.OpenBucket("users", "")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	UsersBucket = bucketUsers
 
 	/* Open the `files` bucket */
 	bucketFiles, err := cluster.OpenBucket("files", "")
 	if err != nil {
-		fmt.Println("Error while opening bucket files")
+		log.Error(err)
 	}
 	FilesBucket = bucketFiles
 
 	/* Create primary indexs */
-	// UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
-	// FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+
+	log.Info("Connected to couchbase")
+
 }

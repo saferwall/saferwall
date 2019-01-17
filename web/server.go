@@ -6,25 +6,13 @@ package main
 
 import (
 	"github.com/saferwall/saferwall/web/app"
-	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/route"
-	"github.com/saferwall/saferwall/web/app/schema"
-	"github.com/saferwall/saferwall/web/config"
 )
 
 func main() {
 
-	// Load the configuration file
-	config.Load()
-
 	// Init our app
 	app.Init()
-
-	// Connect to the database
-	db.Connect()
-
-	// Load schemas
-	schema.Load()
 
 	// Create echo instance and load all routes
 	e := route.New()
