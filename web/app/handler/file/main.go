@@ -16,9 +16,11 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
+	"github.com/spf13/viper"
 )
 
 // File represent a sample
@@ -160,19 +162,10 @@ func PostFiles(c echo.Context) error {
 		return err
 	}
 
-	// Destination
-	FilePath := path.Join(app.StoragePath, file.Filename)
-	dst, err := os.Create(FilePath)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	// Writefile
-	ioutil.WriteFile(FilePath, fileContents, 0644)
-	if _, err = io.Copy(dst, src); err != nil {
-		return err
-	}
+	spaceName := viper.GetString("do.spacename")
+	app.DOClient.FPutObject(spaceName, "zbot",
+		"/home/noteworthy/go/src/github.com/saferwall/saferwall/test/multiav/infected/zbot",
+		minio.PutObjectOptions{})
 
 	// Save to DB
 	Sha256 := crypto.GetSha256(fileContents)

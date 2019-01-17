@@ -10,6 +10,7 @@ import (
 	"path"
 
 	nsq "github.com/bitly/go-nsq"
+	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -29,6 +30,9 @@ var (
 
 	// NsqProducer holds an instance of NSQ producer.
 	NsqProducer *nsq.Producer
+
+	// DOClient represents an instance of Object Space API client.
+	DOClient *minio.Client
 
 	// UserSchemaLoader represent a user
 	UserSchemaLoader gojsonschema.Schema
@@ -88,6 +92,21 @@ func loadSchemas() {
 	UserSchemaLoader = *userSchema
 }
 
+// initDOClient returns a client for DigitalOcean Spaces.
+func initDOClient() *minio.Client {
+	accessKey := viper.GetString("do.accesskey")
+	secKey := viper.GetString("do.seckey")
+	endpoint := viper.GetString("do.endpoint")
+	ssl := true
+
+	// Initiate a client using DigitalOcean Spaces.
+	client, err := minio.New(endpoint, accessKey, secKey, ssl)
+	if err != nil {
+		log.Error(err)
+	}
+	return client
+}
+
 // Init will create some directories
 func Init() {
 
@@ -97,14 +116,16 @@ func Init() {
 	// Load the configuration file
 	loadConfig()
 
-	// Connect to the database
-	db.Connect()
-
 	// Load schemas
 	loadSchemas()
 
 	// Get an instance of NSQ
 	NsqProducer = createNSQProducer()
+
+	DOClient = initDOClient()
+
+	// Connect to the database
+	db.Connect()
 
 	StoragePath = viper.GetString("storage.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))
