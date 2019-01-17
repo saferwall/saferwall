@@ -6,3 +6,9 @@ password = "couchbase_password"
 [storage]
 tmp_samples = "/tmp/samples"
 max_file_size = 64000000 # 64MB
+
+[digitaloceon]
+accessKey = ""
+secKey = ""
+endpoint = "sfo2.digitaloceanspaces.com"
+spaceName = "samples" 
