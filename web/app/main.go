@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	addr = "127.0.0.1:4161"
+	addr = "127.0.0.1:4150"
 )
 
 var (
@@ -36,6 +36,9 @@ var (
 
 	// UserSchemaLoader represent a user
 	UserSchemaLoader gojsonschema.Schema
+
+	// SamplesSpaceBucket contains the space name of bucket to save samples.
+	SamplesSpaceBucket	string
 )
 
 // loadConfig loads our configration.
@@ -97,6 +100,7 @@ func initDOClient() *minio.Client {
 	accessKey := viper.GetString("do.accesskey")
 	secKey := viper.GetString("do.seckey")
 	endpoint := viper.GetString("do.endpoint")
+	SamplesSpaceBucket = viper.GetString("do.spacename")
 	ssl := true
 
 	// Initiate a client using DigitalOcean Spaces.

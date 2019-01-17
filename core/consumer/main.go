@@ -6,15 +6,23 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	nsq "github.com/bitly/go-nsq"
+	minio "github.com/minio/minio-go"
+	"github.com/saferwall/saferwall/pkg/crypto"
+	"github.com/saferwall/saferwall/pkg/utils/do"
+	log "github.com/sirupsen/logrus"
 )
+
 const (
 	addr = "127.0.0.1:4161"
+)
+
+var(
+	client *minio.Client
 )
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
@@ -46,7 +54,25 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Let's log our message!
-	log.Print(string(m.Body))
+	sha256 := string(m.Body)
+	log.Infof("Processing %s", sha256)
+
+	object, err := client.GetObject("samples", sha256, minio.GetObjectOptions{})
+	if err != nil {
+		log.Error("Failed to get object, err: ", err)
+		return err
+	}
+
+	objectHeader, err := object.Stat()
+	if err != nil {
+		log.Error("Failed to get object, err: ", err)
+		return err
+	}
+    b := make([]byte, objectHeader.Size)
+
+	object.Read(b)
+	r := crypto.HashBytes(b)
+	log.Info(r)
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd
@@ -54,6 +80,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 }
 
 func main() {
+
+	client = do.GetClient()
+
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.
 	config := nsq.NewConfig()

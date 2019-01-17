@@ -7,9 +7,7 @@ package file
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -20,7 +18,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
-	"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
 )
 
 // File represent a sample
@@ -50,13 +48,13 @@ type AV struct {
 }
 
 // Create creates a new file
-func (file *File) Create(documentID string) error {
-	_, error := db.FilesBucket.Upsert(documentID, file, 0)
+func (file *File) Create() error {
+	_, error := db.FilesBucket.Upsert(file.Sha256, file, 0)
 	if error != nil {
 		log.Fatal(error)
 		return error
 	}
-
+	log.Infof("File %s added to database.", file.Sha256)
 	return nil
 }
 
@@ -131,57 +129,83 @@ func GetFiles(c echo.Context) error {
 func PostFiles(c echo.Context) error {
 
 	// Source
-	file, err := c.FormFile("file")
+	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Missing file",
 			Description: "Did you send the file via the form request ?",
-			Filename:    file.Filename,
 		})
 	}
 
 	// Check file size
-	if file.Size > app.MaxFileSize {
+	if fileHeader.Size > app.MaxFileSize {
 		return c.JSON(http.StatusRequestEntityTooLarge, Response{
 			Message:     "File too large",
 			Description: "The maximum allowed is 64MB",
-			Filename:    file.Filename,
+			Filename:    fileHeader.Filename,
 		})
 	}
 
 	// Open the file
-	src, err := file.Open()
+	file, err := fileHeader.Open()
 	if err != nil {
-		return err
+		log.Error("Opening a file handle failed, err: ", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Internal error",
+			Description: "Internal error",
+			Filename:    fileHeader.Filename,
+		})
 	}
-	defer src.Close()
+	defer file.Close()
 
 	// Read the content
-	fileContents, err := ioutil.ReadAll(src)
+	fileContents, err := ioutil.ReadAll(file)
 	if err != nil {
-		return err
+		log.Error("Opening a reading the file content, err: ", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Internal error",
+			Description: "Internal error",
+			Filename:    fileHeader.Filename,
+		})
 	}
 
-	spaceName := viper.GetString("do.spacename")
-	app.DOClient.FPutObject(spaceName, "zbot",
-		"/home/noteworthy/go/src/github.com/saferwall/saferwall/test/multiav/infected/zbot",
-		minio.PutObjectOptions{})
+	sha256 := crypto.GetSha256(fileContents)
+
+	// Upload the sample to DO object storage.
+	_, err = app.DOClient.PutObject(app.SamplesSpaceBucket, sha256, file, fileHeader.Size, minio.PutObjectOptions{})
+	if err != nil {
+		log.Error("Failed to upload object, err: ", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Internal error",
+			Description: "Internal error",
+			Filename:    fileHeader.Filename,
+		})
+	}
 
 	// Save to DB
-	Sha256 := crypto.GetSha256(fileContents)
 	NewFile := File{
-		Sha256:    Sha256,
+		Sha256:    sha256,
 		FirstSeen: time.Now().UTC(),
 	}
-	NewFile.Create(Sha256)
+	NewFile.Create()
 
 	// Push it to NSQ
+	err = app.NsqProducer.Publish("scan", []byte(sha256))
+	if err != nil {
+		log.Error("Failed to publish to NSQ, err: ", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Internal error",
+			Description: "Internal error",
+			Filename:    fileHeader.Filename,
+		})
+	}
 
+	// All went fine
 	return c.JSON(http.StatusCreated, Response{
-		Sha256:      Sha256,
+		Sha256:      sha256,
 		Message:     "ok",
 		Description: "File queued successfully for analysis",
-		Filename:    file.Filename,
+		Filename:    fileHeader.Filename,
 	})
 }
 
