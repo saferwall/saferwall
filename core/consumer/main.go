@@ -5,10 +5,16 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
@@ -18,10 +24,11 @@ import (
 )
 
 const (
-	addr = "127.0.0.1:4161"
+	addr     = "127.0.0.1:4161"
+	endpoint = "http://127.0.0.1:8080/v1/files/"
 )
 
-var(
+var (
 	client *minio.Client
 )
 
@@ -68,11 +75,39 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to get object, err: ", err)
 		return err
 	}
-    b := make([]byte, objectHeader.Size)
+	b := make([]byte, objectHeader.Size)
 
 	object.Read(b)
 	r := crypto.HashBytes(b)
-	log.Info(r)
+
+	buff, err := json.Marshal(r)
+	if err != nil {
+		log.Error("Failed to get object, err: ", err)
+		return err
+	}
+
+	client := &http.Client{}
+	client.Timeout = time.Second * 15
+	url := endpoint + sha256
+	body := bytes.NewBuffer(buff)
+	req, err := http.NewRequest(http.MethodPut, url, body)
+	if err != nil {
+		log.Errorf("http.NewRequest() failed with '%s'\n", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("client.Do() failed with '%s'\n", err)
+	}
+
+	defer resp.Body.Close()
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
+	}
+
+	fmt.Printf("Response status code: %d, text:\n%s\n", resp.StatusCode, string(d))
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd

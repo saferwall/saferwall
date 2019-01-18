@@ -255,7 +255,7 @@ func PostUsers(c echo.Context) error {
 
 	// Validate JSON
 	l := gojsonschema.NewBytesLoader(b)
-	result, err := app.UserSchemaLoader.Validate(l)
+	result, err := app.UserSchema.Validate(l)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
