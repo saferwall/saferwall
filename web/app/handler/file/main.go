@@ -32,7 +32,8 @@ type File struct {
 	Magic     string            `json:"magic,omitempty"`
 	Size      int64             `json:"size,omitempty"`
 	Exif      map[string]string `json:"exif"`
-	FirstSeen time.Time         `json:"first_seen,omitempty"`
+	TriD      []string			`json:"trid"`
+	FirstSeen time.Time `json:"first_seen,omitempty"`
 }
 
 // Response JSON
