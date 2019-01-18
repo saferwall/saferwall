@@ -21,6 +21,7 @@ import (
 	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
+	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/pkg/utils/do"
@@ -45,6 +46,7 @@ type result struct {
 	Ssdeep string            `json:"ssdeep"`
 	Exif   map[string]string `json:"exif"`
 	TriD   []string          `json:"trid"`
+	Magic  string            `json:"magic"`
 }
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
@@ -113,6 +115,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with trid, err: ", err)
+		return err
+	}
+
+	// Run Magic Pkg
+	res.Magic, err = magic.GetMimeType(b)
+	if err != nil {
+		log.Error("Failed to scan file with magic, err: ", err)
 		return err
 	}
 
