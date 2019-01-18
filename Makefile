@@ -28,3 +28,5 @@ include build/ruby.mk
 include build/nodejs.mk
 include build/yarn.mk
 include build/nsq.mk
+include build/trid.mk
+include build/couchbase.mk
