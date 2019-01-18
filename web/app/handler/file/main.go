@@ -6,7 +6,6 @@ package file
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,6 +18,7 @@ import (
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // File represent a sample
@@ -30,7 +30,7 @@ type File struct {
 	Ssdeep    string    `json:"ssdeep,omitempty"`
 	Crc32     string    `json:"crc32,omitempty"`
 	Magic     string    `json:"magic,omitempty"`
-	Size      int       `json:"size,omitempty"`
+	Size      int64     `json:"size,omitempty"`
 	FirstSeen time.Time `json:"first_seen,omitempty"`
 }
 
@@ -65,7 +65,7 @@ func GetFileBySHA256(sha256 string) (File, error) {
 	file := File{}
 	cas, err := db.FilesBucket.Get(sha256, &file)
 	if err != nil {
-		fmt.Println(err, cas)
+		log.Errorln(err, cas)
 		return file, err
 	}
 
@@ -78,7 +78,7 @@ func GetFileBySHA256(sha256 string) (File, error) {
 func GetFile(c echo.Context) error {
 
 	// get path param
-	// sha256 := c.Param("sha256")
+	sha256 := c.Param("sha256")
 
 	// ugly
 	dir, err := os.Getwd()
@@ -89,7 +89,7 @@ func GetFile(c echo.Context) error {
 	out := path.Join(dir, "app", "handlers", "file.json")
 	raw, err := ioutil.ReadFile(out)
 	if err != nil {
-		return c.String(http.StatusOK, "something went wrong")
+		return c.String(http.StatusOK, "something went wrong"+sha256)
 	}
 	// r := Response{Sha256: sha256}
 	var my map[string]interface{}
@@ -103,6 +103,34 @@ func PutFile(c echo.Context) error {
 	// get path param
 	sha256 := c.Param("sha256")
 
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.FileSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	if !result.Valid() {
+		return c.JSON(http.StatusBadRequest, result.Errors())
+	}
+
+	// Updates the document.
+	file, err := GetFileBySHA256(sha256)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	err = json.Unmarshal(b, &file)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	db.FilesBucket.Upsert(sha256, file, 0)
 	return c.JSON(http.StatusOK, sha256)
 }
 
@@ -186,6 +214,7 @@ func PostFiles(c echo.Context) error {
 	NewFile := File{
 		Sha256:    sha256,
 		FirstSeen: time.Now().UTC(),
+		Size:      fileHeader.Size,
 	}
 	NewFile.Create()
 

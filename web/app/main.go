@@ -11,6 +11,7 @@ import (
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -34,11 +35,14 @@ var (
 	// DOClient represents an instance of Object Space API client.
 	DOClient *minio.Client
 
-	// UserSchemaLoader represent a user
-	UserSchemaLoader gojsonschema.Schema
+	// UserSchema represent a user
+	UserSchema *gojsonschema.Schema
+
+	// FileSchema represent a user
+	FileSchema *gojsonschema.Schema
 
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
-	SamplesSpaceBucket	string
+	SamplesSpaceBucket string
 )
 
 // loadConfig loads our configration.
@@ -80,19 +84,26 @@ func initLogging() {
 // loadSchemas will load schemas at server startup.
 func loadSchemas() {
 
-	dir, err := os.Getwd()
+	dir, err := utils.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Error("Failed to GetWd, err: ", err)
 	}
 
-	out := path.Join(dir, "app", "schema", "user.json")
-	out = fmt.Sprintf("file:///%s", out)
-	schemaLoader := gojsonschema.NewReferenceLoader(out)
-	userSchema, err := gojsonschema.NewSchema(schemaLoader)
+	jsonPath := path.Join(dir, "app", "schema", "user.json")
+	source := fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader := gojsonschema.NewReferenceLoader(source)
+	UserSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
 		log.Error("Error while loading user schema: ", err)
 	}
-	UserSchemaLoader = *userSchema
+
+	jsonPath = path.Join(dir, "app", "schema", "file.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	FileSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Error("Error while loading file schema: ", err)
+	}
 }
 
 // initDOClient returns a client for DigitalOcean Spaces.
