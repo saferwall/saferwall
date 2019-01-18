@@ -13,12 +13,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
+	"github.com/saferwall/saferwall/pkg/exiftool"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/pkg/utils/do"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,6 +34,16 @@ const (
 var (
 	client *minio.Client
 )
+
+type result struct {
+	Crc32  string            `json:"crc32"`
+	Md5    string            `json:"md5"`
+	Sha1   string            `json:"sha1"`
+	Sha256 string            `json:"sha256"`
+	Sha512 string            `json:"sha512"`
+	Ssdeep string            `json:"ssdeep"`
+	Exif   map[string]string `json:"exif"`
+}
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
 // The default NSQ logger is great for debugging, but did
@@ -60,27 +73,41 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
-	// Let's log our message!
 	sha256 := string(m.Body)
 	log.Infof("Processing %s", sha256)
+	filePath := path.Join("/tmp", sha256)
 
-	object, err := client.GetObject("samples", sha256, minio.GetObjectOptions{})
+	// Download the sample
+	err := client.FGetObject("samples", sha256, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err
 	}
 
-	objectHeader, err := object.Stat()
+	b, err := utils.ReadAll(filePath)
 	if err != nil {
-		log.Error("Failed to get object, err: ", err)
+		log.Error("Failed to read file, err: ", err)
 		return err
 	}
-	b := make([]byte, objectHeader.Size)
-
-	object.Read(b)
+	// Run crypto pkg
 	r := crypto.HashBytes(b)
+	res := result{
+		Crc32:  r.Crc32,
+		Md5:    r.Md5,
+		Sha1:   r.Sha1,
+		Sha256: r.Sha256,
+		Sha512: r.Sha512,
+		Ssdeep: r.Ssdeep,
+	}
 
-	buff, err := json.Marshal(r)
+	// Run exiftool pkg
+	res.Exif, err = exiftool.Scan(filePath)
+	if err != nil {
+		log.Error("Failed to scan file with exiftool, err: ", err)
+		return err
+	}
+
+	buff, err := json.Marshal(res)
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err

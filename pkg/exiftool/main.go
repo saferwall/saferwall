@@ -4,6 +4,7 @@
 
 package exiftool
 
+
 import (
 	"strings"
 

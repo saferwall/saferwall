@@ -19,12 +19,12 @@ import (
 
 // Result contains result for all hashes
 type Result struct {
-	Crc32  string `json:"crc32"`
-	Md5    string `json:"md5"`
-	Sha1   string `json:"sha1"`
-	Sha256 string `json:"sha256"`
-	Sha512 string `json:"sha512"`
-	Ssdeep string `json:"ssdeep"`
+	Crc32  string
+	Md5    string
+	Sha1   string
+	Sha256 string
+	Sha512 string
+	Ssdeep string
 }
 
 // GetCrc32 returns CRC32 checksum in hex format
