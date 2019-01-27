@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -152,7 +151,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
 	}
 
-	fmt.Printf("Response status code: %d, text:\n%s\n", resp.StatusCode, string(d))
+	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd

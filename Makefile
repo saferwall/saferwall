@@ -30,3 +30,4 @@ include build/yarn.mk
 include build/nsq.mk
 include build/trid.mk
 include build/couchbase.mk
+include build/k8s.mk

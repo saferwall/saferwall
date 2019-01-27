@@ -67,6 +67,10 @@
       "description": "TrID scan results",
       "type": "array"
     },
+    "multiav": {
+      "description": "Anti-virus scan results",
+      "type": "object"
+    },
     "analysis": {
       "description": "Static and dynamic analysis of file",
       "type": "object",
@@ -110,10 +114,6 @@
             },
             "ooxml": {
               "description": "Office Open XML format parsing results",
-              "type": "object"
-            },
-            "av": {
-              "description": "Anti-virus scan results",
               "type": "object"
             },
             "yara": {
