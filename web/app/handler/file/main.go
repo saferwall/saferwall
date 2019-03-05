@@ -21,19 +21,26 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+
+type stringStruct struct {
+	Encoding string `json:"encoding"`
+	Value    string `json:"value"`
+}
+
 // File represent a sample
 type File struct {
-	Md5       string            `json:"md5,omitempty"`
-	Sha1      string            `json:"sha1,omitempty"`
-	Sha256    string            `json:"sha256,omitempty"`
-	Sha512    string            `json:"sha512,omitempty"`
-	Ssdeep    string            `json:"ssdeep,omitempty"`
-	Crc32     string            `json:"crc32,omitempty"`
-	Magic     string            `json:"magic,omitempty"`
-	Size      int64             `json:"size,omitempty"`
-	Exif      map[string]string `json:"exif"`
-	TriD      []string			`json:"trid"`
-	FirstSeen time.Time `json:"first_seen,omitempty"`
+	Md5       string              `json:"md5,omitempty"`
+	Sha1      string              `json:"sha1,omitempty"`
+	Sha256    string              `json:"sha256,omitempty"`
+	Sha512    string              `json:"sha512,omitempty"`
+	Ssdeep    string              `json:"ssdeep,omitempty"`
+	Crc32     string              `json:"crc32,omitempty"`
+	Magic     string              `json:"magic,omitempty"`
+	Size      int64               `json:"size,omitempty"`
+	Exif      map[string]string   `json:"exif"`
+	TriD      []string            `json:"trid"`
+	FirstSeen time.Time           `json:"first_seen,omitempty"`
+	Strings   []stringStruct `json:"strings"`
 }
 
 // Response JSON

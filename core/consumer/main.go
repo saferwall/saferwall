@@ -21,6 +21,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
+	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/pkg/utils/do"
@@ -36,16 +37,21 @@ var (
 	client *minio.Client
 )
 
+type stringStruct struct {
+	Encoding string `json:"encoding"`
+	Value    string `json:"value"`
+}
 type result struct {
-	Crc32  string            `json:"crc32"`
-	Md5    string            `json:"md5"`
-	Sha1   string            `json:"sha1"`
-	Sha256 string            `json:"sha256"`
-	Sha512 string            `json:"sha512"`
-	Ssdeep string            `json:"ssdeep"`
-	Exif   map[string]string `json:"exif"`
-	TriD   []string          `json:"trid"`
-	Magic  string            `json:"magic"`
+	Crc32   string            `json:"crc32"`
+	Md5     string            `json:"md5"`
+	Sha1    string            `json:"sha1"`
+	Sha256  string            `json:"sha256"`
+	Sha512  string            `json:"sha512"`
+	Ssdeep  string            `json:"ssdeep"`
+	Exif    map[string]string `json:"exif"`
+	TriD    []string          `json:"trid"`
+	Magic   string            `json:"magic"`
+	Strings []stringStruct    `json:"strings"`
 }
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
@@ -92,6 +98,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to read file, err: ", err)
 		return err
 	}
+
 	// Run crypto pkg
 	r := crypto.HashBytes(b)
 	res := result{
@@ -123,6 +130,32 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to scan file with magic, err: ", err)
 		return err
 	}
+
+	// Run strings pkg
+
+	n := 10
+	asciiStrings := s.GetASCIIStrings(b, n)
+	wideStrings := s.GetUnicodeStrings(b, n)
+	asmStrings := s.GetAsmStrings(b)
+
+	// Remove duplicates
+	uniqueASCII := utils.UniqueSlice(asciiStrings)
+	uniqueWide := utils.UniqueSlice(wideStrings)
+	uniqueAsm := utils.UniqueSlice(asmStrings)
+
+	var strResults []stringStruct
+	for _, str := range uniqueASCII {
+		strResults = append(strResults, stringStruct{"ascii", str})
+	}
+
+	for _, str := range uniqueWide {
+		strResults = append(strResults, stringStruct{"wide", str})
+	}
+
+	for _, str := range uniqueAsm {
+		strResults = append(strResults, stringStruct{"asm", str})
+	}
+	res.Strings = strResults
 
 	buff, err := json.Marshal(res)
 	if err != nil {
