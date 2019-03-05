@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: frontend
   labels:
-    app: web
+    app: ui
 spec:
   selector:
     matchLabels:
-      app: web
+      app: ui
   replicas: 2
   template:
     metadata:
       labels:
-        app: web
+        app: ui
     spec:
       containers:
-      - name: backend
-        image: saferwall/web:latest
+      - name: frontend
+        image: saferwall/ui:latest
         ports:
         - containerPort: 8080
