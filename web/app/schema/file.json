@@ -71,6 +71,10 @@
       "description": "Anti-virus scan results",
       "type": "object"
     },
+    "strings": {
+      "description": "strings found on file",
+      "type": "array"
+    },
     "analysis": {
       "description": "Static and dynamic analysis of file",
       "type": "object",
@@ -79,27 +83,6 @@
           "description": "Static analysis of file",
           "type": "object",
           "properties": {
-            "strings": {
-              "description": "strings found on file",
-              "type": "object",
-              "properties": {
-                "ascii": {
-                  "description": "ascii strings found on file",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "wide": {
-                  "description": "unicode strings found on file",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "additionalProperties": false
-            },
             "pe": {
               "description": "PE format parsing results",
               "type": "object"
