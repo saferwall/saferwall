@@ -39,7 +39,7 @@ func Connect() {
 	/* Open the `users` bucket */
 	bucketUsers, err := cluster.OpenBucket("users", "")
 	if err != nil {
-		log.Error(err)
+		log.Panic(err)
 	}
 	UsersBucket = bucketUsers
 

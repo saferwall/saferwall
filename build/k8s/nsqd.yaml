@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nsqd
+  labels:
+    app: nsq
+    component: nsqd
+spec:
+  ports:
+    - port: 4150
+      targetPort: 4150
+      name: tcp
+    - port: 4151
+      targetPort: 4151
+      name: http
+  type: NodePort
+  selector:
+    app: nsq
+    component: nsqd
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nsqd
+spec:
+  serviceName: "nsqd"
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nsq
+      component: nsqd
+  template:
+    metadata:
+      labels:
+        app: nsq
+        component: nsqd
+    spec:
+      containers:
+        - name: nsqd
+          image: nsqio/nsq:v1.1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4150
+              name: tcp
+            - containerPort: 4151
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 2
+          volumeMounts:
+            - name: datadir
+              mountPath: /data
+          command:
+            - /usr/local/bin/nsqd
+            - -data-path
+            - /data
+            - -lookupd-tcp-address
+            - nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4160
+            - -lookupd-tcp-address
+            - nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4160
+            - -lookupd-tcp-address
+            - nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4160
+      # No pre-stop hook is required, a SIGTERM plus some time is all that's
+      # needed for graceful shutdown of a node.
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: datadir
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+        annotations:
+          volume.alpha.kubernetes.io/storage-class: anything
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
