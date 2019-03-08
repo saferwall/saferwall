@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  labels:
+    app: ui
+spec:
+  selector:
+    app: ui
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
+  type: LoadBalancer
+  loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: ui
+spec:
+  selector:
+    matchLabels:
+      app: ui
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+        - name: frontend
+          image: saferwall/ui:latest
+          ports:
+            - containerPort: 8080
