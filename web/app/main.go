@@ -18,10 +18,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-const (
-	addr = "127.0.0.1:4150"
-)
-
 var (
 	// StoragePath is where we save the samples
 	StoragePath string
@@ -52,9 +48,10 @@ func loadConfig() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Error(err)
-		panic(err)
+		log.Fatal(err)
 	}
+
+	log.Info("Config was loaded")
 }
 
 // createNSQProducer creates a new NSQ producer.
@@ -65,10 +62,13 @@ func createNSQProducer() *nsq.Producer {
 	config := nsq.NewConfig()
 
 	// Create a NewProducer with the name of our topic, the channel, and our config
+	addr := viper.GetString("nsq.addr")
 	p, err := nsq.NewProducer(addr, config)
 	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
+		log.Fatal(err)
+	}
+	if p.Ping() != nil {
+		log.Fatal(err)
 	}
 
 	log.Info("Got a new NSQ publisher instance")
@@ -86,7 +86,7 @@ func loadSchemas() {
 
 	dir, err := utils.Getwd()
 	if err != nil {
-		log.Error("Failed to GetWd, err: ", err)
+		log.Fatal("Failed to GetWd, err: ", err)
 	}
 
 	jsonPath := path.Join(dir, "app", "schema", "user.json")
@@ -94,7 +94,7 @@ func loadSchemas() {
 	jsonLoader := gojsonschema.NewReferenceLoader(source)
 	UserSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
-		log.Error("Error while loading user schema: ", err)
+		log.Fatal("Error while loading user schema: ", err)
 	}
 
 	jsonPath = path.Join(dir, "app", "schema", "file.json")
@@ -102,8 +102,10 @@ func loadSchemas() {
 	jsonLoader = gojsonschema.NewReferenceLoader(source)
 	FileSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
-		log.Error("Error while loading file schema: ", err)
+		log.Fatal("Error while loading file schema: ", err)
 	}
+
+	log.Info("Schemas were loaded")
 }
 
 // initDOClient returns a client for DigitalOcean Spaces.
@@ -112,13 +114,15 @@ func initDOClient() *minio.Client {
 	secKey := viper.GetString("do.seckey")
 	endpoint := viper.GetString("do.endpoint")
 	SamplesSpaceBucket = viper.GetString("do.spacename")
-	ssl := true
+	ssl := viper.GetBool("do.ssl")
 
 	// Initiate a client using DigitalOcean Spaces.
 	client, err := minio.New(endpoint, accessKey, secKey, ssl)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
+
+	log.Info("Got DO instance")
 	return client
 }
 
@@ -137,10 +141,11 @@ func Init() {
 	// Get an instance of NSQ
 	NsqProducer = createNSQProducer()
 
-	DOClient = initDOClient()
-
 	// Connect to the database
 	db.Connect()
+
+	// Get a DO instance
+	DOClient = initDOClient()
 
 	StoragePath = viper.GetString("storage.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))

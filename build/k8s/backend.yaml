@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-svc
+  name: backend                                
   labels:
     app: web
 spec:
@@ -10,9 +10,10 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-      nodePort: 30080
-  type: LoadBalancer
-  loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
+      # nodePort: 30080
+  type: NodePort 
+  # type: LoadBalancer
+  # loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
 
 ---
 apiVersion: apps/v1
@@ -33,6 +34,6 @@ spec:
     spec:
       containers:
         - name: backend
-          image: saferwall/web:latest
+          image: saferwall/web:0.0.1
           ports:
             - containerPort: 8080
