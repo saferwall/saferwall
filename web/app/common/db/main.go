@@ -39,14 +39,14 @@ func Connect() {
 	/* Open the `users` bucket */
 	bucketUsers, err := cluster.OpenBucket("users", "")
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	UsersBucket = bucketUsers
 
 	/* Open the `files` bucket */
 	bucketFiles, err := cluster.OpenBucket("files", "")
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 	FilesBucket = bucketFiles
 
@@ -55,5 +55,4 @@ func Connect() {
 	FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
 
 	log.Info("Connected to couchbase")
-
 }

@@ -12,5 +12,6 @@ couchbase-k8s-init:	## Init kubernetes operator ops
 	kubectl create clusterrolebinding couchbase-operator --clusterrole couchbase-operator --serviceaccount default:couchbase-operator
 	kubectl create -f operator.yaml
 	kubectl create -f secret.yaml
-	cbopctl create -f couchbase-cluster.yamG STATUS
+	cbopctl create -f couchbase-cluster.yaml
+	
 	kubectl delete deployment couchbase-operator

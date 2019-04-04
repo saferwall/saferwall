@@ -21,7 +21,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -29,18 +28,18 @@ type stringStruct struct {
 
 // File represent a sample
 type File struct {
-	Md5       string              `json:"md5,omitempty"`
-	Sha1      string              `json:"sha1,omitempty"`
-	Sha256    string              `json:"sha256,omitempty"`
-	Sha512    string              `json:"sha512,omitempty"`
-	Ssdeep    string              `json:"ssdeep,omitempty"`
-	Crc32     string              `json:"crc32,omitempty"`
-	Magic     string              `json:"magic,omitempty"`
-	Size      int64               `json:"size,omitempty"`
-	Exif      map[string]string   `json:"exif"`
-	TriD      []string            `json:"trid"`
-	FirstSeen time.Time           `json:"first_seen,omitempty"`
-	Strings   []stringStruct `json:"strings"`
+	Md5       string            `json:"md5,omitempty"`
+	Sha1      string            `json:"sha1,omitempty"`
+	Sha256    string            `json:"sha256,omitempty"`
+	Sha512    string            `json:"sha512,omitempty"`
+	Ssdeep    string            `json:"ssdeep,omitempty"`
+	Crc32     string            `json:"crc32,omitempty"`
+	Magic     string            `json:"magic,omitempty"`
+	Size      int64             `json:"size,omitempty"`
+	Exif      map[string]string `json:"exif"`
+	TriD      []string          `json:"trid"`
+	FirstSeen time.Time         `json:"first_seen,omitempty"`
+	Strings   []stringStruct    `json:"strings"`
 }
 
 // Response JSON
@@ -213,8 +212,8 @@ func PostFiles(c echo.Context) error {
 	if err != nil {
 		log.Error("Failed to upload object, err: ", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Internal error",
-			Description: "Internal error",
+			Message:     "PutObject failed",
+			Description: err.Error(),
 			Filename:    fileHeader.Filename,
 		})
 	}

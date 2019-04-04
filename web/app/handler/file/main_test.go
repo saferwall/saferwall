@@ -6,6 +6,7 @@ package file
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-	url = "http://127.0.0.1:8080/v1/files"
+	url = "http://192.168.99.100:30080/v1/files"
 )
 
 func TestPostFiles(t *testing.T) {
@@ -29,9 +30,9 @@ func TestPostFiles(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
-	log.Println(result)
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyString := string(bodyBytes)
+	log.Println(bodyString)
 }
 
 func TestGetFiles(t *testing.T) {
