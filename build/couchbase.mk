@@ -3,15 +3,3 @@ couchbase-run:		## Run couchbase docker container instance.
 
 couchbase-start:	## Run exiting couchbase `db` container.
 	docker start db
-
-couchbase-k8s-init:	## Init kubernetes operator ops
-	kubectl create -f crd.yaml
-	kubectl create -f cluster-role-sa.yaml
-	kubectl create -f cluster-role-user.yaml
-	kubectl create serviceaccount couchbase-operator --namespace default
-	kubectl create clusterrolebinding couchbase-operator --clusterrole couchbase-operator --serviceaccount default:couchbase-operator
-	kubectl create -f operator.yaml
-	kubectl create -f secret.yaml
-	cbopctl create -f couchbase-cluster.yaml
-	
-	kubectl delete deployment couchbase-operator

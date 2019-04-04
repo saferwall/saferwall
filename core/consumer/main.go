@@ -30,7 +30,7 @@ import (
 
 const (
 	addr     = "127.0.0.1:4161"
-	endpoint = "http://127.0.0.1:8080/v1/files/"
+	endpoint = "http://192.168.99.100:30081/v1/files/"
 )
 
 var (
@@ -193,6 +193,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
+	log.Info("0.0.5")
+
 	client = do.GetClient()
 
 	// The default config settings provide a pretty good starting point for
@@ -232,10 +234,14 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	// nsqlds := []string{"nsqlookupd1.local", "nsqlookupd2.local", "nsqlookupd3.local"}
-	if err := consumer.ConnectToNSQLookupd(addr); err != nil {
+	// nsqlds := []string{
+	// 	"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+	// 	"nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+	// 	"nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"}
+	if err := consumer.ConnectToNSQLookupd("nsqlookupd:4161"); err != nil {
 		log.Fatal(err)
 	}
+	log.Info("Connected to nsqlookupd")
 
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal

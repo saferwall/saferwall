@@ -54,5 +54,8 @@ docker-rm-all:		## Delete all containers
 docker-rm-images:	## Delete all images
 	docker rmi $$(docker images -q)
 
+docker-rm-image-tags ## Delete all tags from image
+	docker images | grep $(DOCKER_IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi saferwall/$(DOCKER_IMG):{}
+
 docker-get-ip:		## Get container IP addr
 	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(DOCKER_IMG)
