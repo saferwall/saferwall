@@ -29,8 +29,7 @@ import (
 )
 
 const (
-	addr     = "127.0.0.1:4161"
-	endpoint = "http://192.168.99.100:30081/v1/files/"
+	endpoint = "http://backend/v1/files/"
 )
 
 var (
@@ -194,7 +193,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
-	log.Info("0.0.5")
+	log.Info("Version 0.1.6")
 
 	client = do.GetClient()
 
@@ -237,8 +236,9 @@ func main() {
 	// producers.
 	nsqlds := []string{
 		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-		"nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-		"nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"}
+		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
+	}
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}

@@ -24,7 +24,7 @@ metadata:
   name: nsqlookupd
 spec:
   serviceName: "nsqlookupd"
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: nsq

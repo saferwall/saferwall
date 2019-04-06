@@ -16,4 +16,5 @@ spec:
     spec:
       containers:
         - name: consumer
-          image: saferwall/consumer:0.0.1
+          image: saferwall/consumer:0.1.7
+
