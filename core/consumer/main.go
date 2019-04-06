@@ -30,7 +30,7 @@ import (
 
 const (
 	addr     = "127.0.0.1:4161"
-	endpoint = "http://127.0.0.1:8080/v1/files/"
+	endpoint = "http://192.168.99.100:30081/v1/files/"
 )
 
 var (
@@ -63,6 +63,7 @@ type NoopNSQLogger struct{}
 
 // Output allows us to implement the nsq.Logger interface
 func (l *NoopNSQLogger) Output(calldepth int, s string) error {
+	log.Info(s)
 	return nil
 }
 
@@ -193,6 +194,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
+	log.Info("0.0.5")
+
 	client = do.GetClient()
 
 	// The default config settings provide a pretty good starting point for
@@ -215,7 +218,7 @@ func main() {
 	// from here.
 	consumer.SetLogger(
 		&NoopNSQLogger{},
-		nsq.LogLevelError,
+		nsq.LogLevelDebug,
 	)
 
 	// Injects our handler into the consumer. You'll define one handler
@@ -232,10 +235,15 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	// nsqlds := []string{"nsqlookupd1.local", "nsqlookupd2.local", "nsqlookupd3.local"}
-	if err := consumer.ConnectToNSQLookupd(addr); err != nil {
+	nsqlds := []string{
+		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+		"nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+		"nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"}
+	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}
+
+	log.Info("Connected to nsqlookupd")
 
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal

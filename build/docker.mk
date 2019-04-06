@@ -45,14 +45,17 @@ docker-install:		## install docker
 	sudo apt-get update
 	sudo apt-get install docker-ce -y
 
-docker-stop-all:	## Stop all containers
+docker-stop-all:		## Stop all containers
 	docker stop $$(docker ps -a -q)
 
-docker-rm-all:		## Delete all containers
+docker-rm-all:			## Delete all containers
 	docker rm $$(docker ps -a -q)
 
-docker-rm-images:	## Delete all images
+docker-rm-images:		## Delete all images
 	docker rmi $$(docker images -q)
 
-docker-get-ip:		## Get container IP addr
+docker-rm-image-tags:	## Delete all tags from image
+	docker images | grep $(DOCKER_IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi saferwall/$(DOCKER_IMG):{}
+
+docker-get-ip:			## Get container IP addr
 	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(DOCKER_IMG)
