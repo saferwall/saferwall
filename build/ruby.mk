@@ -1,4 +1,4 @@
-install-ruby:
+ruby-rinstall:		## Install Ruby
 	sudo apt update
 	curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
 	echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc

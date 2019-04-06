@@ -1,11 +1,11 @@
 apiVersion: couchbase.com/v1
 kind: CouchbaseCluster
 metadata:
-  name: cb-example
+  name: cb-saferwall
 spec:
   baseImage: couchbase/server
   version: enterprise-6.0.1
-  authSecret: cb-example-auth
+  authSecret: cb-saferwall-auth
   exposeAdminConsole: true
   adminConsoleServices:
     - data

@@ -63,6 +63,7 @@ type NoopNSQLogger struct{}
 
 // Output allows us to implement the nsq.Logger interface
 func (l *NoopNSQLogger) Output(calldepth int, s string) error {
+	log.Info(s)
 	return nil
 }
 
@@ -217,7 +218,7 @@ func main() {
 	// from here.
 	consumer.SetLogger(
 		&NoopNSQLogger{},
-		nsq.LogLevelError,
+		nsq.LogLevelDebug,
 	)
 
 	// Injects our handler into the consumer. You'll define one handler
@@ -234,13 +235,14 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	// nsqlds := []string{
-	// 	"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-	// 	"nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-	// 	"nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"}
-	if err := consumer.ConnectToNSQLookupd("nsqlookupd:4161"); err != nil {
+	nsqlds := []string{
+		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+		"nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+		"nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"}
+	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}
+
 	log.Info("Connected to nsqlookupd")
 
 	// Let's allow our queues to drain properly during shutdown.
