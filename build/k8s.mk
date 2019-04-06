@@ -37,13 +37,27 @@ k8s-deploy-minio:		## Deploy minio
 	kubectl create -f minio-standalone-service.yaml
 
 k8s-deploy-backend:		## Deploy backend in kubernetes cluster
-	kubectl create -f backend.yaml
+	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl apply -f backend.yaml
 
+k8s-deploy-consumer:		## Deploy consumer in kubernetes cluster
+	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl apply -f consumer.yaml
 
+k8s-delete-nsq:
+	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl delete svc nsqd nsqadmin nsqlookupd
+	kubectl delete deployments nsqadmin 
+	kubectl delete deployments nsqadmin 
 
-	kubectl delete deployment couchbase-operator
+k8s-a:
 	kubectl delete cbc cb-saferwall
-	kubectl delete deployments backend
-
-	kubectl delete deployment couchbase-operator
 	kubectl delete crd couchbaseclusters.couchbase.com
+	kubectl delete deployment couchbase-operator
+
+	kubectl delete deployments,service backend -l app=web
+	kubectl delete deployments,service backend -l app=web
+	kubectl delete service backend
+	
+	kubectl delete service consumer
+	kubectl delete deployments consumer

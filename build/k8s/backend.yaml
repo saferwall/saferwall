@@ -10,7 +10,7 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-      # nodePort: 30080
+      nodePort: 30080
   type: NodePort 
   # type: LoadBalancer
   # loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
@@ -26,7 +26,7 @@ spec:
   selector:
     matchLabels:
       app: web
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -34,6 +34,6 @@ spec:
     spec:
       containers:
         - name: backend
-          image: saferwall/web:0.0.1
+          image: saferwall/backend:0.1.5
           ports:
             - containerPort: 8080

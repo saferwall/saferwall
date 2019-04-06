@@ -22,7 +22,16 @@ spec:
     autoFailoverOnDataDiskIssuesTimePeriod: 120
     autoFailoverServerGroup: false
   buckets:
-    - name: default
+    - name: files
+      type: couchbase
+      memoryQuota: 128
+      replicas: 1
+      ioPriority: high
+      evictionPolicy: fullEviction
+      conflictResolution: seqno
+      enableFlush: true
+      enableIndexReplica: false
+    - name: users
       type: couchbase
       memoryQuota: 128
       replicas: 1
