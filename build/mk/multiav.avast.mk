@@ -1,7 +1,6 @@
 AVAST_GPG = http://files.avast.com/files/resellers/linux/avast.gpg
 AVAST_LICENSE_PATH = /etc/avast/license.avastlic
 
-
 install-avast:	## install Avast Security for Linux
 	echo 'deb http://deb.avast.com/lin/repo debian release' | tee --append /etc/apt/sources.list
 	apt-key adv --fetch-keys $(AVAST_GPG)
