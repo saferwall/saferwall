@@ -94,7 +94,6 @@ func ScanFileBinary(r io.Reader) (Result, error) {
 	return ScanFilePath("sample")
 }
 
-
 // ScanURL scans a given URL.
 func ScanURL(url string) (string, error) {
 
@@ -132,7 +131,7 @@ func IsLicenseExpired() (bool, error) {
 	if _, err := os.Stat(licenseFile); os.IsNotExist(err) {
 		return true, errors.New("License not found")
 	}
-	  
+
 	out, err := utils.ExecCommand(avastService, "status")
 	if err != nil {
 		return true, err
@@ -191,5 +190,13 @@ func RestartService() error {
 		_, err = utils.ExecCommand(avastService, "restart")
 	}
 
+	return err
+}
+
+
+// StartService starts the Avast service.
+func StartService() error {
+
+	_, err := utils.ExecCommand(avastService, "start")
 	return err
 }

@@ -20,15 +20,15 @@ ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(ROOT_DIR)/.env
 
 # Include our internals makefiles
-include build/docker.mk
-include build/vault.mk
-include build/multiav.mk
-include build/go.mk
-include build/ruby.mk
-include build/nodejs.mk
-include build/yarn.mk
-include build/nsq.mk
-include build/trid.mk
-include build/couchbase.mk
-include build/k8s.mk
-include build/vbox.mk
+include build/mk/docker.mk
+include build/mk/vault.mk
+include build/mk/multiav.mk
+include build/mk/go.mk
+include build/mk/ruby.mk
+include build/mk/nodejs.mk
+include build/mk/yarn.mk
+include build/mk/nsq.mk
+include build/mk/trid.mk
+include build/mk/couchbase.mk
+include build/mk/k8s.mk
+include build/mk/vbox.mk

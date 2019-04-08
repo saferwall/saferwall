@@ -24,7 +24,7 @@ metadata:
   name: nsqd
 spec:
   serviceName: "nsqd"
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: nsq
@@ -64,10 +64,10 @@ spec:
             - -broadcast-address=$(MY_POD_IP)
             - -lookupd-tcp-address
             - nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4160
-            # - -lookupd-tcp-address
-            # - nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4160
-            # - -lookupd-tcp-address
-            # - nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4160
+            - -lookupd-tcp-address
+            - nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4160
+            - -lookupd-tcp-address
+            - nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4160
           env:
           - name: MY_POD_IP
             valueFrom:

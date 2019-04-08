@@ -22,7 +22,7 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	kubectl create clusterrolebinding couchbase-operator --clusterrole couchbase-operator --serviceaccount default:couchbase-operator ; \
 	kubectl create -f operator.yaml ; \
 	kubectl create -f secret.yaml ; \
-	cbopctl create -f couchbase-cluster.yaml 
+	cbopctl apply -f couchbase-cluster.yaml 
 
 k8s-deploy-nsq:			## Deploy NSQ in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \

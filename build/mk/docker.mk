@@ -1,38 +1,38 @@
 docker-build: ## Build the container
-	docker build -t $(DOCKER_IMAGE) $(DOCKER_FILE)
+	docker build -t $(IMG) $(DOCKER_FILE)
 
 docker-build-nc: ## Build the container without caching
-	docker build --no-cache -t $(DOCKER_IMAGE) $(DOCKER_FILE)
+	docker build --no-cache -t $(IMG) $(DOCKER_FILE)
 
 docker-run: ## Run container on port configured in `config.env`
-	docker run -d -p 50051:50051 $(DOCKER_IMAGE)
+	docker run -d -p 50051:50051 $(IMG)
 
 docker-up: build run ## Run container
 
 docker-stop: ## Stop and remove a running container
-	docker stop $(DOCKER_IMAGE); docker rm $(DOCKER_IMAGE)
+	docker stop $(IMG); docker rm $(IMG)
 
 docker-release: docker-build-nc docker-publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
 
 docker-publish: docker-repo-login docker-publish-latest docker-publish-version ## Publish the `{version}` ans `latest` tagged containers to ECR
 
 docker-publish-latest: docker-tag-latest ## Publish the `latest` taged container to ECR
-	@echo 'publish latest to $(DOCKER_REPO)'
-	docker push $(DOCKER_REPO)/$(APP_NAME):latest
+	@echo 'publish latest to $(IMG)'
+	docker push $(IMG):latest
 
 docker-publish-version: docker-tag-version ## Publish the `{version}` taged container to ECR
-	@echo 'publish $(VERSION) to $(DOCKER_REPO)'
-	docker push $(DOCKER_REPO)/$(APP_NAME):$(VERSION)
+	@echo 'publish $(VERSION) to $(IMG)'
+	docker push $(IMG):$(VERSION)
 
 docker-tag: docker-tag-latest docker-tag-version ## Generate container tags for the `{version}` ans `latest` tags
 
 docker-tag-latest: 	## Generate container `{version}` tag
 	@echo 'create tag latest'
-	docker tag $(APP_NAME) $(DOCKER_REPO)/$(APP_NAME):latest
+	docker tag $(IMG) $(IMG):latest
 
 docker-tag-version: 	## Generate container `latest` tag
 	@echo 'create tag $(VERSION)'
-	docker tag $(APP_NAME) $(DOCKER_REPO)/$(APP_NAME):$(VERSION)
+	docker tag $(IMG) $(IMG):$(VERSION)
 
 docker-repo-login: 	## Login to Docker Hub
 	docker login --username=$(DOCKER_HUB_USR) --password=$(DOCKER_HUB_PWD)
@@ -49,13 +49,16 @@ docker-stop-all:		## Stop all containers
 	docker stop $$(docker ps -a -q)
 
 docker-rm-all:			## Delete all containers
-	docker rm $$(docker ps -a -q)
+	sudo docker rm $$(sudo docker ps -a -q)
 
 docker-rm-images:		## Delete all images
 	docker rmi $$(docker images -q)
 
+docker-rm-dangling:		## Delete all dangling images
+	docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f
+
 docker-rm-image-tags:	## Delete all tags from image
-	docker images | grep $(DOCKER_IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi saferwall/$(DOCKER_IMG):{}
+	docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi saferwall/$(IMG):{}
 
 docker-get-ip:			## Get container IP addr
-	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(DOCKER_IMG)
+	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)

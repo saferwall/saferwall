@@ -27,6 +27,3 @@ RUN chmod -R o+r /samples
 
 #  Performs a simple test
 RUN service avast start && /bin/scan /samples/eicar; exit 0
-
-# Start the service when the conatiner starts
-CMD service avast start
