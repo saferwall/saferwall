@@ -19,8 +19,6 @@ RUN old='^DOWNLOAD=(.*)$' && new='DOWNLOAD="curl -L -s -f"' \
 COPY license.avastlic /etc/avast/license.avastlic
 RUN chown avast:avast /etc/avast/license.avastlic
 
-WORKDIR /samples
-
 # Add EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 RUN chmod -R o+r /samples

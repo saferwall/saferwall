@@ -1,4 +1,4 @@
--include build/multiav/avast/Makefile
+-include build/mk/multiav.avast.mk
 -include build/multiav/avira/Makefile
 -include build/multiav/bitdefender/Makefile
 -include build/multiav/clamav/Makefile
@@ -14,7 +14,7 @@
 protobuf-generate-api:		## Generates protocol buffers definitions files. 
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \
 		-I${GOPATH}/src \
-		--go_out=plugins=grpc:$(ROOT_DIR)/api/protobuf-spec/ \
+		--go_out=plugins=grpc:$(ROOT_DIR)/core/multiav/$(AV_VENDOR)/proto/ \
 		$(ROOT_DIR)/api/protobuf-spec/multiav.$(AV_VENDOR).proto
 
 protobuf-install-compiler: 	## Install protobuf compiler
