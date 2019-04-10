@@ -1,28 +1,18 @@
-FROM ubuntu:xenial
+FROM alpine:3.9
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="The Open Source ClamAV Antivirus in a docker container"
 
-# Install dependencies
-RUN apt-get update && apt-get install make -y
+# Install ClamAV
+RUN apk --no-cache add clamav clamav-daemon
+RUN mkdir /run/clamav && chown clamav:clamav /run/clamav
 
-# Use make inside the container to install ClamAV
-COPY Makefile ./
-RUN make install-clamav
+# Update ClamAV
+RUN freshclam && clamscan -V
+RUN chown -R clamav:clamav /var/lib/clamav
 
-# Copy the server binary
-COPY server /bin/server
+# Add EICAR Anti-Virus Test File
+ADD --chown=clamav:clamav http://www.eicar.org/download/eicar.com.txt eicar
 
-# Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt /samples/eicar
-RUN chmod -R o+r /samples
-
-# Clean up
-RUN apt-get purge -y --auto-remove make \
-    && rm -rf /tmp/*
-
-# Expose our gRPC port
-EXPOSE 50051
-
-# Entry point
-ENTRYPOINT ["/bin/server"]
+#  Performs a simple test
+RUN clamd && clamdscan eicar ; rm eicar
