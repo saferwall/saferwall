@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package clamav.api;
 
-// The clamav scanner service definition.
-service BitdefenderScanner {
+// The ClamAV scanner service definition.
+service ClamAVScanner {
   // Scan a file
   rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
   // Get program version

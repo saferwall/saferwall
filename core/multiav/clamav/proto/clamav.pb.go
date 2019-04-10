@@ -194,22 +194,22 @@ func init() {
 func init() { proto.RegisterFile("multiav.clamav.proto", fileDescriptor_fe6c358cfaa39550) }
 
 var fileDescriptor_fe6c358cfaa39550 = []byte{
-	// 233 bytes of a gzipped FileDescriptorProto
+	// 231 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x90, 0x41, 0x4b, 0xc4, 0x30,
-	0x10, 0x85, 0xad, 0x87, 0xb5, 0x0e, 0xe2, 0xca, 0x20, 0x52, 0xba, 0x97, 0x25, 0xa7, 0x05, 0xb1,
-	0x07, 0xfd, 0x07, 0x2b, 0xb8, 0xf7, 0x0a, 0xde, 0x63, 0x3b, 0xc5, 0x40, 0x36, 0x89, 0xc9, 0xa4,
-	0x3f, 0xc8, 0x5f, 0x2a, 0xd5, 0xa4, 0x6a, 0xf1, 0xf8, 0xcd, 0x3c, 0xde, 0xbc, 0x37, 0x70, 0x7d,
-	0x8c, 0x9a, 0x95, 0x1c, 0x9b, 0x4e, 0xcb, 0xa3, 0x1c, 0x1b, 0xe7, 0x2d, 0x5b, 0x84, 0x44, 0xd2,
-	0x29, 0x71, 0x07, 0xeb, 0xe7, 0x4e, 0x9a, 0x27, 0xa5, 0xa9, 0xa5, 0xf7, 0x48, 0x81, 0xb1, 0x86,
-	0x72, 0x50, 0x9a, 0x9c, 0xe4, 0xb7, 0xaa, 0xd8, 0x16, 0xbb, 0xf3, 0x76, 0x66, 0xb1, 0x87, 0x8b,
-	0x49, 0xde, 0x52, 0x70, 0xd6, 0x04, 0xc2, 0x1b, 0x58, 0xd9, 0xc8, 0x2e, 0x72, 0x52, 0x26, 0x9a,
-	0x3c, 0x94, 0x19, 0xa8, 0x63, 0xea, 0xab, 0xd3, 0x6d, 0xb1, 0x2b, 0xdb, 0x99, 0xc5, 0x15, 0x5c,
-	0xbe, 0x90, 0x0f, 0xca, 0x9a, 0x74, 0x51, 0xdc, 0xc2, 0x7a, 0x9e, 0x24, 0xe3, 0x0a, 0xce, 0xc6,
-	0xef, 0x51, 0x72, 0xce, 0x78, 0xff, 0x51, 0x00, 0xee, 0x15, 0xf7, 0x34, 0x90, 0xe9, 0xc9, 0x4f,
-	0x71, 0x0c, 0x79, 0x7c, 0x84, 0x32, 0x17, 0xc1, 0x4d, 0xf3, 0xd3, 0xb0, 0x59, 0xd4, 0xab, 0xab,
-	0xe5, 0x32, 0xdf, 0x14, 0x27, 0x78, 0x00, 0x38, 0x10, 0xa7, 0x2c, 0x58, 0xff, 0x56, 0xfe, 0x8d,
-	0x5c, 0x6f, 0xfe, 0xdd, 0x65, 0xa3, 0xd7, 0xd5, 0xd7, 0xa7, 0x1f, 0x3e, 0x03, 0x00, 0x00, 0xff,
-	0xff, 0x9f, 0x19, 0xa1, 0xcd, 0x81, 0x01, 0x00, 0x00,
+	0x10, 0x85, 0xad, 0x87, 0xb5, 0x0e, 0xea, 0x4a, 0x10, 0x29, 0xd9, 0xcb, 0x92, 0xd3, 0x82, 0x98,
+	0x83, 0xfe, 0x02, 0x5d, 0x70, 0xef, 0x11, 0xf6, 0x1e, 0xeb, 0x2c, 0x06, 0xd2, 0x24, 0x36, 0x93,
+	0xfe, 0x1b, 0xff, 0xab, 0x54, 0x93, 0xaa, 0xc5, 0xe3, 0x37, 0xf3, 0x78, 0xf3, 0xde, 0xc0, 0x55,
+	0x97, 0x2c, 0x19, 0x3d, 0xc8, 0xd6, 0xea, 0x4e, 0x0f, 0x32, 0xf4, 0x9e, 0x3c, 0x83, 0x4c, 0x3a,
+	0x18, 0x71, 0x0b, 0xcb, 0xe7, 0x56, 0xbb, 0x27, 0x63, 0x51, 0xe1, 0x7b, 0xc2, 0x48, 0x8c, 0x43,
+	0x7d, 0x30, 0x16, 0x83, 0xa6, 0xb7, 0xa6, 0x5a, 0x57, 0x9b, 0x53, 0x35, 0xb1, 0x78, 0x84, 0xb3,
+	0x51, 0xae, 0x30, 0x06, 0xef, 0x22, 0xb2, 0x6b, 0x58, 0xf8, 0x44, 0x21, 0x51, 0x56, 0x66, 0x1a,
+	0x3d, 0x8c, 0x3b, 0x60, 0x4b, 0xf8, 0xda, 0x1c, 0xaf, 0xab, 0x4d, 0xad, 0x26, 0x16, 0x97, 0x70,
+	0xb1, 0xc7, 0x3e, 0x1a, 0xef, 0xf2, 0x45, 0x71, 0x03, 0xcb, 0x69, 0x92, 0x8d, 0x1b, 0x38, 0x19,
+	0xbe, 0x47, 0xd9, 0xb9, 0xe0, 0xdd, 0x47, 0x05, 0xe7, 0x5b, 0xab, 0xbb, 0x87, 0xfd, 0x98, 0xc4,
+	0x61, 0xcf, 0xb6, 0x50, 0x97, 0x0e, 0x6c, 0x25, 0x7f, 0xca, 0xc9, 0x59, 0x33, 0xde, 0xcc, 0x97,
+	0xe5, 0x9c, 0x38, 0x62, 0x3b, 0x80, 0x1d, 0x52, 0x8e, 0xc1, 0xf8, 0x6f, 0xe5, 0xdf, 0xb4, 0x7c,
+	0xf5, 0xef, 0xae, 0x18, 0xbd, 0x2c, 0xbe, 0x9e, 0x7c, 0xff, 0x19, 0x00, 0x00, 0xff, 0xff, 0xe6,
+	0x15, 0xa0, 0xcc, 0x7c, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -220,112 +220,112 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// BitdefenderScannerClient is the client API for BitdefenderScanner service.
+// ClamAVScannerClient is the client API for ClamAVScanner service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type BitdefenderScannerClient interface {
+type ClamAVScannerClient interface {
 	// Scan a file
 	ScanFile(ctx context.Context, in *ScanFileRequest, opts ...grpc.CallOption) (*ScanResponse, error)
 	// Get program version
 	GetVersion(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
-type bitdefenderScannerClient struct {
+type clamAVScannerClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewBitdefenderScannerClient(cc *grpc.ClientConn) BitdefenderScannerClient {
-	return &bitdefenderScannerClient{cc}
+func NewClamAVScannerClient(cc *grpc.ClientConn) ClamAVScannerClient {
+	return &clamAVScannerClient{cc}
 }
 
-func (c *bitdefenderScannerClient) ScanFile(ctx context.Context, in *ScanFileRequest, opts ...grpc.CallOption) (*ScanResponse, error) {
+func (c *clamAVScannerClient) ScanFile(ctx context.Context, in *ScanFileRequest, opts ...grpc.CallOption) (*ScanResponse, error) {
 	out := new(ScanResponse)
-	err := c.cc.Invoke(ctx, "/clamav.api.BitdefenderScanner/ScanFile", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clamav.api.ClamAVScanner/ScanFile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *bitdefenderScannerClient) GetVersion(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error) {
+func (c *clamAVScannerClient) GetVersion(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error) {
 	out := new(VersionResponse)
-	err := c.cc.Invoke(ctx, "/clamav.api.BitdefenderScanner/GetVersion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clamav.api.ClamAVScanner/GetVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// BitdefenderScannerServer is the server API for BitdefenderScanner service.
-type BitdefenderScannerServer interface {
+// ClamAVScannerServer is the server API for ClamAVScanner service.
+type ClamAVScannerServer interface {
 	// Scan a file
 	ScanFile(context.Context, *ScanFileRequest) (*ScanResponse, error)
 	// Get program version
 	GetVersion(context.Context, *VersionRequest) (*VersionResponse, error)
 }
 
-// UnimplementedBitdefenderScannerServer can be embedded to have forward compatible implementations.
-type UnimplementedBitdefenderScannerServer struct {
+// UnimplementedClamAVScannerServer can be embedded to have forward compatible implementations.
+type UnimplementedClamAVScannerServer struct {
 }
 
-func (*UnimplementedBitdefenderScannerServer) ScanFile(ctx context.Context, req *ScanFileRequest) (*ScanResponse, error) {
+func (*UnimplementedClamAVScannerServer) ScanFile(ctx context.Context, req *ScanFileRequest) (*ScanResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScanFile not implemented")
 }
-func (*UnimplementedBitdefenderScannerServer) GetVersion(ctx context.Context, req *VersionRequest) (*VersionResponse, error) {
+func (*UnimplementedClamAVScannerServer) GetVersion(ctx context.Context, req *VersionRequest) (*VersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVersion not implemented")
 }
 
-func RegisterBitdefenderScannerServer(s *grpc.Server, srv BitdefenderScannerServer) {
-	s.RegisterService(&_BitdefenderScanner_serviceDesc, srv)
+func RegisterClamAVScannerServer(s *grpc.Server, srv ClamAVScannerServer) {
+	s.RegisterService(&_ClamAVScanner_serviceDesc, srv)
 }
 
-func _BitdefenderScanner_ScanFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClamAVScanner_ScanFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ScanFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BitdefenderScannerServer).ScanFile(ctx, in)
+		return srv.(ClamAVScannerServer).ScanFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clamav.api.BitdefenderScanner/ScanFile",
+		FullMethod: "/clamav.api.ClamAVScanner/ScanFile",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BitdefenderScannerServer).ScanFile(ctx, req.(*ScanFileRequest))
+		return srv.(ClamAVScannerServer).ScanFile(ctx, req.(*ScanFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BitdefenderScanner_GetVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClamAVScanner_GetVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(VersionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BitdefenderScannerServer).GetVersion(ctx, in)
+		return srv.(ClamAVScannerServer).GetVersion(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clamav.api.BitdefenderScanner/GetVersion",
+		FullMethod: "/clamav.api.ClamAVScanner/GetVersion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BitdefenderScannerServer).GetVersion(ctx, req.(*VersionRequest))
+		return srv.(ClamAVScannerServer).GetVersion(ctx, req.(*VersionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _BitdefenderScanner_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "clamav.api.BitdefenderScanner",
-	HandlerType: (*BitdefenderScannerServer)(nil),
+var _ClamAVScanner_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "clamav.api.ClamAVScanner",
+	HandlerType: (*ClamAVScannerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ScanFile",
-			Handler:    _BitdefenderScanner_ScanFile_Handler,
+			Handler:    _ClamAVScanner_ScanFile_Handler,
 		},
 		{
 			MethodName: "GetVersion",
-			Handler:    _BitdefenderScanner_GetVersion_Handler,
+			Handler:    _ClamAVScanner_GetVersion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
