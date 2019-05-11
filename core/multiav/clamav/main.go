@@ -55,7 +55,7 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 // StartService starts the Avast service.
 func StartService() error {
 
-	_, err := utils.ExecCommand("clamd", "start")
+	_, err := utils.ExecCommand("clamd")
 	return err
 }
 
@@ -70,6 +70,7 @@ func main() {
 	}
 
 	// create a listener on TCP port 50051
+	log.Print("Starting clamav server")
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)

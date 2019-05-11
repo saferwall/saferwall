@@ -193,7 +193,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
-	log.Info("Version 0.1.6")
+	log.Info("Version 0.0.1")
 
 	client = do.GetClient()
 
@@ -227,19 +227,19 @@ func main() {
 	// as there will never be enough in flight messages for your worker pool
 	consumer.AddConcurrentHandlers(
 		&MessageHandler{},
-		20,
+		1,
 	)
 
 	// Our consumer will discover where topics are located by our three
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	nsqlds := []string{
-		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+	// nsqlds := []string{
+		// "nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
 		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
 		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
-	}
-	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
+	// }
+	if err := consumer.ConnectToNSQLookupd("localhost:4161"); err != nil {
 		log.Fatal(err)
 	}
 

@@ -29,7 +29,7 @@ LABEL version="0.0.1"
 LABEL description="gRPC server clamav"
 
 # Update VPS
-RUN freshclam && clamscan -V
+RUN freshclam ; clamscan -V
 
 COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
 

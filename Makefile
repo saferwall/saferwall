@@ -32,3 +32,4 @@ include build/mk/trid.mk
 include build/mk/couchbase.mk
 include build/mk/k8s.mk
 include build/mk/vbox.mk
+include build/mk/minio.mk

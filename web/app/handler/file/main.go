@@ -207,8 +207,12 @@ func PostFiles(c echo.Context) error {
 
 	sha256 := crypto.GetSha256(fileContents)
 
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
+
 	// Upload the sample to DO object storage.
-	_, err = app.DOClient.PutObject(app.SamplesSpaceBucket, sha256, file, fileHeader.Size, minio.PutObjectOptions{})
+	n, err := app.DOClient.PutObject(app.SamplesSpaceBucket, sha256,
+		file, fileHeader.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		log.Error("Failed to upload object, err: ", err)
 		return c.JSON(http.StatusInternalServerError, Response{
@@ -217,6 +221,7 @@ func PostFiles(c echo.Context) error {
 			Filename:    fileHeader.Filename,
 		})
 	}
+	log.Println("Successfully uploaded bytes: ", n)
 
 	// Save to DB
 	NewFile := File{
