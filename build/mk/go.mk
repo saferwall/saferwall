@@ -16,3 +16,12 @@ go-build:	## Compile packages and dependencies
 
 go-test:	## Test packages
 	go test -v $(GOPKG)
+
+go-setup:	## Download and install go
+	# curl -O https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz
+	# tar -xvf go1.12.5.linux-amd64.tar.gz
+	rm -rf /usr/local/go
+	mv ./go /usr/local/
+	go version
+	go get -u github.com/derekparker/delve/cmd/dlv
+	rm go1.12.5.linux-amd64.tar.gz

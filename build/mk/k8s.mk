@@ -22,7 +22,7 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	kubectl create clusterrolebinding couchbase-operator --clusterrole couchbase-operator --serviceaccount default:couchbase-operator ; \
 	kubectl create -f operator.yaml ; \
 	kubectl create -f secret.yaml ; \
-	cbopctl apply -f couchbase-cluster.yaml 
+	cbopctl create -f couchbase-cluster.yaml 
 
 k8s-deploy-nsq:			## Deploy NSQ in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -50,11 +50,12 @@ k8s-delete-nsq:
 	kubectl delete deployments nsqadmin 
 	kubectl delete deployments nsqadmin 
 
-k8s-a:
+k8s-delte-cb:
 	kubectl delete cbc cb-saferwall
 	kubectl delete crd couchbaseclusters.couchbase.com
 	kubectl delete deployment couchbase-operator
 
+k8s-delete:
 	kubectl delete deployments,service backend -l app=web
 	kubectl delete deployments,service backend -l app=web
 	kubectl delete service backend

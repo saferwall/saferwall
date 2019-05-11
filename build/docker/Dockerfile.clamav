@@ -15,4 +15,5 @@ RUN chown -R clamav:clamav /var/lib/clamav
 ADD --chown=clamav:clamav http://www.eicar.org/download/eicar.com.txt eicar
 
 #  Performs a simple test
-RUN clamd && clamdscan eicar ; rm eicar
+RUN clamd && clamdscan eicar ; exit 0
+
