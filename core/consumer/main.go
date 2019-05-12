@@ -18,6 +18,7 @@ import (
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
+	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -27,11 +28,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/pkg/utils/do"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	// endpoint = "http://backend/v1/files/"
-	endpoint = "http://192.168.99.100:30080/v1/files/"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -90,7 +87,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	filePath := path.Join("/tmp", sha256)
 
 	// Download the sample
-	err := client.FGetObject("samples", sha256, filePath, minio.GetObjectOptions{})
+	bucketName := viper.GetString("do.spacename")
+	err := client.FGetObject(bucketName, sha256, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err
@@ -159,15 +157,21 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	res.Strings = strResults
 
-
 	multiavScanResults := map[string]interface{}{}
 
-	// Scan with Avast
+	// Scan with ClamAV
 	clamclient := clamav.Init()
 	clamres, _ := clamav.ScanFile(clamclient, filePath)
 	multiavScanResults["clamav"] = clamres
+
+	// Scan with Avast
+	avastClient := avast.Init()
+	avastres, _ := avast.ScanFile(avastClient, filePath)
+	multiavScanResults["avast"] = avastres
+	
 	res.MultiAV = multiavScanResults
 
+	// Marshell results
 	buff, err := json.Marshal(res)
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
@@ -177,7 +181,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Update results to DB
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
+	endpoint := viper.GetString("backend.endpoint")
 	url := endpoint + sha256
+	log.Infoln("Sending results to ", url)
 	body := bytes.NewBuffer(buff)
 	req, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
@@ -203,11 +209,26 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	return nil
 }
 
+// loadConfig loads our configration.
+func loadConfig() {
+	viper.SetConfigName("saferwall") // no need to include file extension
+	viper.AddConfigPath(".")         // set the path of your config file
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Error(err)
+		panic(err)
+	}
+}
+
 func main() {
 
-	log.Info("Version 0.0.1")
+	log.Infoln("Version 0.0.1")
 
 	client = do.GetClient()
+	loadConfig()
+	endpoint := viper.GetString("backend.endpoint")
+	log.Infoln(endpoint)
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.
@@ -216,7 +237,7 @@ func main() {
 	// Create a NewConsumer with the name of our topic, the channel, and our config
 	consumer, err := nsq.NewConsumer("scan", "file", config)
 	if err != nil {
-		log.Fatal("Could not create consumer")
+		log.Errorln("Could not create consumer")
 	}
 
 	// Set the number of messages that can be in flight at any given time
@@ -246,17 +267,17 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	// nsqlds := []string{
-	// "nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-	// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-	// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
-	// }
+	nsqlds := []string{
+		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
+	}
 
-	if err := consumer.ConnectToNSQD("192.168.99.100:30580"); err != nil {
+	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("Connected to nsqlookupd")
+	log.Infoln("Connected to nsqlookupd")
 
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal

@@ -54,7 +54,7 @@ docker-rm-all:			## Delete all containers
 	sudo docker rm $$(sudo docker ps -a -q)
 
 docker-rm-images:		## Delete all images
-	docker rmi $$(docker images -q)
+	docker rmi $$(docker images -q) -f
 
 docker-rm-dangling:		## Delete all dangling images
 	docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f

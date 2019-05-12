@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clamav-svc
+  labels:
+    app: clamav
+spec:
+  selector:
+    app: clamav
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clamav
+  labels:
+    app: clamav
+spec:
+  selector:
+    matchLabels:
+      app: clamav
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: clamav
+    spec:
+      containers:
+        - name: goclamav
+          image: saferwall/goclamav:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051

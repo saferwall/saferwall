@@ -34,6 +34,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: saferwall/backend:0.0.4
+          image: saferwall/backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080

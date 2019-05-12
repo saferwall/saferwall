@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: avast-svc
+  labels:
+    app: avast
+spec:
+  selector:
+    app: avast
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: avast
+  labels:
+    app: avast
+spec:
+  selector:
+    matchLabels:
+      app: avast
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: avast
+    spec:
+      containers:
+        - name: goavast
+          image: saferwall/goavast:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
