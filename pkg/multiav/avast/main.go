@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	cmd          = "/bin/scan"
+	cmd          = "scan"
 	avastService = "/etc/init.d/avast"
 	licenseFile  = "/etc/avast/license.avastlic"
 	vpsUpdate    = "/var/lib/avast/Setup/avast.vpsupdate"

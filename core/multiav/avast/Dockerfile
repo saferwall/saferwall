@@ -30,7 +30,5 @@ LABEL description="gRPC server over linux version of Avast"
 
 # Update VPS
 RUN /var/lib/avast/Setup/avast.vpsupdate
-
 COPY --from=builder /go/bin/avastscanner /bin/avastscanner
-
 ENTRYPOINT ["/bin/avastscanner"]

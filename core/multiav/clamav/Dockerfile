@@ -30,7 +30,5 @@ LABEL description="gRPC server clamav"
 
 # Update VPS
 RUN freshclam ; clamscan -V
-
 COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
-
 ENTRYPOINT ["/bin/clamavscanner"]
