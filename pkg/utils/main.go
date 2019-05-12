@@ -76,6 +76,7 @@ func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create the command with our context
 	cmd := exec.CommandContext(ctx, name, args...)
+	defer cmd.Process.Kill()
 
 	// We use CombinedOutput() instead of Output()
 	// which returns standard output and standard error.
@@ -256,7 +257,7 @@ func copyFileContents(src, dst string) (err error) {
 }
 
 // GetRootProjectDir retrieves `saferwall` root src project directory.
-func GetRootProjectDir() (string) {
+func GetRootProjectDir() string {
 	gopath := os.Getenv("GOPATH")
 	sfwRootDir := path.Join(gopath, "src", "github.com", "saferwall", "saferwall")
 	return sfwRootDir

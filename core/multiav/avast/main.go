@@ -94,6 +94,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Print("Starting avast gRPC server")
+
 	// create a listener on TCP port 50051
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
