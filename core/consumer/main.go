@@ -18,6 +18,7 @@ import (
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
+	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -29,7 +30,8 @@ import (
 )
 
 const (
-	endpoint = "http://backend/v1/files/"
+	// endpoint = "http://backend/v1/files/"
+	endpoint = "http://192.168.99.100:30080/v1/files/"
 )
 
 var (
@@ -41,16 +43,17 @@ type stringStruct struct {
 	Value    string `json:"value"`
 }
 type result struct {
-	Crc32   string            `json:"crc32"`
-	Md5     string            `json:"md5"`
-	Sha1    string            `json:"sha1"`
-	Sha256  string            `json:"sha256"`
-	Sha512  string            `json:"sha512"`
-	Ssdeep  string            `json:"ssdeep"`
-	Exif    map[string]string `json:"exif"`
-	TriD    []string          `json:"trid"`
-	Magic   string            `json:"magic"`
-	Strings []stringStruct    `json:"strings"`
+	Crc32   string                 `json:"crc32"`
+	Md5     string                 `json:"md5"`
+	Sha1    string                 `json:"sha1"`
+	Sha256  string                 `json:"sha256"`
+	Sha512  string                 `json:"sha512"`
+	Ssdeep  string                 `json:"ssdeep"`
+	Exif    map[string]string      `json:"exif"`
+	TriD    []string               `json:"trid"`
+	Magic   string                 `json:"magic"`
+	Strings []stringStruct         `json:"strings"`
+	MultiAV map[string]interface{} `json:"multiav"`
 }
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
@@ -120,7 +123,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Run TRiD pkg
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
-		log.Error("Failed to scan file with trid, err: ", err)
+		log.Error("Faileds to scan file with trid, err: ", err)
 		return err
 	}
 
@@ -132,7 +135,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Run strings pkg
-
 	n := 10
 	asciiStrings := s.GetASCIIStrings(b, n)
 	wideStrings := s.GetUnicodeStrings(b, n)
@@ -157,12 +159,22 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	res.Strings = strResults
 
+
+	multiavScanResults := map[string]interface{}{}
+
+	// Scan with Avast
+	clamclient := clamav.Init()
+	clamres, _ := clamav.ScanFile(clamclient, filePath)
+	multiavScanResults["clamav"] = clamres
+	res.MultiAV = multiavScanResults
+
 	buff, err := json.Marshal(res)
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err
 	}
 
+	// Update results to DB
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
 	url := endpoint + sha256
@@ -235,11 +247,12 @@ func main() {
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
 	// nsqlds := []string{
-		// "nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
+	// "nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
+	// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
+	// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
 	// }
-	if err := consumer.ConnectToNSQLookupd("localhost:4161"); err != nil {
+
+	if err := consumer.ConnectToNSQD("192.168.99.100:30580"); err != nil {
 		log.Fatal(err)
 	}
 

@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
@@ -28,18 +27,19 @@ type stringStruct struct {
 
 // File represent a sample
 type File struct {
-	Md5       string            `json:"md5,omitempty"`
-	Sha1      string            `json:"sha1,omitempty"`
-	Sha256    string            `json:"sha256,omitempty"`
-	Sha512    string            `json:"sha512,omitempty"`
-	Ssdeep    string            `json:"ssdeep,omitempty"`
-	Crc32     string            `json:"crc32,omitempty"`
-	Magic     string            `json:"magic,omitempty"`
-	Size      int64             `json:"size,omitempty"`
-	Exif      map[string]string `json:"exif"`
-	TriD      []string          `json:"trid"`
-	FirstSeen time.Time         `json:"first_seen,omitempty"`
-	Strings   []stringStruct    `json:"strings"`
+	Md5       string                 `json:"md5,omitempty"`
+	Sha1      string                 `json:"sha1,omitempty"`
+	Sha256    string                 `json:"sha256,omitempty"`
+	Sha512    string                 `json:"sha512,omitempty"`
+	Ssdeep    string                 `json:"ssdeep,omitempty"`
+	Crc32     string                 `json:"crc32,omitempty"`
+	Magic     string                 `json:"magic,omitempty"`
+	Size      int64                  `json:"size,omitempty"`
+	Exif      map[string]string      `json:"exif"`
+	TriD      []string               `json:"trid"`
+	FirstSeen time.Time              `json:"first_seen,omitempty"`
+	Strings   []stringStruct         `json:"strings"`
+	MultiAV   map[string]interface{} `json:"multiav"`
 }
 
 // Response JSON
@@ -211,17 +211,17 @@ func PostFiles(c echo.Context) error {
 	// defer cancel()
 
 	// Upload the sample to DO object storage.
-	n, err := app.DOClient.PutObject(app.SamplesSpaceBucket, sha256,
-		file, fileHeader.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
-	if err != nil {
-		log.Error("Failed to upload object, err: ", err)
-		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "PutObject failed",
-			Description: err.Error(),
-			Filename:    fileHeader.Filename,
-		})
-	}
-	log.Println("Successfully uploaded bytes: ", n)
+	// n, err := app.DOClient.PutObject(app.SamplesSpaceBucket, sha256, file, fileHeader.Size, minio.PutObjectOptions{})
+	// 	// file, fileHeader.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	// if err != nil {
+	// 	log.Error("Failed to upload object, err: ", err)
+	// 	return c.JSON(http.StatusInternalServerError, Response{
+	// 		Message:     "PutObject failed",
+	// 		Description: err.Error(),
+	// 		Filename:    fileHeader.Filename,
+	// 	})
+	// }
+	// log.Println("Successfully uploaded bytes: ", n)
 
 	// Save to DB
 	NewFile := File{
