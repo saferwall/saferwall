@@ -1,12 +1,9 @@
-ruby-rinstall:		## Install Ruby
-	sudo apt update
-	curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
-	echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc
-	echo 'eval "$(rbenv init -)"' >> ~/.zshrc
-	source ~/.zshrc
-	curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
-	rbenv install 2.4.1
-	rbenv global 2.4.1
-	ruby -v
-	echo "gem: --no-document" > ~/.gemrc
-	gem install bundler
+ruby-install:		## Install Ruby
+	sudo apt-get update && sudo apt-get install ruby-full build-essential zlib1g-dev -y
+	echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
+	echo 'export GEM_HOME="$(HOME)/gems"' >> ~/.bashrc
+	echo 'export PATH="$(HOME)/gems/bin:$(PATH)"' >> ~/.bashrc
+	source ~/.bashrc
+
+ruby-install-jekyll:	## Install Jekyll
+	gem install jekyll bundler

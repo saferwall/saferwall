@@ -1,4 +1,5 @@
 markdown: kramdown
+encoding: utf-8
 plugins:
   - jekyll-autoprefixer
   - jekyll-assets
@@ -21,3 +22,4 @@ assets:
     browsers:
       - "last 2 versions"
       - "IE > 9"
+
