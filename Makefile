@@ -24,7 +24,7 @@ include build/mk/docker.mk
 include build/mk/vault.mk
 include build/mk/multiav.mk
 include build/mk/go.mk
-include build/mk/ruby.mk
+include build/mk/jekyll.mk
 include build/mk/nodejs.mk
 include build/mk/yarn.mk
 include build/mk/nsq.mk
