@@ -15,14 +15,14 @@ k8s-minikube-start:		## Start minikube
 
 k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl create -f crd.yaml ; \
-	kubectl create -f cluster-role-sa.yaml ; \
-	kubectl create -f cluster-role-user.yaml ; \
-	kubectl create serviceaccount couchbase-operator --namespace default ; \
-	kubectl create clusterrolebinding couchbase-operator --clusterrole couchbase-operator --serviceaccount default:couchbase-operator ; \
-	kubectl create -f operator.yaml ; \
-	kubectl create -f secret.yaml ; \
-	cbopctl create -f couchbase-cluster.yaml 
+	kubectl create -f crd.yaml
+	kubectl create -f operator-role.yaml
+	kubectl create serviceaccount couchbase-operator --namespace default
+	kubectl create rolebinding couchbase-operator --role couchbase-operator --serviceaccount default:couchbase-operator
+	kubectl create -f secret.yaml
+	kubectl create -f operator-deployment.yaml
+	cbopctl create -f couchbase-cluster.yaml
+
 
 k8s-deploy-nsq:			## Deploy NSQ in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -35,6 +35,10 @@ k8s-deploy-minio:		## Deploy minio
 	kubectl create -f minio-standalone-pvc.yaml ; \
 	kubectl create -f minio-standalone-deployment.yaml ; \
 	kubectl create -f minio-standalone-service.yaml
+
+k8s-deploy-multiav:		## Deploy multiav
+	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl create -f multiav-clamav.yaml
 
 k8s-deploy-backend:		## Deploy backend in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -52,8 +56,9 @@ k8s-delete-nsq:
 
 k8s-delte-cb:
 	kubectl delete cbc cb-saferwall
-	kubectl delete crd couchbaseclusters.couchbase.com
 	kubectl delete deployment couchbase-operator
+	kubectl delete crd couchbaseclusters.couchbase.com
+	kubectl delete secret cb-saferwall-auth
 
 k8s-delete:
 	kubectl delete deployments,service backend -l app=web

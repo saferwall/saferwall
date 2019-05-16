@@ -16,6 +16,11 @@ spec:
       properties:
         spec:
           properties:
+            adminConsoleServiceType:
+              enum:
+              - NodePort
+              - LoadBalancer
+              type: string
             adminConsoleServices:
               items:
                 enum:
@@ -37,6 +42,12 @@ spec:
             buckets:
               items:
                 properties:
+                  compressionMode:
+                    enum:
+                    - "off"
+                    - passive
+                    - active
+                    type: string
                   conflictResolution:
                     enum:
                     - seqno
@@ -132,8 +143,20 @@ spec:
               type: object
             disableBucketManagement:
               type: boolean
+            dns:
+              properties:
+                domain:
+                  type: string
+              required:
+              - domain
+              type: object
             exposeAdminConsole:
               type: boolean
+            exposedFeatureServiceType:
+              enum:
+              - NodePort
+              - LoadBalancer
+              type: string
             exposedFeatures:
               items:
                 enum:
@@ -150,6 +173,12 @@ spec:
               type: string
             paused:
               type: boolean
+            platform:
+              enum:
+              - aws
+              - gce
+              - azure
+              type: string
             serverGroups:
               items:
                 type: string
@@ -271,10 +300,17 @@ spec:
                       properties:
                         serverSecret:
                           type: string
+                      required:
+                      - serverSecret
                       type: object
                     operatorSecret:
                       type: string
+                  required:
+                  - member
+                  - operatorSecret
                   type: object
+              required:
+              - static
               type: object
             version:
               pattern: ^([\w\d]+-)?\d+\.\d+.\d+(-[\w\d]+)?$
@@ -325,4 +361,5 @@ spec:
           - authSecret
           - cluster
           - servers
+          type: object
   version: v1

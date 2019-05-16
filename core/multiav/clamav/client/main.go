@@ -16,7 +16,6 @@ import (
 
 const (
 	address = "clamav-svc:50051"
-	// address = "192.168.99.100:30051"
 )
 
 // MultiAVScanResult av result
