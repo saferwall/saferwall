@@ -18,7 +18,8 @@ import (
 
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
-	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
+
+	// avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -93,6 +94,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to get object, err: ", err)
 		return err
 	}
+	log.Infof("File fetched success %s", sha256)
 
 	b, err := utils.ReadAll(filePath)
 	if err != nil {
@@ -110,6 +112,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		Sha512: r.Sha512,
 		Ssdeep: r.Ssdeep,
 	}
+	log.Infof("HashBytes success %s", sha256)
+
 
 	// Run exiftool pkg
 	res.Exif, err = exiftool.Scan(filePath)
@@ -117,6 +121,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to scan file with exiftool, err: ", err)
 		return err
 	}
+	log.Infof("exiftool success %s", sha256)
+
 
 	// Run TRiD pkg
 	res.TriD, err = trid.Scan(filePath)
@@ -124,6 +130,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Faileds to scan file with trid, err: ", err)
 		return err
 	}
+	log.Infof("trid success %s", sha256)
+
+	
 
 	// Run Magic Pkg
 	res.Magic, err = magic.GetMimeType(b)
@@ -131,6 +140,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to scan file with magic, err: ", err)
 		return err
 	}
+	log.Infof("mimetype success %s", sha256)
+
 
 	// Run strings pkg
 	n := 10
@@ -156,6 +167,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		strResults = append(strResults, stringStruct{"asm", str})
 	}
 	res.Strings = strResults
+	log.Infof("strings success %s", sha256)
+
 
 	multiavScanResults := map[string]interface{}{}
 
@@ -163,12 +176,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	clamclient := clamav.Init()
 	clamres, _ := clamav.ScanFile(clamclient, filePath)
 	multiavScanResults["clamav"] = clamres
+	log.Infof("clamav success %s", sha256)
+
 
 	// Scan with Avast
-	avastClient := avast.Init()
-	avastres, _ := avast.ScanFile(avastClient, filePath)
-	multiavScanResults["avast"] = avastres
-	
+	// avastClient := avast.Init()
+	// avastres, _ := avast.ScanFile(avastClient, filePath)
+	// multiavScanResults["avast"] = avastres
+
 	res.MultiAV = multiavScanResults
 
 	// Marshell results

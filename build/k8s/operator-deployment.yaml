@@ -1,24 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  creationTimestamp: null
   name: couchbase-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: couchbase-operator
+  strategy: {}
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: couchbase-operator
     spec:
       containers:
-      - name: couchbase-operator 
-        image: couchbase/operator:1.1.0
+      - args:
+        - --pod-create-timeout=10m
+        - --create-crd=false
         command:
         - couchbase-operator
-        args:
-        - -enable-upgrades=false # Disable experimental upgrade feature
         env:
         - name: MY_POD_NAMESPACE
           valueFrom:
@@ -28,14 +30,18 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        image: couchbase/operator:1.2.0
+        name: couchbase-operator
         ports:
-          - name: readiness-port
-            containerPort: 8080
+        - containerPort: 8080
+          name: http
         readinessProbe:
+          failureThreshold: 20
           httpGet:
             path: /readyz
-            port: readiness-port
+            port: http
           initialDelaySeconds: 3
           periodSeconds: 3
-          failureThreshold: 19
+        resources: {}
       serviceAccountName: couchbase-operator
+status: {}
