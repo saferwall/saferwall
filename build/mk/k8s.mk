@@ -15,14 +15,19 @@ k8s-minikube-start:		## Start minikube
 
 k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl create -f crd.yaml
-	kubectl create -f operator-role.yaml
-	kubectl create serviceaccount couchbase-operator --namespace default
-	kubectl create rolebinding couchbase-operator --role couchbase-operator --serviceaccount default:couchbase-operator
-	kubectl create -f secret.yaml
-	kubectl create -f operator-deployment.yaml
-	cbopctl create -f couchbase-cluster.yaml
+	kubectl create -f crd.yaml ; \
+	kubectl create -f operator-role.yaml ; \
+	kubectl create serviceaccount couchbase-operator --namespace default ; \
+	kubectl create rolebinding couchbase-operator --role couchbase-operator --serviceaccount default:couchbase-operator ; \
+	kubectl create -f secret.yaml ; \
+	kubectl create -f operator-deployment.yaml ; \
+	kubectl create -f couchbase-cluster.yaml  
 
+k8s-delte-cb:
+	kubectl delete cbc cb-saferwall
+	kubectl delete deployment couchbase-operator
+	kubectl delete crd couchbaseclusters.couchbase.com
+	kubectl delete secret cb-saferwall-auth
 
 k8s-deploy-nsq:			## Deploy NSQ in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -54,11 +59,7 @@ k8s-delete-nsq:
 	kubectl delete deployments nsqadmin 
 	kubectl delete deployments nsqadmin 
 
-k8s-delte-cb:
-	kubectl delete cbc cb-saferwall
-	kubectl delete deployment couchbase-operator
-	kubectl delete crd couchbaseclusters.couchbase.com
-	kubectl delete secret cb-saferwall-auth
+
 
 k8s-delete:
 	kubectl delete deployments,service backend -l app=web

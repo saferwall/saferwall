@@ -5,6 +5,7 @@
 package file
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
@@ -196,30 +197,37 @@ func PostFiles(c echo.Context) error {
 	}
 	defer file.Close()
 
+	// Get the size
+	size := fileHeader.Size
+	log.Infoln("File size: ", size)
+
 	// Read the content
 	fileContents, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Error("Opening a reading the file content, err: ", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Internal error",
+			Message:     "ReadAll failed",
 			Description: "Internal error",
 			Filename:    fileHeader.Filename,
 		})
 	}
 
 	sha256 := crypto.GetSha256(fileContents)
+	log.Infoln("File hash: ", sha256)
 
 	// Upload the sample to DO object storage.
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	n, err := app.DOClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,
-		sha256, file, fileHeader.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+		sha256, bytes.NewReader(fileContents), size,
+		minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		log.Error("Failed to upload object, err: ", err)
 		return c.JSON(http.StatusInternalServerError, Response{
 			Message:     "PutObject failed",
 			Description: err.Error(),
 			Filename:    fileHeader.Filename,
+			Sha256:      sha256,
 		})
 	}
 	log.Println("Successfully uploaded bytes: ", n)
@@ -237,9 +245,10 @@ func PostFiles(c echo.Context) error {
 	if err != nil {
 		log.Error("Failed to publish to NSQ, err: ", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Internal error",
+			Message:     "Publish failed",
 			Description: "Internal error",
 			Filename:    fileHeader.Filename,
+			Sha256:      sha256,
 		})
 	}
 
