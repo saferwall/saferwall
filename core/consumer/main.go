@@ -85,7 +85,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	sha256 := string(m.Body)
 	log.Infof("Processing %s", sha256)
-	filePath := path.Join("/tmp", sha256)
+	filePath := path.Join("/samples", sha256)
 
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")

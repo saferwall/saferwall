@@ -18,3 +18,10 @@ spec:
         - name: consumer
           image: saferwall/consumer:latest
           imagePullPolicy: Always
+          volumeMounts:
+          - name: samples
+            mountPath: /samples
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: samples-pv-claim
