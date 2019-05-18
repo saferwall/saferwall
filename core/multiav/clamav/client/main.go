@@ -42,7 +42,7 @@ func GetVerion(client pb.ClamAVScannerClient) (*pb.VersionResponse, error) {
 // ScanFile scans file
 func ScanFile(client pb.ClamAVScannerClient, path string) (MultiAVScanResult, error) {
 	log.Println("Scanning:", path)
-	scanFile := &pb.ScanFileRequest{Filepath: "eicar"}
+	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
 	checkgRPCErr(err)
 	if err != nil {
