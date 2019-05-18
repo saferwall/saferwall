@@ -39,6 +39,8 @@ spec:
           value: "minio"
         - name: MINIO_SECRET_KEY
           value: "minio123"
+        - name: MINIO_HTTP_TRACE
+          value: "/dev/stdout"
         ports:
         - containerPort: 9000
         # Readiness probe detects situations when Minio server instance

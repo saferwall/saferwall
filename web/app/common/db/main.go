@@ -54,5 +54,5 @@ func Connect() {
 	UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
 	FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
 
-	log.Info("Connected to couchbase")
+	log.Infoln("Connected to couchbase")
 }

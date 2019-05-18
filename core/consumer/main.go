@@ -114,7 +114,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	log.Infof("HashBytes success %s", sha256)
 
-
 	// Run exiftool pkg
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
@@ -122,7 +121,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 	log.Infof("exiftool success %s", sha256)
-
 
 	// Run TRiD pkg
 	res.TriD, err = trid.Scan(filePath)
@@ -132,8 +130,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	log.Infof("trid success %s", sha256)
 
-	
-
 	// Run Magic Pkg
 	res.Magic, err = magic.GetMimeType(b)
 	if err != nil {
@@ -141,7 +137,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 	log.Infof("mimetype success %s", sha256)
-
 
 	// Run strings pkg
 	n := 10
@@ -169,7 +164,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.Strings = strResults
 	log.Infof("strings success %s", sha256)
 
-
 	multiavScanResults := map[string]interface{}{}
 
 	// Scan with ClamAV
@@ -177,7 +171,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	clamres, _ := clamav.ScanFile(clamclient, filePath)
 	multiavScanResults["clamav"] = clamres
 	log.Infof("clamav success %s", sha256)
-
 
 	// Scan with Avast
 	// avastClient := avast.Init()
@@ -241,9 +234,8 @@ func main() {
 	log.Infoln("Version 0.0.1")
 
 	client = do.GetClient()
+
 	loadConfig()
-	endpoint := viper.GetString("backend.endpoint")
-	log.Infoln(endpoint)
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.

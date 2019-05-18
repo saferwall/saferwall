@@ -76,7 +76,6 @@ func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create the command with our context
 	cmd := exec.CommandContext(ctx, name, args...)
-	defer cmd.Process.Kill()
 
 	// We use CombinedOutput() instead of Output()
 	// which returns standard output and standard error.

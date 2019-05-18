@@ -51,7 +51,7 @@ func loadConfig() {
 		log.Fatal(err)
 	}
 
-	log.Info("Config was loaded")
+	log.Infoln("Config was loaded")
 }
 
 // createNSQProducer creates a new NSQ producer.
@@ -71,14 +71,17 @@ func createNSQProducer() *nsq.Producer {
 		log.Fatal(err)
 	}
 
-	log.Info("Got a new NSQ publisher instance")
+	log.Infoln("NSQ publisher was created")
 	return p
 }
 
 // initLogging initialize our logging system.
 func initLogging() {
-	// Add the calling method as a field.
-	log.SetReportCaller(false)
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	log.Infoln("Logger created")
 }
 
 // loadSchemas will load schemas at server startup.
@@ -86,7 +89,7 @@ func loadSchemas() {
 
 	dir, err := utils.Getwd()
 	if err != nil {
-		log.Fatal("Failed to GetWd, err: ", err)
+		log.Fatalln("Failed to GetWd, err: ", err)
 	}
 
 	jsonPath := path.Join(dir, "app", "schema", "user.json")
@@ -94,7 +97,7 @@ func loadSchemas() {
 	jsonLoader := gojsonschema.NewReferenceLoader(source)
 	UserSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
-		log.Fatal("Error while loading user schema: ", err)
+		log.Fatalln("Error while loading user schema: ", err)
 	}
 
 	jsonPath = path.Join(dir, "app", "schema", "file.json")
@@ -102,14 +105,14 @@ func loadSchemas() {
 	jsonLoader = gojsonschema.NewReferenceLoader(source)
 	FileSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
-		log.Fatal("Error while loading file schema: ", err)
+		log.Fatalln("Error while loading file schema: ", err)
 	}
 
-	log.Info("Schemas were loaded")
+	log.Infoln("Schemas were loaded")
 }
 
-// initDOClient returns a client for DigitalOcean Spaces.
-func initDOClient() *minio.Client {
+// initOSClient returns a client for our Object Storage interface.
+func initOSClient() *minio.Client {
 	accessKey := viper.GetString("do.accesskey")
 	secKey := viper.GetString("do.seckey")
 	endpoint := viper.GetString("do.endpoint")
@@ -122,28 +125,28 @@ func initDOClient() *minio.Client {
 		log.Fatal(err)
 	}
 
-	  // Make a new bucket called mymusic.
-	  bucketName := SamplesSpaceBucket
-	  location := "us-east-1"
-  
+	// Make a new bucket called mymusic.
+	bucketName := SamplesSpaceBucket
+	location := "us-east-1"
+
 	err = client.MakeBucket(bucketName, location)
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if you run this twice)
 		exists, err := client.BucketExists(bucketName)
 		if err == nil && exists {
-			log.Printf("We already own %s\n", bucketName)
+			log.Printf("We already own %s", bucketName)
 		} else {
 			log.Fatalln(err)
 		}
 	} else {
-		log.Printf("Successfully created %s\n", bucketName)
+		log.Printf("Successfully created %s", bucketName)
 	}
-	
-	log.Info("Got DO instance")
+
+	log.Infoln("Got Object Storage client instance")
 	return client
 }
 
-// Init will create some directories
+// Init will initiate required objects
 func Init() {
 
 	// Init our logger
@@ -161,8 +164,8 @@ func Init() {
 	// Connect to the database
 	db.Connect()
 
-	// Get a DO instance
-	DOClient = initDOClient()
+	// Get an Object Storage client instance
+	DOClient = initOSClient()
 
 	StoragePath = viper.GetString("storage.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))
