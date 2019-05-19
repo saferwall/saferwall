@@ -14,7 +14,10 @@ spec:
     spec:
       containers:
         - name: nfs-server
-          image: gcr.io/google_containers/volume-nfs:0.8
+          image: itsthenetwork/nfs-server-alpine:latest
+          env:
+            - name: SHARED_DIRECTORY
+              value: /nfsshare
           ports:
             - name: nfs
               containerPort: 2049
@@ -25,7 +28,7 @@ spec:
           securityContext:
             privileged: true
           volumeMounts:
-            - mountPath: /exports
+            - mountPath: /nfsshare
               name: samples-pvc
       volumes:
         - name: samples-pvc

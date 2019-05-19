@@ -6,12 +6,11 @@ package clamav
 
 import (
 	"context"
+
 	log "github.com/sirupsen/logrus"
 
 	pb "github.com/saferwall/saferwall/core/multiav/clamav/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -22,15 +21,6 @@ const (
 type MultiAVScanResult struct {
 	Output   string `json:"output"`
 	Infected bool   `json:"infected"`
-}
-
-func checkgRPCErr(e error) {
-	if e != nil {
-		st, ok := status.FromError(e)
-		if ok {
-			log.Errorln(st.Message())
-		}
-	}
 }
 
 // GetVerion returns version
@@ -44,9 +34,7 @@ func ScanFile(client pb.ClamAVScannerClient, path string) (MultiAVScanResult, er
 	log.Println("ClamAV Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
-	checkgRPCErr(err)
 	if err != nil {
-		grpclog.Errorln("fail to scan file: %v", err)
 		return MultiAVScanResult{}, err
 	}
 
@@ -57,13 +45,15 @@ func ScanFile(client pb.ClamAVScannerClient, path string) (MultiAVScanResult, er
 }
 
 // Init connection
-func Init() pb.ClamAVScannerClient {
+func Init() (pb.ClamAVScannerClient, error) {
 
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
 
 	conn, err := grpc.Dial(address, []grpc.DialOption{grpc.WithInsecure()}...)
-	checkgRPCErr(err)
+	if err != nil {
+		return nil , err
+	}
 
-	return pb.NewClamAVScannerClient(conn)
+	return pb.NewClamAVScannerClient(conn), nil
 }
