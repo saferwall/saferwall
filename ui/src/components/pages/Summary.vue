@@ -74,7 +74,7 @@ export default {
             delete data.data.sha256
             delete data.data.sha512
             
-            this.summaryData.filesize = this.bytesToSize(data.data.filesize)
+            this.summaryData.filesize = this.bytesToSize(data.data.size)
             this.summaryData.magic = data.data.magic
             this.summaryData.md5 = data.data.md5
             this.summaryData['sha-1'] = data.data['sha-1']
