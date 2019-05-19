@@ -41,12 +41,12 @@ func GetVerion(client pb.ClamAVScannerClient) (*pb.VersionResponse, error) {
 
 // ScanFile scans file
 func ScanFile(client pb.ClamAVScannerClient, path string) (MultiAVScanResult, error) {
-	log.Println("Scanning:", path)
+	log.Println("ClamAV Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
 	checkgRPCErr(err)
 	if err != nil {
-		grpclog.Fatalf("fail to scan file: %v", err)
+		grpclog.Errorln("fail to scan file: %v", err)
 		return MultiAVScanResult{}, err
 	}
 

@@ -20,6 +20,7 @@ import (
 	minio "github.com/minio/minio-go"
 
 	// avast "github.com/saferwall/saferwall/core/multiav/avast/client"
+	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -168,14 +169,23 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// Scan with ClamAV
 	clamclient := clamav.Init()
-	clamres, _ := clamav.ScanFile(clamclient, filePath)
-	multiavScanResults["clamav"] = clamres
-	log.Infof("clamav success %s", sha256)
+	clamres, err := clamav.ScanFile(clamclient, filePath)
+	if err != nil {
+		log.Errorf("clamav scanfile failed %s", err)
+	} else {
+		multiavScanResults["clamav"] = clamres
+		log.Infof("clamav success %s", sha256)
+	}
 
 	// Scan with Avast
-	// avastClient := avast.Init()
-	// avastres, _ := avast.ScanFile(avastClient, filePath)
-	// multiavScanResults["avast"] = avastres
+	avastClient := avast.Init()
+	avastres, err := avast.ScanFile(avastClient, filePath)
+	if err != nil {
+		log.Errorf("avast scanfile failed %s", err)
+	} else {
+		multiavScanResults["avast"] = avastres
+		log.Infof("avast success %s", sha256)
+	}
 
 	res.MultiAV = multiavScanResults
 
@@ -231,7 +241,8 @@ func loadConfig() {
 
 func main() {
 
-	log.Infoln("Version 0.0.1")
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
 
 	client = do.GetClient()
 
@@ -257,7 +268,7 @@ func main() {
 	// from here.
 	consumer.SetLogger(
 		&NoopNSQLogger{},
-		nsq.LogLevelDebug,
+		nsq.LogLevelError,
 	)
 
 	// Injects our handler into the consumer. You'll define one handler

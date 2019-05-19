@@ -26,7 +26,8 @@ RUN echo "Installing Capstone..." \
     && apt-get install libcapstone-dev -y
 
 ####### Installing Libmagic #######
-RUN apt-get install libmagic-dev -y
+RUN echo "Installing Libmagic..." \
+    && apt-get install libmagic-dev -y
 
 WORKDIR /app
 
@@ -34,7 +35,14 @@ WORKDIR /app
 COPY consumer consumer
 COPY saferwall.toml saferwall.toml
 
+# Create an app user so our program doesn't run as root.
+RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+
+# Update permissions
+RUN chown -R saferwall:saferwall .
 RUN chmod +x consumer
 
-# Run the hello binary.
+# Switch to our user
+USER saferwall
+
 ENTRYPOINT ["./consumer"]

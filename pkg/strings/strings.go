@@ -11,7 +11,8 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"time"
+
+	// "time"
 	"unicode/utf16"
 	"unicode/utf8"
 
@@ -95,15 +96,15 @@ func GetAsmStrings(x86Code32 []byte) []string {
 
 	defer engine.Close()
 
-	maj, min := engine.Version()
-	log.Printf("Hello Capstone! Version: %v.%v\n", maj, min)
+	// maj, min := engine.Version()
+	// log.Printf("Hello Capstone! Version: %v.%v\n", maj, min)
 
 	err = engine.SetOption(gapstone.CS_OPT_DETAIL, gapstone.CS_OPT_ON)
 	check(err)
 
 	var result []string
 
-	start := time.Now()
+	// start := time.Now()
 
 	/* iterate over my byte array */
 	for offset := 0; offset < len(x86Code32); offset++ {
@@ -147,15 +148,15 @@ func GetAsmStrings(x86Code32 []byte) []string {
 			if countConcat > 1 {
 				s := bytes.Trim(buffer.Bytes(), "\x00")
 				result = append(result, string(s))
-				fmt.Printf("\n%s, %x", string(s), offset)
+				// fmt.Printf("\n%s, %x", string(s), offset)
 			}
 
 			offset = offset - 1
 		}
 	}
 
-	elapsed := time.Since(start)
-	log.Printf("Binomial took %s", elapsed)
+	// elapsed := time.Since(start)
+	// log.Printf("Binomial took %s", elapsed)
 
 	return result
 }
