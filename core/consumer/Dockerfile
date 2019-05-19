@@ -41,6 +41,8 @@ RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 # Update permissions
 RUN chown -R saferwall:saferwall .
 RUN chmod +x consumer
+RUN usermod -u 101 saferwall
+RUN groupmod -g 102 saferwall
 
 # Switch to our user
 USER saferwall

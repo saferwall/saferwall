@@ -19,8 +19,6 @@ import (
 	nsq "github.com/bitly/go-nsq"
 	minio "github.com/minio/minio-go"
 
-	// avast "github.com/saferwall/saferwall/core/multiav/avast/client"
-	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -91,6 +89,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")
 	err := client.FGetObject(bucketName, sha256, filePath, minio.GetObjectOptions{})
+	
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err
@@ -168,24 +167,28 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	multiavScanResults := map[string]interface{}{}
 
 	// Scan with ClamAV
-	clamclient := clamav.Init()
-	clamres, err := clamav.ScanFile(clamclient, filePath)
+	clamclient, err := clamav.Init()
 	if err != nil {
-		log.Errorf("clamav scanfile failed %s", err)
+		log.Errorf("clamav init failed %s", err)
 	} else {
-		multiavScanResults["clamav"] = clamres
-		log.Infof("clamav success %s", sha256)
+		clamres, err := clamav.ScanFile(clamclient, filePath)
+		if err != nil {
+			log.Errorf("clamav scanfile failed %s", err)
+		} else {
+			multiavScanResults["clamav"] = clamres
+			log.Infof("clamav success %s", sha256)
+		}
 	}
 
 	// Scan with Avast
-	avastClient := avast.Init()
-	avastres, err := avast.ScanFile(avastClient, filePath)
-	if err != nil {
-		log.Errorf("avast scanfile failed %s", err)
-	} else {
-		multiavScanResults["avast"] = avastres
-		log.Infof("avast success %s", sha256)
-	}
+	// avastClient := avast.Init()
+	// avastres, err := avast.ScanFile(avastClient, filePath)
+	// if err != nil {
+	// 	log.Errorf("avast scanfile failed %s", err)
+	// } else {
+	// 	multiavScanResults["avast"] = avastres
+	// 	log.Infof("avast success %s", sha256)
+	// }
 
 	res.MultiAV = multiavScanResults
 
