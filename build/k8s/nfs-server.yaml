@@ -13,29 +13,24 @@ spec:
         role: nfs-server
     spec:
       containers:
-      - name: nfs-server
-        image: gcr.io/google_containers/volume-nfs:0.8
-        ports:
-          - name: nfs
-            containerPort: 2049
-          - name: mountd
-            containerPort: 20048
-          - name: rpcbind
-            containerPort: 111
-        securityContext:
-          privileged: true
-        volumeMounts:
-          - mountPath: /exports
-            name: samples-pvc
-        lifecycle:
-          postStart:
-            exec:
-              #Gives right to yorc user 
-              command: ["chown", "1001:1001", "/exports"]
+        - name: nfs-server
+          image: gcr.io/google_containers/volume-nfs:0.8
+          ports:
+            - name: nfs
+              containerPort: 2049
+            - name: mountd
+              containerPort: 20048
+            - name: rpcbind
+              containerPort: 111
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /exports
+              name: samples-pvc
       volumes:
-      - name: samples-pvc
-        persistentVolumeClaim:
-          claimName: samples-pv-claim
+        - name: samples-pvc
+          persistentVolumeClaim:
+            claimName: samples-pv-claim
 ---
 apiVersion: v1
 kind: Service
