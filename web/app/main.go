@@ -19,6 +19,9 @@ import (
 )
 
 var (
+	// RootDir points to the root dir
+	RootDir string
+
 	// StoragePath is where we save the samples
 	StoragePath string
 
