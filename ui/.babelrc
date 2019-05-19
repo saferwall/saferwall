@@ -1,13 +1,12 @@
 {
   "presets": [
-    ["env", {
+    ["@babel/preset-env", {
       "modules": false,
       "targets": {
-        "browsers": ["> 1%", "last 2 versions", "not ie <= 8"],
-        "uglify": true
-      }
-    }],
-    "stage-2"
+        "browsers": ["> 1%", "last 2 versions", "not ie <= 8"]	
+      },
+			"forceAllTransforms": true
+    }]
   ],
-  "plugins": ["transform-vue-jsx", "transform-runtime"]
+  "plugins": ["@vue/babel-plugin-transform-vue-jsx", "@babel/plugin-transform-runtime"]
 }
