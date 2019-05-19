@@ -34,7 +34,7 @@ export default {
             menu: [
                 {
                     title: 'Summary',
-                    path: "/summary/d765e722e295969c0a5c2d90f549db8b89ab617900bf4698db41c7cdad993bb9",
+                    path: "/summary/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c",
                     active: false,
                     icon: 'ion-android-settings'
                 },
@@ -45,8 +45,8 @@ export default {
                     icon: 'ion-stats-bars',
                     children: [
                         {title: 'PE', path: '/'},
-                        {title: 'Strings', path: '/strings/d765e722e295969c0a5c2d90f549db8b89ab617900bf4698db41c7cdad993bb9'},
-                        {title: 'Antivirus', path: '/antivirus/d765e722e295969c0a5c2d90f549db8b89ab617900bf4698db41c7cdad993bb9'}
+                        {title: 'Strings', path: '/strings/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c'},
+                        {title: 'Antivirus', path: '/antivirus/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c'}
                     ]
                 },
                 {

@@ -148,8 +148,8 @@ export default {
         axios.get(url)
             .then((data) => {
                 this.showLoader = false
-                this.firstScan = data.data.av.first_scan
-                this.lastScan = data.data.av.last_scan
+                this.firstScan = data.data.multiav
+                this.lastScan = data.data.multiav
 
                 Object.keys(this.firstScan).forEach(key => {
                     const first = this.firstScan[key];

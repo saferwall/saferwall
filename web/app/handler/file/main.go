@@ -10,8 +10,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path"
 	"time"
 
 	"github.com/labstack/echo"
@@ -90,22 +88,11 @@ func GetFile(c echo.Context) error {
 
 	// get path param
 	sha256 := c.Param("sha256")
-
-	// ugly
-	dir, err := os.Getwd()
+	file, err := GetFileBySHA256(sha256)
 	if err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
-	out := path.Join(dir, "app", "handlers", "file.json")
-	raw, err := ioutil.ReadFile(out)
-	if err != nil {
-		return c.String(http.StatusOK, "something went wrong"+sha256)
-	}
-	// r := Response{Sha256: sha256}
-	var my map[string]interface{}
-	json.Unmarshal(raw, &my)
-	return c.JSON(http.StatusOK, my)
+	return c.JSON(http.StatusOK, file)
 }
 
 // PutFile updates a specific file

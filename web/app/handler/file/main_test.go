@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	url = "http://192.168.99.100:30080/v1/files"
+	url = "http://localhost:8080/v1/files"
 )
 
 func TestPostFiles(t *testing.T) {
@@ -51,3 +51,21 @@ func TestGetFiles(t *testing.T) {
 	json.NewDecoder(resp.Body).Decode(&result)
 	log.Println(result)
 }
+
+func TestGetFile(t *testing.T) {
+	resp, err := http.Get(url + "/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c")
+	if err != nil {
+		t.Errorf("TestGetUsers() failed, err: %s", err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("TestPostUsers() failed, got status != 200: %s", resp.Status)
+	}
+
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&result)
+	log.Println(result)
+}
+
