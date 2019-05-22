@@ -51,7 +51,7 @@ export default {
         return{
             showLoader: true,
             summaryData: {},
-            uppercaseFields: ['md5', 'sha-1', 'sha-256', 'sha-512']
+            uppercaseFields: ['md5', 'sha-1', 'sha-256', 'sha-512', 'crc32']
         }
     },
     methods: {
@@ -76,6 +76,7 @@ export default {
             
             this.summaryData.filesize = this.bytesToSize(data.data.size)
             this.summaryData.magic = data.data.magic
+            this.summaryData.crc32 = data.data.crc32
             this.summaryData.md5 = data.data.md5
             this.summaryData['sha-1'] = data.data['sha-1']
             this.summaryData['sha-256'] = data.data['sha-256']

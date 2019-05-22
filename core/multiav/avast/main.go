@@ -7,8 +7,9 @@ package main
 import (
 	"bytes"
 	"context"
-	"log"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 
 	pb "github.com/saferwall/saferwall/core/multiav/avast/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avast"
@@ -87,14 +88,14 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 // main start a gRPC server and waits for connection.
 func main() {
 
-	// start by running avast service
-	log.Print("Starting avast service")
+	// Start by running avast service
+	log.Infoln("Starting avast service")
 	err := avast.StartService()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Print("Starting avast gRPC server")
+	log.Infoln("Starting avast gRPC server")
 
 	// create a listener on TCP port 50051
 	lis, err := net.Listen("tcp", port)
