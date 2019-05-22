@@ -23,9 +23,8 @@ COPY license.avastlic /etc/avast/license.avastlic
 RUN chown avast:avast /etc/avast/license.avastlic
 
 # Add EICAR Anti-Virus Test File
-RUN mkdir /samples
-ADD http://www.eicar.org/download/eicar.com.txt /samples/eicar
-RUN chmod -R o+r /samples
+ADD --chown=avast:avast http://www.eicar.org/download/eicar.com.txt eicar
 
 #  Performs a simple test
-RUN service avast start && scan /samples/eicar; exit 0
+RUN service avast start && scan eicar; rm eicar
+

@@ -31,7 +31,7 @@ func GetVerion(client pb.AvastScannerClient) (*pb.VersionResponse, error) {
 
 // ScanFile scans file
 func ScanFile(client pb.AvastScannerClient, path string) (MultiAVScanResult, error) {
-	log.Println("Scanning:", path)
+	log.Info("Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFilePath(context.Background(), scanFile)
 	if err != nil {
@@ -45,11 +45,14 @@ func ScanFile(client pb.AvastScannerClient, path string) (MultiAVScanResult, err
 }
 
 // Init connection
-func Init() pb.AvastScannerClient {
+func Init() (pb.AvastScannerClient, error) {
 
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
 
 	conn, err := grpc.Dial(address, []grpc.DialOption{grpc.WithInsecure()}...)
-	return pb.NewAvastScannerClient(conn)
+	if err != nil {
+		return nil, err
+	}
+	return pb.NewAvastScannerClient(conn), nil
 }

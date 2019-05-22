@@ -30,5 +30,14 @@ LABEL description="gRPC server over linux version of Avast"
 
 # Update VPS
 RUN /var/lib/avast/Setup/avast.vpsupdate
+
+# Copy our static executable.
 COPY --from=builder /go/bin/avastscanner /bin/avastscanner
+
+# Create an app user so our program doesn't run as root.
+RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+
+# Switch to our user
+USER saferwall
+
 ENTRYPOINT ["/bin/avastscanner"]
