@@ -184,7 +184,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Scan with Avast
 	avastClient, err := avast.Init()
 	if err != nil {
-		log.Errorf("clamav init failed %s", err)
+		log.Errorf("avast init failed %s", err)
 	} else {
 		avastres, err := avast.ScanFile(avastClient, filePath)
 		if err != nil {

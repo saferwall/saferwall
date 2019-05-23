@@ -88,11 +88,11 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 // main start a gRPC server and waits for connection.
 func main() {
 
-	// Start by running avast service
-	log.Infoln("Starting avast service")
-	err := avast.StartService()
+	// Start by running avast daemon
+	log.Infoln("Starting avast daemon")
+	out, err := avast.StartDaemon()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Out %s, err: %v", out, err)
 	}
 
 	log.Infoln("Starting avast gRPC server")

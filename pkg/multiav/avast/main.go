@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	cmd          = "scan"
-	avastService = "/etc/init.d/avast"
-	licenseFile  = "/etc/avast/license.avastlic"
-	vpsUpdate    = "/var/lib/avast/Setup/avast.vpsupdate"
+	cmd         = "scan"
+	avastDaemon = "/usr/bin/avast"
+	licenseFile = "/etc/avast/license.avastlic"
+	vpsUpdate   = "/var/lib/avast/Setup/avast.vpsupdate"
 )
 
 // Result represents detection results.
@@ -132,7 +132,7 @@ func IsLicenseExpired() (bool, error) {
 		return true, errors.New("License not found")
 	}
 
-	out, err := utils.ExecCommand(avastService, "status")
+	out, err := utils.ExecCommand(avastDaemon, "status")
 	if err != nil {
 		return true, err
 	}
@@ -178,25 +178,24 @@ func ActivateLicense(r io.Reader) error {
 // RestartService re-starts the Avast service.
 func RestartService() error {
 	// check if service is running
-	_, err := utils.ExecCommand(avastService, "status")
+	_, err := utils.ExecCommand(avastDaemon, "status")
 	if err != nil && err.Error() != "exit status 3" {
 		return err
 	}
 
 	// exit code 3 means program is not running
 	if err.Error() == "exit status 3" {
-		_, err = utils.ExecCommand(avastService, "start")
+		_, err = utils.ExecCommand(avastDaemon, "start")
 	} else {
-		_, err = utils.ExecCommand(avastService, "restart")
+		_, err = utils.ExecCommand(avastDaemon, "restart")
 	}
 
 	return err
 }
 
+// StartDaemon starts the Avast daemon.
+func StartDaemon() (string, error) {
 
-// StartService starts the Avast service.
-func StartService() error {
-
-	_, err := utils.ExecCommand(avastService, "start")
-	return err
+	out, err := utils.ExecCommand(avastDaemon, "-n", "-D")
+	return out, err
 }

@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:bionic AS final
 
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \ 
