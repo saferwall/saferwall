@@ -194,8 +194,8 @@ func RestartService() error {
 }
 
 // StartDaemon starts the Avast daemon.
-func StartDaemon() (string, error) {
+func StartDaemon() error {
 
-	out, err := utils.ExecCommand(avastDaemon, "-n", "-D")
-	return out, err
+	err := utils.StartCommand(avastDaemon, "-n", "-D")
+	return err
 }
