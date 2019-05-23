@@ -151,12 +151,12 @@ export default {
                 this.firstScan = data.data.multiav
                 this.lastScan = data.data.multiav
 
-								for (let key in this.firstScan) {
-										const first = this.firstScan[key];
+                Object.keys(this.firstScan).forEach(key => {
+                    const first = this.firstScan[key];
                     first.showCopy = false
                     const last = this.lastScan[key];
                     last.showCopy = false
-								}
+                });
             })
             .catch(err => console.error(err))
     }
