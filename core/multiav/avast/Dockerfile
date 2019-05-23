@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/avast:0.0.1
+FROM saferwall/avast:0.0.1 AS final
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Avast"
@@ -37,7 +37,13 @@ COPY --from=builder /go/bin/avastscanner /bin/avastscanner
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
+# Update permissions
+RUN usermod -u 101 saferwall
+RUN groupmod -g 102 saferwall
+RUN echo 'saferwall ALL = NOPASSWD: /usr/sbin/service avast *' >> /etc/sudoers
+
+
 # Switch to our user
-USER saferwall
+# USER saferwall
 
 ENTRYPOINT ["/bin/avastscanner"]

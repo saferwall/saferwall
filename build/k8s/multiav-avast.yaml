@@ -34,3 +34,10 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 50051
+          volumeMounts:
+          - name: samples
+            mountPath: /samples
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: samples-pv-claim

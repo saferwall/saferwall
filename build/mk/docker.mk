@@ -1,10 +1,10 @@
 REPO = saferwall
 
 docker-build: ## Build the container
-	docker build -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	DOCKER_BUILDKIT=1 docker build --target final -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-build-nc: ## Build the container without caching
-	docker build --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	DOCKER_BUILDKIT=1 docker build --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-run: ## Run container on port configured in `config.env`
 	docker run -d -p 50051:50051 $(REPO)/$(IMG)
@@ -64,3 +64,10 @@ docker-rm-image-tags:	## Delete all tags from image
 
 docker-get-ip:			## Get container IP addr
 	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
+
+docker-daemon-restart:	## Restart docker daemon & reload config
+	sudo systemctl daemon-reload
+	sudo systemctl restart docker
+
+docker-enable-experimental:		## Enable experimental
+	echo '{"experimental":true}' >> /etc/docker/daemon.json
