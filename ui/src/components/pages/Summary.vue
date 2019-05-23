@@ -2,11 +2,11 @@
     <div>
         <loader v-if="showLoader"></loader>
         <div class="tile is-ancestor" v-if="!showLoader">
-            <div class="tile is-parent">
+            <div class="tile is-parent is-vertical">
                 <div class="tile is-child box">
                     <h4 class="title">Basic Properties</h4>
                     <div v-for="(i, index) in summaryData" 
-                        v-if="index !== 'av'" 
+                        v-if="!['av', 'exif'].includes(index)" 
                         class="data-data">
                         <strong class="data-label">
                             {{
@@ -17,21 +17,36 @@
                             }}
                         </strong>
                         <span class="data-value" v-if="index !== 'trid'">
-                            <span class="value-text">{{(index !== 'sha-512') ? i : i.substring(0, 70) + '...'}}</span>
+													<span class="value-text">{{(index !== 'sha-512') ? i : i.substring(0, 70) + '...'}}</span>
 
-                            <copy :content="i"></copy>
+													<copy :content="i"></copy>
                         </span>
                         <span class="data-value" :class="{'trid-container': index == 'trid'}" v-if="index == 'trid'">
                             <p v-for="t in summaryData.trid">
-                            <span class="trid">
-                                <span class="value-text">{{t}}</span>
+															<span class="trid">
+																	<span class="value-text">{{t}}</span>
 
-                                <copy :content="t"></copy>
-                            </span>
+																	<copy :content="t"></copy>
+															</span>
                             </p>
                         </span>
                     </div>
                 </div>
+
+								<div class="tile is-child box">
+                    <h4 class="title">ExifTool File Metadata</h4>
+                    <div v-for="(i, index) in summaryData.exif" 
+                        class="data-data">
+                        <strong class="data-label">
+													{{ index.replace(/[A-Z]/g, match => ` ${match}`)}}
+                        </strong>
+                        <span class="data-value">
+													<span class="value-text">{{i}}</span>
+
+													<copy :content="i"></copy>
+                        </span>
+									</div>
+							</div>
             </div>
         </div>
     </div>
@@ -60,8 +75,8 @@ export default {
             if (bytes == 0) return '0 Byte';
             var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
             return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
-        }
-    },
+        }    
+		},
     mounted(){
       axios.get(Global.apiUrl + this.$route.params.hash + '?api-key=' + Global.apiKey)
         .then(data => {
@@ -83,6 +98,7 @@ export default {
             this.summaryData['sha-512'] = data.data['sha-512']
             this.summaryData.ssdeep = data.data.ssdeep
             this.summaryData.trid = data.data.trid
+						this.summaryData.exif = data.data.exif
             console.log(this.summaryData)
         })
     }
@@ -102,8 +118,9 @@ export default {
     
     .data-label{
         float:left;
-        width:70px;
+        width:100px;
         text-transform: capitalize;
+				margin-right: 1.4em;
     }
 
     .data-value{

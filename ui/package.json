@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
-    "start": "npm run dev",
+    "start": "yarn run dev",
     "build": "node build/build.js"
   },
   "dependencies": {
