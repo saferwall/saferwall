@@ -59,12 +59,15 @@ k8s-delete-nsq:
 	kubectl delete deployments nsqadmin 
 	kubectl delete deployments nsqadmin 
 
-
-
 k8s-delete:
 	kubectl delete deployments,service backend -l app=web
-	kubectl delete deployments,service backend -l app=web
 	kubectl delete service backend
-	
 	kubectl delete service consumer
+
 	kubectl delete deployments consumer
+	kubectl delete deployments avast
+	kubectl delete deployments backend
+
+	kubectl apply -f multiav-avast.yaml
+	kubectl apply -f backend.yaml
+	kubectl apply -f consumer.yaml

@@ -93,6 +93,20 @@ func ExecCommand(name string, args ...string) (string, error) {
 	return string(out), err
 }
 
+// StartCommand will execute a command in background
+func StartCommand(name string, args ...string) error {
+
+	cmd := exec.Command(name, args...)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Getwd returns the directory where the process is running from
 func Getwd() (string, error) {
 	return filepath.Abs(filepath.Dir(os.Args[0]))
