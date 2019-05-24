@@ -65,9 +65,9 @@ k8s-delete:
 	kubectl delete service consumer
 
 	kubectl delete deployments consumer
-	kubectl delete deployments avast
+	kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml
 	kubectl delete deployments backend
 
-	kubectl apply -f multiav-avast.yaml
+	
 	kubectl apply -f backend.yaml
 	kubectl apply -f consumer.yaml
