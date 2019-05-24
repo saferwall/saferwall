@@ -21,6 +21,7 @@ import (
 
 	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
+	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -194,6 +195,35 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			log.Infof("avast success %s", sha256)
 		}
 	}
+
+	// Scan with Avira
+	aviraClient, err := avira.Init()
+	if err != nil {
+		log.Errorf("avira init failed %s", err)
+	} else {
+		avirares, err := avira.ScanFile(aviraClient, filePath)
+		if err != nil {
+			log.Errorf("avira scanfile failed %s", err)
+		} else {
+			multiavScanResults["avira"] = avirares
+			log.Infof("avira success %s", sha256)
+		}
+	}
+
+	// Scan with Avira
+	bitdefenderClient, err := bitdefender.Init()
+	if err != nil {
+		log.Errorf("bitdefender init failed %s", err)
+	} else {
+		bitdefenderres, err := bitdefender.ScanFile(bitdefenderClient, filePath)
+		if err != nil {
+			log.Errorf("bitdefender scanfile failed %s", err)
+		} else {
+			multiavScanResults["bitdefender"] = bitdefenderres
+			log.Infof("bitdefender success %s", sha256)
+		}
+	}
+
 	res.MultiAV = multiavScanResults
 
 	// Marshell results
