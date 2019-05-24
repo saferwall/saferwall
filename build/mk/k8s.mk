@@ -64,11 +64,10 @@ k8s-delete:
 	kubectl delete service backend
 	kubectl delete service consumer
  
+	kubectl delete deployments backend ; kubectl apply -f backend.yaml
 	kubectl delete deployments consumer ; kubectl apply -f consumer.yaml
 	kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml
 	kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml
-	kubectl delete deployments backend
+	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
 
 	
-	kubectl apply -f backend.yaml
-	kubectl apply -f consumer.yaml
