@@ -42,7 +42,7 @@ RUN mkdir $AVIRA_TMP \
     && unzip -o $AVIRA_TMP/install/fusebundle-linux_glibc22-int.zip -d $AVIRA_INSTALL_DIR
 
 # Copy our static executable.
-COPY --from=builder /go/bin/avirascanner /bin/aviracanner
+COPY --from=builder /go/bin/avirascanner /bin/avirascanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
