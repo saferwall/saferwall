@@ -90,9 +90,9 @@ func main() {
 
 	// Start by running avast daemon
 	log.Infoln("Starting avast daemon")
-	out, err := avast.StartDaemon()
+	err := avast.StartDaemon()
 	if err != nil {
-		log.Fatalf("Out %s, err: %v", out, err)
+		log.Error(err)
 	}
 
 	log.Infoln("Starting avast gRPC server")

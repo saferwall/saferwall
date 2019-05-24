@@ -15,7 +15,7 @@ protobuf-generate-api:		## Generates protocol buffers definitions files.
 	protoc -I $(ROOT_DIR)/api/protobuf-spec/ \
 		-I${GOPATH}/src \
 		--go_out=plugins=grpc:$(ROOT_DIR)/core/multiav/$(AV_VENDOR)/proto/ \
-		$(ROOT_DIR)/api/protobuf-spec/multiav.$(AV_VENDOR).proto
+		$(ROOT_DIR)/api/protobuf-spec/$(AV_VENDOR).proto
 
 protobuf-install-compiler: 	## Install protobuf compiler
 	curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protoc-3.7.1-linux-x86_64.zip
