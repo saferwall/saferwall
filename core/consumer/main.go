@@ -20,8 +20,9 @@ import (
 	minio "github.com/minio/minio-go"
 
 	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
-	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
+	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
+	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -210,7 +211,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 	}
 
-	// Scan with Avira
+	// Scan with Bitdefender
 	bitdefenderClient, err := bitdefender.Init()
 	if err != nil {
 		log.Errorf("bitdefender init failed %s", err)
