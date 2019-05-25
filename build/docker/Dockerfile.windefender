@@ -1,23 +1,34 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim AS final
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="Windows Defender in a docker container"
 
-# Install dependencies
-RUN apt-get update && apt-get install make -y
+# Vars
+ENV WINDOWS_DEFENDER_UPDATE         https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86
+ENV WINDOWS_DEFENDER_LOADLIBRARY    https://codeload.github.com/taviso/loadlibrary/zip/master
+ENV WINDOWS_DEFENDER_INSTALL_DIR    /opt/windowsdefender
+ENV WINDOWS_DEFENDER_TMP            /tmp/windowsdefender
 
-# Use make inside the container to install Kaspersky
-COPY Makefile ./
-RUN make install
+# Install Windows Defender
+RUN dpkg --add-architecture i386 \
+    && apt-get update \ 
+    && apt-get install wget unzip gcc-multilib exiftool cabextract build-essential libreadline-dev:i386 libc6-i386 -y \
+    && mkdir $WINDOWS_DEFENDER_TMP \
+    && wget $WINDOWS_DEFENDER_LOADLIBRARY -P $WINDOWS_DEFENDER_TMP \
+    && cd $WINDOWS_DEFENDER_TMP \ 
+    && unzip -o $WINDOWS_DEFENDER_TMP/master \
+    && cd $WINDOWS_DEFENDER_TMP/loadlibrary-master \
+    && make -j2 \
+    && mv $WINDOWS_DEFENDER_TMP/loadlibrary-master $WINDOWS_DEFENDER_INSTALL_DIR
 
-# Copy the server binary
-COPY server /bin/server
+# Update the VDF
+RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe \
+    && cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
+    && cabextract mpam-fe.exe \
+    && rm mpam-fe.exe
 
-# Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt ./
+# Add EICAR Anti-Virus Test File
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Expose our gRPC port
-EXPOSE 50051
-
-# Entry point
-ENTRYPOINT ["/bin/server"]
+# Performs a simple test
+RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
