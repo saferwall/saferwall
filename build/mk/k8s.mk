@@ -69,5 +69,6 @@ k8s-delete:
 	kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml
 	kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml
 	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
+	kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml
 
 	

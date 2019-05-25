@@ -23,6 +23,7 @@ import (
 	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
 	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
+	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -121,7 +122,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with exiftool, err: ", err)
-		return err
 	}
 	log.Infof("exiftool success %s", sha256)
 
@@ -129,7 +129,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
 		log.Error("Faileds to scan file with trid, err: ", err)
-		return err
 	}
 	log.Infof("trid success %s", sha256)
 
@@ -137,7 +136,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.Magic, err = magic.GetMimeType(b)
 	if err != nil {
 		log.Error("Failed to scan file with magic, err: ", err)
-		return err
 	}
 	log.Infof("mimetype success %s", sha256)
 
@@ -222,6 +220,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		} else {
 			multiavScanResults["bitdefender"] = bitdefenderres
 			log.Infof("bitdefender success %s", sha256)
+		}
+	}
+
+	// Scan with Comodo
+	comodoClient, err := comodo.Init()
+	if err != nil {
+		log.Errorf("comodo init failed %s", err)
+	} else {
+		comodores, err := comodo.ScanFile(comodoClient, filePath)
+		if err != nil {
+			log.Errorf("comodo scanfile failed %s", err)
+		} else {
+			multiavScanResults["comodo"] = comodores
+			log.Infof("comodo success %s", sha256)
 		}
 	}
 
