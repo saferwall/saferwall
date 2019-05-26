@@ -24,6 +24,7 @@ import (
 	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
+	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -234,6 +235,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		} else {
 			multiavScanResults["comodo"] = comodores
 			log.Infof("comodo success %s", sha256)
+		}
+	}
+
+	// Scan with Windows Defender
+	windefenderClient, err := windefender.Init()
+	if err != nil {
+		log.Errorf("windefender init failed %s", err)
+	} else {
+		windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
+		if err != nil {
+			log.Errorf("windefender scanfile failed %s", err)
+		} else {
+			multiavScanResults["windefender"] = windefenderRes
+			log.Infof("windefender success %s", sha256)
 		}
 	}
 

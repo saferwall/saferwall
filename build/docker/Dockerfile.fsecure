@@ -1,23 +1,34 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim AS final
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="FSecure Linux Security in a docker container"
 
+# Vars
+ENV FSECURE_VERSION     11.10.68
+ENV FSECURE_INSTALL_DIR /opt/f-secure
+ENV FSECURE_UPDATE      http://download.f-secure.com/latest/fsdbupdate9.run
+ENV FSECURE_URL         https://download.f-secure.com/corpro/ls/trial/fsls-$FSECURE_VERSION-rtm.tar.gz
+ENV FSECURE_TMP         /tmp/fsecure
+
 # Install dependencies
-RUN apt-get update && apt-get install make -y
+RUN apt-get update \
+    && apt-get install wget lib32stdc++6 rpm psmisc -y \
+    && mkdir $FSECURE_TMP \
+    && wget $FSECURE_URL -P $FSECURE_TMP \
+	&& tar zxvf $FSECURE_TMP/fsls-$FSECURE_VERSION-rtm.tar.gz -C $FSECURE_TMP \
+	&& chmod a+x $FSECURE_TMP/fsls-$FSECURE_VERSION-rtm/fsls-$FSECURE_VERSION \
+	&& $FSECURE_TMP/fsls-$FSECURE_VERSION-rtm/fsls-$FSECURE_VERSION --auto standalone lang=en --command-line-only
 
-# Use make inside the container to install FSecure
-COPY Makefile ./
-RUN make install
-
-# Copy the server binary
-COPY server /bin/server
+# Update VDF
+RUN wget $FSECURE_UPDATE -P $FSECURE_TMP \
+	&& mv $FSECURE_TMP/fsdbupdate9.run $FSECURE_INSTALL_DIR \
+	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0
 
 # Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt ./
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Expose our gRPC port
-EXPOSE 50051
+# Test detection
+RUN /opt/f-secure/fsav/bin/fsav --virus-action1=report --suspected-action1=report eicar ; exit 0
 
-# Entry point
-ENTRYPOINT ["/bin/server"]
+# Clean up
+RUN	rm -rf $FSECURE_TMP

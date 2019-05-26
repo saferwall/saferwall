@@ -2,19 +2,19 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package windefender
+package fsecure
 
 import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/windefender/proto"
+	pb "github.com/saferwall/saferwall/core/multiav/fsecure/proto"
 	"google.golang.org/grpc"
 )
 
 const (
-	address = "windefender-svc:50051"
+	address = "fsecure-svc:50051"
 )
 
 // MultiAVScanResult av result
@@ -23,14 +23,8 @@ type MultiAVScanResult struct {
 	Infected bool   `json:"infected"`
 }
 
-// GetVerion returns version
-func GetVerion(client pb.WinDefenderScannerClient) (*pb.VersionResponse, error) {
-	versionRequest := &pb.VersionRequest{}
-	return client.GetVersion(context.Background(), versionRequest)
-}
-
 // ScanFile scans file
-func ScanFile(client pb.WinDefenderScannerClient, path string) (MultiAVScanResult, error) {
+func ScanFile(client pb.FSecureScannerClient, path string) (MultiAVScanResult, error) {
 	log.Info("Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
@@ -45,7 +39,7 @@ func ScanFile(client pb.WinDefenderScannerClient, path string) (MultiAVScanResul
 }
 
 // Init connection
-func Init() (pb.WinDefenderScannerClient, error) {
+func Init() (pb.FSecureScannerClient, error) {
 
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
@@ -54,5 +48,5 @@ func Init() (pb.WinDefenderScannerClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return pb.NewWinDefenderScannerClient(conn), nil
+	return pb.NewFSecureScannerClient(conn), nil
 }
