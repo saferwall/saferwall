@@ -70,5 +70,6 @@ k8s-delete:
 	kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml
 	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
 	kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml
+	kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml
 
 	
