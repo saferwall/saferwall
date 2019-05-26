@@ -1,14 +1,14 @@
 -include build/mk/multiav.avast.mk
--include build/multiav/avira/Makefile
--include build/multiav/bitdefender/Makefile
--include build/multiav/clamav/Makefile
--include build/multiav/comodo/Makefile
--include build/multiav/eset/Makefile
--include build/multiav/fsecure/Makefile
--include build/multiav/kaspersky/Makefile
--include build/multiav/mcafee/Makefile
--include build/multiav/sophos/Makefile
--include build/multiav/symantec/Makefile
+-include build/mk/multiav.avira.mk
+-include build/mk/multiav.bitdefender.mk
+-include build/mk/multiav.clamav.mk
+-include build/mk/multiav.comodo.mk
+-include build/mk/multiav.eset.mk
+-include build/mk/multiav.fsecure.mk
+-include build/mk/multiav.kaspersky.mk
+-include build/mk/multiav.mcafee.mk
+-include build/mk/multiav.sophos.mk
+-include build/mk/multiav.symantec.mk
 -include build/mk/multiav.windefender.mk
 
 protobuf-generate-api:		## Generates protocol buffers definitions files. 
@@ -27,4 +27,4 @@ protobuf-protoc-gen-go:	## Install protoc plugin for Go
 	go get -u github.com/golang/protobuf/protoc-gen-go
 
 compile-multiav-server: protobuf-generate-api	## Compile gRPC server
-	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/multiav/$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/multiav/$(AV_VENDOR)/server.go 
+	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go 
