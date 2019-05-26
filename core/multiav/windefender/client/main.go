@@ -38,6 +38,7 @@ func ScanFile(client pb.WinDefenderScannerClient, path string) (MultiAVScanResul
 		return MultiAVScanResult{}, err
 	}
 
+	
 	return MultiAVScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
