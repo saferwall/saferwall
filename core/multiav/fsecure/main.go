@@ -38,7 +38,7 @@ type server struct{}
 // ScanFile implements fsecure.FSecureScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	res, err := fsecure.ScanFile(in.Filepath)
-	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
+	return &pb.ScanResponse{Infected: res.Infected, Output: res.FSE}, err
 }
 
 // NewServer creates a new grpc server.

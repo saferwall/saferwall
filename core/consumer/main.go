@@ -24,6 +24,7 @@ import (
 	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
 	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
+	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
 	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -249,6 +250,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		} else {
 			multiavScanResults["windefender"] = windefenderRes
 			log.Infof("windefender success %s", sha256)
+		}
+	}
+
+	// Scan with FSecure
+	fsecureClient, err := fsecure.Init()
+	if err != nil {
+		log.Errorf("fsecure init failed %s", err)
+	} else {
+		fsecureRes, err := fsecure.ScanFile(fsecureClient, filePath)
+		if err != nil {
+			log.Errorf("fsecure scanfile failed %s", err)
+		} else {
+			multiavScanResults["fsecure"] = fsecureRes
+			log.Infof("fsecure success %s", sha256)
 		}
 	}
 
