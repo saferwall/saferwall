@@ -54,6 +54,7 @@ type result struct {
 	Ssdeep  string                 `json:"ssdeep"`
 	Exif    map[string]string      `json:"exif"`
 	TriD    []string               `json:"trid"`
+	Packer  []string               `json:"packer"`
 	Magic   string                 `json:"magic"`
 	Strings []stringStruct         `json:"strings"`
 	MultiAV map[string]interface{} `json:"multiav"`
@@ -140,6 +141,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		log.Error("Failed to scan file with magic, err: ", err)
 	}
 	log.Infof("magic extraction success %s", sha256)
+
+	// Run Die Pkg
+	res.Packer, err = packer.scan(filePath)
+	if err != nil {
+		log.Error("Failed to scan file with packer, err: ", err)
+	}
+	log.Infof("packer extraction success %s", sha256)
 
 	// Run strings pkg
 	n := 10
