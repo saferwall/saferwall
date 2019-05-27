@@ -12,7 +12,7 @@ ENV FSECURE_TMP         /tmp/fsecure
 
 # Install dependencies
 RUN apt-get update \
-    && apt-get install wget lib32stdc++6 rpm psmisc -y \
+    && apt-get install wget lib32stdc++6 rpm psmisc procps -y \
     && mkdir $FSECURE_TMP \
     && wget $FSECURE_URL -P $FSECURE_TMP \
 	&& tar zxvf $FSECURE_TMP/fsls-$FSECURE_VERSION-rtm.tar.gz -C $FSECURE_TMP \
@@ -22,7 +22,10 @@ RUN apt-get update \
 # Update VDF
 RUN wget $FSECURE_UPDATE -P $FSECURE_TMP \
 	&& mv $FSECURE_TMP/fsdbupdate9.run $FSECURE_INSTALL_DIR \
-	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0
+	&& /etc/init.d/fsaua start \
+	&& /etc/init.d/fsupdate start \
+	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0 \
+	&& /opt/f-secure/fsav/bin/fsav --version
 
 # Add the EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar

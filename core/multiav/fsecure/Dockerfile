@@ -42,7 +42,10 @@ COPY --from=builder /go/bin/fsecurescanner /bin/fsecurescanner
 # Update VDF
 RUN wget $FSECURE_UPDATE -P $FSECURE_TMP \
 	&& mv $FSECURE_TMP/fsdbupdate9.run $FSECURE_INSTALL_DIR \
-	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0
+	&& /etc/init.d/fsaua start \
+	&& /etc/init.d/fsupdate start \
+	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0 \
+	&& /opt/f-secure/fsav/bin/fsav --version
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall

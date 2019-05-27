@@ -135,11 +135,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	log.Infof("trid success %s", sha256)
 
 	// Run Magic Pkg
-	res.Magic, err = magic.GetMimeType(b)
+	res.Magic, err = magic.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with magic, err: ", err)
 	}
-	log.Infof("mimetype success %s", sha256)
+	log.Infof("magic extraction success %s", sha256)
 
 	// Run strings pkg
 	n := 10
