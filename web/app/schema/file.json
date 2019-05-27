@@ -67,6 +67,10 @@
       "description": "TrID scan results",
       "type": "array"
     },
+    "packer": {
+      "description": "Packer scan results",
+      "type": "array"
+    },
     "multiav": {
       "description": "Anti-virus scan results",
       "type": "object"
