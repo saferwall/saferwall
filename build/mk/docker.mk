@@ -1,7 +1,7 @@
 REPO = saferwall
 
 docker-build: ## Build the container
-	DOCKER_BUILDKIT=1 docker build -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	docker build -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-build-nc: ## Build the container without caching
 	DOCKER_BUILDKIT=1 docker build --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)

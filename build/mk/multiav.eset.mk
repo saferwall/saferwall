@@ -4,7 +4,7 @@ ESET_CONFIG_DIR 	= /etc/opt/eset
 ESET_INSTALL_DIR 	= /opt/eset
 ESET_TEMP			= /tmp/eset
 
-install-eset:	## install ESET File Server Security for Linux, ESET_USER / ESET_PWD are read from .env
+eset-install:		## install ESET File Server Security for Linux, ESET_USER / ESET_PWD are read from .env
 	apt-get update
 	apt-get install wget libc6-i386 ed -y
 	mkdir -p $(ESET_TEMP)
@@ -24,8 +24,8 @@ endif
 	rm -rf $(ESET_TEMP)
 	make update-eset
 
-update-eset:		## update ESET File Server Security for Linux
+eset-update:		## update ESET File Server Security for Linux
 	/opt/eset/esets/sbin/esets_update
 
-uninstall-eset:	## uninstall EST File Server Security for Linux
+eset-uninstall:		## uninstall EST File Server Security for Linux
 	dpkg --purge esets
