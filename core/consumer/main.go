@@ -29,6 +29,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
+	"github.com/saferwall/saferwall/pkg/packer"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -143,7 +144,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	log.Infof("magic extraction success %s", sha256)
 
 	// Run Die Pkg
-	res.Packer, err = packer.scan(filePath)
+	res.Packer, err = packer.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with packer, err: ", err)
 	}
