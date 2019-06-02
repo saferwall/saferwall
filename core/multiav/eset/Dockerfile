@@ -36,15 +36,16 @@ ENV ESET_INSTALL_DIR 	/opt/eset
 RUN /opt/eset/esets/sbin/esets_update
 
 # Create an app user so our program doesn't run as root.
-RUN addgroup -S saferwall && adduser -S -G saferwall saferwall  --shell /bin/sh
+RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
 # Copy our binary
 COPY --from=builder /go/bin/esetscanner /bin/esetscanner
 
-# Configure permissions
-RUN chown saferwall:saferwall /bin/esetscanner \
-    && chmod -R o+rw $ESET_CONFIG_DIR \ 
-    && chmod -R o+rw $ESET_INSTALL_DIR
+# Update permissions
+RUN usermod -u 101 saferwall
+RUN groupmod -g 102 saferwall
+RUN chown -R saferwall:saferwall $ESET_CONFIG_DIR
+RUN chown -R saferwall:saferwall $ESET_INSTALL_DIR
 
 # Switch to our user
 USER saferwall
