@@ -2,7 +2,7 @@ SYMANTEC_DEB 	= sep-deb.zip
 SYMANTEC_SAV	= /opt/Symantec/symantec_antivirus/sav
 SYMANTEC_TMP	= /tmp/symantec
 
-install-symantec:	## install Symantec Endpoint Protection Linux Client	
+symantec-install:	## install Symantec Endpoint Protection Linux Client	
 	apt-get update
 	apt-get install unzip libc6-i386 -y
 	mkdir -p $(SYMANTEC_TMP)
@@ -19,9 +19,9 @@ endif
 	$(SYMANTEC_SAV) info --defs
 	rm -rf $(SYMANTEC_TMP)
 
-update-symantec:		## update Symantec Endpoint Protection Linux Client
+symantec-update:		## update Symantec Endpoint Protection Linux Client
 	$(SYMANTEC_SAV) liveupdate --update
 	$(SYMANTEC_SAV) info --defs
 
-uninstall-symantec:	## uninstall Symantec Endpoint Protection Linux Client
+symantec-uninstall:	## uninstall Symantec Endpoint Protection Linux Client
 	echo 'Y' | /opt/Symantec/symantec_antivirus/uninstall.sh
