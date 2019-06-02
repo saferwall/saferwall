@@ -40,10 +40,8 @@ RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 # Update permissions
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
-RUN echo 'saferwall ALL = NOPASSWD: /usr/sbin/service avast *' >> /etc/sudoers
-
 
 # Switch to our user
-# USER saferwall
+USER saferwall
 
 ENTRYPOINT ["/bin/avastscanner"]

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package comodo.api;
+
+// The COMODO scanner service definition.
+service ComodoScanner {
+  // Scan a file
+  rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
+  // Get program version
+  rpc GetVersion(VersionRequest) returns (VersionResponse) {}
+}
+
+// The scan file request message containing the file path to scan.
+message ScanFileRequest { string filepath = 1; }
+
+// The scan response message containing detection results of the AntiVirus.
+message ScanResponse {
+  string output = 1;
+  bool infected = 2;
+}
+
+// The version request message ask for version.
+message VersionRequest {}
+
+// The response message containing program/VPS version.
+message VersionResponse { string version = 1; }

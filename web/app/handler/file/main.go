@@ -38,6 +38,7 @@ type File struct {
 	Size      int64                  `json:"size,omitempty"`
 	Exif      map[string]string      `json:"exif"`
 	TriD      []string               `json:"trid"`
+	Packer    []string               `json:"packer"`
 	FirstSeen time.Time              `json:"first_seen,omitempty"`
 	Strings   []stringStruct         `json:"strings"`
 	MultiAV   map[string]interface{} `json:"multiav"`

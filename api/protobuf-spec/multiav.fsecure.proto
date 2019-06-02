@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package fsecure.api;
+
+// The FSecure scanner service definition.
+service FSecureScanner {
+  // Scan a file
+  rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
+}
+
+// The scan file request message containing the file path to scan.
+message ScanFileRequest { string filepath = 1; }
+
+// The scan response message containing detection results of the AntiVirus.
+message ScanResponse {
+  string output = 1;
+  bool infected = 2;
+}

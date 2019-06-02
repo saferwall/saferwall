@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: windefender-svc
+  labels:
+    app: windefender
+spec:
+  selector:
+    app: windefender
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windefender
+  labels:
+    app: windefender
+spec:
+  selector:
+    matchLabels:
+      app: windefender
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: windefender
+    spec:
+      containers:
+        - name: gowindefender
+          image: saferwall/gowindefender:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
+          volumeMounts:
+          - name: samples
+            mountPath: /samples
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: samples-pv-claim

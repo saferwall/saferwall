@@ -20,10 +20,17 @@ import (
 	minio "github.com/minio/minio-go"
 
 	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
+	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
+	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
 	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
+	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
+	eset "github.com/saferwall/saferwall/core/multiav/eset/client"
+	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
+	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
+	"github.com/saferwall/saferwall/pkg/packer"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -49,6 +56,7 @@ type result struct {
 	Ssdeep  string                 `json:"ssdeep"`
 	Exif    map[string]string      `json:"exif"`
 	TriD    []string               `json:"trid"`
+	Packer  []string               `json:"packer"`
 	Magic   string                 `json:"magic"`
 	Strings []stringStruct         `json:"strings"`
 	MultiAV map[string]interface{} `json:"multiav"`
@@ -119,7 +127,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with exiftool, err: ", err)
-		return err
 	}
 	log.Infof("exiftool success %s", sha256)
 
@@ -127,17 +134,22 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
 		log.Error("Faileds to scan file with trid, err: ", err)
-		return err
 	}
 	log.Infof("trid success %s", sha256)
 
 	// Run Magic Pkg
-	res.Magic, err = magic.GetMimeType(b)
+	res.Magic, err = magic.Scan(filePath)
 	if err != nil {
 		log.Error("Failed to scan file with magic, err: ", err)
-		return err
 	}
-	log.Infof("mimetype success %s", sha256)
+	log.Infof("magic extraction success %s", sha256)
+
+	// Run Die Pkg
+	res.Packer, err = packer.Scan(filePath)
+	if err != nil {
+		log.Error("Failed to scan file with packer, err: ", err)
+	}
+	log.Infof("packer extraction success %s", sha256)
 
 	// Run strings pkg
 	n := 10
@@ -194,6 +206,91 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			log.Infof("avast success %s", sha256)
 		}
 	}
+
+	// Scan with Avira
+	aviraClient, err := avira.Init()
+	if err != nil {
+		log.Errorf("avira init failed %s", err)
+	} else {
+		avirares, err := avira.ScanFile(aviraClient, filePath)
+		if err != nil {
+			log.Errorf("avira scanfile failed %s", err)
+		} else {
+			multiavScanResults["avira"] = avirares
+			log.Infof("avira success %s", sha256)
+		}
+	}
+
+	// Scan with Bitdefender
+	bitdefenderClient, err := bitdefender.Init()
+	if err != nil {
+		log.Errorf("bitdefender init failed %s", err)
+	} else {
+		bitdefenderres, err := bitdefender.ScanFile(bitdefenderClient, filePath)
+		if err != nil {
+			log.Errorf("bitdefender scanfile failed %s", err)
+		} else {
+			multiavScanResults["bitdefender"] = bitdefenderres
+			log.Infof("bitdefender success %s", sha256)
+		}
+	}
+
+	// Scan with Comodo
+	comodoClient, err := comodo.Init()
+	if err != nil {
+		log.Errorf("comodo init failed %s", err)
+	} else {
+		comodores, err := comodo.ScanFile(comodoClient, filePath)
+		if err != nil {
+			log.Errorf("comodo scanfile failed %s", err)
+		} else {
+			multiavScanResults["comodo"] = comodores
+			log.Infof("comodo success %s", sha256)
+		}
+	}
+
+	// Scan with Windows Defender
+	windefenderClient, err := windefender.Init()
+	if err != nil {
+		log.Errorf("windefender init failed %s", err)
+	} else {
+		windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
+		if err != nil {
+			log.Errorf("windefender scanfile failed %s", err)
+		} else {
+			multiavScanResults["windefender"] = windefenderRes
+			log.Infof("windefender success %s", sha256)
+		}
+	}
+
+	// Scan with FSecure
+	fsecureClient, err := fsecure.Init()
+	if err != nil {
+		log.Errorf("fsecure init failed %s", err)
+	} else {
+		fsecureRes, err := fsecure.ScanFile(fsecureClient, filePath)
+		if err != nil {
+			log.Errorf("fsecure scanfile failed %s", err)
+		} else {
+			multiavScanResults["fsecure"] = fsecureRes
+			log.Infof("fsecure success %s", sha256)
+		}
+	}
+
+	// Scan with Eset
+	esetClient, err := eset.Init()
+	if err != nil {
+		log.Errorf("eset init failed %s", err)
+	} else {
+		esetRes, err := eset.ScanFile(esetClient, filePath)
+		if err != nil {
+			log.Errorf("eset scanfile failed %s", err)
+		} else {
+			multiavScanResults["eset"] = esetRes
+			log.Infof("eset success %s", sha256)
+		}
+	}
+
 	res.MultiAV = multiavScanResults
 
 	// Marshell results

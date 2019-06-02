@@ -5,23 +5,34 @@
 package magic
 
 import (
-	"github.com/rakyll/magicmime"
+	"strings"
+
+	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
-	// Command to invoke exiftool scanner
-	Command = "exiftool"
+	// Command to invoke the file tool
+	Command = "file"
 )
 
-// GetMimeType returns the mime-type from a blob of data.
-func GetMimeType(data []byte) (string, error) {
+// Scan a file using file tool
+// This will execute file command line tool and read the stdout
+func Scan(FilePath string) (string, error) {
 
-	err := magicmime.Open(magicmime.MAGIC_MIME_TYPE | magicmime.MAGIC_SYMLINK | magicmime.MAGIC_ERROR)
+	args := []string{FilePath}
+	output, err := utils.ExecCommand(Command, args...)
 	if err != nil {
 		return "", err
 	}
 
-	defer magicmime.Close()
+	return ParseOutput(output), nil
+}
 
-	return magicmime.TypeByBuffer(data)
+// ParseOutput convert exiftool output into map of string|string
+func ParseOutput(fileout string) string {
+	lines := strings.Split(fileout, ": ")
+	if len(lines) > 0 {
+		return strings.TrimSuffix(lines[1], "\n")
+	}
+	return ""
 }
