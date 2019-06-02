@@ -280,7 +280,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Scan with Eset
 	esetClient, err := eset.Init()
 	if err != nil {
-		log.Errorf("fsecure init failed %s", err)
+		log.Errorf("eset init failed %s", err)
 	} else {
 		esetRes, err := eset.ScanFile(esetClient, filePath)
 		if err != nil {
