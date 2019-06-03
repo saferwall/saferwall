@@ -12,22 +12,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(scan, index, i) of firstScan">
-                            <td>{{scan.vendor}}</td>
+                        <tr v-for="(value, vendor) in firstScan">
+                            <td>{{vendor}}</td>
                             <td>
                                 <span :class="[
-                                        {'has-text-success': !scan.detected}, 
-                                        {'has-text-danger': scan.detected}
+                                        {'has-text-success': !value.detected}, 
+                                        {'has-text-danger': value.detected}
                                     ]"
                                     style="position:relative"
-                                    @mouseover="mouseOver('first', index)"
-                                    @mouseleave="mouseLeave('first', index)">
-                                    <span :class="{'transparent': scan.detected && scan.showCopy}">
-                                        <i class="output-icon icon" :class="[{'ion-alert-circled': scan.detected}, {'ion-checkmark-circled': !scan.detected}]"></i>
-                                        {{scan.output}}
+                                    @mouseover="mouseOver('first', vendor)"
+                                    @mouseleave="mouseLeave('first', vendor)">
+                                    <span :class="{'transparent': value.detected && JSON.stringify(show) === JSON.stringify({type: 'first', vendor: vendor})}">
+                                        <i class="output-icon icon" :class="[{'ion-alert-circled': value.detected}, {'ion-checkmark-circled': !value.detected}]"></i>
+                                        {{value.result || 'Clean'}}
                                     </span>
                                     <transition name="fade">
-                                        <copy v-if="scan.detected && scan.showCopy" :content="scan.output"></copy>
+                                        <copy v-if="value.detected && JSON.stringify(show) === JSON.stringify({type: 'first', vendor: vendor})" :content="value.result"></copy>
                                     </transition> 
                                 </span>
                             </td>
@@ -47,22 +47,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(scan, index) of lastScan">
-                            <td>{{scan.vendor}}</td>
+                        <tr v-for="(value, vendor) in lastScan">
+                            <td>{{vendor}}</td>
                             <td>
                                 <span :class="[
-                                        {'has-text-success': !scan.detected}, 
-                                        {'has-text-danger': scan.detected}
+                                        {'has-text-success': !value.detected}, 
+                                        {'has-text-danger': value.detected}
                                     ]"
                                     style="position:relative"
-                                    @mouseover="mouseOver('last', index)"
-                                    @mouseleave="mouseLeave('last', index)">
-                                    <span :class="{'transparent': scan.detected && scan.showCopy}">
-                                        <i class="output-icon icon" :class="[{'ion-alert-circled': scan.detected}, {'ion-checkmark-circled': !scan.detected}]"></i>
-                                        {{scan.output}}
+                                    @mouseover="mouseOver('last', vendor)"
+                                    @mouseleave="mouseLeave('last', vendor)">
+                                    <span :class="{'transparent': value.detected && JSON.stringify(show) === JSON.stringify({type: 'last', vendor: vendor})}">
+                                        <i class="output-icon icon" :class="[{'ion-alert-circled': value.detected}, {'ion-checkmark-circled': !value.detected}]"></i>
+                                        {{value.result || 'Clean'}}
                                     </span>
                                     <transition name="fade">
-                                        <copy v-if="scan.detected && scan.showCopy" :content="scan.output"></copy>
+																		<copy v-if="value.detected && JSON.stringify(show) === JSON.stringify({type: 'last', vendor: vendor})" :content="value.result"></copy>
                                     </transition> 
                                 </span>
                             </td>
@@ -88,68 +88,27 @@ export default {
         return {
             showLoader: true,
             lastScan: {},
-            firstScan: {}
+            firstScan: {},
+						show: {type: "", vendor: ""}
         }
     },
     methods: {
-        mouseOver(type, index){
-            if(type == 'first'){
-                var temp = []
-                this.firstScan.forEach((e, i) => {
-                    let output = e.output
-                    let vendor = e.vendor
-                    let detected = e.detected
-                    let showCopy = ( i == index ) ? true : e.showCopy
-                    temp.push({output, vendor, detected, showCopy})
-                })
-                this.firstScan = []
-                this.firstScan = temp
-            }else{
-                var temp = []
-                this.lastScan.forEach((e, i) => {
-                    let output = e.output
-                    let vendor = e.vendor
-                    let detected = e.detected
-                    let showCopy = ( i == index ) ? true : e.showCopy
-                    temp.push({output, vendor, detected, showCopy})
-                })
-                this.lastScan = []
-                this.lastScan = temp
-            }
-        },
+			
+        mouseOver(type, vendor){
+        	this.show = {type, vendor}
+				},
         mouseLeave(type, index){
-            if(type == 'first'){
-                var temp = []
-                this.firstScan.forEach((e, i) => {
-                    let output = e.output
-                    let vendor = e.vendor
-                    let detected = e.detected
-                    let showCopy = ( i == index ) ? false : e.showCopy
-                    temp.push({output, vendor, detected, showCopy})
-                })
-                this.firstScan = []
-                this.firstScan = temp
-            }else{
-                var temp = []
-                this.lastScan.forEach((e, i) => {
-                    let output = e.output
-                    let vendor = e.vendor
-                    let detected = e.detected
-                    let showCopy = ( i == index ) ? false : e.showCopy
-                    temp.push({output, vendor, detected, showCopy})
-                })
-                this.lastScan = []
-                this.lastScan = temp
-            }
+      		this.show = {}		 
         }
+				
     },
     mounted(){
         let url = Global.apiUrl + this.$route.params.hash + '?api-key=' + Global.apiKey
         axios.get(url)
             .then((data) => {
                 this.showLoader = false
-                this.firstScan = data.data.multiav
-                this.lastScan = data.data.multiav
+                this.firstScan = data.data.multiav.first_scan
+                this.lastScan = data.data.multiav.last_scan
 
                 Object.keys(this.firstScan).forEach(key => {
                     const first = this.firstScan[key];
