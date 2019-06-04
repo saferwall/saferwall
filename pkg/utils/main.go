@@ -97,10 +97,7 @@ func ExecCommand(name string, args ...string) (string, error) {
 func StartCommand(name string, args ...string) error {
 
 	cmd := exec.Command(name, args...)
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
+	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -284,8 +281,7 @@ func CreateFile(path string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
-
+		file.Close()
 	}
 
 	return nil

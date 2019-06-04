@@ -58,15 +58,15 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 func main() {
 
 	log.Infoln("Starting Symantec daemon `symcfgd`")
-	err := utils.StartCommand("sudo", "/etc/init.d/symcfgd", "start")
+	err := utils.StartCommand("sudo", "/opt/Symantec/symantec_antivirus/symcfgd", "-x")
 	if err != nil {
-		log.Fatalf("StartCommand /etc/init.d/symcfgd failed: %v", err)
+		log.Errorf("Starting symcfgd failed: %v", err)
 	}
 
 	log.Infoln("Starting Symantec daemon `rtvscand`")
-	err = utils.StartCommand("sudo", "/etc/init.d/rtvscand", "start")
+	err = utils.StartCommand("sudo", "/opt/Symantec/symantec_antivirus/rtvscand", "-x")
 	if err != nil {
-		log.Fatalf("StartCommand /etc/init.d/rtvscand failed: %v", err)
+		log.Errorf("Starting rtvscand failed: %v", err)
 	}
 
 	log.Infoln("Starting Symantec gRPC server")
