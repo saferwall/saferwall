@@ -275,3 +275,23 @@ func GetRootProjectDir() string {
 	sfwRootDir := path.Join(gopath, "src", "github.com", "saferwall", "saferwall")
 	return sfwRootDir
 }
+
+// CreateFile will create an empty file if file
+func CreateFile(path string) error {
+	// detect if file exists
+	_, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	// create file if not exists
+	if os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	}
+
+	return nil
+}
