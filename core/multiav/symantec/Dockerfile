@@ -45,7 +45,12 @@ COPY --from=builder /go/bin/symantecscanner /bin/symantecscanner
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
+# Install sudo
+RUN apt-get update && apt-get install -y sudo
+
 # Update permissions
+RUN usermod -aG sudo saferwall
+RUN echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $SYMANTEC_INSTALL_DIR 

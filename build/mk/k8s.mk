@@ -71,5 +71,7 @@ k8s-delete:
 	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
 	kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml
 	kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml
+	kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml
+	kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml
 
 	

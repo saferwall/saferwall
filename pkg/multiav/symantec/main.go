@@ -43,7 +43,7 @@ func ScanFile(filepath string) (Result, error) {
 
 	// Execute the scanner with the given file path
 	res := Result{}
-	_, err := utils.ExecCommand(cmd, "manualscan", "--clscan", filepath)
+	_, err := utils.ExecCommand("sudo", cmd, "manualscan", "--clscan", filepath)
 	if err != nil {
 		return res, err
 	}
