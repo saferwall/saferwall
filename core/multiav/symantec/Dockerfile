@@ -29,8 +29,9 @@ LABEL version="0.0.1"
 LABEL description="Symantec Endpoint Protection Linux Client in a docker container"
 
 # Vars
-ENV SYMANTEC_SAV	/opt/Symantec/symantec_antivirus/sav
+ENV SYMANTEC_SAV	        /opt/Symantec/symantec_antivirus/sav
 ENV SYMANTEC_INSTALL_DIR    /opt/Symantec
+ENV SYMANTEC_VAR_DIR        /var/symantec
 
 # Update the VDF
 RUN /etc/init.d/symcfgd start \
@@ -54,7 +55,7 @@ RUN echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $SYMANTEC_INSTALL_DIR 
-RUN chown -R saferwall:saferwall /var/symantec/
+RUN chown -R saferwall:saferwall $SYMANTEC_VAR_DIR
 
 # Switch to our user
 USER saferwall
