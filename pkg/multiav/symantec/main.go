@@ -37,22 +37,28 @@ func GetProgramVersion() (string, error) {
 // ScanFile scans a given file
 func ScanFile(filepath string) (Result, error) {
 
-	// Cleanup
-	os.RemoveAll(logsDir)
-	os.MkdirAll(logsDir, 0777)
-
-	// Execute the scanner with the given file path
 	res := Result{}
-	_, err := utils.ExecCommand("sudo", cmd, "manualscan", "--clscan", filepath)
-	if err != nil {
-		return res, err
-	}
 
 	// Symantec does not really provide a simple way to grab the results
 	// We need to read it from a log file
 	currentTime := time.Now()
-	logfile := logsDir + currentTime.Format("01-02-2006") + ".log"
-	logfile = strings.Replace(logfile, "-", "", -1)
+	logfile := logsDir + currentTime.Format("01022006") + ".log"
+
+	// Cleanup
+	os.RemoveAll(logsDir)
+	os.MkdirAll(logsDir, 0777)
+	err := utils.CreateFile(logfile)
+	if err != nil {
+		return res, err
+	}
+
+	// Execute the scanner with the given file path
+	_, err = utils.ExecCommand("sudo", cmd, "manualscan", "--clscan", filepath)
+	if err != nil {
+		return res, err
+	}
+
+
 	data, err := utils.ReadAll(logfile)
 	if err != nil {
 		return res, err
