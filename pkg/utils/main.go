@@ -278,19 +278,14 @@ func GetRootProjectDir() string {
 
 // CreateFile will create an empty file if file
 func CreateFile(path string) error {
-	// detect if file exists
-	_, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	// create file if not exists
-	if os.IsNotExist(err) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// path does not exist
 		file, err := os.Create(path)
 		if err != nil {
 			return err
 		}
 		defer file.Close()
+
 	}
 
 	return nil
