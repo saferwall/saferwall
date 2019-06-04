@@ -13,6 +13,7 @@ import (
 	pb "github.com/saferwall/saferwall/core/multiav/symantec/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/eset"
 	"github.com/saferwall/saferwall/pkg/multiav/symantec"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
@@ -55,6 +56,18 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	log.Infoln("Starting Symantec daemon `symcfgd`")
+	err := utils.StartCommand("sudo", "/etc/init.d/symcfgd", "start")
+	if err != nil {
+		log.Fatalf("StartCommand /etc/init.d/symcfgd failed: %v", err)
+	}
+
+	log.Infoln("Starting Symantec daemon `rtvscand`")
+	err = utils.StartCommand("sudo", "/etc/init.d/rtvscand", "start")
+	if err != nil {
+		log.Fatalf("StartCommand /etc/init.d/rtvscand failed: %v", err)
+	}
 
 	log.Infoln("Starting Symantec gRPC server")
 
