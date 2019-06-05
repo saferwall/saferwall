@@ -5,7 +5,7 @@
             <div class="column is-6 is-offset-6" style="text-align:right">
                 <label for="" class="label">Limit:</label>
                 <div class="select is-medium">
-                    <select v-model="limit" @change="limitChanged()">
+                    <select id="select-limit" v-model="limit" @change="limitChanged()">
                         <option value="10">10</option>
                         <option value="100">100</option>
                         <option value="1000">1000</option>
@@ -37,8 +37,8 @@
                         </thead>
                         <tbody>
                             <tr v-for="s in filteredStrings" v-if="s.show">
-                                <td>{{s.Encoding}}</td>
-                                <td>{{s.Value}}</td>
+                                <td>{{s.encoding}}</td>
+                                <td>{{s.value}}</td>
                             </tr>
                             <tr>
                                 <td>
@@ -89,7 +89,6 @@ export default {
                 this.strings = data.data.strings
                 this.strings.forEach(s => s.show = true)
                 this.filteredStrings = this.strings.slice(this.start, this.limit)
-                console.log(this.filteredStrings)
             })
             .catch(err => console.error(err))
     },
@@ -97,13 +96,13 @@ export default {
     methods: {
         sortTable(key, column){
             if(column == 'encoding'){
-                if(key == 'asc') this.strings.sort((a, b) => (a.Encoding > b.Encoding) ? 1 : (b.Encoding > a.Encoding) ? -1 : 0)
-                if(key == 'desc') this.strings.sort((a, b) => (a.Encoding > b.Encoding) ? -1 : (b.Encoding > a.Encoding) ? 1 : 0)
+                if(key == 'asc') this.strings.sort((a, b) => (a.encoding > b.encoding) ? 1 : (b.encoding > a.encoding) ? -1 : 0)
+                if(key == 'desc') this.strings.sort((a, b) => (a.encoding > b.encoding) ? -1 : (b.encoding > a.encoding) ? 1 : 0)
 
                 this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
             } else if(column == 'value'){
-                if(key == 'asc') this.strings.sort((a, b) => (a.Value > b.Value) ? 1 : (b.Value > a.Value) ? -1 : 0)
-                if(key == 'desc') this.strings.sort((a, b) => (a.Value > b.Value) ? -1 : (b.Value > a.Value) ? 1 : 0)
+                if(key == 'asc') this.strings.sort((a, b) => (a.value > b.value) ? 1 : (b.value > a.value) ? -1 : 0)
+                if(key == 'desc') this.strings.sort((a, b) => (a.value > b.value) ? -1 : (b.value > a.value) ? 1 : 0)
 
                 this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
             }
@@ -114,11 +113,11 @@ export default {
         search(key){
             if(this.encodingSearched.length > 0 || this.valueSearched.length > 0){
                 if(key == 'encodings'){
-                    this.strings.forEach(s => s.show = s.Encoding.trim().toLowerCase().startsWith(this.encodingSearched.toLowerCase()))
+                    this.strings.forEach(s => s.show = s.encoding.trim().toLowerCase().startsWith(this.encodingSearched.toLowerCase()))
                     this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
                 }
                 if(key == 'values'){
-                    this.strings.forEach(s => s.show = s.Value.trim().toLowerCase().startsWith(this.valueSearched.toLowerCase()))
+                    this.strings.forEach(s => s.show = s.value.trim().toLowerCase().startsWith(this.valueSearched.toLowerCase()))
                     this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
                     console.log(this.filteredStrings)
                 }
