@@ -1,3 +1,5 @@
+<!-- refactor (filtering, sorting…) -->
+
 <template>
     <div>
         <loader v-if="showLoader"></loader>
@@ -96,15 +98,15 @@ export default {
     methods: {
         sortTable(key, column){
             if(column == 'encoding'){
-                if(key == 'asc') this.strings.sort((a, b) => (a.encoding > b.encoding) ? 1 : (b.encoding > a.encoding) ? -1 : 0)
-                if(key == 'desc') this.strings.sort((a, b) => (a.encoding > b.encoding) ? -1 : (b.encoding > a.encoding) ? 1 : 0)
+                if(key == 'asc') this.filteredStrings.sort((a, b) => (a.encoding > b.encoding) ? 1 : (b.encoding > a.encoding) ? -1 : 0)
+                if(key == 'desc') this.filteredStrings.sort((a, b) => (a.encoding > b.encoding) ? -1 : (b.encoding > a.encoding) ? 1 : 0)
 
-                this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
+                this.filteredStrings = this.filteredStrings.filter(s => s.show).slice(this.start, this.limit)
             } else if(column == 'value'){
-                if(key == 'asc') this.strings.sort((a, b) => (a.value > b.value) ? 1 : (b.value > a.value) ? -1 : 0)
-                if(key == 'desc') this.strings.sort((a, b) => (a.value > b.value) ? -1 : (b.value > a.value) ? 1 : 0)
+                if(key == 'asc') this.filteredStrings.sort((a, b) => (a.value > b.value) ? 1 : (b.value > a.value) ? -1 : 0)
+                if(key == 'desc') this.filteredStrings.sort((a, b) => (a.value > b.value) ? -1 : (b.value > a.value) ? 1 : 0)
 
-                this.filteredStrings = this.strings.filter(s => s.show).slice(this.start, this.limit)
+                this.filteredStrings = this.filteredStrings.filter(s => s.show).slice(this.start, this.limit)
             }
         },
         limitChanged(){
