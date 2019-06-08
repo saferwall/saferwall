@@ -1,4 +1,7 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim 
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.0.1"
+LABEL description="Saferwall backend"
 
 WORKDIR /backend
 
