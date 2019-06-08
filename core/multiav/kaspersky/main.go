@@ -10,8 +10,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/eset/proto"
-	"github.com/saferwall/saferwall/pkg/multiav/eset"
+	pb "github.com/saferwall/saferwall/core/multiav/kaspersky/proto"
+	"github.com/saferwall/saferwall/pkg/multiav/kaspersky"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
@@ -32,19 +32,13 @@ func DefaultServerOpts() []grpc.ServerOption {
 	}
 }
 
-// server is used to implement eset.EsetAVScanner.
+// server is used to implement kaspersky.KasperskyAVScanner.
 type server struct{}
 
-// GetVersion implements eset.EsetAVScanner.
-func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
-	version, err := eset.GetProgramVersion()
-	return &pb.VersionResponse{Version: version}, err
-}
-
-// ScanFile implements eset.EsetAVScanner.
+// ScanFile implements kaspersky.KasperskyAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	log.Infoln("ScanFile ", in.Filepath)
-	res, err := eset.ScanFile(in.Filepath)
+	res, err := kaspersky.ScanFile(in.Filepath)
 	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
 }
 
@@ -57,7 +51,7 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 func main() {
 
 	// create a listener on TCP port 50051
-	log.Infoln("Starting eset gRPC server")
+	log.Infoln("Starting kaspersky gRPC server")
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)
@@ -66,8 +60,8 @@ func main() {
 	// create a gRPC server object
 	s := NewServer()
 
-	// attach the EsetScanner service to the server
-	pb.RegisterEsetScannerServer(s, &server{})
+	// attach the KasperskyScanner service to the server
+	pb.RegisterKasperskyScannerServer(s, &server{})
 
 	// register reflection service on gRPC server.
 	reflection.Register(s)

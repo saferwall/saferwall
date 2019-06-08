@@ -1,23 +1,49 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker container"
 
+# Vars
+
+ENV KASPERSKY_VERSION       8.0.4-312
+ENV KASPERSKY_BIN 			/opt/kaspersky/kav4fs/bin/kav4fs-control
+ENV KASPERSKY_SETUP 		/opt/kaspersky/kav4fs/bin/kav4fs-setup.pl
+ENV KASPERSKY_LICENSE 		/etc/kaspersky/license.key
+ENV KASPERSKY_INSTALL_DIR 	/etc/kaspersky
+ENV KASPERSKY_URL 			https://products.s.kaspersky-labs.com/multilanguage/file_servers/kavlinuxserver8.0/kav4fs_${KASPERSKY_VERSION}_i386.deb
+ENV KASPERSKY_TMP			/tmp/kaspersky
+
 # Install dependencies
-RUN apt-get update && apt-get install make -y
+RUN apt-get update \
+	&& apt-get install wget libc6-i386 -y \
+	&& mkdir -p $KASPERSKY_TMP \
+	&& wget -N $KASPERSKY_URL -P $KASPERSKY_TMP \
+	&& dpkg -i --force-architecture  $KASPERSKY_TMP/kav4fs_${KASPERSKY_VERSION}_i386.deb \
+	&& chmod a+s $KASPERSKY_BIN \
+	&& mkdir -p -m 777 $KASPERSKY_INSTALL_DIR
 
-# Use make inside the container to install Kaspersky
-COPY Makefile ./
-RUN make install
+# Apply the license
+ADD kaspersky.license.key $KASPERSKY_LICENSE
+RUN service kav4fs-supervisor start \
+    && $KASPERSKY_BIN --install-active-key $KASPERSKY_LICENSE
 
-# Copy the server binary
-COPY server /bin/server
+# /opt/kaspersky/kav4fs/sbin/kav4fs-supervisor-control  --start-supervisor \
+# /opt/kaspersky/kav4fs/bin/kav4fs-control --install-active-key /etc/kaspersky/license.key
+
+# Configure it
+ADD install.conf install.conf
+RUN $KASPERSKY_SETUP --auto-install install.conf
+
+# Update VDF
+RUN $KASPERSKY_BIN --start-task 6 \
+    && $KASPERSKY_BIN --progress 6 \
+	&& $KASPERSKY_BIN --get-stat Update
 
 # Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt ./
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Expose our gRPC port
-EXPOSE 50051
+# Test detection
+RUN $KASPERSKY_BIN --scan-file eicar ; exit 0
 
-# Entry point
-ENTRYPOINT ["/bin/server"]
+# Clean up
+RUN rm -rf $KASPERSKY_TMP

@@ -6,7 +6,7 @@ KASPERSKY_INSTALL_DIR 	= /etc/kaspersky
 KASPERSKY_URL 			= "https://products.s.kaspersky-labs.com/multilanguage/file_servers/kavlinuxserver8.0/kav4fs_${KASPERSKY_VERSION}_i386.deb"
 KASPERSKY_TMP			= /tmp/kaspersky
 
-install-kaspersky:	## install Kaspersky Anti-Virus for Linux File Servers
+kaspersky-install:	## install Kaspersky Anti-Virus for Linux File Servers
 	sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen && locale-gen
 	apt-get update
 	apt-get install wget libc6-i386 -y
@@ -28,10 +28,10 @@ endif
 	$(KASPERSKY_SETUP) --auto-install $(ROOT_DIR)/build/multiav/kaspersky/install.conf
 	rm -rf $(KASPERSKY_TMP)
 
-update-kaspersky:		## update Kaspersky Anti-Virus for Linux File Servers
+kaspersky-update:		## update Kaspersky Anti-Virus for Linux File Servers
 	$(KASPERSKY_BIN) --start-task 6
 	$(KASPERSKY_BIN) --progress 6
 	$(KASPERSKY_BIN) --get-stat Update
 
-uninstall-kaspersky:	## uninstall Kaspersky Anti-Virus for Linux File Servers
+kaspersky-uninstall:	## uninstall Kaspersky Anti-Virus for Linux File Servers
 	apt remove kav4fs -y
