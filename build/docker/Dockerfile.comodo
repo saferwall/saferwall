@@ -1,4 +1,4 @@
-FROM debian:stretch-slim AS final
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="Comodo Antivirus for Linux in a docker container"
