@@ -16,20 +16,29 @@
                                 (index == 'ssdeep' ? 'SSDeep' : index )))
                             }}
                         </strong>
-                        <span class="data-value" v-if="index !== 'trid'">
-													<span class="value-text">{{(index !== 'sha-512') ? i : i.substring(0, 70) + '...'}}</span>
-
-													<copy :content="i"></copy>
-                        </span>
-                        <span class="data-value" :class="{'trid-container': index == 'trid'}" v-if="index == 'trid'">
-                            <p v-for="t in summaryData.trid">
+												<span class="data-value" :class="{'trid-container': index == 'trid'}" v-if="index == 'trid'">
+													<p v-for="t in summaryData.trid">
 															<span class="trid">
 																	<span class="value-text">{{t}}</span>
 
 																	<copy :content="t"></copy>
 															</span>
                             </p>
-                        </span>
+												</span>
+												<span class="data-value" :class="{'packer-container': index == 'packer'}" v-else-if="index == 'packer'">
+													<p v-for="t in summaryData.packer">
+															<span class="packer">
+																	<span class="value-text">{{t}}</span>
+
+																	<copy :content="t"></copy>
+															</span>
+                            </p>
+												</span>
+												<span class="data-value" v-else>
+													<span class="value-text">{{(index !== 'sha-512') ? i : i.substring(0, 70) + '...'}}</span>
+
+													<copy :content="i"></copy>
+												</span>
                     </div>
                 </div>
 
@@ -99,7 +108,7 @@ export default {
             this.summaryData.ssdeep = data.data.ssdeep
             this.summaryData.trid = data.data.trid
 						this.summaryData.exif = data.data.exif
-            console.log(this.summaryData)
+						this.summaryData.packer = data.data.packer
         })
     }
 }
@@ -133,17 +142,17 @@ export default {
             transition: opacity .2s;
         }
 
-        &:not(.trid-container):hover{
+        &:not(.trid-container):not(.packer-container):hover{
             .value-text{opacity: .35;}
             & > .copy{opacity: 1}
         }
     }
 
-    .trid, .data-value{
+    .trid, .packer, .data-value{
         position:relative;
     }
 
-    .trid{
+    .trid, .packer{
         position: relative;
 
         &:hover{
