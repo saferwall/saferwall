@@ -26,6 +26,7 @@ import (
 	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
 	eset "github.com/saferwall/saferwall/core/multiav/eset/client"
 	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
+	kaspersky "github.com/saferwall/saferwall/core/multiav/kaspersky/client"
 	symantec "github.com/saferwall/saferwall/core/multiav/symantec/client"
 	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
@@ -303,6 +304,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		} else {
 			multiavScanResults["symantec"] = symantecRes
 			log.Infof("symantec success %s", sha256)
+		}
+	}
+
+	// Scan with Kaspersky
+	kasperskyClient, err := kaspersky.Init()
+	if err != nil {
+		log.Errorf("kaspersky init failed %s", err)
+	} else {
+		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
+		if err != nil {
+			log.Errorf("kaspersky scanfile failed %s", err)
+		} else {
+			multiavScanResults["kaspersky"] = kasperskyRes
+			log.Infof("kaspersky success %s", sha256)
 		}
 	}
 

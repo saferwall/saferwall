@@ -97,7 +97,6 @@ func ExecCommand(name string, args ...string) (string, error) {
 func StartCommand(name string, args ...string) error {
 
 	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
 		return err
 	}

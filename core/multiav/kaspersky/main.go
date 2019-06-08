@@ -10,10 +10,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/symantec/proto"
-	"github.com/saferwall/saferwall/pkg/multiav/eset"
-	"github.com/saferwall/saferwall/pkg/multiav/symantec"
-	"github.com/saferwall/saferwall/pkg/utils"
+	pb "github.com/saferwall/saferwall/core/multiav/kaspersky/proto"
+	"github.com/saferwall/saferwall/pkg/multiav/kaspersky"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
@@ -34,18 +32,13 @@ func DefaultServerOpts() []grpc.ServerOption {
 	}
 }
 
-// server is used to implement symantec.SymantecScanner.
+// server is used to implement kaspersky.KasperskyAVScanner.
 type server struct{}
 
-// GetVersion implements eset.EsetAVScanner.
-func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
-	version, err := eset.GetProgramVersion()
-	return &pb.VersionResponse{Version: version}, err
-}
-
-// ScanFile implements symantec.SymantecScanner.
+// ScanFile implements kaspersky.KasperskyAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	res, err := symantec.ScanFile(in.Filepath)
+	log.Infoln("ScanFile ", in.Filepath)
+	res, err := kaspersky.ScanFile(in.Filepath)
 	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
 }
 
@@ -57,23 +50,8 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.Infoln("Starting Symantec daemon `symcfgd`")
-	out, err := utils.ExecCommand("sudo", "/opt/Symantec/symantec_antivirus/symcfgd", "-x")
-	if err != nil {
-		log.Errorf("Starting symcfgd failed: %v", err)
-	}
-	log.Infoln(out)
-
-	log.Infoln("Starting Symantec daemon `rtvscand`")
-	out, err = utils.ExecCommand("sudo", "/opt/Symantec/symantec_antivirus/rtvscand", "-x")
-	if err != nil {
-		log.Errorf("Starting rtvscand failed: %v", err)
-	}
-	log.Infoln(out)
-
-	log.Infoln("Starting Symantec gRPC server")
-
 	// create a listener on TCP port 50051
+	log.Infoln("Starting kaspersky gRPC server")
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)
@@ -82,8 +60,8 @@ func main() {
 	// create a gRPC server object
 	s := NewServer()
 
-	// attach the SymantecScanner service to the server
-	pb.RegisterSymantecScannerServer(s, &server{})
+	// attach the KasperskyScanner service to the server
+	pb.RegisterKasperskyScannerServer(s, &server{})
 
 	// register reflection service on gRPC server.
 	reflection.Register(s)

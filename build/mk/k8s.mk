@@ -73,5 +73,6 @@ k8s-delete:
 	kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml
 	kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml
 	kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml
+	kubectl delete deployments kaspersky ; kubectl apply -f multiav-kaspersky.yaml
 
 	

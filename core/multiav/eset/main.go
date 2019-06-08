@@ -66,7 +66,7 @@ func main() {
 	// create a gRPC server object
 	s := NewServer()
 
-	// attach the AvastScanner service to the server
+	// attach the EsetScanner service to the server
 	pb.RegisterEsetScannerServer(s, &server{})
 
 	// register reflection service on gRPC server.
