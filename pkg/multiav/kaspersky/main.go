@@ -12,7 +12,7 @@ import (
 
 // Our consts
 const (
-	kav4fs = "/opt/kaspersky/kav4fs/bin/kav4fs-control"
+	kesl = "/opt/kaspersky/kesl/bin/kesl-control"
 )
 
 // Result represents detection results
@@ -32,8 +32,8 @@ type Version struct {
 // GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version.
 func GetProgramVersion() (string, error) {
 
-	// Run kav4s to grab the version
-	out, err := utils.ExecCommand(kav4fs, "-S", "--app-info")
+	// Run kesl to grab the version
+	out, err := utils.ExecCommand(kesl, "-S", "--app-info")
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +54,7 @@ func GetProgramVersion() (string, error) {
 func GetDatabaseVersion() (Version, error) {
 
 	// Run kav4s to grab the database update version
-	databaseOut, err := utils.ExecCommand(kav4fs, "--get-stat", "Update")
+	databaseOut, err := utils.ExecCommand(kesl, "--get-stat", "Update")
 
 	ver := Version{}
 	if err != nil {
@@ -81,13 +81,13 @@ func ScanFile(filePath string) (Result, error) {
 
 	// Clean the states
 	res := Result{}
-	_, err := utils.ExecCommand(kav4fs, "--clean-stat")
+	_, err := utils.ExecCommand(kesl, "--clean-stat")
 	if err != nil {
 		return res, err
 	}
 	
 	// Run now
-	out, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
+	out, err := utils.ExecCommand(kesl, "--scan-file", filePath)
 	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
 	// Objects scanned:     1
 	// Threats found:       1
@@ -111,17 +111,33 @@ func ScanFile(filePath string) (Result, error) {
 	}
 
 	// Grab detection name with a separate cmd
-	kavOut, err := utils.ExecCommand(kav4fs, "--top-viruses", "1")
-	// Viruses found: 1
-	// Virus name:       Trojan-Ransom.Win32.Locky.d
-	// Infected objects: 1
+	kavOut, err := utils.ExecCommand(kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
+	// EventType=ThreatDetected
+	// EventId=2544
+	// Date=2019-06-11 22:12:16
+	// DangerLevel=Critical
+	// FileName=/eicar
+	// ObjectName=File
+	// TaskName=Scan_File_ca3f0bc2-ce71-4d4a-bdc1-c8ae502566d0
+	// RuntimeTaskId=4
+	// TaskId=100
+	// DetectName=EICAR-Test-File
+	// TaskType=ODS
+	// FileOwner=root
+	// FileOwnerId=0
+	// DetectCertainty=Sure
+	// DetectType=Virware
+	// DetectSource=Local
+	// ObjectId=1
+	// AccessUser=root
+	// AccessUserId=0
 	if err != nil {
 		return res, err
 	}
 
 	lines := strings.Split(kavOut, "\n")
 	if len(lines) > 0 {
-		res.Output = strings.TrimSpace(strings.Split(lines[1], ":")[1])
+		res.Output = strings.TrimSpace(strings.Split(lines[9], "=")[1])
 		res.Infected = true
 	}
 

@@ -27,14 +27,16 @@ ENV LC_ALL en_US.UTF-8
 
 # Configure it
 ADD install.conf install.conf
-RUN $KASPERSKY_SETUP --autoinstall=install.conf
+RUN $KASPERSKY_SETUP --autoinstall=install.conf; exit 0
 
 # Add the EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # Test detection
-RUN $KASPERSKY_BIN --scan-file eicar \
-	&& $KASPERSKY_BIN -E --query "EventType=='ThreatDetected'"
+RUN service kesl-supervisor start \
+	&& $KASPERSKY_BIN --scan-file eicar \
+	&& $KASPERSKY_BIN -E --query "EventType=='ThreatDetected'" \
+	; exit 0
 
 # Clean up
 RUN rm -rf $KASPERSKY_TMP
