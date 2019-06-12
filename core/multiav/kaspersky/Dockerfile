@@ -29,14 +29,17 @@ LABEL version="0.0.1"
 LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker container"
 
 # Vars
-ENV KASPERSKY_BIN           /opt/kaspersky/kav4fs/bin/kav4fs-control
-ENV KASPERSKY_INSTALL_DIR 	/opt/kaspersky/
-ENV KASPERSKY_CFG_DIR       /etc/kaspersky
+ENV KASPERSKY_BIN 			/opt/kaspersky/kesl/bin/kesl-control
+ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
+ENV KASPERSKY_INSTALL_DIR   /opt/kaspersky
+ENV KASPERSKY_VAR_DIR   /var/opt/kaspersky
 
 # Update VDF
-RUN $KASPERSKY_BIN --start-task 6 \
-    && $KASPERSKY_BIN --progress 6 \
-	&& $KASPERSKY_BIN --get-stat Update
+RUN service kesl-supervisor start \
+    && $KASPERSKY_BIN --start-task 6 \
+    && sleep 2m \
+    && $KASPERSKY_BIN --app-info
+
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
@@ -48,7 +51,7 @@ COPY --from=builder /go/bin/kasperskyscanner /bin/kasperskyscanner
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $KASPERSKY_INSTALL_DIR
-RUN chown -R saferwall:saferwall $KASPERSKY_CFG_DIR
+RUN chown -R saferwall:saferwall $KASPERSKY_VAR_DIR
 
 # Switch to our user
 USER saferwall
