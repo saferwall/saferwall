@@ -87,26 +87,26 @@ func ScanFile(filePath string) (Result, error) {
 	}
 	
 	// Run now
-	out, err := utils.ExecCommand(kesl, "--scan-file", filePath)
-	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
-	// Objects scanned:     1
-	// Threats found:       1
-	// Riskware found:      0
-	// Infected:            1
-	// Suspicious:          0
-	// Cured:               0
-	// Moved to quarantine: 0
-	// Removed:             0
-	// Not cured:           0
-	// Scan errors:         0
-	// Password protected:  0
+	out, err := utils.ExecCommand(kesl, "--scan-file", filePath, "--action", "Skip")
+	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action SKip
+	// Scanned objects                     : 1
+	// Total detected objects              : 1
+	// Infected objects and other objects  : 1
+	// Disinfected objects                 : 0
+	// Moved to Storage                    : 0
+	// Removed objects                     : 0
+	// Not disinfected objects             : 1
+	// Scan errors                         : 0
+	// Password-protected objects          : 0
+	// Skipped                             : 0
+	
 
 	if err != nil {
 		return res, err
 	}
 
 	// Check if infected
-	if !strings.Contains(out, "Threats found:       1") {
+	if !strings.Contains(out, "Total detected objects              : 1") {
 		return res, nil
 	}
 

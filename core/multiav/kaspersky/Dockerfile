@@ -40,7 +40,6 @@ RUN service kesl-supervisor start \
     && sleep 2m \
     && $KASPERSKY_BIN --app-info
 
-
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
@@ -54,6 +53,6 @@ RUN chown -R saferwall:saferwall $KASPERSKY_INSTALL_DIR
 RUN chown -R saferwall:saferwall $KASPERSKY_VAR_DIR
 
 # Switch to our user
-USER saferwall
+# USER saferwall
 
 ENTRYPOINT ["/bin/kasperskyscanner"]
