@@ -34,6 +34,9 @@ ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
 ENV KASPERSKY_INSTALL_DIR   /opt/kaspersky
 ENV KASPERSKY_VAR_DIR   /var/opt/kaspersky
 
+# Required packages
+RUN apt-get update && apt-get install -y sudo
+
 # Update VDF
 RUN service kesl-supervisor start \
     && $KASPERSKY_BIN --start-task 6 \

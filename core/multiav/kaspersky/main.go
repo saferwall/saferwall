@@ -52,11 +52,11 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 func main() {
 
 	// Start Kaspersky daemon
-	out, err := utils.ExecCommand("sudo", "/opt/kaspersky/kesl/libexec/kesl_launcher.sh")
+	log.Infoln("Starting kaspersky daemon")
+	err := utils.StartCommand("sudo", "/opt/kaspersky/kesl/libexec/kesl_launcher.sh")
 	if err != nil {
 		log.Errorf("Failed to start kesl daemon: %v ", err)
 	}
-	log.Infoln(out)
 
 	// create a listener on TCP port 50051
 	log.Infoln("Starting kaspersky gRPC server")
