@@ -28,7 +28,6 @@ import (
 	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
 	kaspersky "github.com/saferwall/saferwall/core/multiav/kaspersky/client"
 	symantec "github.com/saferwall/saferwall/core/multiav/symantec/client"
-	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -181,6 +180,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	multiavScanResults := map[string]interface{}{}
 
+	// Scan with Kaspersky
+	kasperskyClient, err := kaspersky.Init()
+	if err != nil {
+		log.Errorf("kaspersky init failed %s", err)
+	} else {
+		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
+		if err != nil {
+			log.Errorf("kaspersky scanfile failed %s", err)
+		} else {
+			multiavScanResults["kaspersky"] = kasperskyRes
+			log.Infof("kaspersky success %s", sha256)
+		}
+	}
+
 	// Scan with ClamAV
 	clamclient, err := clamav.Init()
 	if err != nil {
@@ -252,18 +265,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Scan with Windows Defender
-	windefenderClient, err := windefender.Init()
-	if err != nil {
-		log.Errorf("windefender init failed %s", err)
-	} else {
-		windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
-		if err != nil {
-			log.Errorf("windefender scanfile failed %s", err)
-		} else {
-			multiavScanResults["windefender"] = windefenderRes
-			log.Infof("windefender success %s", sha256)
-		}
-	}
+	// windefenderClient, err := windefender.Init()
+	// if err != nil {
+	// 	log.Errorf("windefender init failed %s", err)
+	// } else {
+	// 	windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
+	// 	if err != nil {
+	// 		log.Errorf("windefender scanfile failed %s", err)
+	// 	} else {
+	// 		multiavScanResults["windefender"] = windefenderRes
+	// 		log.Infof("windefender success %s", sha256)
+	// 	}
+	// }
 
 	// Scan with FSecure
 	fsecureClient, err := fsecure.Init()
@@ -304,20 +317,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		} else {
 			multiavScanResults["symantec"] = symantecRes
 			log.Infof("symantec success %s", sha256)
-		}
-	}
-
-	// Scan with Kaspersky
-	kasperskyClient, err := kaspersky.Init()
-	if err != nil {
-		log.Errorf("kaspersky init failed %s", err)
-	} else {
-		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
-		if err != nil {
-			log.Errorf("kaspersky scanfile failed %s", err)
-		} else {
-			multiavScanResults["kaspersky"] = kasperskyRes
-			log.Infof("kaspersky success %s", sha256)
 		}
 	}
 

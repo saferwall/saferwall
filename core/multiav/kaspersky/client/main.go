@@ -26,7 +26,7 @@ type MultiAVScanResult struct {
 
 // ScanFile scans file
 func ScanFile(client pb.KasperskyScannerClient, path string) (MultiAVScanResult, error) {
-	log.Println("Eset Scanning:", path)
+	log.Println("Kaspersky Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
 	if err != nil {

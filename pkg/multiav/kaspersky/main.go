@@ -83,7 +83,7 @@ func ScanFile(filePath string) (Result, error) {
 	res := Result{}
 
 	// Run now
-	out, err := utils.ExecCommand(kesl, "--scan-file", filePath, "--action", "Skip")
+	out, err := utils.ExecCommand("sudo", kesl, "--scan-file", filePath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action SKip
 	// Scanned objects                     : 1
 	// Total detected objects              : 1
@@ -99,14 +99,13 @@ func ScanFile(filePath string) (Result, error) {
 	if err != nil {
 		return res, err
 	}
-
 	// Check if infected
 	if !strings.Contains(out, "Total detected objects              : 1") {
 		return res, nil
 	}
 
 	// Grab detection name with a separate cmd
-	kavOut, err := utils.ExecCommand(kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
+	kavOut, err := utils.ExecCommand("sudo", kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
 	// EventType=ThreatDetected
 	// EventId=2544
 	// Date=2019-06-11 22:12:16
