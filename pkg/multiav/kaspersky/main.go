@@ -105,7 +105,7 @@ func ScanFile(filePath string) (Result, error) {
 	}
 
 	// Grab detection name with a separate cmd
-	kavOut, err := utils.ExecCommand(kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
+	kavOut, err := utils.ExecCommand("sudo", kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
 	// EventType=ThreatDetected
 	// EventId=2544
 	// Date=2019-06-11 22:12:16
