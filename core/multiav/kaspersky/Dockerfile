@@ -32,7 +32,8 @@ LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker conta
 ENV KASPERSKY_BIN 			/opt/kaspersky/kesl/bin/kesl-control
 ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
 ENV KASPERSKY_INSTALL_DIR   /opt/kaspersky
-ENV KASPERSKY_VAR_DIR   /var/opt/kaspersky
+ENV KASPERSKY_VAR_DIR       /var/opt/kaspersky
+ENV KASPERSKY_LOG_DIR       /var/log/kaspersky
 
 # Required packages
 RUN apt-get update && apt-get install -y sudo
@@ -50,12 +51,14 @@ RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 COPY --from=builder /go/bin/kasperskyscanner /bin/kasperskyscanner
 
 # Update permissions
+RUN usermod -aG sudo saferwall
+RUN echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
-RUN chown -R saferwall:saferwall $KASPERSKY_INSTALL_DIR
-RUN chown -R saferwall:saferwall $KASPERSKY_VAR_DIR
+# RUN chown -R saferwall:saferwall $KASPERSKY_INSTALL_DIR
+# RUN chown -R saferwall:saferwall $KASPERSKY_VAR_DIR
 
 # Switch to our user
-# USER saferwall
+USER saferwall
 
 ENTRYPOINT ["/bin/kasperskyscanner"]
