@@ -81,11 +81,7 @@ func ScanFile(filePath string) (Result, error) {
 
 	// Clean the states
 	res := Result{}
-	_, err := utils.ExecCommand(kesl, "--clean-stat")
-	if err != nil {
-		return res, err
-	}
-	
+
 	// Run now
 	out, err := utils.ExecCommand(kesl, "--scan-file", filePath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action SKip
@@ -99,7 +95,6 @@ func ScanFile(filePath string) (Result, error) {
 	// Scan errors                         : 0
 	// Password-protected objects          : 0
 	// Skipped                             : 0
-	
 
 	if err != nil {
 		return res, err
