@@ -105,7 +105,8 @@ func ScanFile(filePath string) (Result, error) {
 	}
 
 	// Grab detection name with a separate cmd
-	kavOut, err := utils.ExecCommand("sudo", kesl, "-E", "--query", "\"EventType=='ThreatDetected'\"")
+	// sudo /opt/kaspersky/kesl/bin/kesl-control -E --query "EventType=='ThreatDetected'"
+	out, err = utils.ExecCommand("sudo", kesl, "-E", "--query", "EventType=='ThreatDetected'")
 	// EventType=ThreatDetected
 	// EventId=2544
 	// Date=2019-06-11 22:12:16
@@ -129,7 +130,7 @@ func ScanFile(filePath string) (Result, error) {
 		return res, err
 	}
 
-	lines := strings.Split(kavOut, "\n")
+	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
 		res.Output = strings.TrimSpace(strings.Split(lines[9], "=")[1])
 		res.Infected = true
