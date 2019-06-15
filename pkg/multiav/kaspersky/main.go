@@ -130,9 +130,13 @@ func ScanFile(filePath string) (Result, error) {
 		return res, err
 	}
 
+	// so hackish, there is no easy way to grab detection name
+	// no way to clean all these events as it was in previous version
+	// so pretty hardcoded for now
 	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
-		res.Output = strings.TrimSpace(strings.Split(lines[9], "=")[1])
+		index := len(lines) - 11
+		res.Output = strings.TrimSpace(strings.Split(lines[index], "=")[1])
 		res.Infected = true
 	}
 
