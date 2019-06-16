@@ -84,7 +84,7 @@ func ScanFile(filePath string) (Result, error) {
 
 	// Run now
 	out, err := utils.ExecCommand("sudo", kesl, "--scan-file", filePath, "--action", "Skip")
-	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action SKip
+	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip
 	// Scanned objects                     : 1
 	// Total detected objects              : 1
 	// Infected objects and other objects  : 1
@@ -133,11 +133,14 @@ func ScanFile(filePath string) (Result, error) {
 	// so hackish, there is no easy way to grab detection name
 	// no way to clean all these events as it was in previous version
 	// so pretty hardcoded for now
-	lines := strings.Split(out, "\n")
+	lines := strings.Split(out, "\n\n")
 	if len(lines) > 0 {
-		index := len(lines) - 11
-		res.Output = strings.TrimSpace(strings.Split(lines[index], "=")[1])
-		res.Infected = true
+		index := len(lines) - 1
+		lines = strings.Split(lines[index], "\n")
+		if len(lines) > 8 {
+			res.Output = strings.TrimSpace(strings.Split(lines[9], "=")[1])
+			res.Infected = true
+		}
 	}
 
 	return res, nil
