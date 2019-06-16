@@ -14,7 +14,7 @@ import (
 
 // Our consts
 const (
-	loadlibraryPath = "/opt/windowsdefender/"
+	loadlibraryPath = "/opt/windows-defender/"
 	mpclient        = "./mpclient"
 	mpenginedll     = "/engine/mpengine.dll"
 )

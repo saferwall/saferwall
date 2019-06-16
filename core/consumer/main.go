@@ -28,6 +28,7 @@ import (
 	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
 	kaspersky "github.com/saferwall/saferwall/core/multiav/kaspersky/client"
 	symantec "github.com/saferwall/saferwall/core/multiav/symantec/client"
+	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -265,18 +266,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Scan with Windows Defender
-	// windefenderClient, err := windefender.Init()
-	// if err != nil {
-	// 	log.Errorf("windefender init failed %s", err)
-	// } else {
-	// 	windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
-	// 	if err != nil {
-	// 		log.Errorf("windefender scanfile failed %s", err)
-	// 	} else {
-	// 		multiavScanResults["windefender"] = windefenderRes
-	// 		log.Infof("windefender success %s", sha256)
-	// 	}
-	// }
+	windefenderClient, err := windefender.Init()
+	if err != nil {
+		log.Errorf("windefender init failed %s", err)
+	} else {
+		windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
+		if err != nil {
+			log.Errorf("windefender scanfile failed %s", err)
+		} else {
+			multiavScanResults["windefender"] = windefenderRes
+			log.Infof("windefender success %s", sha256)
+		}
+	}
 
 	// Scan with FSecure
 	fsecureClient, err := fsecure.Init()

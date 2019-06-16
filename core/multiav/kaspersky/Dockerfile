@@ -32,8 +32,8 @@ LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker conta
 ENV KASPERSKY_BIN 			/opt/kaspersky/kesl/bin/kesl-control
 ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
 ENV KASPERSKY_INSTALL_DIR   /opt/kaspersky
-ENV KASPERSKY_VAR_DIR       /var/opt/kaspersky
-ENV KASPERSKY_LOG_DIR       /var/log/kaspersky
+# ENV KASPERSKY_VAR_DIR       /var/opt/kaspersky
+# ENV KASPERSKY_LOG_DIR       /var/log/kaspersky
 
 # Required packages
 RUN apt-get update && apt-get install -y sudo
