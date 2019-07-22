@@ -4,6 +4,13 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 
+// import layouts globally
+import Default from './layouts/Default.vue'
+import Unauthenticated from './layouts/Unauthenticated.vue'
+
+Vue.component('default-layout', Default)
+Vue.component('unauthenticated-layout', Unauthenticated)
+
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

@@ -1,18 +1,19 @@
 <template>
   <div id="app">
-    <v-layout>
+    <component :is="layout">
       <router-view/>
-    </v-layout>
+    </component>
   </div>
 </template>
 
 <script>
-import Layout from '@/components/Layout'
 import router from 'vue-router'
 export default {
   name: 'App',
-  components: {
-    'v-layout': Layout,
+  computed: {
+    layout() {
+      return (this.$route.meta.layout || 'default') + '-layout'
+    }
   },
   created(){
     document.title = this.$route.meta.title
