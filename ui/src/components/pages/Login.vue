@@ -2,10 +2,10 @@
   <div>
     <form class="form">
       <h1 class="signin">Sign In</h1>
-      <label for="username">Username </label>
-      <input class="entry" id="username" type="text" v-model="username" />
-      <label for="password">Password </label>
-      <input class="entry" id="password" type="password" v-model="password" />
+      <label for="email">Email</label>
+      <input class="entry" id="email" type="email" v-model="email" autofocus placeholder="Email Address" />
+      <label for="password">Password</label>
+      <input class="entry" id="password" type="password" v-model="password" placeholder="Password" />
       <button class="login" type="submit" @click="handleSubmit">Sign In</button>
 
       <h3 class="forgot">
@@ -14,7 +14,7 @@
         >
       </h3>
     </form>
-    <h3 class="signup">
+    <h3 class="not-member">
       Not a member? <router-link to="/signup">Sign up</router-link>
     </h3>
   </div>
@@ -68,8 +68,11 @@ export default {
   margin-bottom: 1em;
 }
 
-.signup {
+.not-member {
+font-size: 16px;
+text-align: center;
 }
+
 
 .form .entry {
   width: 280px;
