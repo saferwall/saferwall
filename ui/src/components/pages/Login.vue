@@ -3,18 +3,20 @@
     <form class="form">
       <h1 class="signin">Sign In</h1>
       <label for="username">Username </label>
-      <input id="username" type="text" v-model="username" />
+      <input class="entry" id="username" type="text" v-model="username" />
       <label for="password">Password </label>
-      <input id="password" type="password" v-model="password" />
-      <button type="submit" @click="handleSubmit">Sign In</button>
+      <input class="entry" id="password" type="password" v-model="password" />
+      <button class="login" type="submit" @click="handleSubmit">Sign In</button>
 
       <h3 class="forgot">
-        <router-link to="/forgot_password">Forgot password?</router-link>
+        <router-link  to="/forgot_password"
+          >Forgot password?</router-link
+        >
       </h3>
-      
-    </form><h3 class="signup">
-        Not a member? <router-link to="/signup">Sign up</router-link>
-      </h3>
+    </form>
+    <h3 class="signup">
+      Not a member? <router-link to="/signup">Sign up</router-link>
+    </h3>
   </div>
 </template>
 
@@ -51,14 +53,15 @@ export default {
   color: #333333;
   background-color: white;
   font-size: 16px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.25rem;
+  border: 1px solid #33333330;
 }
 
 .forgot,
 .signin {
   margin: auto;
 }
+
 
 .signin {
   font-size: 2em;
@@ -68,17 +71,26 @@ export default {
 .signup {
 }
 
-.form input,
-select {
+.form .entry {
   width: 280px;
-  color: #d6d6d638;
+  color: #333333;
   background: none;
+  border: 1px solid #33333350;
   padding: 0.5em;
   font-size: inherit;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 2px 4px 0 hsla(0, 0%, 0%, 0.08);
+  margin-top: -1em;
 }
 
-button {
+.login {
+  cursor: pointer;
+  border-radius: 0.25rem;
   font-size: inherit;
-  padding: 0.5em;
+  padding: 0.7em;
+  font-weight: 600;
+  color: white;
+  background-color: #e7501d;
+  border: none;
 }
 </style>
