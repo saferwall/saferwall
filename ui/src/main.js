@@ -8,6 +8,9 @@ import router from './router'
 import Default from './layouts/Default.vue'
 import Unauthenticated from './layouts/Unauthenticated.vue'
 
+import Vuelidate from 'vuelidate'
+Vue.use(Vuelidate)
+
 Vue.component('default-layout', Default)
 Vue.component('unauthenticated-layout', Unauthenticated)
 

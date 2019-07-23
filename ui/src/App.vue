@@ -32,9 +32,13 @@ export default {
 @import 'assets/scss/ionicons';
 
 *{
-  outline:none!important;
   padding:0;
   margin:0;
+}
+
+*::selection {
+background-color: #18a096;
+color: white;
 }
 
 html{
