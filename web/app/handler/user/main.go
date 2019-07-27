@@ -25,14 +25,15 @@ import (
 
 // User represent a user.
 type User struct {
-	Email       string    `json:"email,omitempty"`
-	Username    string    `json:"username,omitempty"`
-	Password    string    `json:"password,omitempty"`
-	FirstName   string    `json:"first_name,omitempty"`
-	LastName    string    `json:"last_name,omitempty"`
-	Bio         string    `json:"bio,omitempty"`
-	Confirmed   bool      `json:"confirmed,omitempty"`
-	MemberSince time.Time `json:"member_since,omitempty"`
+	Email        string    `json:"email,omitempty"`
+	Username     string    `json:"username,omitempty"`
+	PasswordHash string    `json:"password_hash,omitempty"`
+	FirstName    string    `json:"first_name,omitempty"`
+	LastName     string    `json:"last_name,omitempty"`
+	Bio          string    `json:"bio,omitempty"`
+	Confirmed    bool      `json:"confirmed,omitempty"`
+	MemberSince  time.Time `json:"member_since,omitempty"`
+	Admin        bool      `json:"admin,omitempty"`
 }
 
 // GetStructFields retrieve json struct fields names
@@ -78,6 +79,7 @@ func (u *User) SelectFields(fields ...string) map[string]interface{} {
 func (u *User) Create() {
 
 	u.MemberSince = time.Now().UTC()
+	u.Admin = false
 	db.UsersBucket.Upsert(u.Username, u, 0)
 	log.Infof("User was created successefuly: %s", u.Username)
 }
@@ -99,7 +101,7 @@ func GetUserByUsername(username string) (User, error) {
 		return user, err
 	}
 
-	return user, err
+	return user, nil
 }
 
 // GetUserByUsernameFields return user by username(optional: selecting fields)
@@ -150,6 +152,26 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 	return row, nil
 }
 
+// CheckEmailExist returns true if emails exists
+func CheckEmailExist(email string) (bool, error) {
+	myQuery := "SELECT COUNT(*) as count FROM `users` WHERE email=$1"
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(gocb.NewN1qlQuery(myQuery), []interface{}{email})
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	
+	var row interface{}
+	err = rows.One(&row)
+	if err != nil {
+		return false, err
+	}
+
+	count := row.(map[string]interface{})["count"]
+	emailExist := count.(float64) > 0
+	return emailExist, nil
+}
+
 // deleteUser will delete a user
 func deleteUser(username string) error {
 
@@ -179,6 +201,19 @@ func GetUser(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, username)
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+// CreateUser create a new user
+func CreateUser(username, passwordHash, email string) {
+	// Create a new instance
+	usr := User{
+		Username:     username,
+		PasswordHash: passwordHash,
+		Email:        email,
+	}
+
+	// Creates the new user and save it to DB.
+	usr.Create()
 }
 
 // PostUser handle /POST request

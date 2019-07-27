@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
@@ -155,6 +156,10 @@ func GetFiles(c echo.Context) error {
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	log.Infoln("New file uploaded by", name)
 	// Source
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
