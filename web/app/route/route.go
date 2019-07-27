@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/saferwall/saferwall/web/app/handler/file"
 	"github.com/saferwall/saferwall/web/app/handler/user"
+	"github.com/saferwall/saferwall/web/app/handler/auth"
 	"github.com/saferwall/saferwall/web/app/middleware"
 )
 
@@ -18,11 +19,15 @@ func New() *echo.Echo {
 	e := echo.New()
 
 	// Setup middlwares
-	middleware.Init(e)
+	requireLogin := middleware.Init(e)
+
+	// handle /login
+	e.POST("/auth/login", auth.Login)
+	e.POST("/auth/register", auth.Register)
 
 	// handle /files endpoint.
 	e.GET("/v1/files", file.GetFiles)
-	e.POST("/v1/files", file.PostFiles)
+	e.POST("/v1/files", file.PostFiles, requireLogin)
 	e.PUT("/v1/files", file.PutFiles)
 	e.DELETE("/v1/files", file.DeleteFiles)
 
