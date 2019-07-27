@@ -12,3 +12,7 @@ kvm-tools-install: ## Install KVM related tools
 kvm-libvirt:
 	sudo virsh net-list --all
 	sudo service libvirtd status
+
+kvm-qemu:			## Clone qemu
+	cd vmi \
+		&& git clone git://git.qemu-project.org/qemu.git
