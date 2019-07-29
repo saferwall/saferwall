@@ -14,6 +14,14 @@ Vue.use(Vuelidate)
 Vue.component('default-layout', Default)
 Vue.component('unauthenticated-layout', Unauthenticated)
 
+Vue.directive('focus', {
+  // When the bound element is inserted into the DOM...
+  inserted: function (el) {
+    // Focus the element
+    el.focus()
+  }
+})
+
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

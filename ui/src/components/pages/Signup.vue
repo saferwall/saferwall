@@ -1,14 +1,19 @@
 <template>
   <div>
-    <form class="form">
+    <form class="form" novalidate="true">
       <h1 class="signup">Create Your Account</h1>
       <div
         class="input-container"
-        :class="{ valid: !$v.username.$invalid, 'not-valid': $v.username.$error }"
+        :class="{
+          valid: !$v.username.$invalid,
+          'not-valid': $v.username.$error
+        }"
       >
         <label for="username">Username</label>
 
         <input
+         v-focus 
+          required
           class="entry"
           id="username"
           type="text"
@@ -31,6 +36,7 @@
       >
         <label for="email">Email</label>
         <input
+          required
           class="entry"
           id="email"
           type="email"
@@ -55,14 +61,45 @@
         }"
       >
         <label for="password">Password</label>
-        <input
-          class="entry"
-          id="password"
-          type="password"
-          v-model="$v.password.$model"
-          placeholder="Password"
-          autocomplete="new-password"
-        />
+        <div>
+          <input
+            required
+            class="entry"
+            id="password"
+            :type="showPassword ? 'text' : 'password'"
+            v-model="$v.password.$model"
+            placeholder="Password"
+            autocomplete="new-password"
+          /><button class="show-hide" @click="showPassword = !showPassword">
+            <svg
+              v-if="showPassword"
+              key="show-toggle"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+              />
+            </svg>
+            <svg
+              v-else
+              key="show-toggle"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z"
+                fill="none"
+              />
+              <path
+                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+              />
+            </svg>
+          </button>
+        </div>
         <div v-show="$v.password.$dirty">
           <span v-show="!$v.password.required" class="error"
             >Password is required</span
@@ -100,7 +137,8 @@ export default {
     return {
       username: "",
       email: "",
-      password: ""
+      password: "",
+      showPassword: false
     };
   },
   methods: {
@@ -125,14 +163,14 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
 .form {
   display: grid;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
   width: max-content;
-  grid-row-gap: .1em;
+  grid-row-gap: 0.1em;
   padding: 4em;
   color: #333333;
   background-color: white;
@@ -152,26 +190,69 @@ export default {
   text-align: center;
 }
 
-.valid input {
-  background: url("../../assets/imgs/check.svg") !important;
-  background-repeat: no-repeat !important;
-  background-position: 97% center !important;
-  border: 1px solid #02a678 !important;
+
+.valid {
+  input {
+    background: url("../../assets/imgs/check.svg") !important;
+    background-repeat: no-repeat !important;
+    background-position: 97% center !important;
+    border: 1px solid #02a678 !important;
+  }
+
+  .show-hide {
+    border-color: #02a678 !important;
+  }
 }
 
-.not-valid input {
-  background: url("../../assets/imgs/error.svg") !important;
-  background-repeat: no-repeat !important;
-  background-position: 97% center !important;
-  border: 1px solid #bb0000 !important;
+.not-valid {
+  input {
+    background: url("../../assets/imgs/error.svg") !important;
+    background-repeat: no-repeat !important;
+    background-position: 97% center !important;
+    border: 1px solid #bb0000 !important;
+  }
+  .show-hide {
+    border-color: #bb0000 !important;
+  }
 }
-
 .input-container {
   display: flex;
   height: 100px;
   flex-direction: column;
 }
+.input-container > div {
+  width: 340px;
+  display: flex;
+  flex-direction: row;
+}
 
+.input-container:hover,
+.input-container:focus-within {
+  .show-hide,
+  .entry {
+    border-color: #3333336b;
+    outline: none;
+  }
+}
+
+.input-container > div > input {
+  border-radius: 0.25rem 0 0 0.25rem !important;
+  border-right: 0 !important;
+}
+
+.show-hide {
+  width: 12%;
+  background: none;
+  border-radius: 0 0.25rem 0.25rem 0;
+  border-width: 1px 1px 1px 0;
+  border-style: solid;
+  border-color: #33333335;
+  box-shadow: inset -6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
+}
+
+.show-hide > svg {
+  fill: #33333380;
+}
 .error {
   font-size: 0.8em;
   color: #bb0000;
@@ -187,16 +268,12 @@ export default {
   padding: 0.5em;
   font-size: inherit;
   border-radius: 0.25rem;
-  box-shadow: inset 0 2px 4px 0 hsla(0, 0%, 0%, 0.03);
+  box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
-}
-.form .entry:hover {
-  border: 1px solid #3333336b;
 }
 
 .form .entry:focus {
   outline: none;
-  border: 1px solid #3333336b;
 }
 .login {
   cursor: pointer;
