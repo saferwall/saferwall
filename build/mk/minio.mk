@@ -6,7 +6,9 @@ minio-install:	## Install minio locally
 	sudo chmod +x /usr/bin/minio
 
 minio-start:  ## Start a minio server locally
-	minio server --address localhost:9000 /tmp/minio
+	sudo mkdir -p /samples
+	sudo chmod -R 777 /samples
+	minio server --address localhost:9000 ./minio
 
 minio-docker-run:	## Run a mini docker container
 	docker pull minio/minio

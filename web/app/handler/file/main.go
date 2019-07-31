@@ -117,6 +117,9 @@ func PutFile(c echo.Context) error {
 	}
 
 	if !result.Valid() {
+		for _, desc := range result.Errors() {
+			log.Printf("- %s\n", desc)
+		}
 		return c.JSON(http.StatusBadRequest, result.Errors())
 	}
 

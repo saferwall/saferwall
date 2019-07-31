@@ -43,6 +43,8 @@ import (
 
 var (
 	client *minio.Client
+
+	backendEndpoint string
 )
 
 type stringStruct struct {
@@ -95,6 +97,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	sha256 := string(m.Body)
 	log.Infof("Processing %s", sha256)
+
+	// 	Where to save the sample, in k8s, our nfs share
 	filePath := path.Join("/samples", sha256)
 
 	// Download the sample
@@ -333,8 +337,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Update results to DB
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
-	endpoint := viper.GetString("backend.endpoint")
-	url := endpoint + sha256
+	url := backendEndpoint + sha256
 	log.Infoln("Sending results to ", url)
 	body := bytes.NewBuffer(buff)
 	req, err := http.NewRequest(http.MethodPut, url, body)
@@ -380,7 +383,11 @@ func main() {
 
 	client = do.GetClient()
 
+	// Load consumer config
 	loadConfig()
+
+	// Set backend API address
+	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.
@@ -419,12 +426,7 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	nsqlds := []string{
-		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
-	}
-
+	nsqlds := viper.GetStringSlice("nsq.lookupd")
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}

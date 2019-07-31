@@ -7,6 +7,7 @@ package main
 import (
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/route"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -18,5 +19,6 @@ func main() {
 	e := route.New()
 
 	// Start the server
-	e.Logger.Fatal(e.Start(":8080"))
+	address := viper.GetString("backend.address")
+	e.Logger.Fatal(e.Start(address))
 }

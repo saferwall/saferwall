@@ -18,7 +18,7 @@ func Scan(FilePath string) ([]string, error) {
 	args := []string{FilePath}
 	output, err := utils.ExecCommand(Command, args...)
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 	return parseOutput(output), nil
 
