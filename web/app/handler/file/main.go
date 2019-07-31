@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -43,6 +44,7 @@ type File struct {
 	FirstSeen time.Time              `json:"first_seen,omitempty"`
 	Strings   []stringStruct         `json:"strings"`
 	MultiAV   map[string]interface{} `json:"multiav"`
+	Status    int                    `json:"status"`
 }
 
 // Response JSON
@@ -57,6 +59,12 @@ type Response struct {
 type AV struct {
 	Vendor string `json:"vendor,omitempty"`
 }
+
+const (
+	queued     = iota
+	processing = iota
+	finished   = iota
+)
 
 // Create creates a new file
 func (file *File) Create() error {
@@ -117,7 +125,10 @@ func PutFile(c echo.Context) error {
 	}
 
 	if !result.Valid() {
-		return c.JSON(http.StatusBadRequest, result.Errors())
+		for _, desc := range result.Errors() {
+			log.Printf("- %s\n", desc)
+		}
+		return c.JSON(http.StatusBadRequest, errors.New("json validation failed"))
 	}
 
 	// Updates the document.
@@ -230,6 +241,7 @@ func PostFiles(c echo.Context) error {
 		Sha256:    sha256,
 		FirstSeen: time.Now().UTC(),
 		Size:      fileHeader.Size,
+		Status:    queued,
 	}
 	NewFile.Create()
 
