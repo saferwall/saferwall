@@ -145,3 +145,24 @@ func ScanFile(filePath string) (Result, error) {
 
 	return res, nil
 }
+
+// GetLicenseInfos queries license infos
+func GetLicenseInfos() (string, error) {
+	out, err := utils.ExecCommand("sudo", kesl, "-L", "--query")
+	// Active key information:
+	// Expiration date                      : 2019-07-13
+	// Days remaining until expiration      : 0
+	// Protection                           : No protection
+	// Updates                              : No updates
+	// Key status                           : Expired
+	// License type                         : XYZ
+	// Usage restriction                    : 1
+	// Application name                     : Kaspersky Endpoint Security 10 SP1 MR1 for Linux
+	// Active key                           : XYZ
+	// Activation date                      : 2019-06-12
+	if err != nil {
+		return "", err
+	}
+
+	return out, err
+}
