@@ -4,17 +4,14 @@ LABEL version="0.0.1"
 LABEL description="ESET File Server Security for Linux in a docker container"
 
 # Vars
-ARG var
-ENV var=${var}
-
+ARG ESET_USER
+ARG ESET_PWD
 
 ENV ESET_URL 			https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
 ENV ESET_LICENSE 		ERA-Endpoint.lic
 ENV ESET_CONFIG_DIR 	/etc/opt/eset
 ENV ESET_INSTALL_DIR 	/opt/eset
 ENV ESET_TEMP			/tmp/eset
-ENV ESET_USER			user
-ENV ESET_PWD			pass
 
 # Install dependencies
 RUN apt-get update \
