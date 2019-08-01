@@ -10,8 +10,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	// RequireLogin check JWT token.
+	RequireLogin echo.MiddlewareFunc 
+)
+
 // Init middlewares
-func Init(e *echo.Echo) echo.MiddlewareFunc {
+func Init(e *echo.Echo){
 
 	// logging
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -26,10 +31,9 @@ func Init(e *echo.Echo) echo.MiddlewareFunc {
 
 	// jwt
 	key := viper.GetString("auth.signkey")
-	requireLogin := middleware.JWTWithConfig(middleware.JWTConfig{
+	RequireLogin = middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:  []byte(key),
 		TokenLookup: "cookie:JWTCookie",
 	})
 
-	return requireLogin
 }

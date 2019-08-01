@@ -41,6 +41,19 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	return true
 }
 
+// IsAdmin returns true if user is admin
+func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+        user := c.Get("user").(*jwt.Token)
+        claims := user.Claims.(jwt.MapClaims)
+        isAdmin := claims["admin"].(bool)
+        if isAdmin == false {
+            return echo.ErrUnauthorized
+        }
+        return next(c)
+    }
+}
+
 // Register handle new user sign-up
 func Register(c echo.Context) error {
 	username := c.FormValue("username")
@@ -152,4 +165,11 @@ func Login(c echo.Context) error {
 		"verbose_msg": "You were logged in !",
 		"token":       token,
 	})
+}
+
+
+// Admin shows admin 
+func Admin (c echo.Context) error {
+	return c.JSON(http.StatusNotFound, map[string]string{
+		"verbose_msg": "You are admin"})
 }

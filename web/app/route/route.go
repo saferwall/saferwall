@@ -6,9 +6,9 @@ package route
 
 import (
 	"github.com/labstack/echo"
+	"github.com/saferwall/saferwall/web/app/handler/auth"
 	"github.com/saferwall/saferwall/web/app/handler/file"
 	"github.com/saferwall/saferwall/web/app/handler/user"
-	"github.com/saferwall/saferwall/web/app/handler/auth"
 	"github.com/saferwall/saferwall/web/app/middleware"
 )
 
@@ -19,7 +19,7 @@ func New() *echo.Echo {
 	e := echo.New()
 
 	// Setup middlwares
-	requireLogin := middleware.Init(e)
+	middleware.Init(e)
 
 	// handle /login
 	e.POST("/auth/login", auth.Login)
@@ -27,7 +27,7 @@ func New() *echo.Echo {
 
 	// handle /files endpoint.
 	e.GET("/v1/files", file.GetFiles)
-	e.POST("/v1/files", file.PostFiles, requireLogin)
+	e.POST("/v1/files", file.PostFiles, middleware.RequireLogin)
 	e.PUT("/v1/files", file.PutFiles)
 	e.DELETE("/v1/files", file.DeleteFiles)
 
@@ -47,6 +47,9 @@ func New() *echo.Echo {
 	e.POST("/v1/users/:username", user.PostUser)
 	e.PUT("/v1/users/:username", user.PutUser)
 	e.DELETE("/v1/users/:username", user.DeleteUser)
+
+	// handle /admin endpoint
+	e.GET("/admin", auth.Admin, middleware.RequireLogin, auth.IsAdmin)
 
 	return e
 }
