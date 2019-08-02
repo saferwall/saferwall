@@ -1,10 +1,9 @@
 <template>
   <div>
-    <form novalidate="true" class="form" @submit="handleSubmit">
+    <form novalidate="true" class="form" @submit.prevent="handleSubmit">
       <h1 class="signin">Sign In</h1>
       <div
         class="input-container"
-        :class="{ valid: !$v.email.$invalid, 'not-valid': $v.email.$error }"
       >
         <label for="email">Email</label>
         <input
@@ -13,23 +12,13 @@
           class="entry"
           id="email"
           type="email"
-          v-model.trim="$v.email.$model"
+          v-model.trim="email"
           placeholder="name@example.com"
           autocomplete="email"
         />
-        <div v-show="$v.email.$dirty">
-          <span v-show="!$v.email.required" class="error"
-            >Email is required</span
-          >
-          <span v-show="!$v.email.email" class="error">Email is not valid</span>
-        </div>
       </div>
       <div
         class="input-container"
-        :class="{
-          valid: !$v.password.$invalid,
-          'not-valid': $v.password.$error
-        }"
       >
         <label for="password">Password</label>
         <div>
@@ -38,7 +27,7 @@
             class="entry"
             id="password"
             :type="showPassword ? 'text' : 'password'"
-            v-model.trim="$v.password.$model"
+            v-model.trim="password"
             placeholder="Password"
             autocomplete="current-password"
           />
@@ -72,12 +61,6 @@
             </svg>
           </button>
         </div>
-
-        <div v-show="$v.password.$dirty">
-          <span v-show="!$v.password.required" class="error"
-            >Password is required</span
-          >
-        </div>
       </div>
       <button class="login" type="submit">Sign In</button>
       <h3 class="forgot">
@@ -91,7 +74,7 @@
 </template>
 
 <script>
-import { required, email } from "vuelidate/lib/validators";
+import { required, email, minLength } from "vuelidate/lib/validators";
 
 export default {
   data() {
@@ -102,8 +85,11 @@ export default {
     };
   },
   methods: {
-    handleSubmit(e) {
-      e.preventDefault();
+    handleSubmit() {
+     this.$v.$touch()
+      if (this.$v.$invalid) {
+      
+      }
     }
   },
   validations: {
@@ -112,7 +98,8 @@ export default {
       email
     },
     password: {
-      required
+      required,
+      minLength: minLength(8)
     }
   }
 };
@@ -135,30 +122,8 @@ export default {
   border: 1px solid #33333330;
 }
 
-.valid {
-  input {
-    background: url("../../assets/imgs/check.svg") !important;
-    background-repeat: no-repeat !important;
-    background-position: 97% center !important;
-    border: 1px solid #02a678 !important;
-  }
 
-  .show-hide {
-    border-color: #02a678 !important;
-  }
-}
 
-.not-valid {
-  input {
-    background: url("../../assets/imgs/error.svg") !important;
-    background-repeat: no-repeat !important;
-    background-position: 97% center !important;
-    border: 1px solid #bb0000 !important;
-  }
-  .show-hide {
-    border-color: #bb0000 !important;
-  }
-}
 
 .input-container {
   display: flex;

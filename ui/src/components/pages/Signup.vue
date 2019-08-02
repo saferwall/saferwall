@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form class="form" novalidate="true">
+    <form class="form" novalidate="true" @submit.prevent="handleSubmit">
       <h1 class="signup">Create Your Account</h1>
       <div
         class="input-container"
@@ -12,12 +12,12 @@
         <label for="username">Username</label>
 
         <input
-         v-focus 
+          v-focus
           required
           class="entry"
           id="username"
           type="text"
-          v-model="$v.username.$model"
+          v-model.trim="$v.username.$model"
           placeholder="Username"
           autocomplete="username"
         />
@@ -40,7 +40,7 @@
           class="entry"
           id="email"
           type="email"
-          v-model="$v.email.$model"
+          v-model.trim="$v.email.$model"
           placeholder="name@example.com"
           autocomplete="email"
         />
@@ -67,7 +67,7 @@
             class="entry"
             id="password"
             :type="showPassword ? 'text' : 'password'"
-            v-model="$v.password.$model"
+            v-model.trim="$v.password.$model"
             placeholder="Password"
             autocomplete="new-password"
           /><button class="show-hide" @click="showPassword = !showPassword">
@@ -132,6 +132,59 @@
 <script>
 import { required, minLength, email } from "vuelidate/lib/validators";
 
+const isValidUsername = username => {
+  /*
+      rules
+      usernames should have a length between 3 and 20
+      usernames should start with a letter
+      usernames should end with an alpha-numeric
+      usernames can contain any of [a-z0-9\._-]
+      numbers should not be in the vicinity of each other more than 4x (i.e. u1234 is a match, u12345 is not)
+      each ., - and _ should be followed by an alpha-numeric
+      */
+  if (!username) {
+    return false;
+  }
+
+  let length = username.length;
+
+  if (length < 3 || length > 20) {
+    return false;
+  }
+
+  const isLowerAlphanumeric = str => /[a-z0-9]/.test(str);
+  const isLowerAlpha = str => /[a-z]/.test(str);
+
+  if (!isLowerAlpha(username[0])) {
+    return false;
+  }
+
+  if (!isLowerAlphanumeric(username[length - 1])) {
+    return false;
+  }
+
+  if (!/[a-z0-9._-]*$/.test(username)) {
+    return false;
+  }
+
+  if (/[0-9]{5,}/.test(username)) {
+    return false;
+  }
+
+  //each ., - and _ should be followed by an alpha-numeric
+  const punctuation = [".", "-", "_"];
+  for (let i = 0; i < length - 1; i++) {
+    if (
+      punctuation.includes(username[i]) &&
+      !isLowerAlphanumeric(username[i + 1])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export default {
   data() {
     return {
@@ -142,13 +195,12 @@ export default {
     };
   },
   methods: {
-    handleSubmit(e) {
-      e.preventDefault();
-    }
+    handleSubmit() {}
   },
   validations: {
     username: {
-      required
+      required,
+      isValidUsername
     },
     email: {
       required,
@@ -189,7 +241,6 @@ export default {
   font-size: 16px;
   text-align: center;
 }
-
 
 .valid {
   input {

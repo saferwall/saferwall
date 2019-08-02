@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
-    "start": "yarn run dev",
+    "start": "npm run dev",
     "build": "node build/build.js"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "chalk": "^2.0.1",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
+    "dotenv-webpack": "^1.7.0",
     "file-loader": "^3.0.1",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-webpack-plugin": "^3.2.0",

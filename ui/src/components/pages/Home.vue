@@ -10,6 +10,10 @@ export default {
   data () {
     return {
     }
+  },
+
+  mounted() {
+    console.log(process.env.API_ROOT)
   }
 }
 </script>
