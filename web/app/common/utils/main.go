@@ -6,6 +6,7 @@ package utils
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -42,6 +43,45 @@ func IsFilterAllowed(allowed []string, filters []string) bool {
 		}
 	}
 	return true
+}
+
+// GetStructFields retrieve json struct fields names
+func GetStructFields(i interface{}) []string {
+
+	val := reflect.ValueOf(i)
+	var temp string
+
+	var listFields []string
+	for i := 0; i < val.Type().NumField(); i++ {
+		temp = val.Type().Field(i).Tag.Get("json")
+		temp = strings.Replace(temp, ",omitempty", "", -1)
+		listFields = append(listFields, temp)
+	}
+
+	return listFields
+}
+
+func fieldSet(fields ...string) map[string]bool {
+	set := make(map[string]bool, len(fields))
+	for _, s := range fields {
+		set[s] = true
+	}
+	return set
+}
+
+// SelectFields execlude sensitive fields
+func SelectFields(i interface{}, fields ...string) map[string]interface{} {
+	fs := fieldSet(fields...)
+	rt, rv := reflect.TypeOf(i), reflect.ValueOf(i)
+	out := make(map[string]interface{}, rt.NumField())
+	for i := 0; i < rt.NumField(); i++ {
+		field := rt.Field(i)
+		jsonKey := field.Tag.Get("json")
+		if fs[jsonKey] {
+			out[jsonKey] = rv.Field(i).Interface()
+		}
+	}
+	return out
 }
 
 // JSONTime alias for timne.Time

@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -32,53 +30,14 @@ type User struct {
 	LastName     string    `json:"last_name,omitempty"`
 	Bio          string    `json:"bio,omitempty"`
 	Confirmed    bool      `json:"confirmed,omitempty"`
-	MemberSince  time.Time `json:"member_since,omitempty"`
+	MemberSince*  time.Time `json:"member_since,omitempty"`
 	Admin        bool      `json:"admin,omitempty"`
-}
-
-// GetStructFields retrieve json struct fields names
-func (u User) GetStructFields() []string {
-
-	val := reflect.ValueOf(u)
-	var temp string
-
-	var listFields []string
-	for i := 0; i < val.Type().NumField(); i++ {
-		temp = val.Type().Field(i).Tag.Get("json")
-		temp = strings.Replace(temp, ",omitempty", "", -1)
-		listFields = append(listFields, temp)
-	}
-
-	return listFields
-}
-
-func fieldSet(fields ...string) map[string]bool {
-	set := make(map[string]bool, len(fields))
-	for _, s := range fields {
-		set[s] = true
-	}
-	return set
-}
-
-// SelectFields execlude sensitive fields
-func (u *User) SelectFields(fields ...string) map[string]interface{} {
-	fs := fieldSet(fields...)
-	rt, rv := reflect.TypeOf(*u), reflect.ValueOf(*u)
-	out := make(map[string]interface{}, rt.NumField())
-	for i := 0; i < rt.NumField(); i++ {
-		field := rt.Field(i)
-		jsonKey := field.Tag.Get("json")
-		if fs[jsonKey] {
-			out[jsonKey] = rv.Field(i).Interface()
-		}
-	}
-	return out
 }
 
 // Create add a new user to a database.
 func (u *User) Create() {
-
-	u.MemberSince = time.Now().UTC()
+	t := time.Now().UTC()
+	u.MemberSince = &t
 	u.Admin = false
 	db.UsersBucket.Upsert(u.Username, u, 0)
 	log.Infof("User was created successefuly: %s", u.Username)
@@ -160,7 +119,7 @@ func CheckEmailExist(email string) (bool, error) {
 		return false, err
 	}
 	defer rows.Close()
-	
+
 	var row interface{}
 	err = rows.One(&row)
 	if err != nil {
@@ -188,7 +147,7 @@ func GetUser(c echo.Context) error {
 	filters := utils.GetQueryParamsFields(c)
 	if len(filters) > 0 {
 		user := User{}
-		allowed := utils.IsFilterAllowed(user.GetStructFields(), filters)
+		allowed := utils.IsFilterAllowed(utils.GetStructFields(user), filters)
 		if !allowed {
 			return c.JSON(http.StatusBadRequest, "Filters not allowed")
 		}
@@ -318,7 +277,7 @@ func GetUsers(c echo.Context) error {
 	filters := utils.GetQueryParamsFields(c)
 	if len(filters) > 0 {
 		user := User{}
-		allowed := utils.IsFilterAllowed(user.GetStructFields(), filters)
+		allowed := utils.IsFilterAllowed(utils.GetStructFields(user), filters)
 		if !allowed {
 			return c.JSON(http.StatusBadRequest, "Filters not allowed")
 		}
