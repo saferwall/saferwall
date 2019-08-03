@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/labstack/echo"
@@ -19,26 +20,24 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
 	gocb "gopkg.in/couchbase/gocb.v1"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 // User represent a user.
 type User struct {
-	Email        string    `json:"email,omitempty"`
-	Username     string    `json:"username,omitempty"`
-	PasswordHash string    `json:"password_hash,omitempty"`
-	FirstName    string    `json:"first_name,omitempty"`
-	LastName     string    `json:"last_name,omitempty"`
-	Bio          string    `json:"bio,omitempty"`
-	Confirmed    bool      `json:"confirmed,omitempty"`
-	MemberSince*  time.Time `json:"member_since,omitempty"`
-	Admin        bool      `json:"admin,omitempty"`
+	Email       string     `json:"email,omitempty" validate:"required,email"`
+	Username    string     `json:"username,omitempty" validate:"required,username"`
+	Password    string     `json:"password,omitempty" validate:"required,min=8"`
+	FirstName   string     `json:"first_name,omitempty"`
+	LastName    string     `json:"last_name,omitempty"`
+	Bio         string     `json:"bio,omitempty"`
+	Confirmed   bool       `json:"confirmed,omitempty"`
+	MemberSince *time.Time `json:"member_since,omitempty"`
+	Admin       bool       `json:"admin,omitempty"`
 }
 
-// Create add a new user to a database.
-func (u *User) Create() {
-	t := time.Now().UTC()
-	u.MemberSince = &t
-	u.Admin = false
+// Save adds user to a database.
+func (u *User) Save() {
 	db.UsersBucket.Upsert(u.Username, u, 0)
 	log.Infof("User was created successefuly: %s", u.Username)
 }
@@ -49,8 +48,8 @@ func DeleteAllUsers() {
 	db.UsersBucket.Manager("", "").Flush()
 }
 
-// GetUserByUsername return user document
-func GetUserByUsername(username string) (User, error) {
+// GetByUsername return user document
+func GetByUsername(username string) (User, error) {
 
 	// get our user
 	user := User{}
@@ -162,18 +161,34 @@ func GetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-// CreateUser create a new user
-func CreateUser(username, passwordHash, email string) {
-	// Create a new instance
-	usr := User{
-		Username:     username,
-		PasswordHash: passwordHash,
-		Email:        email,
+// Create creates a new user
+func Create(username, password, email string) (User, error) {
+
+	t := time.Now().UTC()
+	u := User{
+		Username:    username,
+		Password:    password,
+		Email:       email,
+		MemberSince: &t,
+		Admin:       false,
 	}
 
-	// Creates the new user and save it to DB.
-	usr.Create()
+	err := validate(u)
+	return u, err
 }
+
+// validate user input during account creation
+func validate(u User) error {
+	v := validator.New()
+	var r = regexp.MustCompile(`^[a-zA-Z0-9]{1,20}$`)
+	_ = v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
+		return r.MatchString(fl.Field().String())
+	})
+
+	err := v.Struct(u)
+	return err
+}
+
 
 // PostUser handle /POST request
 func PostUser(c echo.Context) error {
@@ -266,7 +281,7 @@ func PostUsers(c echo.Context) error {
 	}
 
 	// Creates the new user and save it to DB.
-	usr.Create()
+	usr.Save()
 	return c.JSON(http.StatusCreated, usr)
 }
 

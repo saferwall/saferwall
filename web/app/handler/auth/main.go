@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -43,15 +45,15 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 
 // IsAdmin returns true if user is admin
 func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-    return func(c echo.Context) error {
-        user := c.Get("user").(*jwt.Token)
-        claims := user.Claims.(jwt.MapClaims)
-        isAdmin := claims["admin"].(bool)
-        if isAdmin == false {
-            return echo.ErrUnauthorized
-        }
-        return next(c)
-    }
+	return func(c echo.Context) error {
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(jwt.MapClaims)
+		isAdmin := claims["admin"].(bool)
+		if isAdmin == false {
+			return echo.ErrUnauthorized
+		}
+		return next(c)
+	}
 }
 
 // Register handle new user sign-up
@@ -60,36 +62,31 @@ func Register(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	if username == "" {
+	// Create a new instance & validate input
+	newUser, err := user.Create(username, password, email)
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "The username field is required !"})
-	}
-	if email == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "The email field is required !"})
+			"verbose_msg": err.Error()})
 	}
 
-	if password == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "The password field is required !"})
-	}
-
-	passwordHash := hashAndSalt([]byte(password))
-
-	// Todo: validate email/username/password inputs
-	u, err := user.GetUserByUsername(username)
+	// check if user already exist in DB.
+	u, err := user.GetByUsername(username)
 	if err == nil && u.Username != "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Username already exists !"})
 	}
-	
+
+	// check if email already exists in DB.
 	EmailExist, _ := user.CheckEmailExist(email)
 	if EmailExist {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Email already exists !"})
-		}
-		
-	user.CreateUser(username, passwordHash, email)
+	}
+
+	// Store the password hash instead.
+	newUser.Password = hashAndSalt([]byte(password))
+
+	newUser.Save()
 	return c.JSON(http.StatusCreated, map[string]string{
 		"verbose_msg": "ok",
 	})
@@ -120,10 +117,22 @@ func createJwtCookie(token string) *http.Cookie {
 	cookie.Expires = time.Now().Add(time.Hour * 72)
 	cookie.Path = "/"
 	cookie.HttpOnly = false // change this later
-	cookie.Secure = false // change this later
+	cookie.Secure = false   // change this later
 	// cookie.SameSite = http.SameSiteLaxMode
 	// cookie.Domain = "api.saferwall.com"
 	return cookie
+}
+
+func validateLoginInput(username, password string) error {
+	r := regexp.MustCompile(`^[a-zA-Z0-9]{1,20}$`)
+	if !r.MatchString(username) {
+		return errors.New("Username should be alpha-numeric between 1 and 20 length char")
+	}
+
+	if password == "" {
+		return errors.New("The password field is required")
+	}
+	return nil
 }
 
 // Login handle user authentication
@@ -131,22 +140,20 @@ func Login(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	if username == "" {
+	// Validate input format
+	err := validateLoginInput(username, password)
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "The username field is required !"})
-	}
-	if password == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "The password field is required !"})
+			"verbose_msg": err.Error()})
 	}
 
-	usr, err := user.GetUserByUsername(username)
+	usr, err := user.GetByUsername(username)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "Username does not exist !"})
 	}
 
-	if !comparePasswords(usr.PasswordHash, []byte(password)) {
+	if !comparePasswords(usr.Password, []byte(password)) {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
 			"verbose_msg": "Username or password does not match !"})
 	}
@@ -167,9 +174,8 @@ func Login(c echo.Context) error {
 	})
 }
 
-
-// Admin shows admin 
-func Admin (c echo.Context) error {
+// Admin shows admin
+func Admin(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, map[string]string{
 		"verbose_msg": "You are admin"})
 }
