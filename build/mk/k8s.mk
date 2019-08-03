@@ -81,6 +81,7 @@ k8s-apply-multiav:		## Delete multiav from k8s cluster
 
 k8s-deploy-backend:		## Deploy backend in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl delete deployments backend ;\
 	kubectl apply -f backend.yaml
 
 k8s-deploy-consumer:		## Deploy consumer in kubernetes cluster
