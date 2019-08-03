@@ -18,7 +18,7 @@
           id="username"
           type="text"
           v-model.trim="$v.username.$model"
-          placeholder="Username"
+          placeholder="e.g. John123"
           autocomplete="username"
         />
         <div v-show="$v.username.$dirty">
@@ -68,7 +68,7 @@
             id="password"
             :type="showPassword ? 'text' : 'password'"
             v-model.trim="$v.password.$model"
-            placeholder="Password"
+            placeholder="Minimum 8 characters"
             autocomplete="new-password"
           /><button class="show-hide" @click="showPassword = !showPassword">
             <svg
@@ -111,8 +111,8 @@
           >
         </div>
       </div>
-      <p>
-        <input type="checkbox" id="tos" />
+      <p :class="{ 'tos-required': $v.terms.$dirty && !$v.terms.sameAs }">
+        <input v-model="terms" type="checkbox" id="tos" />
         <label for="tos"
           >&nbsp;I agree to the&nbsp;<router-link to="/tos"
             >Terms of Service</router-link
@@ -130,60 +130,16 @@
 </template>
 
 <script>
-import { required, minLength, email } from "vuelidate/lib/validators";
+import {
+  required,
+  minLength,
+  email,
+  helpers,
+  sameAs
+} from "vuelidate/lib/validators";
+import axios from "axios";
 
-const isValidUsername = username => {
-  /*
-      rules
-      usernames should have a length between 3 and 20
-      usernames should start with a letter
-      usernames should end with an alpha-numeric
-      usernames can contain any of [a-z0-9\._-]
-      numbers should not be in the vicinity of each other more than 4x (i.e. u1234 is a match, u12345 is not)
-      each ., - and _ should be followed by an alpha-numeric
-      */
-  if (!username) {
-    return false;
-  }
-
-  let length = username.length;
-
-  if (length < 3 || length > 20) {
-    return false;
-  }
-
-  const isLowerAlphanumeric = str => /[a-z0-9]/.test(str);
-  const isLowerAlpha = str => /[a-z]/.test(str);
-
-  if (!isLowerAlpha(username[0])) {
-    return false;
-  }
-
-  if (!isLowerAlphanumeric(username[length - 1])) {
-    return false;
-  }
-
-  if (!/[a-z0-9._-]*$/.test(username)) {
-    return false;
-  }
-
-  if (/[0-9]{5,}/.test(username)) {
-    return false;
-  }
-
-  //each ., - and _ should be followed by an alpha-numeric
-  const punctuation = [".", "-", "_"];
-  for (let i = 0; i < length - 1; i++) {
-    if (
-      punctuation.includes(username[i]) &&
-      !isLowerAlphanumeric(username[i + 1])
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
+const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
 
 export default {
   data() {
@@ -191,16 +147,40 @@ export default {
       username: "",
       email: "",
       password: "",
-      showPassword: false
+      terms: false,
+      showPassword: false,
+      submitStatus: null
     };
   },
   methods: {
-    handleSubmit() {}
+    handleSubmit() {
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        this.submitStatus = "error";
+      } else {
+        this.submitStatus = "pending";
+        axios
+          .post("http://dev.api.saferwall.com:8080/auth/register", {
+            username,
+            email,
+            password
+          })
+          .then(console.log)
+          .catch(
+            //server responded with a status code that falls out of the range of 2xx
+            error => {
+              if (error.status === 400) {
+                console.log("Username/email already exists");
+              }
+            }
+          );
+      }
+    }
   },
   validations: {
     username: {
       required,
-      isValidUsername
+      usernameValid
     },
     email: {
       required,
@@ -209,6 +189,9 @@ export default {
     password: {
       required,
       minLength: minLength(8)
+    },
+    terms: {
+      sameAs: sameAs(() => true)
     }
   }
 };
@@ -275,6 +258,31 @@ export default {
   width: 340px;
   display: flex;
   flex-direction: row;
+}
+
+/* animate tos on error */
+.tos-required {
+  input {
+    outline: 2px solid #bb0000;
+  }
+  label {
+    display: inline-block;
+    animation-duration: 0.3s;
+    animation-iteration-count: infinite;
+    animation-name: bounce;
+    animation-timing-function: ease-in-out;
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .input-container:hover,
