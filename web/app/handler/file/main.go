@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -19,8 +20,10 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
+	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
+	"gopkg.in/couchbase/gocb.v1"
 )
 
 type stringStruct struct {
@@ -89,6 +92,46 @@ func GetFileBySHA256(sha256 string) (File, error) {
 	}
 
 	return file, err
+}
+
+// GetAllFiles return all files (optional: selecting fields)
+func GetAllFiles(fields []string) ([]File, error) {
+
+	// Select only demanded fields
+	var statement string
+	if len(fields) > 0 {
+		var buffer bytes.Buffer
+		buffer.WriteString("SELECT ")
+		length := len(fields)
+		for index, field := range fields {
+			buffer.WriteString(field)
+			if index < length-1 {
+				buffer.WriteString(",")
+			}
+		}
+		buffer.WriteString(" FROM `files`")
+		statement = buffer.String()
+	} else {
+		statement = "SELECT files.* FROM `files`"
+	}
+
+	// Execute our query
+	query := gocb.NewN1qlQuery(statement)
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, nil)
+	if err != nil {
+		fmt.Println("Error executing n1ql query:", err)
+	}
+
+	// Interfaces for handling streaming return values
+	var row File
+	var retValues []File
+
+	// Stream the values returned from the query into a typed array of structs
+	for rows.Next(&row) {
+		retValues = append(retValues, row)
+	}
+
+	return retValues, nil
 }
 
 //=================== /file/sha256 handlers ===================
@@ -161,7 +204,22 @@ func deleteAllFiles() {
 
 // GetFiles returns list of files.
 func GetFiles(c echo.Context) error {
-	return c.String(http.StatusOK, "getFiles")
+	// get query param `fields` for filtering & sanitize them
+	filters := utils.GetQueryParamsFields(c)
+	if len(filters) > 0 {
+		file := File{}
+		allowed := utils.IsFilterAllowed(utils.GetStructFields(file), filters)
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, "Filters not allowed")
+		}
+	}
+
+	// get all users
+	allFiles, err := GetAllFiles(filters)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, allFiles)
 }
 
 // PostFiles creates a new file

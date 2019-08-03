@@ -15,7 +15,6 @@ k8s-minikube-start:		## Start minikube
 
 k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-deploy-nsq k8s-deploy-backend k8s-deploy-consumer k8s-deploy-multiav ## Deploy all stack in k8s
 
-
 k8s-deploy-nfs-server:	## Deploy NFS server in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
 	&& kubectl create -f nfs-server.yaml \
@@ -36,8 +35,6 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	kubectl create -f operator-deployment.yaml ; \
 	kubectl create -f couchbase-cluster.yaml  
 
-
-
 k8s-deploy-nsq:			## Deploy NSQ in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
 	&& kubectl create -f nsqlookupd.yaml \
@@ -49,6 +46,11 @@ k8s-deploy-minio:		## Deploy minio
 	kubectl create -f minio-standalone-pvc.yaml ; \
 	kubectl create -f minio-standalone-deployment.yaml ; \
 	kubectl create -f minio-standalone-service.yaml
+
+k8s-deploy-fsecure:		## Deploy fsecure
+	cd  $(ROOT_DIR)/build/k8s ; \
+	kubectl delete deployments fsecure ; \
+	kubectl apply -f multiav-fsecure.yaml
 
 k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
@@ -106,7 +108,6 @@ k8s-delete:			## delete all
 	kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml
 	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
 	kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml
-	kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml
 	kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml
 	kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml
 	kubectl delete deployments kaspersky ; kubectl apply -f multiav-kaspersky.yaml
