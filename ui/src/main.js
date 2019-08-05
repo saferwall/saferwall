@@ -11,6 +11,9 @@ import Unauthenticated from './layouts/Unauthenticated.vue'
 import Vuelidate from 'vuelidate'
 Vue.use(Vuelidate)
 
+import VueCookie from 'vue-cookie'
+Vue.use(VueCookie)
+
 Vue.component('default-layout', Default)
 Vue.component('unauthenticated-layout', Unauthenticated)
 

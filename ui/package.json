@@ -46,6 +46,7 @@
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
     "url-loader": "^1.1.2",
+    "vue-cookie": "^1.1.4",
     "vue-loader": "14.2.2",
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.5.2",

@@ -13,7 +13,6 @@ export default {
   },
 
   mounted() {
-    console.log(process.env.API_ROOT)
   }
 }
 </script>

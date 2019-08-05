@@ -4,21 +4,34 @@
       <h1 class="signin">Sign In</h1>
       <div
         class="input-container"
+        :class="{
+          valid: !$v.username.$invalid,
+          'not-valid': $v.username.$error
+        }"
       >
-        <label for="email">Email</label>
+        <label for="username">Username</label>
         <input
-         v-focus 
+          v-focus
           required
           class="entry"
-          id="email"
-          type="email"
-          v-model.trim="email"
-          placeholder="name@example.com"
-          autocomplete="email"
+          id="username"
+          type="text"
+          v-model.trim="username"
+          placeholder="e.g. John123"
+          autocomplete="username"
         />
+        <div v-show="$v.username.$dirty">
+          <span v-show="!$v.username.required" class="error"
+            >Username is required</span
+          >
+        </div>
       </div>
       <div
         class="input-container"
+        :class="{
+          valid: !$v.password.$invalid,
+          'not-valid': $v.password.$error
+        }"
       >
         <label for="password">Password</label>
         <div>
@@ -31,7 +44,8 @@
             placeholder="Password"
             autocomplete="current-password"
           />
-          <button class="show-hide" @click="showPassword = !showPassword">
+
+          <button class="show-hide" @click.prevent="showPassword = !showPassword">
             <svg
               v-if="showPassword"
               key="show-toggle"
@@ -61,6 +75,11 @@
             </svg>
           </button>
         </div>
+        <div v-show="$v.password.$dirty">
+          <span v-show="!$v.password.required" class="error"
+            >Password is required</span
+          >
+        </div>
       </div>
       <button class="login" type="submit">Sign In</button>
       <h3 class="forgot">
@@ -74,32 +93,58 @@
 </template>
 
 <script>
-import { required, email, minLength } from "vuelidate/lib/validators";
+import { required, email, minLength, helpers } from "vuelidate/lib/validators";
+import axios from "axios";
+import { store } from "../../store.js";
+
+const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
 
 export default {
   data() {
     return {
-      email: "",
+      username: "",
       password: "",
-      showPassword: false
+      showPassword: false,
+      errored: false
     };
   },
   methods: {
     handleSubmit() {
-     this.$v.$touch()
+      this.$v.$touch();
       if (this.$v.$invalid) {
-      
+        this.errored = true;
+      } else {
+        axios
+          .post("http://dev.api.saferwall.com:80/auth/login", {
+            username: this.username,
+            password: this.password
+          })
+          .then(response => {
+            this.errored = false;
+            store.logIn(response.data.token);
+            if (this.$cookie.get("jwt") !== null) {
+              if (this.$route.params.nextUrl != null) {
+                this.$router.push(this.$route.params.nextUrl);
+              } else {
+                this.$router.push("/");
+              }
+            }
+          })
+          .catch(error => {
+            if (error.status === 400) {
+              this.errored = true;
+            }
+          });
       }
     }
   },
   validations: {
-    email: {
+    username: {
       required,
-      email
+      usernameValid
     },
     password: {
-      required,
-      minLength: minLength(8)
+      required
     }
   }
 };
@@ -107,6 +152,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.not-valid {
+  input {
+    background: url("../../assets/imgs/error.svg") !important;
+    background-repeat: no-repeat !important;
+    background-position: 97% center !important;
+    border: 1px solid #bb0000 !important;
+  }
+  .show-hide {
+    border-color: #bb0000 !important;
+  }
+}
+
 .form {
   display: grid;
   line-height: 2em;
@@ -121,9 +178,6 @@ export default {
   border-radius: 0.25rem;
   border: 1px solid #33333330;
 }
-
-
-
 
 .input-container {
   display: flex;

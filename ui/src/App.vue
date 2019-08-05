@@ -1,8 +1,10 @@
 <template>
   <div id="app">
+    <transition name="component-fade" mode="out-in">
     <component :is="layout">
       <router-view />
     </component>
+    </transition>
   </div>
 </template>
 
@@ -56,5 +58,13 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+}
+
+.component-fade-enter-active, .component-fade-leave-active {
+  transition: opacity .2s ease;
+}
+.component-fade-enter, .component-fade-leave-to
+ {
+  opacity: 0;
 }
 </style>

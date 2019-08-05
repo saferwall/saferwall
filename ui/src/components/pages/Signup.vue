@@ -112,14 +112,14 @@
         </div>
       </div>
       <p :class="{ 'tos-required': $v.terms.$dirty && !$v.terms.sameAs }">
-        <input v-model="terms" type="checkbox" id="tos" />
+        <input v-model="$v.terms.$model" type="checkbox" id="tos" />
         <label for="tos"
           >&nbsp;I agree to the&nbsp;<router-link to="/tos"
             >Terms of Service</router-link
           ></label
         >
       </p>
-      <button class="login" type="submit" @click="handleSubmit">
+      <button class="login" type="submit">
         Create Account
       </button>
     </form>
@@ -149,28 +149,30 @@ export default {
       password: "",
       terms: false,
       showPassword: false,
-      submitStatus: null
+      errored: false
     };
   },
   methods: {
     handleSubmit() {
       this.$v.$touch();
       if (this.$v.$invalid) {
-        this.submitStatus = "error";
+        this.errored = true;
       } else {
-        this.submitStatus = "pending";
         axios
-          .post("http://dev.api.saferwall.com:8080/auth/register", {
-            username,
-            email,
-            password
+          .post("http://dev.api.saferwall.com:80/auth/register", {
+            username: this.username,
+            email: this.email,
+            password: this.password
           })
-          .then(console.log)
+          .then(response => {
+            this.errored = false;
+            this.$router.push("login");
+          })
           .catch(
             //server responded with a status code that falls out of the range of 2xx
             error => {
               if (error.status === 400) {
-                console.log("Username/email already exists");
+                this.errored = true;
               }
             }
           );
@@ -197,8 +199,15 @@ export default {
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+@mixin bounce {
+  display: inline-block;
+  animation-duration: 0.3s;
+  animation-iteration-count: 3;
+  animation-name: bounce;
+  animation-timing-function: ease-in-out;
+}
+
 .form {
   display: grid;
   line-height: 2em;
@@ -249,6 +258,7 @@ export default {
     border-color: #bb0000 !important;
   }
 }
+
 .input-container {
   display: flex;
   height: 100px;
@@ -266,11 +276,7 @@ export default {
     outline: 2px solid #bb0000;
   }
   label {
-    display: inline-block;
-    animation-duration: 0.3s;
-    animation-iteration-count: infinite;
-    animation-name: bounce;
-    animation-timing-function: ease-in-out;
+    @include bounce;
   }
 }
 @keyframes bounce {

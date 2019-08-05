@@ -50,30 +50,36 @@ let router = new Router({
       path: "/strings/:hash",
       name: "Strings",
       component: Strings,
-      meta: { title: "Strings"}
+      meta: { title: "Strings" }
     },
     {
       path: "/login",
       name: "login",
       component: Login,
-      meta: {title: "Log in", guest: true, layout: 'unauthenticated'}
+      meta: { title: "Log in", guest: true, layout: "unauthenticated" }
     },
     {
       path: "/signup",
       name: "Sign up",
       component: Signup,
-      meta: { title: "Sign up", guest: true, layout: 'unauthenticated' }
+      meta: { title: "Sign up", guest: true, layout: "unauthenticated" }
     }
   ]
 });
 
 router.beforeEach(function(to, from, next) {
-  if (to.matched.some(record => record.meta.requiresAuth) && from.path !== '/login' ) {
-    // redirect to login for now
-    next({
-      name: 'login',
-      params: {nextUrl: to.fullPath}
-    });
+  if (
+    to.matched.some(record => record.meta.requiresAuth) &&
+    from.path !== "/login"
+  ) {
+    if (Vue.cookie.get("jwt") === null) {
+      next({
+        name: "login",
+        params: { nextUrl: to.fullPath }
+      });
+    } else {
+      next();
+    }
   } else if (to.matched.some(record => record.meta.guest)) {
     next();
   } else next();
