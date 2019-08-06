@@ -2,7 +2,7 @@
     <div>
         <v-header></v-header>
         <transition name="slideLeft">
-            <v-sidebar v-if="noSidebarPaths.indexOf($route.name) < 0"></v-sidebar>
+            <v-sidebar v-if="noSidebarPaths.indexOf($route.name) == -1"></v-sidebar>
         </transition>
             <v-content :fullwidth="noSidebarPaths.indexOf($route.name) > -1">
                 <router-view></router-view>
