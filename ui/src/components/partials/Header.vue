@@ -19,7 +19,7 @@
         <li><router-link to="/">Statistics</router-link></li>
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
-            <span>Amine Akhouad</span>
+            <span>{{ storeState.username || "" }}</span>
             <img src="../../assets/imgs/avatar.jpg" alt="" />
           </div>
           <ul class="dropdown-container" :class="{ active: dropdownActive }">
@@ -36,8 +36,16 @@
               </router-link>
             </li>
             <li>
-              <button class="danger-text" @click="loginOrLogout">
-                <i class="icon ion-log-out"></i>
+              <button
+                :class="
+                  storeState.loggedIn ? 'has-text-danger' : 'has-text-link'
+                "
+                @click="loginOrLogout"
+              >
+                <i
+                  class="icon"
+                  :class="storeState.loggedIn ? 'ion-log-out' : 'ion-log-in'"
+                ></i>
                 {{ storeState.loggedIn ? "Sign Out" : "Sign In" }}
               </button>
             </li>
@@ -64,10 +72,22 @@ export default {
     loginOrLogout() {
       if (this.storeState.loggedIn) {
         store.logOut();
+        this.$router.go('/')
       } else {
         this.$router.push("/login");
       }
+    },
+
+    getJWTToken() {
+      const token = this.$cookie.get("JWTCookie");
+      return token;
     }
+  },
+
+  created() {
+    const token = this.getJWTToken()
+    store.setLoggedIn(token);
+    store.setUsername(token);
   }
 };
 </script>

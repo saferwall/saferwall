@@ -1,5 +1,9 @@
 <template>
   <div>
+    <div v-if="errorMessage != ''" class="notification is-danger">
+      <button class="delete"></button>
+      {{ errorMessage }}
+    </div>
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
       <h1 class="signup">Create Your Account</h1>
       <div
@@ -114,7 +118,9 @@
       <p :class="{ 'tos-required': $v.terms.$dirty && !$v.terms.sameAs }">
         <input v-model="$v.terms.$model" type="checkbox" id="tos" />
         <label for="tos"
-          >&nbsp;I agree to the&nbsp;<router-link to="/tos"
+          >&nbsp;I agree to the&nbsp;<router-link
+            to="/tos"
+            class="has-text-link"
             >Terms of Service</router-link
           ></label
         >
@@ -124,7 +130,8 @@
       </button>
     </form>
     <h3 class="already-member">
-      Already have an account? <router-link to="/login">Sign in</router-link>
+      Already have an account?
+      <router-link to="/login" class="has-text-link">Sign in</router-link>
     </h3>
   </div>
 </template>
@@ -149,7 +156,8 @@ export default {
       password: "",
       terms: false,
       showPassword: false,
-      errored: false
+      errored: false,
+      errorMessage: ""
     };
   },
   methods: {
@@ -159,7 +167,7 @@ export default {
         this.errored = true;
       } else {
         axios
-          .post("http://dev.api.saferwall.com:80/auth/register", {
+          .post("/api/auth/register", {
             username: this.username,
             email: this.email,
             password: this.password
@@ -171,9 +179,8 @@ export default {
           .catch(
             //server responded with a status code that falls out of the range of 2xx
             error => {
-              if (error.status === 400) {
-                this.errored = true;
-              }
+              this.errored = true;
+              this.errorMessage = error.response.data.verbose_msg;
             }
           );
       }

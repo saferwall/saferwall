@@ -1,5 +1,9 @@
 <template>
   <div>
+    <div v-if="errorMessage != ''" class="notification is-danger">
+      <button class="delete"></button>
+      {{ errorMessage }}
+    </div>
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">
       <h1 class="signin">Sign In</h1>
       <div
@@ -45,7 +49,10 @@
             autocomplete="current-password"
           />
 
-          <button class="show-hide" @click.prevent="showPassword = !showPassword">
+          <button
+            class="show-hide"
+            @click.prevent="showPassword = !showPassword"
+          >
             <svg
               v-if="showPassword"
               key="show-toggle"
@@ -83,11 +90,14 @@
       </div>
       <button class="login" type="submit">Sign In</button>
       <h3 class="forgot">
-        <router-link to="/forgot_password">Forgot password?</router-link>
+        <router-link to="/forgot_password" class="has-text-link"
+          >Forgot password?</router-link
+        >
       </h3>
     </form>
-    <h3 class="not-member">
-      Not a member? <router-link to="/signup">Sign up</router-link>
+    <h3 class="not-member ">
+      Not a member?
+      <router-link to="/signup" class="has-text-link">Sign up</router-link>
     </h3>
   </div>
 </template>
@@ -105,7 +115,8 @@ export default {
       username: "",
       password: "",
       showPassword: false,
-      errored: false
+      errored: false,
+      errorMessage: ""
     };
   },
   methods: {
@@ -115,14 +126,13 @@ export default {
         this.errored = true;
       } else {
         axios
-          .post("http://dev.api.saferwall.com:80/auth/login", {
+          .post("/api/auth/login", {
             username: this.username,
             password: this.password
           })
           .then(response => {
             this.errored = false;
-            store.logIn(response.data.token);
-            if (this.$cookie.get("jwt") !== null) {
+            if (this.$cookie.get("JWTCookie") !== null) {
               if (this.$route.params.nextUrl != null) {
                 this.$router.push(this.$route.params.nextUrl);
               } else {
@@ -131,9 +141,8 @@ export default {
             }
           })
           .catch(error => {
-            if (error.status === 400) {
-              this.errored = true;
-            }
+            this.errored = true;
+            this.errorMessage = error.response.data.verbose_msg;
           });
       }
     }
