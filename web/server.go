@@ -13,8 +13,6 @@ import (
 func main() {
 
 	// Init our app
-
-
 	app.Init()
 
 	// Create echo instance and load all routes

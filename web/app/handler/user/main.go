@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -19,15 +19,15 @@ import (
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
+	"golang.org/x/crypto/bcrypt"
 	gocb "gopkg.in/couchbase/gocb.v1"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 // User represent a user.
 type User struct {
-	Email       string     `json:"email,omitempty" validate:"required,email"`
-	Username    string     `json:"username,omitempty" validate:"required,username"`
-	Password    string     `json:"password,omitempty" validate:"required,min=8"`
+	Email       string     `json:"email,omitempty"`
+	Username    string     `json:"username,omitempty"`
+	Password    string     `json:"password,omitempty"`
 	FirstName   string     `json:"first_name,omitempty"`
 	LastName    string     `json:"last_name,omitempty"`
 	Bio         string     `json:"bio,omitempty"`
@@ -162,7 +162,7 @@ func GetUser(c echo.Context) error {
 }
 
 // Create creates a new user
-func Create(username, password, email string) (User, error) {
+func Create(username, password, email string) User {
 
 	t := time.Now().UTC()
 	u := User{
@@ -173,22 +173,25 @@ func Create(username, password, email string) (User, error) {
 		Admin:       false,
 	}
 
-	err := validate(u)
-	return u, err
+	return u
 }
 
-// validate user input during account creation
-func validate(u User) error {
-	v := validator.New()
-	var r = regexp.MustCompile(`^[a-zA-Z0-9]{1,20}$`)
-	_ = v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
-		return r.MatchString(fl.Field().String())
-	})
+// hashAndSalt hash with a salt a password.
+func hashAndSalt(pwd []byte) string {
 
-	err := v.Struct(u)
-	return err
+	// Use GenerateFromPassword to hash & salt pwd.
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return string(hash)
 }
-
 
 // PostUser handle /POST request
 func PostUser(c echo.Context) error {
@@ -262,27 +265,59 @@ func PostUsers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
 	// Validate JSON
 	l := gojsonschema.NewBytesLoader(b)
 	result, err := app.UserSchema.Validate(l)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
 	if !result.Valid() {
-		return c.JSON(http.StatusBadRequest, result.Errors())
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
 	}
 
 	// Bind it to our User instance.
-	usr := User{}
-	err = json.Unmarshal(b, &usr)
+	newUser := User{}
+	err = json.Unmarshal(b, &newUser)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
+	// check if user already exist in DB.
+	u, err := GetByUsername(newUser.Username)
+	if err == nil && u.Username != "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username already exists !"})
+	}
+
+	// check if email already exists in DB.
+	EmailExist, _ := CheckEmailExist(newUser.Email)
+	if EmailExist {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Email already exists !"})
+	}
+
+	// Update some details
+	t := time.Now().UTC()
+	newUser.MemberSince = &t
+	newUser.Admin = false
+	newUser.Password = hashAndSalt([]byte(newUser.Password))
+
 	// Creates the new user and save it to DB.
-	usr.Save()
-	return c.JSON(http.StatusCreated, usr)
+	newUser.Save()
+	return c.JSON(http.StatusCreated, map[string]string{
+		"verbose_msg": "ok"})
 }
 
 // GetUsers returns all users.
