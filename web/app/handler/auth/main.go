@@ -1,34 +1,22 @@
 package auth
 
 import (
-	"errors"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/handler/user"
 	"github.com/spf13/viper"
+	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func hashAndSalt(pwd []byte) string {
-
-	// Use GenerateFromPassword to hash & salt pwd.
-	// MinCost is just an integer constant provided by the bcrypt
-	// package along with DefaultCost & MaxCost.
-	// The cost can be any value you want provided it isn't lower
-	// than the MinCost (4)
-	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
-	if err != nil {
-		log.Println(err)
-	}
-	// GenerateFromPassword returns a byte slice so we need to
-	// convert the bytes to a string and return it
-	return string(hash)
-}
 
 func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	// Since we'll be getting the hashed password from the DB it
@@ -54,42 +42,6 @@ func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return next(c)
 	}
-}
-
-// Register handle new user sign-up
-func Register(c echo.Context) error {
-	username := c.FormValue("username")
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-
-	// Create a new instance & validate input
-	newUser, err := user.Create(username, password, email)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": err.Error()})
-	}
-
-	// check if user already exist in DB.
-	u, err := user.GetByUsername(username)
-	if err == nil && u.Username != "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "Username already exists !"})
-	}
-
-	// check if email already exists in DB.
-	EmailExist, _ := user.CheckEmailExist(email)
-	if EmailExist {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "Email already exists !"})
-	}
-
-	// Store the password hash instead.
-	newUser.Password = hashAndSalt([]byte(password))
-
-	newUser.Save()
-	return c.JSON(http.StatusCreated, map[string]string{
-		"verbose_msg": "ok",
-	})
 }
 
 // createJwtToken creates a JWT token.
@@ -123,42 +75,56 @@ func createJwtCookie(token string) *http.Cookie {
 	return cookie
 }
 
-func validateLoginInput(username, password string) error {
-	r := regexp.MustCompile(`^[a-zA-Z0-9]{1,20}$`)
-	if !r.MatchString(username) {
-		return errors.New("Username should be alpha-numeric between 1 and 20 length char")
-	}
-
-	if password == "" {
-		return errors.New("The password field is required")
-	}
-	return nil
-}
-
 // Login handle user authentication
 func Login(c echo.Context) error {
-	username := c.FormValue("username")
-	password := c.FormValue("password")
-
-	// Validate input format
-	err := validateLoginInput(username, password)
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	usr, err := user.GetByUsername(username)
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.LoginSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	loginUser := user.User{}
+	err = json.Unmarshal(b, &loginUser)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	loginUsername := loginUser.Username
+	loginPassword := loginUser.Password
+	u, err := user.GetByUsername(loginUsername)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "Username does not exist !"})
 	}
 
-	if !comparePasswords(usr.Password, []byte(password)) {
+	if !comparePasswords(u.Password, []byte(loginPassword)) {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
 			"verbose_msg": "Username or password does not match !"})
 	}
 
-	token, err := createJwtToken(usr)
+	token, err := createJwtToken(u)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": "Internal server error !"})

@@ -40,6 +40,9 @@ var (
 	// FileSchema represent a user
 	FileSchema *gojsonschema.Schema
 
+	// LoginSchema represent a user login
+	LoginSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 )
@@ -107,6 +110,14 @@ func loadSchemas() {
 	source = fmt.Sprintf("file:///%s", jsonPath)
 	jsonLoader = gojsonschema.NewReferenceLoader(source)
 	FileSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading file schema: ", err)
+	}
+
+	jsonPath = path.Join(dir, "app", "schema", "login.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	LoginSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
 		log.Fatalln("Error while loading file schema: ", err)
 	}
