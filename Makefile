@@ -38,3 +38,4 @@ include build/mk/packer.mk
 include build/mk/kernel.mk
 include build/mk/kvm.mk
 include build/mk/helm.mk
+include build/mk/kops.mk

@@ -18,8 +18,8 @@ k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-d
 k8s-deploy-nfs-server:	## Deploy NFS server in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
 	&& kubectl create -f nfs-server.yaml \
-	&& kubectl create -f samples-pv.yaml \
-	&& kubectl create -f samples-pvc.yaml
+	&& kubectl apply -f samples-pv.yaml \
+	&& kubectl apply -f samples-pvc.yaml
 
 k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -37,15 +37,15 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 
 k8s-deploy-nsq:			## Deploy NSQ in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl create -f nsqlookupd.yaml \
-	&& kubectl create -f nsqd.yaml \
-	&& kubectl create -f nsqadmin.yaml
+	&& kubectl apply -f nsqlookupd.yaml \
+	&& kubectl apply -f nsqd.yaml \
+	&& kubectl apply -f nsqadmin.yaml
 	
 k8s-deploy-minio:		## Deploy minio
 	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl create -f minio-standalone-pvc.yaml ; \
-	kubectl create -f minio-standalone-deployment.yaml ; \
-	kubectl create -f minio-standalone-service.yaml
+	kubectl apply -f minio-standalone-pvc.yaml ; \
+	kubectl apply -f minio-standalone-deployment.yaml ; \
+	kubectl apply -f minio-standalone-service.yaml
 
 k8s-deploy-fsecure:		## Deploy fsecure
 	cd  $(ROOT_DIR)/build/k8s ; \
@@ -95,10 +95,15 @@ k8s-delete-nsq:
 	kubectl delete deployments nsqadmin
 
 k8s-delete-cb:		## Delete all couchbase related objects from k8s
-	kubectl delete cbc cb-saferwall
-	kubectl delete deployment couchbase-operator
-	kubectl delete crd couchbaseclusters.couchbase.com
-	kubectl delete secret cb-saferwall-auth
+	kubectl delete cbc cb-saferwall ; \
+	kubectl delete deployment couchbase-operator-admission ; \
+	kubectl delete deployment couchbase-operator  ; \
+	kubectl delete crd couchbaseclusters.couchbase.com  ; \
+	kubectl delete secret cb-saferwall-auth ; \
+	kubectl delete pvc couchbase-pvc ; \
+	kubectl delete pv couchbase-pv ; \
+	kubectl delete sc couchbase-sc
+
 
 k8s-delete:			## delete all
 	kubectl delete deployments,service backend -l app=web
