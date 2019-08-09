@@ -1,7 +1,6 @@
 <template>
   <div>
     <div v-if="errorMessage != ''" class="notification is-danger">
-      <button class="delete"></button>
       {{ errorMessage }}
     </div>
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">

@@ -3,6 +3,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require("path");
+require("dotenv").config();
 
 module.exports = {
   dev: {
@@ -11,7 +12,7 @@ module.exports = {
     assetsPublicPath: "/",
     proxyTable: {
       "/api": {
-        target: 'http://dev.api.saferwall.com:80/',
+        target: process.env.API_ROOT,
         changeOrigin: true,
         pathRewrite: {
           "^/api": ""
