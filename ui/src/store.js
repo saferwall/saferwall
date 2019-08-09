@@ -18,6 +18,7 @@ const isTokenExpired = token => {
 };
 
 export const store = {
+  debug: true,
   state: {
     loggedIn: false,
     username: ""
