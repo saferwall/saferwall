@@ -1,8 +1,15 @@
 <template>
   <div>
-    <div v-if="errorMessage != ''" class="notification is-danger">
-      {{ errorMessage }}
-    </div>
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-danger"
+        @closeNotif="close()"
+        v-if="errored"
+      >
+        {{ errorMessage }}
+      </notification>
+    </transition>
+
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">
       <h1 class="signin">Sign In</h1>
       <div
@@ -103,6 +110,7 @@
 
 <script>
 import { required, email, minLength, helpers } from "vuelidate/lib/validators";
+import Notification from "@/components/elements/Notification";
 import axios from "axios";
 import { store } from "../../store.js";
 
@@ -117,6 +125,9 @@ export default {
       errored: false,
       errorMessage: ""
     };
+  },
+  components: {
+    notification: Notification
   },
   methods: {
     handleSubmit() {
@@ -144,6 +155,9 @@ export default {
             this.errorMessage = error.response.data.verbose_msg;
           });
       }
+    },
+    close() {
+      this.errored = false;
     }
   },
   validations: {

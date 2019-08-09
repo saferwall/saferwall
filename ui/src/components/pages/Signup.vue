@@ -1,9 +1,10 @@
 <template>
   <div>
-    <div v-if="errorMessage != ''" class="notification is-danger">
-      <button class="delete"></button>
-      {{ errorMessage }}
-    </div>
+    <transition name="slide" mode="out-in">
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
+        {{ errorMessage }}
+      </notification>
+    </transition>
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
       <h1 class="signup">Create Your Account</h1>
       <div
@@ -145,6 +146,7 @@ import {
   sameAs
 } from "vuelidate/lib/validators";
 import axios from "axios";
+import Notification from "@/components/elements/Notification";
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
 
@@ -160,11 +162,15 @@ export default {
       errorMessage: ""
     };
   },
+  components: {
+    notification: Notification
+  },
   methods: {
     handleSubmit() {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.errored = true;
+        this.errorMessage = 'Please correct all highlighted errors and try again'
       } else {
         axios
           .post("/api/auth/register", {
@@ -184,6 +190,9 @@ export default {
             }
           );
       }
+    },
+    close() {
+      this.errored = false;
     }
   },
   validations: {
