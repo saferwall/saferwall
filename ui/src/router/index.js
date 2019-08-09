@@ -8,8 +8,11 @@ import Summary from "@/components/pages/Summary";
 import Strings from "@/components/pages/Strings";
 import Login from "@/components/pages/Login";
 import Signup from "@/components/pages/Signup";
+import {store} from "../store.js";
 
 Vue.use(Router);
+
+const storeState = store.state
 
 let router = new Router({
   routes: [
@@ -72,7 +75,7 @@ router.beforeEach(function(to, from, next) {
     to.matched.some(record => record.meta.requiresAuth) &&
     from.path !== "/login"
   ) {
-    if (Vue.cookie.get("jwt") === null) {
+    if (!storeState.loggedIn) {
       next({
         name: "login",
         params: { nextUrl: to.fullPath }
