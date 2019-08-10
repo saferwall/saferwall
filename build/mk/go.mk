@@ -25,3 +25,9 @@ go-setup:	## Download and install go
 	go version
 	go get -u github.com/derekparker/delve/cmd/dlv
 	rm go1.12.5.linux-amd64.tar.gz
+
+go-mod:
+	go version
+	env GO111MODULE=on go mod init
+	go build ./...
+
