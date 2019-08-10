@@ -8,7 +8,8 @@
     "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
     "start": "yarn run dev",
     "build": "node build/build.js",
-    "clean": "rm -rf node_modules/"
+    "clean": "rm -rf node_modules/",
+    "reinstall": "yarn cache clean && yarn install"
   },
   "dependencies": {
     "@vue/babel-helper-vue-jsx-merge-props": "^1.0.0",
@@ -60,7 +61,8 @@
   },
   "engines": {
     "node": ">= 10.0.0",
-    "yarn": "^1.17.3"
+    "yarn": "^1.17.3",
+    "npm": ">=6"
   },
   "browserslist": [
     "> 1%",
