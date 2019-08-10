@@ -1,0 +1,4 @@
+github.com/glaslos/ssdeep v0.1.0 h1:TptgRXvRz1jMQ39pTbE0Le5hToIwSpTB/WN86biy2DY=
+github.com/glaslos/ssdeep v0.1.0/go.mod h1:1sRvX09u8TSLZ0teoG1gZh7qADBv4ZzLAkvGcmYb9uw=
+github.com/saferwall/saferwall/pkg/utils v0.0.1 h1:w7eN+SBXz2b6CjGNdO/XaMCfwH3dBRQQ9W95aaqEaX0=
+github.com/saferwall/saferwall/pkg/utils v0.0.1/go.mod h1:Tko0PXObsy32kYjGTuHDxXdAYlRudp6sDCEVGXLBtUM=

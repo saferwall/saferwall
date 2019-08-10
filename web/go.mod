@@ -14,7 +14,8 @@ require (
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
-	github.com/saferwall/saferwall v0.0.0-20190810024122-b6f5454e12b2
+	github.com/saferwall/saferwall v0.0.0-20190810025209-b7a3aa088358
+	github.com/saferwall/saferwall/pkg/utils v0.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.4.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190809123943-df4f5c81cb3b // indirect
