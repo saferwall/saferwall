@@ -129,25 +129,7 @@ export default {
   border-radius: 0 0 4px 4px !important;
   margin-left: 1px !important;
 }
-.file-container {
-  display: inline-block;
-  margin: auto;
-  position: relative;
-  text-align: center;
-  cursor: pointer;
-  padding: 50px 0;
 
-  input[type="file"] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 9;
-  }
-}
 a.button {
   display: inline-block;
   margin-top: 10px;
