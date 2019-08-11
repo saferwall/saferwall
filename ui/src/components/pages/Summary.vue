@@ -87,7 +87,7 @@ export default {
 		},
     mounted(){
       console.log(this.$route.params.hash)
-      axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
+      axios.get(`/api/${this.$route.params.hash}`)
         .then(data => {
             this.showLoader = false
 

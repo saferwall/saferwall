@@ -102,7 +102,8 @@ export default {
 				
     },
     mounted(){
-      axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
+      // replace route params with props
+      axios.get(`/api/${this.$route.params.hash}`)
             .then((data) => {
                 this.showLoader = false
                 this.firstScan = data.data.multiav.first_scan

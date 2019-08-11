@@ -84,7 +84,7 @@ export default {
     },
 
     created(){
-        axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
+        axios.get(`/api/${this.$route.params.hash}`)
             .then(data => {
                 this.showLoader = false
                 this.strings = data.data.strings
