@@ -62,7 +62,6 @@
 </template>
 <script>
 import axios from 'axios'
-import Global from '@/global'
 import Loader from '@/components/elements/Loader'
 import Copy from '@/components/elements/Copy'
 
@@ -87,7 +86,8 @@ export default {
         }    
 		},
     mounted(){
-      axios.get(Global.apiUrl + this.$route.params.hash + '?api-key=' + Global.apiKey)
+      console.log(this.$route.params.hash)
+      axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
         .then(data => {
             this.showLoader = false
 

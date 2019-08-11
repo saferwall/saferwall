@@ -63,7 +63,6 @@
 </template>
 <script>
 import axios from 'axios'
-import global from '../../global'
 import Loader from '@/components/elements/Loader'
 
 export default {
@@ -85,7 +84,7 @@ export default {
     },
 
     created(){
-        axios.get(global.apiUrl + this.$route.params.hash + '?api-key=' + global.apiKey)
+        axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
             .then(data => {
                 this.showLoader = false
                 this.strings = data.data.strings

@@ -75,7 +75,6 @@
 </template>
 <script>
 import axios from 'axios'
-import Global from '@/global'
 import Loader from '@/components/elements/Loader'
 import Copy from '@/components/elements/Copy'
 
@@ -103,8 +102,7 @@ export default {
 				
     },
     mounted(){
-        let url = Global.apiUrl + this.$route.params.hash + '?api-key=' + Global.apiKey
-        axios.get(url)
+      axios.get(`/api/${this.$route.params.hash}?api-key=secret`)
             .then((data) => {
                 this.showLoader = false
                 this.firstScan = data.data.multiav.first_scan
