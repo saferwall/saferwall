@@ -53,6 +53,7 @@ func createJwtToken(u user.User) (string, error) {
 	claims := rawToken.Claims.(jwt.MapClaims)
 	claims["name"] = u.Username
 	claims["admin"] = u.Admin
+	claims["confirmed"] = u.Confirmed
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	// Generate encoded token and send it as response.
@@ -144,4 +145,30 @@ func Login(c echo.Context) error {
 func Admin(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, map[string]string{
 		"verbose_msg": "You are admin"})
+}
+
+// Confirm confirms a user account.
+func Confirm(c echo.Context) error {
+
+	// get path param
+	token := c.QueryParam("token")
+
+	if token == "" {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "You provided an empty token!"})
+	}
+
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+
+	// Confirm account
+	err := user.Confirm(username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": "Internal server error !"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok"})
 }

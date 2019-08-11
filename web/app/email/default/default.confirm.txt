@@ -1,0 +1,14 @@
+--------------
+Hi noteworthy,
+--------------
+
+Tap the button below to confirm your email address.
+
+Click the button below to reset your password: http://127.0.0.1:8800/auth/confirm?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjU1Mjg4NjAsIm5hbWUiOiJub3Rld29ydGh5In0.RqHgwbbWmSuQLal6YmrOieoWHHZoMaVV65KSnodNztk
+
+If you didn't create an account with Saferwall, you can safely delete this email..
+
+Thanks,
+Saferwall - https://saferwall.com/
+
+Copyright © 2019 Saferwall. All rights reserved.

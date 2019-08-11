@@ -15,6 +15,9 @@ import (
 var (
 	// RequireLogin check JWT token.
 	RequireLogin echo.MiddlewareFunc
+
+	// RequireEmailConfirmationToken checks email confirmation token.
+	RequireEmailConfirmationToken echo.MiddlewareFunc
 )
 
 // RequireJSON requires an application/json content type.
@@ -35,7 +38,7 @@ func Init(e *echo.Echo) {
 	// logging
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `[${time_rfc3339}]  ${status}  ${method} ${host}${path} ${latency_human}` + "\n",
-	}))
+	  }))
 
 	// cors
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -48,6 +51,11 @@ func Init(e *echo.Echo) {
 	RequireLogin = middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:  []byte(key),
 		TokenLookup: "cookie:JWTCookie",
+	})
+
+	RequireEmailConfirmationToken = middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:  []byte(key),
+		TokenLookup: "query:token",
 	})
 
 }

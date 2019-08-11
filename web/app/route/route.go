@@ -23,28 +23,28 @@ func New() *echo.Echo {
 
 	// handle /login
 	e.POST("/auth/login", auth.Login, m.RequireJSON)
+	e.GET("/auth/confirm", auth.Confirm, m.RequireEmailConfirmationToken)
 
 	// handle /files endpoint.
 	e.GET("/v1/files", file.GetFiles)
 	e.POST("/v1/files", file.PostFiles, m.RequireLogin)
-	e.PUT("/v1/files", file.PutFiles)
+	e.PUT("/v1/files", file.PutFiles, m.RequireLogin)
 	e.DELETE("/v1/files", file.DeleteFiles)
 
 	// handle /files/:sha256 endpoint.
 	e.GET("/v1/files/:sha256", file.GetFile)
-	e.PUT("/v1/files/:sha256", file.PutFile)
+	e.PUT("/v1/files/:sha256", file.PutFile, m.RequireJSON)
 	e.DELETE("/v1/files/:sha256", file.DeleteFile)
 
 	// handle /users endpoint.
 	e.GET("/v1/users", user.GetUsers)
 	e.POST("/v1/users", user.PostUsers, m.RequireJSON)
-	e.PUT("/v1/users", user.PutUsers)
+	e.PUT("/v1/users", user.PutUsers, m.RequireLogin)
 	e.DELETE("/v1/users", user.DeleteUsers)
 
 	// handle /users/:username  endpoint.
 	e.GET("/v1/users/:username", user.GetUser)
-	e.POST("/v1/users/:username", user.PostUser)
-	e.PUT("/v1/users/:username", user.PutUser)
+	e.PUT("/v1/users/:username", user.PutUser, m.RequireLogin)
 	e.DELETE("/v1/users/:username", user.DeleteUser)
 
 	// handle /admin endpoint

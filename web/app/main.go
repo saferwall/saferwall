@@ -10,6 +10,7 @@ import (
 	"path"
 
 	nsq "github.com/bitly/go-nsq"
+	"github.com/matcornic/hermes"
 	minio "github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app/common/db"
@@ -17,6 +18,16 @@ import (
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
 )
+
+type SMTPAuthentication struct {
+	Server         string
+	Port           int
+	SenderEmail    string
+	SenderIdentity string
+	SMTPUser       string
+	SMTPPassword   string
+}
+
 
 var (
 	// RootDir points to the root dir
@@ -45,6 +56,12 @@ var (
 
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
+
+	// Hermes represents an instance email generator.
+	Hermes hermes.Hermes
+
+	// SMTPConfig holds smtp config.
+	SMTPConfig SMTPAuthentication
 )
 
 // loadConfig loads our configration.
@@ -160,6 +177,28 @@ func initOSClient() *minio.Client {
 	return client
 }
 
+// initEmail initialize SMTP email config and setup hermes theme and product info.
+func initHermes() {
+	SMTPConfig = SMTPAuthentication{
+		Server:         viper.GetString("smtp.server"),
+		Port:           viper.GetInt("smtp.port"),
+		SenderEmail:    viper.GetString("smtp.sender"),
+		SenderIdentity: viper.GetString("smtp.identity"),
+		SMTPPassword:   viper.GetString("smtp.password"),
+		SMTPUser:       viper.GetString("smtp.user"),
+	}
+	Hermes = hermes.Hermes{
+		Product: hermes.Product{
+			Name:      "Saferwall",
+			Link:      "https://saferwall.com/",
+			Logo:      "https://i.imgur.com/zjCOKPo.png",
+			Copyright: "Copyright © 2019 Saferwall. All rights reserved.",
+		},
+	}
+	log.Printf("Successfully created hermes instance")
+
+}
+
 // Init will initiate required objects
 func Init() {
 
@@ -171,6 +210,9 @@ func Init() {
 
 	// Load schemas
 	loadSchemas()
+
+	// Init email generator
+	initHermes()
 
 	// Get an instance of NSQ
 	NsqProducer = createNSQProducer()
