@@ -173,10 +173,14 @@ export default {
         this.errorMessage = 'Please correct all highlighted errors and try again'
       } else {
         axios
-          .post("/api/auth/register", {
+          .post("/api/v1/users/", {
             username: this.username,
             email: this.email,
             password: this.password
+          }, {
+            headers: {
+            'Content-Type': 'application/json'
+            }
           })
           .then(response => {
             this.errored = false;
