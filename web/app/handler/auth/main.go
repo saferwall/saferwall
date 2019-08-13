@@ -124,6 +124,11 @@ func Login(c echo.Context) error {
 			"verbose_msg": "Username or password does not match !"})
 	}
 
+	if !u.Confirmed {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"verbose_msg": "Account not confirmed, please confirm your email !"})
+	}
+
 	token, err := createJwtToken(u)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -145,3 +150,35 @@ func Admin(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, map[string]string{
 		"verbose_msg": "You are admin"})
 }
+
+// Confirm confirms a user account.
+func Confirm(c echo.Context) error {
+
+	// get path param
+	token := c.QueryParam("token")
+
+	if token == "" {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "You provided an empty token!"})
+	}
+
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+
+	// Confirm account
+	err := user.Confirm(username)
+	if err != nil {
+		if err == user.ErrUserAlreadyConfirmed {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"verbose_msg": err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": "Internal server error !"})
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:8081/#/upload")
+	// return c.JSON(http.StatusAccepted, map[string]string{
+	// 	"verbose_msg": "Account confirmed !"})
+}
+
