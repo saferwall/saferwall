@@ -33,6 +33,10 @@ export default {
 @import "assets/scss/layout";
 @import "assets/scss/ionicons";
 
+.notification {
+width: 100%;
+}
+
 * {
   padding: 0;
   margin: 0;

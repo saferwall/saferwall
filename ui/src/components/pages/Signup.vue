@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <transition name="slide" mode="out-in">
       <notification type="is-danger" @closeNotif="close()" v-if="errored">
         {{ errorMessage }}
@@ -170,24 +170,29 @@ export default {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.errored = true;
-        this.errorMessage = 'Please correct all highlighted errors and try again'
+        this.errorMessage =
+          "Please correct all highlighted errors and try again";
       } else {
         axios
-          .post("/api/v1/users/", {
-            username: this.username,
-            email: this.email,
-            password: this.password
-          }, {
-            headers: {
-            'Content-Type': 'application/json'
+          .post(
+            "/api/v1/users/",
+            {
+              username: this.username,
+              email: this.email,
+              password: this.password
+            },
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
             }
-          })
+          )
           .then(response => {
             this.errored = false;
             this.$router.push({
-            path: 'login',
+              path: "login",
               query: {
-              confirm: 'email' 
+                confirm: "email"
               }
             });
           })
@@ -232,13 +237,15 @@ export default {
   animation-name: bounce;
   animation-timing-function: ease-in-out;
 }
-
+.container {
+  margin-bottom: 4em;
+}
 .form {
   display: grid;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
-  width: max-content;
+  width: 100%;
   grid-row-gap: 0.1em;
   padding: 4em;
   color: #333333;

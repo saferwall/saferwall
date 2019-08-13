@@ -1,11 +1,7 @@
 <template>
-  <div>
+  <div class="container">
     <transition name="slide" mode="out-in">
-      <notification
-        type="is-danger"
-        @closeNotif="close()"
-        v-if="errored"
-      >
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
         {{ errorMessage }}
       </notification>
     </transition>
@@ -13,7 +9,7 @@
     <transition name="slide" mode="out-in">
       <notification
         type="is-warning"
-        @closeNotif="close()"
+        @closeNotif="closeWarning"
         v-if="emailConfirmationPrompt"
       >
         {{ confirmationWarning }}
@@ -133,7 +129,8 @@ export default {
       showPassword: false,
       errored: false,
       errorMessage: "",
-      confirmationWarning: "Confirm your email by clicking the verification link we just sent to your inbox.",
+      confirmationWarning:
+        "Confirm your email by clicking the verification link we just sent to your inbox.",
       emailConfirmationPrompt: false
     };
   },
@@ -142,7 +139,7 @@ export default {
   },
   mounted() {
     if (this.$route.query.confirm) {
-      this.emailConfirmationPrompt = true
+      this.emailConfirmationPrompt = true;
     }
   },
   methods: {
@@ -150,16 +147,22 @@ export default {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.errored = true;
+        this.errorMessage =
+          "Please correct all highlighted errors and try again";
       } else {
         axios
-          .post("/api/auth/login", {
-            username: this.username,
-            password: this.password
-          }, {
-            headers: {
-            'Content-Type': 'application/json'
+          .post(
+            "/api/auth/login",
+            {
+              username: this.username,
+              password: this.password
+            },
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
             }
-          })
+          )
           .then(response => {
             this.errored = false;
             if (this.$cookie.get("JWTCookie") !== null) {
@@ -178,6 +181,9 @@ export default {
     },
     close() {
       this.errored = false;
+    },
+    closeWarning() {
+      this.emailConfirmationPrompt = false
     }
   },
   validations: {
@@ -206,12 +212,15 @@ export default {
   }
 }
 
+.container {
+  margin-bottom: 4em;
+}
 .form {
   display: grid;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
-  width: max-content;
+  width: 100%;
   grid-row-gap: 0.1em;
   padding: 4em;
   color: #333333;
