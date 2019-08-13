@@ -140,7 +140,7 @@ func PostUsers(c echo.Context) error {
 	r := c.Request()
 	baseURL := c.Scheme() + "://" + r.Host
 	link := baseURL + "/auth/confirm" + "?token=" + token
-	email.Send(newUser.Username, link, newUser.Email)
+	go email.Send(newUser.Username, link, newUser.Email)
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"verbose_msg": "ok"})

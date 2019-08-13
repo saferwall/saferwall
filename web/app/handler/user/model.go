@@ -2,11 +2,18 @@ package user
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
 	gocb "gopkg.in/couchbase/gocb.v1"
 	"time"
+)
+
+var (
+
+	// ErrUserAlreadyConfirmed is retgurned when a user account has been already confirmed.
+	ErrUserAlreadyConfirmed = errors.New("Account already confirmed")
 )
 
 // User represent a user.
@@ -48,6 +55,10 @@ func Confirm(username string) error {
 	user, err := GetByUsername(username)
 	if err != nil {
 		return err
+	}
+
+	if user.Confirmed {
+		return ErrUserAlreadyConfirmed
 	}
 
 	user.Confirmed = true
