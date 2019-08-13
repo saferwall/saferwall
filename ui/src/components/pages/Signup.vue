@@ -184,7 +184,12 @@ export default {
           })
           .then(response => {
             this.errored = false;
-            this.$router.push("login");
+            this.$router.push({
+            path: 'login',
+              query: {
+              confirm: 'email' 
+              }
+            });
           })
           .catch(
             //server responded with a status code that falls out of the range of 2xx

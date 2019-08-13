@@ -10,6 +10,15 @@
       </notification>
     </transition>
 
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-warning"
+        @closeNotif="close()"
+        v-if="emailConfirmationPrompt"
+      >
+        {{ confirmationWarning }}
+      </notification>
+    </transition>
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">
       <h1 class="signin">Sign In</h1>
       <div
@@ -123,11 +132,18 @@ export default {
       password: "",
       showPassword: false,
       errored: false,
-      errorMessage: ""
+      errorMessage: "",
+      confirmationWarning: "Confirm your email by clicking the verification link we just sent to your inbox.",
+      emailConfirmationPrompt: false
     };
   },
   components: {
     notification: Notification
+  },
+  mounted() {
+    if (this.$route.query.confirm) {
+      this.emailConfirmationPrompt = true
+    }
   },
   methods: {
     handleSubmit() {
@@ -139,6 +155,10 @@ export default {
           .post("/api/auth/login", {
             username: this.username,
             password: this.password
+          }, {
+            headers: {
+            'Content-Type': 'application/json'
+            }
           })
           .then(response => {
             this.errored = false;
