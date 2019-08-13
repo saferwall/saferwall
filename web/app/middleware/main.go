@@ -46,6 +46,9 @@ func Init(e *echo.Echo) {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
+	// trailing slash
+	e.Pre(middleware.AddTrailingSlash())
+
 	// jwt
 	key := viper.GetString("auth.signkey")
 	RequireLogin = middleware.JWTWithConfig(middleware.JWTConfig{
