@@ -1,12 +1,12 @@
 <template>
   <div class="columns" style="margin-top:100px">
     <div class="column is-8 is-offset-2">
-      <tabs type="is-boxed">
+      <tabs @tabChanged="tabChanged" type="is-boxed">
         <tab name="File" icon="ion-android-folder-open" :selected="true">
-          <DropZone @fileAdded="onFileAdded" /><transition
-            name="slide"
-            mode="out-in"
-          >
+          <DropZone
+            @fileAdded="onFileAdded"
+            :enabled="ongoingStep === 0"
+          /><transition name="slide" mode="out-in">
             <notification
               type="is-danger"
               @closeNotif="close()"
@@ -32,6 +32,15 @@
           </form>
         </tab>
       </tabs>
+      <progress-tracker alignment="center" v-if="selectedTab != 'Url'">
+        <step-item
+          :title="stepTitle"
+          v-for="(stepTitle, step) in {1: 'Uploaded',2: 'Queued',3: 'Processing',4: 'Finished'}"
+          :is-complete="Number(step) < ongoingStep"
+          :is-active="Number(step) === ongoingStep"
+          :key="step"
+        ></step-item>
+      </progress-tracker>
     </div>
   </div>
 </template>
@@ -43,22 +52,31 @@ import { sha256 } from "js-sha256";
 import axios from "axios";
 import Scanning from "@/components/pages/Scanning";
 import DropZone from "@/components/elements/DropZone";
+import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker";
 
 export default {
   data() {
     return {
+      selectedTab: "File",
       notificationError: "",
       notifActive: false,
-      filename: ""
+      uploading: false,
+      ongoingStep: 0, // by default, no step has started yet (0), next we move to step 1, 2 and so on
+      pollInterval: null
     };
   },
   components: {
     tabs: Tabs,
     tab: Tab,
     notification: Notification,
-    DropZone
+    DropZone,
+    ProgressTracker,
+    StepItem
   },
   methods: {
+    tabChanged(selectedTab) {
+      this.selectedTab = selectedTab;
+    },
     close() {
       this.notifActive = false;
     },
@@ -66,6 +84,12 @@ export default {
       if (!file) {
         return;
       }
+      const step = {
+        UPLOADED: 1,
+        QUEUED: 2,
+        PROCESSING: 3,
+        FINISHED: 4
+      };
       // check if size exceeds 64mb
       if (file.size > 64000000) {
         this.notifActive = true;
@@ -92,13 +116,31 @@ export default {
             axios
               .get(`/api/v1/files/${hashHex}`)
               .then(response => {
+                //file exists
                 this.$router.push(`summary/${hashHex}`);
               })
-              .catch(
-                // upload the file to the db
-                // perform scanning 
-                // show scanning progress on /scanning
-              );
+              .catch(error => {
+                this.ongoingStep = step.UPLOADED;
+                let formData = new FormData();
+                formData.append("file", file);
+                axios
+                  .post("/api/v1/files", formData, {
+                    headers: {
+                      "Content-Type": "multipart/form-data"
+                    }
+                  })
+                  .then(() => {
+                    this.pollInterval = setInterval(
+                      this.fetchStatus,
+                      5000,
+                      hashHex
+                    ); // set a poll interval of 5s
+                    setTimeout(() => {
+                      clearInterval(this.pollInterval);
+                    }, 36000000); //stop polling after an hour
+                  })
+                  .catch(console.log);
+              });
           })
           .catch(error => {
             this.notifActive = true;
@@ -107,6 +149,24 @@ export default {
           });
       };
       reader.readAsArrayBuffer(file);
+    },
+    fetchStatus(hashHex) {
+      axios
+        .get(`/api/v1/files/${hashHex}`)
+        .then(response => {
+          const status = response.data.status;
+          //change ongoingStep according to status
+
+          if (status === "finished") {
+            // stop polling
+            clearclearInterval(this.pollInterval);
+            this.$router.push("scanning");
+          }
+        })
+        .catch(error => {
+          this.notifActive = true;
+          this.notificationError = error.response.data.verbose_msg;
+        });
     }
   }
 };
@@ -122,6 +182,10 @@ export default {
   padding: 0;
   overflow: hidden;
   opacity: 0;
+}
+
+.progress {
+  margin-top: 1em;
 }
 
 .tile {

@@ -1,15 +1,20 @@
 <template>
-  <div
+  <form
+    method="post"
+    action="http://dev.api.saferwall.com/v1/files"
+    enctype="multipart/form-data"
     class="tile is-child box dropzone has-padding"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
-    :class="{ highlight: highlight }"
+    @submit.prevent
+    :class="{ highlight: highlight, disabled: !enabled }"
   >
     <input
       ref="fileInput"
       @change.prevent="onFileChange"
       type="file"
+      name="file"
       class="file-input"
     />
     <div class="icon"><i class="ion-ios-cloud-upload" /></div>
@@ -19,27 +24,43 @@
     <button class="btn" @click="openFileDialog" type="submit">
       Browse files
     </button>
-  </div>
+  </form>
 </template>
 
 <script>
 export default {
+  props: {
+    enabled: {
+      type: Boolean,
+      default: true
+    }
+  },
   data() {
     return { highlight: false };
   },
   methods: {
     onDragOver() {
+      if (!this.enabled) return;
       this.highlight = true;
     },
     onDragLeave() {
       this.highlight = false;
     },
     onDrop(e) {
-      const file = e.dataTransfer.files.item(0);
-      this.$emit("fileAdded", file);
-      this.highlight = false;
+      if (!this.enabled) return;
+      const files = e.dataTransfer.files;
+      const fileIsSelected = files.length > 0;
+
+      if (fileIsSelected) {
+        const file = e.dataTransfer.files.item(0);
+        this.$emit("fileAdded", file);
+        this.highlight = false;
+      } else {
+        alert("Please select a file to upload");
+      }
     },
     openFileDialog() {
+      if (!this.enabled) return;
       this.$refs.fileInput.click();
     },
     onFileChange(e) {
@@ -77,6 +98,14 @@ export default {
   width: 100%;
   text-align: center;
 }
+
+.disabled {
+  opacity: 0.2;
+  .btn {
+    cursor: no-drop;
+  }
+}
+
 .btn {
   cursor: pointer;
   border-radius: 0.25rem;

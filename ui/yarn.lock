@@ -5453,6 +5453,11 @@ process@^0.11.10:
   resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha1-czIwDoQBYb2j5podHZGn1LwW8YI=
 
+progress-tracker@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/progress-tracker/-/progress-tracker-1.0.0.tgz#86df6909f9649bc5a347459725ba9c5bbb666bed"
+  integrity sha1-ht9pCflkm8WjR0WXJbqcW7tma+0=
+
 promise-inflight@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
@@ -6933,6 +6938,13 @@ vm-browserify@0.0.4:
   integrity sha1-XX6kW7755Kb/ZflUOOCofDV9WnM=
   dependencies:
     indexof "0.0.1"
+
+vue-bulma-progress-tracker@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/vue-bulma-progress-tracker/-/vue-bulma-progress-tracker-0.0.4.tgz#d132af7eea5d0857eda733e96951a2c9c395624d"
+  integrity sha1-0TKvfupdCFftpzPpaVGiycOVYk0=
+  dependencies:
+    progress-tracker "1.0.0"
 
 vue-cookie@^1.1.4:
   version "1.1.4"
