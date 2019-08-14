@@ -157,11 +157,6 @@ export default {
               username: this.username,
               password: this.password
             },
-            {
-              headers: {
-                "Content-Type": "application/json"
-              }
-            }
           )
           .then(response => {
             this.errored = false;
