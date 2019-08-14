@@ -8,10 +8,24 @@ import Summary from "@/components/pages/Summary";
 import Strings from "@/components/pages/Strings";
 import Login from "@/components/pages/Login";
 import Signup from "@/components/pages/Signup";
+import { store } from "../store.js";
 
 Vue.use(Router);
 
+const storeLoggedIn = store.state.loggedIn;
+const loadTokenFromCookie = () => {
+  const token = Vue.cookie.get("JWTCookie");
+  if (token !== null) {
+    store.setLoggedIn(token);
+    store.setUsername(token);
+    return true;
+  } else return false;
+};
+
+const isLogged = () => storeLoggedIn || loadTokenFromCookie();
+
 let router = new Router({
+  mode: "history",
   routes: [
     {
       path: "/",
@@ -68,18 +82,11 @@ let router = new Router({
 });
 
 router.beforeEach(function(to, from, next) {
-  if (
-    to.matched.some(record => record.meta.requiresAuth) &&
-    from.path !== "/login"
-  ) {
-    if (Vue.cookie.get("jwt") === null) {
-      next({
-        name: "login",
-        params: { nextUrl: to.fullPath }
-      });
-    } else {
-      next();
-    }
+  if (to.matched.some(record => record.meta.requiresAuth) && !isLogged()) {
+    next({
+      name: "login",
+      params: { nextUrl: to.fullPath }
+    });
   } else if (to.matched.some(record => record.meta.guest)) {
     next();
   } else next();

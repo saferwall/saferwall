@@ -1,9 +1,10 @@
 <template>
-  <div>
-    <div v-if="errorMessage != ''" class="notification is-danger">
-      <button class="delete"></button>
-      {{ errorMessage }}
-    </div>
+  <div class="container">
+    <transition name="slide" mode="out-in">
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
+        {{ errorMessage }}
+      </notification>
+    </transition>
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
       <h1 class="signup">Create Your Account</h1>
       <div
@@ -145,6 +146,7 @@ import {
   sameAs
 } from "vuelidate/lib/validators";
 import axios from "axios";
+import Notification from "@/components/elements/Notification";
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
 
@@ -160,21 +162,34 @@ export default {
       errorMessage: ""
     };
   },
+  components: {
+    notification: Notification
+  },
   methods: {
     handleSubmit() {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.errored = true;
+        this.errorMessage =
+          "Please correct all highlighted errors and try again";
       } else {
         axios
-          .post("/api/auth/register", {
-            username: this.username,
-            email: this.email,
-            password: this.password
-          })
+          .post(
+            "/api/v1/users/",
+            {
+              username: this.username,
+              email: this.email,
+              password: this.password
+            },
+          )
           .then(response => {
             this.errored = false;
-            this.$router.push("login");
+            this.$router.push({
+              path: "login",
+              query: {
+                confirm: "email"
+              }
+            });
           })
           .catch(
             //server responded with a status code that falls out of the range of 2xx
@@ -184,6 +199,9 @@ export default {
             }
           );
       }
+    },
+    close() {
+      this.errored = false;
     }
   },
   validations: {
@@ -214,13 +232,15 @@ export default {
   animation-name: bounce;
   animation-timing-function: ease-in-out;
 }
-
+.container {
+  margin-bottom: 4em;
+}
 .form {
   display: grid;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
-  width: max-content;
+  width: 100%;
   grid-row-gap: 0.1em;
   padding: 4em;
   color: #333333;

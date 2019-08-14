@@ -1,9 +1,20 @@
 <template>
-  <div>
-    <div v-if="errorMessage != ''" class="notification is-danger">
-      <button class="delete"></button>
-      {{ errorMessage }}
-    </div>
+  <div class="container">
+    <transition name="slide" mode="out-in">
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
+        {{ errorMessage }}
+      </notification>
+    </transition>
+
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-warning"
+        @closeNotif="closeWarning"
+        v-if="emailConfirmationPrompt"
+      >
+        {{ confirmationWarning }}
+      </notification>
+    </transition>
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">
       <h1 class="signin">Sign In</h1>
       <div
@@ -104,6 +115,7 @@
 
 <script>
 import { required, email, minLength, helpers } from "vuelidate/lib/validators";
+import Notification from "@/components/elements/Notification";
 import axios from "axios";
 import { store } from "../../store.js";
 
@@ -116,20 +128,36 @@ export default {
       password: "",
       showPassword: false,
       errored: false,
-      errorMessage: ""
+      errorMessage: "",
+      confirmationWarning:
+        "Confirm your email by clicking the verification link we just sent to your inbox.",
+      emailConfirmationPrompt: false
     };
+  },
+  components: {
+    notification: Notification
+  },
+  mounted() {
+    if (this.$route.query.confirm) {
+      this.emailConfirmationPrompt = true;
+    }
   },
   methods: {
     handleSubmit() {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.errored = true;
+        this.errorMessage =
+          "Please correct all highlighted errors and try again";
       } else {
         axios
-          .post("/api/auth/login", {
-            username: this.username,
-            password: this.password
-          })
+          .post(
+            "/api/auth/login",
+            {
+              username: this.username,
+              password: this.password
+            },
+          )
           .then(response => {
             this.errored = false;
             if (this.$cookie.get("JWTCookie") !== null) {
@@ -145,6 +173,12 @@ export default {
             this.errorMessage = error.response.data.verbose_msg;
           });
       }
+    },
+    close() {
+      this.errored = false;
+    },
+    closeWarning() {
+      this.emailConfirmationPrompt = false
     }
   },
   validations: {
@@ -173,12 +207,15 @@ export default {
   }
 }
 
+.container {
+  margin-bottom: 4em;
+}
 .form {
   display: grid;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
-  width: max-content;
+  width: 100%;
   grid-row-gap: 0.1em;
   padding: 4em;
   color: #333333;
