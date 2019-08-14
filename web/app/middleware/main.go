@@ -6,7 +6,7 @@ package middleware
 
 import (
 	"net/http"
-
+	"strings"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/viper"
@@ -24,7 +24,7 @@ var (
 func RequireJSON(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		contentType := c.Request().Header.Get("content-type")
-		if contentType != "application/json" {
+		if contentType != "" && !strings.Contains(contentType, "application/json") {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"verbose_msg": "Request requires content type: application/json"})
 		}
