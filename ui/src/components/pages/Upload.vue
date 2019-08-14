@@ -33,9 +33,10 @@
         </tab>
       </tabs>
       <progress-tracker alignment="center" v-if="selectedTab != 'Url'">
+        <!-- prettier-ignore -->
         <step-item
           :title="stepTitle"
-          v-for="(stepTitle, step) in {1: 'Uploaded',2: 'Queued',3: 'Processing',4: 'Finished'}"
+          v-for="(stepTitle, step) in {1: 'Uploaded', 2: 'Queued', 3: 'Processing', 4: 'Finished'}"
           :is-complete="Number(step) < ongoingStep"
           :is-active="Number(step) === ongoingStep"
           :key="step"
@@ -53,6 +54,14 @@ import axios from "axios";
 import Scanning from "@/components/pages/Scanning";
 import DropZone from "@/components/elements/DropZone";
 import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker";
+
+const step = {
+  UPLOADED: 1,
+  QUEUED: 2,
+  PROCESSING: 3,
+  FINISHED: 4,
+  READY: 5
+};
 
 export default {
   data() {
@@ -84,12 +93,7 @@ export default {
       if (!file) {
         return;
       }
-      const step = {
-        UPLOADED: 1,
-        QUEUED: 2,
-        PROCESSING: 3,
-        FINISHED: 4
-      };
+
       // check if size exceeds 64mb
       if (file.size > 64000000) {
         this.notifActive = true;
@@ -130,11 +134,13 @@ export default {
                     }
                   })
                   .then(() => {
+                    // set a poll interval of 5s
+
                     this.pollInterval = setInterval(
                       this.fetchStatus,
-                      5000,
+                      5,
                       hashHex
-                    ); // set a poll interval of 5s
+                    );
                     setTimeout(() => {
                       clearInterval(this.pollInterval);
                     }, 36000000); //stop polling after an hour
@@ -156,16 +162,37 @@ export default {
         .then(response => {
           const status = response.data.status;
           //change ongoingStep according to status
-
-          if (status === "finished") {
-            // stop polling
-            clearclearInterval(this.pollInterval);
-            this.$router.push("scanning");
+          // status
+          //0: queued
+          //1: processing
+          //2: finished
+          switch (status) {
+            case 0:
+              this.ongoingStep = step.ENQUEUE;
+              break;
+            case 1:
+              this.ongoingStep = step.PROCESSING;
+              break;
+            case 2:
+              this.ongoingStep = step.FINISHED;
+              // stop polling
+              clearInterval(this.pollInterval);
+              setTimeout(() => {
+                this.ongoingStep = step.READY
+                this.$router.push({
+                  name: "Summary",
+                  params: { hash: hashHex }
+                });
+              }, 4000);
+              break;
           }
         })
         .catch(error => {
           this.notifActive = true;
-          this.notificationError = error.response.data.verbose_msg;
+          //this.notificationError = error.response.data.verbose_msg;
+        })
+        .finally(() => {
+          clearInterval(this.pollInterval);
         });
     }
   }
