@@ -6939,10 +6939,9 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
-vue-bulma-progress-tracker@^0.0.4:
+"vue-bulma-progress-tracker@https://github.com/mrassili/progress-tracker":
   version "0.0.4"
-  resolved "https://registry.yarnpkg.com/vue-bulma-progress-tracker/-/vue-bulma-progress-tracker-0.0.4.tgz#d132af7eea5d0857eda733e96951a2c9c395624d"
-  integrity sha1-0TKvfupdCFftpzPpaVGiycOVYk0=
+  resolved "https://github.com/mrassili/progress-tracker#5f9ac9ecc25d21b0273161054a2a4d21378121be"
   dependencies:
     progress-tracker "1.0.0"
 
