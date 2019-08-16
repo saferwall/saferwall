@@ -8,6 +8,7 @@
     "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
     "start": "yarn run dev",
     "build": "node build/build.js",
+    "build:report": "cross-env npm_config_report=true node build/build.js",
     "clean": "rm -rf node_modules/"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "babel-loader": "^8.0.6",
     "chalk": "^2.0.1",
     "copy-webpack-plugin": "^5.0.3",
+    "cross-env": "^5.2.0",
     "css-loader": "^2.1.1",
     "dotenv-webpack": "^1.7.0",
     "file-loader": "^3.0.1",
