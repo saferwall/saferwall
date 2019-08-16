@@ -49,7 +49,6 @@
 import Tabs from "@/components/elements/Tabs";
 import Tab from "@/components/elements/Tab";
 import Notification from "@/components/elements/Notification";
-import { sha256 } from "js-sha256";
 import axios from "axios";
 import Scanning from "@/components/pages/Scanning";
 import DropZone from "@/components/elements/DropZone";
