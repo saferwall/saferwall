@@ -15,6 +15,7 @@ import (
 	"log"
 
 	"github.com/glaslos/ssdeep"
+
 )
 
 // Result contains result for all hashes

@@ -8,17 +8,22 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/minio/minio-go"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
+	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
+	"gopkg.in/couchbase/gocb.v1"
 )
 
 type stringStruct struct {
@@ -42,6 +47,7 @@ type File struct {
 	FirstSeen time.Time              `json:"first_seen,omitempty"`
 	Strings   []stringStruct         `json:"strings"`
 	MultiAV   map[string]interface{} `json:"multiav"`
+	Status    int                    `json:"status"`
 }
 
 // Response JSON
@@ -56,6 +62,12 @@ type Response struct {
 type AV struct {
 	Vendor string `json:"vendor,omitempty"`
 }
+
+const (
+	queued     = iota
+	processing = iota
+	finished   = iota
+)
 
 // Create creates a new file
 func (file *File) Create() error {
@@ -80,6 +92,46 @@ func GetFileBySHA256(sha256 string) (File, error) {
 	}
 
 	return file, err
+}
+
+// GetAllFiles return all files (optional: selecting fields)
+func GetAllFiles(fields []string) ([]File, error) {
+
+	// Select only demanded fields
+	var statement string
+	if len(fields) > 0 {
+		var buffer bytes.Buffer
+		buffer.WriteString("SELECT ")
+		length := len(fields)
+		for index, field := range fields {
+			buffer.WriteString(field)
+			if index < length-1 {
+				buffer.WriteString(",")
+			}
+		}
+		buffer.WriteString(" FROM `files`")
+		statement = buffer.String()
+	} else {
+		statement = "SELECT files.* FROM `files`"
+	}
+
+	// Execute our query
+	query := gocb.NewN1qlQuery(statement)
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, nil)
+	if err != nil {
+		fmt.Println("Error executing n1ql query:", err)
+	}
+
+	// Interfaces for handling streaming return values
+	var row File
+	var retValues []File
+
+	// Stream the values returned from the query into a typed array of structs
+	for rows.Next(&row) {
+		retValues = append(retValues, row)
+	}
+
+	return retValues, nil
 }
 
 //=================== /file/sha256 handlers ===================
@@ -116,7 +168,10 @@ func PutFile(c echo.Context) error {
 	}
 
 	if !result.Valid() {
-		return c.JSON(http.StatusBadRequest, result.Errors())
+		for _, desc := range result.Errors() {
+			log.Printf("- %s\n", desc)
+		}
+		return c.JSON(http.StatusBadRequest, errors.New("json validation failed"))
 	}
 
 	// Updates the document.
@@ -149,12 +204,31 @@ func deleteAllFiles() {
 
 // GetFiles returns list of files.
 func GetFiles(c echo.Context) error {
-	return c.String(http.StatusOK, "getFiles")
+	// get query param `fields` for filtering & sanitize them
+	filters := utils.GetQueryParamsFields(c)
+	if len(filters) > 0 {
+		file := File{}
+		allowed := utils.IsFilterAllowed(utils.GetStructFields(file), filters)
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, "Filters not allowed")
+		}
+	}
+
+	// get all users
+	allFiles, err := GetAllFiles(filters)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, allFiles)
 }
 
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	log.Infoln("New file uploaded by", name)
 	// Source
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -225,6 +299,7 @@ func PostFiles(c echo.Context) error {
 		Sha256:    sha256,
 		FirstSeen: time.Now().UTC(),
 		Size:      fileHeader.Size,
+		Status:    queued,
 	}
 	NewFile.Create()
 

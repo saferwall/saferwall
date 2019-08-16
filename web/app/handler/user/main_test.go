@@ -72,8 +72,3 @@ func TestGetUsers(t *testing.T) {
 	json.NewDecoder(resp.Body).Decode(&result)
 	log.Println(result)
 }
-
-//
-
-// log.Println(result)
-// log.Println(result["data"])

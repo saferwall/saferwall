@@ -12,6 +12,7 @@ import (
 
 	pb "github.com/saferwall/saferwall/core/multiav/kaspersky/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/kaspersky"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
@@ -49,6 +50,13 @@ func NewServer(opts ...grpc.ServerOption) *grpc.Server {
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	// Start Kaspersky daemon
+	log.Infoln("Starting kaspersky daemon")
+	err := utils.StartCommand("sudo", "/opt/kaspersky/kesl/libexec/kesl_launcher.sh")
+	if err != nil {
+		log.Errorf("Failed to start kesl daemon: %v ", err)
+	}
 
 	// create a listener on TCP port 50051
 	log.Infoln("Starting kaspersky gRPC server")

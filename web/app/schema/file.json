@@ -185,6 +185,10 @@
         }
       },
       "additionalProperties": false
+    },
+    "status": {
+      "description": "status of file analysis",
+      "type": "integer"
     }
   },
   "additionalProperties": false

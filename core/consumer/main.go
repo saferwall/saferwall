@@ -43,6 +43,8 @@ import (
 
 var (
 	client *minio.Client
+
+	backendEndpoint string
 )
 
 type stringStruct struct {
@@ -50,19 +52,26 @@ type stringStruct struct {
 	Value    string `json:"value"`
 }
 type result struct {
-	Crc32   string                 `json:"crc32"`
-	Md5     string                 `json:"md5"`
-	Sha1    string                 `json:"sha1"`
-	Sha256  string                 `json:"sha256"`
-	Sha512  string                 `json:"sha512"`
-	Ssdeep  string                 `json:"ssdeep"`
-	Exif    map[string]string      `json:"exif"`
-	TriD    []string               `json:"trid"`
-	Packer  []string               `json:"packer"`
-	Magic   string                 `json:"magic"`
-	Strings []stringStruct         `json:"strings"`
-	MultiAV map[string]interface{} `json:"multiav"`
+	Crc32   string                 `json:"crc32,omitempty"`
+	Md5     string                 `json:"md5,omitempty"`
+	Sha1    string                 `json:"sha1,omitempty"`
+	Sha256  string                 `json:"sha256,omitempty"`
+	Sha512  string                 `json:"sha512,omitempty"`
+	Ssdeep  string                 `json:"ssdeep,omitempty"`
+	Exif    map[string]string      `json:"exif,omitempty"`
+	TriD    []string               `json:"trid,omitempty"`
+	Packer  []string               `json:"packer,omitempty"`
+	Magic   string                 `json:"magic,omitempty"`
+	Strings []stringStruct         `json:"strings,omitempty"`
+	MultiAV map[string]interface{} `json:"multiav,omitempty"`
+	Status  int                    `json:"status,omitempty"`
 }
+
+const (
+	queued     = iota
+	processing = iota
+	finished   = iota
+)
 
 // NoopNSQLogger allows us to pipe NSQ logs to dev/null
 // The default NSQ logger is great for debugging, but did
@@ -95,11 +104,27 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	sha256 := string(m.Body)
 	log.Infof("Processing %s", sha256)
+
+	// set the file status to `processing`
+	res := result{}
+	res.Status = processing
+
+	// Marshell results
+	buff, err := json.Marshal(res)
+	if err != nil {
+		log.Error("Failed to get object, err: ", err)
+		return err
+	}
+
+	// Update document
+	updateDocument(sha256, buff)
+
+	// 	Where to save the sample, in k8s, our nfs share
 	filePath := path.Join("/samples", sha256)
 
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")
-	err := client.FGetObject(bucketName, sha256, filePath, minio.GetObjectOptions{})
+	err = client.FGetObject(bucketName, sha256, filePath, minio.GetObjectOptions{})
 
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
@@ -115,14 +140,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// Run crypto pkg
 	r := crypto.HashBytes(b)
-	res := result{
-		Crc32:  r.Crc32,
-		Md5:    r.Md5,
-		Sha1:   r.Sha1,
-		Sha256: r.Sha256,
-		Sha512: r.Sha512,
-		Ssdeep: r.Ssdeep,
-	}
+	res.Crc32 = r.Crc32
+	res.Md5 = r.Md5
+	res.Sha1 = r.Sha1
+	res.Sha256 = r.Sha256
+	res.Sha512 = r.Sha512
+	res.Ssdeep = r.Ssdeep
 	log.Infof("HashBytes success %s", sha256)
 
 	// Run exiftool pkg
@@ -180,6 +203,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	log.Infof("strings success %s", sha256)
 
 	multiavScanResults := map[string]interface{}{}
+
+	// Scan with Kaspersky
+	kasperskyClient, err := kaspersky.Init()
+	if err != nil {
+		log.Errorf("kaspersky init failed %s", err)
+	} else {
+		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
+		if err != nil {
+			log.Errorf("kaspersky scanfile failed %s", err)
+		} else {
+			multiavScanResults["kaspersky"] = kasperskyRes
+			log.Infof("kaspersky success %s", sha256)
+		}
+	}
 
 	// Scan with ClamAV
 	clamclient, err := clamav.Init()
@@ -307,35 +344,45 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 	}
 
-	// Scan with Kaspersky
-	kasperskyClient, err := kaspersky.Init()
-	if err != nil {
-		log.Errorf("kaspersky init failed %s", err)
-	} else {
-		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
-		if err != nil {
-			log.Errorf("kaspersky scanfile failed %s", err)
-		} else {
-			multiavScanResults["kaspersky"] = kasperskyRes
-			log.Infof("kaspersky success %s", sha256)
-		}
-	}
-
 	res.MultiAV = multiavScanResults
 
+	// analysis finished
+	res.Status = finished
+
 	// Marshell results
-	buff, err := json.Marshal(res)
+	buff, err = json.Marshal(res)
 	if err != nil {
 		log.Error("Failed to get object, err: ", err)
 		return err
 	}
 
+	// Update document
+	updateDocument(sha256, buff)
+
+	// Returning nil signals to the consumer that the message has
+	// been handled with success. A FIN is sent to nsqd
+	return nil
+}
+
+// loadConfig loads our configration.
+func loadConfig() {
+	viper.SetConfigName("saferwall") // no need to include file extension
+	viper.AddConfigPath(".")         // set the path of your config file
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Error(err)
+		panic(err)
+	}
+}
+
+func updateDocument(sha256 string, buff []byte) {
 	// Update results to DB
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
-	endpoint := viper.GetString("backend.endpoint")
-	url := endpoint + sha256
+	url := backendEndpoint + sha256
 	log.Infoln("Sending results to ", url)
+
 	body := bytes.NewBuffer(buff)
 	req, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
@@ -355,22 +402,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
-
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd
-	return nil
-}
-
-// loadConfig loads our configration.
-func loadConfig() {
-	viper.SetConfigName("saferwall") // no need to include file extension
-	viper.AddConfigPath(".")         // set the path of your config file
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	}
 }
 
 func main() {
@@ -380,7 +411,11 @@ func main() {
 
 	client = do.GetClient()
 
+	// Load consumer config
 	loadConfig()
+
+	// Set backend API address
+	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.
@@ -419,12 +454,7 @@ func main() {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	nsqlds := []string{
-		"nsqlookupd-0.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-1.nsqlookupd.default.svc.cluster.local:4161",
-		// "nsqlookupd-2.nsqlookupd.default.svc.cluster.local:4161"
-	}
-
+	nsqlds := viper.GetStringSlice("nsq.lookupd")
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		log.Fatal(err)
 	}

@@ -34,3 +34,9 @@ include build/mk/k8s.mk
 include build/mk/vbox.mk
 include build/mk/minio.mk
 include build/mk/die.mk
+include build/mk/packer.mk
+include build/mk/kernel.mk
+include build/mk/kvm.mk
+include build/mk/helm.mk
+include build/mk/kops.mk
+include ui/Makefile

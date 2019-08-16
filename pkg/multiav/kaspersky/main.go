@@ -12,7 +12,7 @@ import (
 
 // Our consts
 const (
-	kav4fs = "/opt/kaspersky/kav4fs/bin/kav4fs-control"
+	kesl = "/opt/kaspersky/kesl/bin/kesl-control"
 )
 
 // Result represents detection results
@@ -32,8 +32,8 @@ type Version struct {
 // GetProgramVersion returns Kaspersky Anti-Virus for Linux File Server version.
 func GetProgramVersion() (string, error) {
 
-	// Run kav4s to grab the version
-	out, err := utils.ExecCommand(kav4fs, "-S", "--app-info")
+	// Run kesl to grab the version
+	out, err := utils.ExecCommand(kesl, "-S", "--app-info")
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +54,7 @@ func GetProgramVersion() (string, error) {
 func GetDatabaseVersion() (Version, error) {
 
 	// Run kav4s to grab the database update version
-	databaseOut, err := utils.ExecCommand(kav4fs, "--get-stat", "Update")
+	databaseOut, err := utils.ExecCommand(kesl, "--get-stat", "Update")
 
 	ver := Version{}
 	if err != nil {
@@ -81,49 +81,88 @@ func ScanFile(filePath string) (Result, error) {
 
 	// Clean the states
 	res := Result{}
-	_, err := utils.ExecCommand(kav4fs, "--clean-stat")
-	if err != nil {
-		return res, err
-	}
-	
+
 	// Run now
-	out, err := utils.ExecCommand(kav4fs, "--scan-file", filePath)
-	// /opt/kaspersky/kav4fs/bin/kav4fs-control --scan-file locky
-	// Objects scanned:     1
-	// Threats found:       1
-	// Riskware found:      0
-	// Infected:            1
-	// Suspicious:          0
-	// Cured:               0
-	// Moved to quarantine: 0
-	// Removed:             0
-	// Not cured:           0
-	// Scan errors:         0
-	// Password protected:  0
+	out, err := utils.ExecCommand("sudo", kesl, "--scan-file", filePath, "--action", "Skip")
+	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip
+	// Scanned objects                     : 1
+	// Total detected objects              : 1
+	// Infected objects and other objects  : 1
+	// Disinfected objects                 : 0
+	// Moved to Storage                    : 0
+	// Removed objects                     : 0
+	// Not disinfected objects             : 1
+	// Scan errors                         : 0
+	// Password-protected objects          : 0
+	// Skipped                             : 0
 
 	if err != nil {
 		return res, err
 	}
-
 	// Check if infected
-	if !strings.Contains(out, "Threats found:       1") {
+	if !strings.Contains(out, "Total detected objects              : 1") {
 		return res, nil
 	}
 
 	// Grab detection name with a separate cmd
-	kavOut, err := utils.ExecCommand(kav4fs, "--top-viruses", "1")
-	// Viruses found: 1
-	// Virus name:       Trojan-Ransom.Win32.Locky.d
-	// Infected objects: 1
+	// sudo /opt/kaspersky/kesl/bin/kesl-control -E --query "EventType=='ThreatDetected'"
+	out, err = utils.ExecCommand("sudo", kesl, "-E", "--query", "EventType=='ThreatDetected'")
+	// EventType=ThreatDetected
+	// EventId=2544
+	// Date=2019-06-11 22:12:16
+	// DangerLevel=Critical
+	// FileName=/eicar
+	// ObjectName=File
+	// TaskName=Scan_File_ca3f0bc2-ce71-4d4a-bdc1-c8ae502566d0
+	// RuntimeTaskId=4
+	// TaskId=100
+	// DetectName=EICAR-Test-File
+	// TaskType=ODS
+	// FileOwner=root
+	// FileOwnerId=0
+	// DetectCertainty=Sure
+	// DetectType=Virware
+	// DetectSource=Local
+	// ObjectId=1
+	// AccessUser=root
+	// AccessUserId=0
 	if err != nil {
 		return res, err
 	}
 
-	lines := strings.Split(kavOut, "\n")
+	// so hackish, there is no easy way to grab detection name
+	// no way to clean all these events as it was in previous version
+	// so pretty hardcoded for now
+	lines := strings.Split(out, "\n\n")
 	if len(lines) > 0 {
-		res.Output = strings.TrimSpace(strings.Split(lines[1], ":")[1])
-		res.Infected = true
+		index := len(lines) - 1
+		lines = strings.Split(lines[index], "\n")
+		if len(lines) > 8 {
+			res.Output = strings.TrimSpace(strings.Split(lines[9], "=")[1])
+			res.Infected = true
+		}
 	}
 
 	return res, nil
+}
+
+// GetLicenseInfos queries license infos
+func GetLicenseInfos() (string, error) {
+	out, err := utils.ExecCommand("sudo", kesl, "-L", "--query")
+	// Active key information:
+	// Expiration date                      : 2019-07-13
+	// Days remaining until expiration      : 0
+	// Protection                           : No protection
+	// Updates                              : No updates
+	// Key status                           : Expired
+	// License type                         : XYZ
+	// Usage restriction                    : 1
+	// Application name                     : Kaspersky Endpoint Security 10 SP1 MR1 for Linux
+	// Active key                           : XYZ
+	// Activation date                      : 2019-06-12
+	if err != nil {
+		return "", err
+	}
+
+	return out, err
 }

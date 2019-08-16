@@ -45,7 +45,6 @@ RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $BITDEFENDER_INSTALL_DIR
 
-
 # Switch to our user
 USER saferwall
 
