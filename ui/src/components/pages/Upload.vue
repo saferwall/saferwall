@@ -180,7 +180,7 @@ export default {
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: "Summary",
+                  name: "summary",
                   params: { hash: hashHex }
                 });
               }, 4000);

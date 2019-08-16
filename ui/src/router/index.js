@@ -29,13 +29,13 @@ let router = new Router({
   routes: [
     {
       path: "/",
-      name: "Home",
+      name: "home",
       component: Home,
       meta: { title: "Home" }
     },
     {
       path: "/upload",
-      name: "Upload",
+      name: "upload",
       component: Upload,
       meta: {
         title: "Upload",
@@ -44,25 +44,25 @@ let router = new Router({
     },
     {
       path: "/scanning",
-      name: "Scanning",
+      name: "scanning",
       component: Scanning,
       meta: { title: "Scanning" }
     },
     {
       path: "/antivirus/:hash",
-      name: "Antivirus",
+      name: "antivirus",
       component: Antivirus,
       meta: { title: "Antivirus" }
     },
     {
       path: "/summary/:hash",
-      name: "Summary",
+      name: "summary",
       component: Summary,
       meta: { title: "Summary" }
     },
     {
       path: "/strings/:hash",
-      name: "Strings",
+      name: "strings",
       component: Strings,
       meta: { title: "Strings" }
     },
@@ -74,9 +74,13 @@ let router = new Router({
     },
     {
       path: "/signup",
-      name: "Sign up",
+      name: "signUp",
       component: Signup,
       meta: { title: "Sign up", guest: true, layout: "unauthenticated" }
+    },
+    {
+      path: "/forgot_password",
+      name: "forgotPassword"
     }
   ]
 });
