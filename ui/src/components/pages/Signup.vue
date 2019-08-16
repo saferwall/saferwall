@@ -144,61 +144,61 @@ import {
   email,
   helpers,
   sameAs
-} from "vuelidate/lib/validators";
-import axios from "axios";
-import Notification from "@/components/elements/Notification";
+} from 'vuelidate/lib/validators'
+import axios from 'axios'
+import Notification from '@/components/elements/Notification'
 
-const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
+const usernameValid = helpers.regex('username', /^[a-zA-Z0-9]{1,20}$/)
 
 export default {
-  data() {
+  data () {
     return {
-      username: "",
-      email: "",
-      password: "",
+      username: '',
+      email: '',
+      password: '',
       terms: false,
       showPassword: false,
       errored: false,
-      errorMessage: ""
-    };
+      errorMessage: ''
+    }
   },
   components: {
     notification: Notification
   },
   methods: {
-    handleSubmit() {
-      this.$v.$touch();
+    handleSubmit () {
+      this.$v.$touch()
       if (this.$v.$invalid) {
-        this.errored = true;
+        this.errored = true
         this.errorMessage =
-          "Please correct all highlighted errors and try again";
+          'Please correct all highlighted errors and try again'
       } else {
         axios
-          .post("/api/v1/users/", {
+          .post('/api/v1/users/', {
             username: this.username,
             email: this.email,
             password: this.password
           })
           .then(response => {
-            this.errored = false;
+            this.errored = false
             this.$router.push({
-              path: "login",
+              path: 'login',
               query: {
-                confirm: "email"
+                confirm: 'email'
               }
-            });
+            })
           })
           .catch(
-            //server responded with a status code that falls out of the range of 2xx
+            // server responded with a status code that falls out of the range of 2xx
             error => {
-              this.errored = true;
-              this.errorMessage = error.response.data.verbose_msg;
+              this.errored = true
+              this.errorMessage = error.response.data.verbose_msg
             }
-          );
+          )
       }
     },
-    close() {
-      this.errored = false;
+    close () {
+      this.errored = false
     }
   },
   validations: {
@@ -218,7 +218,7 @@ export default {
       sameAs: sameAs(() => true)
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

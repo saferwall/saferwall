@@ -6,15 +6,14 @@
 </template>
 <script>
 export default {
-    props: ['type', 'active'],
-    methods: {
-        closeNotif(){
-            this.$emit('closeNotif')
-        }
+  props: ['type', 'active'],
+  methods: {
+    closeNotif () {
+      this.$emit('closeNotif')
     }
+  }
 }
 </script>
 <style lang="scss" scoped>
 
 </style>
-

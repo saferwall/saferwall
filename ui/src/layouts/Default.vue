@@ -16,27 +16,25 @@ import Footer from '@/components/partials/Footer'
 import Sidebar from '@/components/partials/Sidebar'
 import Content from '@/components/partials/Content'
 
-import Router from 'vue-router';
 export default {
-    components: {
-        'v-header': Header,
-        'v-sidebar': Sidebar,
-        'v-content': Content,
-        'v-footer': Footer
-    },
+  components: {
+    'v-header': Header,
+    'v-sidebar': Sidebar,
+    'v-content': Content,
+    'v-footer': Footer
+  },
 
-    data(){
-        return{
-            noSidebarPaths: [
-                'Upload',
-                'Scanning'
-            ]
-        }
+  data () {
+    return {
+      noSidebarPaths: [
+        'Upload',
+        'Scanning'
+      ]
     }
+  }
 }
 </script>
 <style lang="scss" scoped>
-
 
 .fade-enter-active, .fade-leave-active {
   transition-property: opacity;
@@ -51,18 +49,12 @@ export default {
   opacity: 0
 }
 
-
 .slideLeft-enter-active, .slideLeft-leave-active {
   transition-property: transform;
   transition-duration: .25s;
-}
-
-.slideLeft-enter-active {
-//   transition-delay: .25s;
 }
 
 .slideLeft-enter, .slideLeft-leave-active {
   transform: translateX(-100%)
 }
 </style>
-

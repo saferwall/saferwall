@@ -9,21 +9,20 @@
 </template>
 
 <script>
-import router from "vue-router";
 export default {
-  name: "App",
+  name: 'App',
   computed: {
-    layout() {
-      return (this.$route.meta.layout || "default") + "-layout";
+    layout () {
+      return (this.$route.meta.layout || 'default') + '-layout'
     }
   },
-  created() {
-    document.title = this.$route.meta.title;
+  created () {
+    document.title = this.$route.meta.title
   },
-  updated() {
-    document.title = this.$route.meta.title;
+  updated () {
+    document.title = this.$route.meta.title
   }
-};
+}
 </script>
 
 <style lang="scss">

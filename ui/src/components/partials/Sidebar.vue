@@ -1,10 +1,10 @@
 <template>
     <aside class="menu sidebar">
         <ul class="menu-list">
-            <li v-for="(item, index) in menu" :class="{'current': $route.name == item.title}">
-                <router-link :to="(item.path) ? item.path : ''" 
+            <li v-for="(item, index) in menu" :class="{'current': $route.name == item.title}" :key="index">
+                <router-link :to="(item.path) ? item.path : ''"
                             :class="{'is-active': item.children && item.active}"
-                            :exact="true" 
+                            :exact="true"
                             @click.native="toggleDropdown(index)">
                     <span class="icon is-small"><i :class="item.icon"></i></span>
                     {{item.title}}
@@ -12,11 +12,11 @@
                         <i class="ion-ios-arrow-down"></i>
                     </span>
                 </router-link>
-                <ul class="dropdown-container" 
+                <ul class="dropdown-container"
                     v-if="item.children"
                     :class="{'active': item.active}"
                     :style="{'height': item.dropdownHeight}">
-                    <li v-for="child in item.children" :class="{'current': $route.name == child.title}">
+                    <li v-for="(child, index) in item.children" :class="{'current': $route.name == child.title}" :key="index">
                         <router-link :to="child.path">
                             {{child.title}}
                         </router-link>
@@ -29,66 +29,66 @@
 
 <script>
 export default {
-    data(){
-        return{
-            menu: [
-                {
-                    title: 'Summary',
-                    path: "/summary/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c",
-                    active: false,
-                    icon: 'ion-android-settings'
-                },
-                {
-                    title: 'Static analysis',
-                    path: false,
-                    active: false,
-                    icon: 'ion-stats-bars',
-                    children: [
-                        {title: 'PE', path: '/'},
-                        {title: 'Strings', path: '/strings/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c'},
-                        {title: 'Antivirus', path: '/antivirus/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c'}
-                    ]
-                },
-                {
-                    title: 'Dynamic analysis',
-                    path: false,
-                    active: false,
-                    icon: 'ion-ios-analytics',
-                    children: [
-                        {title: 'API Calls', path: '/'},
-                        {title: 'Network', path: '/'},
-                        {title: 'Dropped files', path: '/'},
-                        {title: 'Memory dumps', path: '/'},
-                    ]
-                }
-            ]
+  data () {
+    return {
+      menu: [
+        {
+          title: 'Summary',
+          path: '/summary/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c',
+          active: false,
+          icon: 'ion-android-settings'
+        },
+        {
+          title: 'Static analysis',
+          path: false,
+          active: false,
+          icon: 'ion-stats-bars',
+          children: [
+            { title: 'PE', path: '/' },
+            { title: 'Strings', path: '/strings/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c' },
+            { title: 'Antivirus', path: '/antivirus/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c' }
+          ]
+        },
+        {
+          title: 'Dynamic analysis',
+          path: false,
+          active: false,
+          icon: 'ion-ios-analytics',
+          children: [
+            { title: 'API Calls', path: '/' },
+            { title: 'Network', path: '/' },
+            { title: 'Dropped files', path: '/' },
+            { title: 'Memory dumps', path: '/' }
+          ]
         }
-    },
-
-    mounted(){
-        this.menu.map((el) => el.active = (el.children) ? true : false)
-        // this.menu[0].active = false
-        this.menu.map((el) => el.dropdownHeight = (el.active) ? el.children.length * 36 + 'px' : 0)
-    },
-    
-    methods: {
-        toggleDropdown(index){
-            if(this.menu[index].children){
-                let found = false;
-                this.menu.forEach((el, i) => {
-                    if(el.active && i == index) {
-                        el.active = false; 
-                        el.dropdownHeight = 0;
-                        found = true
-                    }
-                })
-                if(found) return
-                // this.menu.map((el) => {el.active = false; el.dropdownHeight = 0})
-                this.menu[index].active = true
-                this.menu[index].dropdownHeight = this.menu[index].children.length * 36 + 'px'
-            }
-        }
+      ]
     }
+  },
+
+  mounted () {
+    this.menu.map((el) => { el.active = Boolean(el.children) })
+    // this.menu[0].active = false
+    this.menu.map((el) => { el.dropdownHeight = (el.active) ? el.children.length * 36 + 'px' : 0 })
+  },
+
+  methods: {
+    toggleDropdown (index) {
+      if (this.menu[index].children) {
+        let found = false
+        this.menu.forEach((el, i) => {
+          if (el.active && i === index) {
+            el.active = false
+            el.dropdownHeight = 0
+            found = true
+          }
+        })
+        if (found) return
+        // this.menu.map((el) => {el.active = false; el.dropdownHeight = 0})
+        this.menu[index].active = true
+        this.menu[index].dropdownHeight = this.menu[index].children.length * 36 + 'px'
+      }
+    }
+  }
 }
 </script>
 
@@ -149,11 +149,10 @@ aside.sidebar{
             background-color: #fff;
             color: $primary-color;
         }
-        
+
         li.current > a:hover{
             background-color: $primary-color;
         }
     }
 }
 </style>
-

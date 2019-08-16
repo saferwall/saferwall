@@ -164,7 +164,7 @@ footer.main-footer{
         padding-top: 30px;
         line-height: 20px;
         font-size: 13px;
-        
+
         &, *{
             color:rgba(white, .7);
         }
@@ -182,4 +182,3 @@ footer.main-footer{
     }
 }
 </style>
-

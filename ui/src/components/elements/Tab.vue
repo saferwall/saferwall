@@ -8,23 +8,22 @@
 export default {
   props: {
     name: {
-      required: true,
+      required: true
     },
     selected: {
       default: false
     }
   },
-  data() {
+  data () {
     return {
       isActive: false
     }
   },
-  mounted() {
-    this.isActive = this.selected;
+  mounted () {
+    this.isActive = this.selected
   }
 }
 </script>
 <style lang="scss" scoped>
 
 </style>
-

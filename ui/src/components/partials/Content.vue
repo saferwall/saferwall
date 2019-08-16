@@ -13,7 +13,7 @@
 </template>
 <script>
 export default {
-    props: ['fullwidth']
+  props: ['fullwidth']
 }
 </script>
 <style scoped lang="scss">
@@ -33,4 +33,3 @@ section.main-content{
     }
 }
 </style>
-

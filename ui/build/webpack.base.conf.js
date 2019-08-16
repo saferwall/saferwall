@@ -3,7 +3,7 @@ const path = require("path");
 const utils = require("./utils");
 const config = require("../config");
 const vueLoaderConfig = require("./vue-loader.conf");
-const Dotenv = require('dotenv-webpack')
+const Dotenv = require("dotenv-webpack");
 
 function resolve(dir) {
   return path.join(__dirname, "..", dir);
@@ -31,6 +31,12 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        enforce: "pre",
+        test: /\.(js|vue)$/,
+        loader: "eslint-loader",
+        exclude: /node_modules/
+      },
       {
         test: /\.vue$/,
         loader: "vue-loader",
@@ -88,7 +94,5 @@ module.exports = {
     tls: "empty",
     child_process: "empty"
   },
-  plugins: [
-    new Dotenv()
-  ]
+  plugins: [new Dotenv()]
 };

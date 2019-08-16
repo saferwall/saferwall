@@ -57,39 +57,39 @@
 </template>
 
 <script>
-import { store } from "../../store.js";
+import { store } from '../../store.js'
 export default {
-  name: "Header",
-  data() {
+  name: 'Header',
+  data () {
     return {
       dropdownActive: false,
       showinmobile: false,
       storeState: store.state
-    };
+    }
   },
   methods: {
-    showMobileSearch() {},
-    loginOrLogout() {
+    showMobileSearch () {},
+    loginOrLogout () {
       if (this.storeState.loggedIn) {
-        store.logOut();
+        store.logOut()
         this.$router.go('/')
       } else {
-        this.$router.push("/login");
+        this.$router.push('/login')
       }
     },
 
-    getJWTToken() {
-      const token = this.$cookie.get("JWTCookie");
-      return token;
+    getJWTToken () {
+      const token = this.$cookie.get('JWTCookie')
+      return token
     }
   },
 
-  created() {
+  created () {
     const token = this.getJWTToken()
-    store.setLoggedIn(token);
-    store.setUsername(token);
+    store.setLoggedIn(token)
+    store.setUsername(token)
   }
-};
+}
 </script>
 
 <style scoped lang="scss">

@@ -114,70 +114,69 @@
 </template>
 
 <script>
-import { required, email, minLength, helpers } from "vuelidate/lib/validators";
-import Notification from "@/components/elements/Notification";
-import axios from "axios";
-import { store } from "../../store.js";
+import { required, helpers } from 'vuelidate/lib/validators'
+import Notification from '@/components/elements/Notification'
+import axios from 'axios'
 
-const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/);
+const usernameValid = helpers.regex('username', /^[a-zA-Z0-9]{1,20}$/)
 
 export default {
-  data() {
+  data () {
     return {
-      username: "",
-      password: "",
+      username: '',
+      password: '',
       showPassword: false,
       errored: false,
-      errorMessage: "",
+      errorMessage: '',
       confirmationWarning:
-        "Confirm your email by clicking the verification link we just sent to your inbox.",
+        'Confirm your email by clicking the verification link we just sent to your inbox.',
       emailConfirmationPrompt: false
-    };
+    }
   },
   components: {
     notification: Notification
   },
-  mounted() {
+  mounted () {
     if (this.$route.query.confirm) {
-      this.emailConfirmationPrompt = true;
+      this.emailConfirmationPrompt = true
     }
   },
   methods: {
-    handleSubmit() {
-      this.$v.$touch();
+    handleSubmit () {
+      this.$v.$touch()
       if (this.$v.$invalid) {
-        this.errored = true;
+        this.errored = true
         this.errorMessage =
-          "Please correct all highlighted errors and try again";
+          'Please correct all highlighted errors and try again'
       } else {
         axios
           .post(
-            "/api/auth/login",
+            '/api/auth/login',
             {
               username: this.username,
               password: this.password
-            },
+            }
           )
           .then(response => {
-            this.errored = false;
-            if (this.$cookie.get("JWTCookie") !== null) {
+            this.errored = false
+            if (this.$cookie.get('JWTCookie') !== null) {
               if (this.$route.params.nextUrl != null) {
-                this.$router.push(this.$route.params.nextUrl);
+                this.$router.push(this.$route.params.nextUrl)
               } else {
-                this.$router.push("/");
+                this.$router.push('/')
               }
             }
           })
           .catch(error => {
-            this.errored = true;
-            this.errorMessage = error.response.data.verbose_msg;
-          });
+            this.errored = true
+            this.errorMessage = error.response.data.verbose_msg
+          })
       }
     },
-    close() {
-      this.errored = false;
+    close () {
+      this.errored = false
     },
-    closeWarning() {
+    closeWarning () {
       this.emailConfirmationPrompt = false
     }
   },
@@ -190,7 +189,7 @@ export default {
       required
     }
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

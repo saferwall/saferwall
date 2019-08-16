@@ -35,19 +35,19 @@
 </template>
 
 <script>
-import { required, email } from "vuelidate/lib/validators";
+import { required, email } from 'vuelidate/lib/validators'
 export default {
-  data() {
+  data () {
     return {
-      email: ""
-    };
+      email: ''
+    }
   },
 
-  //notif
+  // notif
 
   methods: {
-    handleSubmit() {
-      console.log("submitted");
+    handleSubmit () {
+      console.log('submitted')
     }
   },
   validations: {
@@ -56,7 +56,7 @@ export default {
       email
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
