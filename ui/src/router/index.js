@@ -8,6 +8,7 @@ import Summary from "@/components/pages/Summary";
 import Strings from "@/components/pages/Strings";
 import Login from "@/components/pages/Login";
 import Signup from "@/components/pages/Signup";
+import ForgotPassword from '@/components/pages/ForgotPassword'
 import { store } from "../store.js";
 
 Vue.use(Router);
@@ -80,7 +81,13 @@ let router = new Router({
     },
     {
       path: "/forgot_password",
-      name: "forgotPassword"
+      name: "forgotPassword",
+      component: ForgotPassword,
+      meta: {
+        title: "Forgot Password?",
+        guest: true,
+        layout: "unauthenticated"
+      }
     }
   ]
 });

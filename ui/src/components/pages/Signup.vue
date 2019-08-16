@@ -174,14 +174,11 @@ export default {
           "Please correct all highlighted errors and try again";
       } else {
         axios
-          .post(
-            "/api/v1/users/",
-            {
-              username: this.username,
-              email: this.email,
-              password: this.password
-            },
-          )
+          .post("/api/v1/users/", {
+            username: this.username,
+            email: this.email,
+            password: this.password
+          })
           .then(response => {
             this.errored = false;
             this.$router.push({
