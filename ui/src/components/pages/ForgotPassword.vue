@@ -62,6 +62,7 @@ export default {
 <style lang="scss" scoped>
 .form {
   display: grid;
+  grid-template-rows: 1fr 1fr minmax(70px, min-content) 1fr;
   text-align: center;
   grid-row-gap: 1.5em;
   line-height: 2em;
@@ -77,7 +78,7 @@ export default {
 }
 .input-container {
   display: flex;
-  height: 70px;
+  height: 100%;
   flex-direction: column;
 }
 
