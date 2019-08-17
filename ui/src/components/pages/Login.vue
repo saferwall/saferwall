@@ -21,7 +21,7 @@
         class="input-container"
         :class="{
           valid: !$v.username.$invalid,
-          'not-valid': $v.username.$error
+          'not-valid': $v.username.$error,
         }"
       >
         <label for="username">Username</label>
@@ -45,7 +45,7 @@
         class="input-container"
         :class="{
           valid: !$v.password.$invalid,
-          'not-valid': $v.password.$error
+          'not-valid': $v.password.$error,
         }"
       >
         <label for="password">Password</label>
@@ -114,81 +114,78 @@
 </template>
 
 <script>
-import { required, helpers } from 'vuelidate/lib/validators'
-import Notification from '@/components/elements/Notification'
-import axios from 'axios'
+import { required, helpers } from "vuelidate/lib/validators"
+import Notification from "@/components/elements/Notification"
+import axios from "axios"
 
-const usernameValid = helpers.regex('username', /^[a-zA-Z0-9]{1,20}$/)
+const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
 export default {
-  data () {
+  data() {
     return {
-      username: '',
-      password: '',
+      username: "",
+      password: "",
       showPassword: false,
       errored: false,
-      errorMessage: '',
+      errorMessage: "",
       confirmationWarning:
-        'Confirm your email by clicking the verification link we just sent to your inbox.',
-      emailConfirmationPrompt: false
+        "Confirm your email by clicking the verification link we just sent to your inbox.",
+      emailConfirmationPrompt: false,
     }
   },
   components: {
-    notification: Notification
+    notification: Notification,
   },
-  mounted () {
+  mounted() {
     if (this.$route.query.confirm) {
       this.emailConfirmationPrompt = true
     }
   },
   methods: {
-    handleSubmit () {
+    handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
         this.errored = true
         this.errorMessage =
-          'Please correct all highlighted errors and try again'
+          "Please correct all highlighted errors and try again"
       } else {
         axios
-          .post(
-            '/api/auth/login/',
-            {
-              username: this.username,
-              password: this.password
-            }
-          )
-          .then(response => {
+          .post("/api/auth/login/", {
+            username: this.username,
+            password: this.password,
+          })
+          .then((response) => {
             this.errored = false
-            if (this.$cookie.get('JWTCookie') !== null) {
+            if (this.$cookie.get("JWTCookie") !== null) {
               if (this.$route.params.nextUrl != null) {
                 this.$router.push(this.$route.params.nextUrl)
               } else {
-                this.$router.push('/')
+                this.$router.push("/")
               }
             }
           })
-          .catch(error => {
+          .catch((error) => {
             this.errored = true
             this.errorMessage = error.response.data.verbose_msg
           })
       }
     },
-    close () {
+    close() {
       this.errored = false
     },
-    closeWarning () {
+    closeWarning() {
       this.emailConfirmationPrompt = false
-    }
+    },
   },
   validations: {
     username: {
       required,
-      usernameValid
+      usernameValid,
     },
     password: {
-      required
-    }
-  }
+      required,
+    },
+  },
 }
 </script>
 

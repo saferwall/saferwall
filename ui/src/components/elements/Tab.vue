@@ -1,29 +1,26 @@
 <template>
-    <div v-show="isActive">
-        <slot>
-        </slot>
-    </div>
+  <div v-show="isActive">
+    <slot> </slot>
+  </div>
 </template>
 <script>
 export default {
   props: {
     name: {
-      required: true
+      required: true,
     },
     selected: {
-      default: false
-    }
+      default: false,
+    },
   },
-  data () {
+  data() {
     return {
-      isActive: false
+      isActive: false,
     }
   },
-  mounted () {
+  mounted() {
     this.isActive = this.selected
-  }
+  },
 }
 </script>
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

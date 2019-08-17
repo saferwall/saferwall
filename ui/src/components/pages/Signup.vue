@@ -11,7 +11,7 @@
         class="input-container"
         :class="{
           valid: !$v.username.$invalid,
-          'not-valid': $v.username.$error
+          'not-valid': $v.username.$error,
         }"
       >
         <label for="username">Username</label>
@@ -36,7 +36,7 @@
         class="input-container"
         :class="{
           valid: !$v.email.$invalid,
-          'not-valid': $v.email.$error
+          'not-valid': $v.email.$error,
         }"
       >
         <label for="email">Email</label>
@@ -62,7 +62,7 @@
         class="input-container"
         :class="{
           valid: !$v.password.$invalid,
-          'not-valid': $v.password.$error
+          'not-valid': $v.password.$error,
         }"
       >
         <label for="password">Password</label>
@@ -75,7 +75,10 @@
             v-model.trim="$v.password.$model"
             placeholder="Minimum 8 characters"
             autocomplete="new-password"
-          /><button class="show-hide" @click.prevent="showPassword = !showPassword">
+          /><button
+            class="show-hide"
+            @click.prevent="showPassword = !showPassword"
+          >
             <svg
               v-if="showPassword"
               key="show-toggle"
@@ -143,81 +146,81 @@ import {
   minLength,
   email,
   helpers,
-  sameAs
-} from 'vuelidate/lib/validators'
-import axios from 'axios'
-import Notification from '@/components/elements/Notification'
+  sameAs,
+} from "vuelidate/lib/validators"
+import axios from "axios"
+import Notification from "@/components/elements/Notification"
 
-const usernameValid = helpers.regex('username', /^[a-zA-Z0-9]{1,20}$/)
+const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
 export default {
-  data () {
+  data() {
     return {
-      username: '',
-      email: '',
-      password: '',
+      username: "",
+      email: "",
+      password: "",
       terms: false,
       showPassword: false,
       errored: false,
-      errorMessage: ''
+      errorMessage: "",
     }
   },
   components: {
-    notification: Notification
+    notification: Notification,
   },
   methods: {
-    handleSubmit () {
+    handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
         this.errored = true
         this.errorMessage =
-          'Please correct all highlighted errors and try again'
+          "Please correct all highlighted errors and try again"
       } else {
         axios
-          .post('/api/v1/users/', {
+          .post("/api/v1/users/", {
             username: this.username,
             email: this.email,
-            password: this.password
+            password: this.password,
           })
-          .then(response => {
+          .then((response) => {
             this.errored = false
             this.$router.push({
-              path: 'login',
+              path: "login",
               query: {
-                confirm: 'email'
-              }
+                confirm: "email",
+              },
             })
           })
           .catch(
             // server responded with a status code that falls out of the range of 2xx
-            error => {
+            (error) => {
               this.errored = true
               this.errorMessage = error.response.data.verbose_msg
-            }
+            },
           )
       }
     },
-    close () {
+    close() {
       this.errored = false
-    }
+    },
   },
   validations: {
     username: {
       required,
-      usernameValid
+      usernameValid,
     },
     email: {
       required,
-      email
+      email,
     },
     password: {
       required,
-      minLength: minLength(8)
+      minLength: minLength(8),
     },
     terms: {
-      sameAs: sameAs(() => true)
-    }
-  }
+      sameAs: sameAs(() => true),
+    },
+  },
 }
 </script>
 

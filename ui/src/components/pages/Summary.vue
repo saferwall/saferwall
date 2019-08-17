@@ -5,7 +5,11 @@
       <div class="tile is-parent is-vertical">
         <div class="tile is-child box">
           <h4 class="title">Basic Properties</h4>
-          <div v-for="(i, index) in basicProperties" class="data-data" :key="index">
+          <div
+            v-for="(i, index) in basicProperties"
+            class="data-data"
+            :key="index"
+          >
             <strong class="data-label">
               {{ getLabelForGivenKey(index) }}
             </strong>
@@ -27,7 +31,7 @@
               :class="{ 'packer-container': index === 'packer' }"
               v-else-if="index === 'packer'"
             >
-              <p v-for="(t,index) in summaryData.packer" :key='index'>
+              <p v-for="(t, index) in summaryData.packer" :key="index">
                 <span class="packer">
                   <span class="value-text">{{ t }}</span>
 
@@ -47,9 +51,13 @@
 
         <div class="tile is-child box">
           <h4 class="title">ExifTool File Metadata</h4>
-          <div v-for="(i, index) in summaryData.exif" :key="index" class="data-data">
+          <div
+            v-for="(i, index) in summaryData.exif"
+            :key="index"
+            class="data-data"
+          >
             <strong class="data-label">
-              {{ index.replace(/[A-Z]/g, match => ` ${match}`) }}
+              {{ index.replace(/[A-Z]/g, (match) => ` ${match}`) }}
             </strong>
             <span class="data-value">
               <span class="value-text">{{ i }}</span>
@@ -63,57 +71,57 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
-import Loader from '@/components/elements/Loader'
-import Copy from '@/components/elements/Copy'
+import axios from "axios"
+import Loader from "@/components/elements/Loader"
+import Copy from "@/components/elements/Copy"
 
 export default {
   components: {
     loader: Loader,
-    copy: Copy
+    copy: Copy,
   },
-  data () {
+  data() {
     return {
       showLoader: true,
       summaryData: {},
-      uppercaseFields: ['md5', 'sha-1', 'sha-256', 'sha-512', 'crc32']
+      uppercaseFields: ["md5", "sha-1", "sha-256", "sha-512", "crc32"],
     }
   },
   computed: {
     basicProperties: () => {
       const allPropsEntries = Object.entries(this.summaryData)
-      const basicPropsEntries = allPropsEntries.filter(entry =>
-        ['av', 'exif'].includes(entry[0])
+      const basicPropsEntries = allPropsEntries.filter((entry) =>
+        ["av", "exif"].includes(entry[0]),
       )
       return Object.fromEntries(basicPropsEntries)
-    }
+    },
   },
   methods: {
-    bytesToSize (bytes) {
-      var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-      if (bytes === 0) return '0 Byte'
+    bytesToSize(bytes) {
+      var sizes = ["Bytes", "KB", "MB", "GB", "TB"]
+      if (bytes === 0) return "0 Byte"
       var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
-      return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
+      return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i]
     },
-    getLabelForGivenKey (key) {
+    getLabelForGivenKey(key) {
       return this.uppercaseFields.includes(key)
         ? key.toUpperCase()
-        : key === 'filesize'
-          ? 'File Size'
-          : key === 'trid'
-            ? 'TRiD'
-            : key === 'ssdeep'
-              ? 'SSDeep'
-              : key
-    }
+        : key === "filesize"
+        ? "File Size"
+        : key === "trid"
+        ? "TRiD"
+        : key === "ssdeep"
+        ? "SSDeep"
+        : key
+    },
   },
-  mounted () {
-    axios.get(`/api/v1/files/${this.$route.params.hash}/`).then(data => {
+  mounted() {
+    axios.get(`/api/v1/files/${this.$route.params.hash}/`).then((data) => {
       this.showLoader = false
 
-      data.data['sha-1'] = data.data.sha1
-      data.data['sha-256'] = data.data.sha256
-      data.data['sha-512'] = data.data.sha512
+      data.data["sha-1"] = data.data.sha1
+      data.data["sha-256"] = data.data.sha256
+      data.data["sha-512"] = data.data.sha512
       delete data.data.sha1
       delete data.data.sha256
       delete data.data.sha512
@@ -122,15 +130,15 @@ export default {
       this.summaryData.magic = data.data.magic
       this.summaryData.crc32 = data.data.crc32
       this.summaryData.md5 = data.data.md5
-      this.summaryData['sha-1'] = data.data['sha-1']
-      this.summaryData['sha-256'] = data.data['sha-256']
-      this.summaryData['sha-512'] = data.data['sha-512']
+      this.summaryData["sha-1"] = data.data["sha-1"]
+      this.summaryData["sha-256"] = data.data["sha-256"]
+      this.summaryData["sha-512"] = data.data["sha-512"]
       this.summaryData.ssdeep = data.data.ssdeep
       this.summaryData.trid = data.data.trid
       this.summaryData.exif = data.data.exif
       this.summaryData.packer = data.data.packer
     })
-  }
+  },
 }
 </script>
 <style lang="scss" scoped>

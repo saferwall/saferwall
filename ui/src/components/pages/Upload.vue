@@ -46,30 +46,30 @@
   </div>
 </template>
 <script>
-import Tabs from '@/components/elements/Tabs'
-import Tab from '@/components/elements/Tab'
-import Notification from '@/components/elements/Notification'
-import axios from 'axios'
-import DropZone from '@/components/elements/DropZone'
-import ProgressTracker, { StepItem } from 'vue-bulma-progress-tracker'
+import Tabs from "@/components/elements/Tabs"
+import Tab from "@/components/elements/Tab"
+import Notification from "@/components/elements/Notification"
+import axios from "axios"
+import DropZone from "@/components/elements/DropZone"
+import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
 
 const step = {
   UPLOADED: 1,
   QUEUED: 2,
   PROCESSING: 3,
   FINISHED: 4,
-  READY: 5
+  READY: 5,
 }
 
 export default {
-  data () {
+  data() {
     return {
-      selectedTab: 'File',
-      notificationError: '',
+      selectedTab: "File",
+      notificationError: "",
       notifActive: false,
       uploading: false,
       ongoingStep: 0, // by default, no step has started yet (0), next we move to step 1, 2 and so on
-      pollInterval: null
+      pollInterval: null,
     }
   },
   components: {
@@ -78,16 +78,16 @@ export default {
     notification: Notification,
     DropZone,
     ProgressTracker,
-    StepItem
+    StepItem,
   },
   methods: {
-    tabChanged (selectedTab) {
+    tabChanged(selectedTab) {
       this.selectedTab = selectedTab
     },
-    close () {
+    close() {
       this.notifActive = false
     },
-    onFileAdded (file) {
+    onFileAdded(file) {
       if (!file) {
         return
       }
@@ -95,41 +95,41 @@ export default {
       // check if size exceeds 64mb
       if (file.size > 64000000) {
         this.notifActive = true
-        this.notificationError = 'File size exceeds 64MB !'
+        this.notificationError = "File size exceeds 64MB !"
         return
       }
       const reader = new FileReader()
-      reader.onload = loadEvent => {
+      reader.onload = (loadEvent) => {
         // file has been read successfully
         const fileBuffer = loadEvent.target.result
         crypto.subtle
-          .digest('SHA-256', fileBuffer)
-          .then(hashBuffer => {
+          .digest("SHA-256", fileBuffer)
+          .then((hashBuffer) => {
             const hashArray = new Uint8Array(hashBuffer)
-            let hashHex = ''
+            let hashHex = ""
             for (let i = 0; i < hashArray.byteLength; i++) {
-              let hex = new Number(hashArray[i]).toString('16')
+              let hex = new Number(hashArray[i]).toString("16")
               if (hex.length === 1) {
-                hex = '0' + hex
+                hex = "0" + hex
               }
               hashHex += hex
             }
             // hash hexadecimal has been calculated successfully
             axios
               .get(`/api/v1/files/${hashHex}/`)
-              .then(response => {
+              .then((response) => {
                 // file exists
                 this.$router.push(`summary/${hashHex}`)
               })
               .catch(() => {
                 this.ongoingStep = step.UPLOADED
                 const formData = new FormData()
-                formData.append('file', file)
+                formData.append("file", file)
                 axios
-                  .post('/api/v1/files/', formData, {
+                  .post("/api/v1/files/", formData, {
                     headers: {
-                      'Content-Type': 'multipart/form-data'
-                    }
+                      "Content-Type": "multipart/form-data",
+                    },
                   })
                   .then(() => {
                     // set a poll interval of 5s
@@ -137,7 +137,7 @@ export default {
                     this.pollInterval = setInterval(
                       this.fetchStatus,
                       5,
-                      hashHex
+                      hashHex,
                     )
                     setTimeout(() => {
                       clearInterval(this.pollInterval)
@@ -154,10 +154,10 @@ export default {
       }
       reader.readAsArrayBuffer(file)
     },
-    fetchStatus (hashHex) {
+    fetchStatus(hashHex) {
       axios
         .get(`/api/v1/files/${hashHex}/`)
-        .then(response => {
+        .then((response) => {
           const status = response.data.status
           // change ongoingStep according to status
           // status
@@ -178,8 +178,8 @@ export default {
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: 'summary',
-                  params: { hash: hashHex }
+                  name: "summary",
+                  params: { hash: hashHex },
                 })
               }, 4000)
               break
@@ -191,8 +191,8 @@ export default {
         .finally(() => {
           clearInterval(this.pollInterval)
         })
-    }
-  }
+    },
+  },
 }
 </script>
 <style lang="scss" scoped>
