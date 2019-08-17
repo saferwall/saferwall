@@ -9,6 +9,7 @@ import Strings from '@/components/pages/Strings'
 import Login from '@/components/pages/Login'
 import Signup from '@/components/pages/Signup'
 import ForgotPassword from '@/components/pages/ForgotPassword'
+import ResetPassword from '@/components/pages/ResetPassword'
 import { store } from '../store.js'
 
 Vue.use(Router)
@@ -85,6 +86,16 @@ const router = new Router({
       component: ForgotPassword,
       meta: {
         title: 'Forgot Password?',
+        guest: true,
+        layout: 'unauthenticated'
+      }
+    },
+    {
+      path: '/reset_password',
+      name: 'resetPassword',
+      component: ResetPassword,
+      meta: {
+        title: 'Reset Password',
         guest: true,
         layout: 'unauthenticated'
       }

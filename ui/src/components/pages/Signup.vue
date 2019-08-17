@@ -75,7 +75,7 @@
             v-model.trim="$v.password.$model"
             placeholder="Minimum 8 characters"
             autocomplete="new-password"
-          /><button class="show-hide" @click="showPassword = !showPassword">
+          /><button class="show-hide" @click.prevent="showPassword = !showPassword">
             <svg
               v-if="showPassword"
               key="show-toggle"
