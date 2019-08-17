@@ -151,7 +151,7 @@ export default {
       } else {
         axios
           .post(
-            '/api/auth/login',
+            '/api/auth/login/',
             {
               username: this.username,
               password: this.password

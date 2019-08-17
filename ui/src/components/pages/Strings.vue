@@ -115,7 +115,7 @@ export default {
   },
   created () {
     axios
-      .get(`/api/v1/files/${this.$route.params.hash}`)
+      .get(`/api/v1/files/${this.$route.params.hash}/`)
       .then(data => {
         this.showLoader = false
         this.strings = data.data.strings

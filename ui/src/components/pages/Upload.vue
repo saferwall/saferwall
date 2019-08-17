@@ -116,7 +116,7 @@ export default {
             }
             // hash hexadecimal has been calculated successfully
             axios
-              .get(`/api/v1/files/${hashHex}`)
+              .get(`/api/v1/files/${hashHex}/`)
               .then(response => {
                 // file exists
                 this.$router.push(`summary/${hashHex}`)
@@ -126,7 +126,7 @@ export default {
                 const formData = new FormData()
                 formData.append('file', file)
                 axios
-                  .post('/api/v1/files', formData, {
+                  .post('/api/v1/files/', formData, {
                     headers: {
                       'Content-Type': 'multipart/form-data'
                     }
@@ -156,7 +156,7 @@ export default {
     },
     fetchStatus (hashHex) {
       axios
-        .get(`/api/v1/files/${hashHex}`)
+        .get(`/api/v1/files/${hashHex}/`)
         .then(response => {
           const status = response.data.status
           // change ongoingStep according to status

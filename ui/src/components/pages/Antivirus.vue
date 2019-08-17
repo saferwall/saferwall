@@ -146,7 +146,7 @@ export default {
   mounted () {
     // replace route params with props
     axios
-      .get(`/api/v1/files/${this.$route.params.hash}`)
+      .get(`/api/v1/files/${this.$route.params.hash}/`)
       .then(data => {
         this.showLoader = false
         if (!data.data.multiav) {

@@ -108,7 +108,7 @@ export default {
     }
   },
   mounted () {
-    axios.get(`/api/v1/files/${this.$route.params.hash}`).then(data => {
+    axios.get(`/api/v1/files/${this.$route.params.hash}/`).then(data => {
       this.showLoader = false
 
       data.data['sha-1'] = data.data.sha1
