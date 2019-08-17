@@ -50,3 +50,17 @@ spec:
         - search
         - eventing
         - analytics
+      pod:
+        volumeMounts:
+          default: couchbase
+          data: couchbase
+  securityContext:
+    fsGroup: 1000
+  volumeClaimTemplates:
+    - metadata:
+        name: couchbase
+      spec:
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 1Gi

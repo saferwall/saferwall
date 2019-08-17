@@ -27,4 +27,16 @@ protobuf-protoc-gen-go:	## Install protoc plugin for Go
 	go get -u github.com/golang/protobuf/protoc-gen-go
 
 compile-multiav-server: protobuf-generate-api	## Compile gRPC server
-	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go 
+	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go
+
+
+multiav-eset:			## release eset docker image
+	sudo make docker-release \
+		ARGS="--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)" \
+		IMG=eset VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.eset DOCKER_DIR=build/docker
+	sudo make docker-release \
+		IMG=goeset VERSION=0.0.1 DOCKER_FILE=core/multiav/eset/Dockerfile DOCKER_DIR=core/multiav/eset/
+
+multiav-fsecure:		## release fsecure docker image
+	sudo make docker-release IMG=fsecure VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.fsecure DOCKER_DIR=build/docker
+	sudo make docker-release IMG=gofsecure VERSION=0.0.1 DOCKER_FILE=core/multiav/fsecure/Dockerfile DOCKER_DIR=core/multiav/fsecure/

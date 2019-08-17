@@ -4,7 +4,7 @@ docker-build: ## Build the container
 	DOCKER_BUILDKIT=1 docker build -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-build-nc: ## Build the container without caching
-	DOCKER_BUILDKIT=1 docker build --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	DOCKER_BUILDKIT=1 docker build --network=host ${ARGS} --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-run: ## Run container on port configured in `config.env`
 	docker run -d -p 50051:50051 $(REPO)/$(IMG)
@@ -14,7 +14,7 @@ docker-up: build run ## Run container
 docker-stop: ## Stop and remove a running container
 	docker stop $(IMG); docker rm $(REPO)/$(IMG)
 
-docker-release: docker-build docker-publish ## Make a release by building and publishing the `{version}` and `latest` tagged containers to ECR
+docker-release: docker-build-nc docker-publish ## Make a release by building and publishing the `{version}` and `latest` tagged containers to ECR
 
 docker-publish: docker-repo-login docker-publish-latest docker-publish-version ## Publish the `{version}` and `latest` tagged containers to ECR
 

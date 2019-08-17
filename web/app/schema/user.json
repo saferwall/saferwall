@@ -11,11 +11,8 @@
 		},
 		"password": {
 			"description": "The user password",
-			"type": "string"
-		},
-		"api_key": {
-			"description": "The user api key",
-			"type": "string"
+			"type": "string",
+			"minLength": 8
 		},
 		"first_name": {
 			"description": "The user first name",
@@ -27,7 +24,8 @@
 		},
 		"username": {
 			"description": "The user name",
-			"type": "string"
+			"type": "string",
+			"pattern": "^[a-zA-Z0-9]{1,20}$"
 		},
 		"member_since": {
 			"description": "The user registration date",
@@ -45,7 +43,7 @@
 			"description": "Last time we have seen the user",
 			"type": "integer"
 		},
-		"api_quota": {
+		"quota": {
 			"description": "The user quota",
 			"type": "integer"
 		}

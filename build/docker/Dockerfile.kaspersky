@@ -2,48 +2,42 @@ FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker container"
+# https://help.kaspersky.com/KES4Linux/10.1.1/en-us/177085.htm
 
 # Vars
 
-ENV KASPERSKY_VERSION       8.0.4-312
-ENV KASPERSKY_BIN 			/opt/kaspersky/kav4fs/bin/kav4fs-control
-ENV KASPERSKY_SETUP 		/opt/kaspersky/kav4fs/bin/kav4fs-setup.pl
-ENV KASPERSKY_LICENSE 		/etc/kaspersky/license.key
-ENV KASPERSKY_INSTALL_DIR 	/etc/kaspersky
-ENV KASPERSKY_URL 			https://products.s.kaspersky-labs.com/multilanguage/file_servers/kavlinuxserver8.0/kav4fs_${KASPERSKY_VERSION}_i386.deb
+ENV KASPERSKY_VERSION       10.1.1.6421
+ENV KASPERSKY_BIN 			/opt/kaspersky/kesl/bin/kesl-control
+ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
+ENV KASPERSKY_URL 			https://products.s.kaspersky-labs.com/endpoints/keslinux10/10.1.1.6421/multilanguage-20190517_122450/02543683/kesl_10.1.1-6421_amd64.deb
 ENV KASPERSKY_TMP			/tmp/kaspersky
 
 # Install dependencies
 RUN apt-get update \
-	&& apt-get install wget libc6-i386 -y \
+	&& apt-get install wget perl locales procps -y \
 	&& mkdir -p $KASPERSKY_TMP \
 	&& wget -N $KASPERSKY_URL -P $KASPERSKY_TMP \
-	&& dpkg -i --force-architecture  $KASPERSKY_TMP/kav4fs_${KASPERSKY_VERSION}_i386.deb \
-	&& chmod a+s $KASPERSKY_BIN \
-	&& mkdir -p -m 777 $KASPERSKY_INSTALL_DIR
+	&& dpkg -i $KASPERSKY_TMP/kesl_10.1.1-6421_amd64.deb
 
-# Apply the license
-ADD kaspersky.license.key $KASPERSKY_LICENSE
-RUN service kav4fs-supervisor start \
-    && $KASPERSKY_BIN --install-active-key $KASPERSKY_LICENSE
-
-# /opt/kaspersky/kav4fs/sbin/kav4fs-supervisor-control  --start-supervisor \
-# /opt/kaspersky/kav4fs/bin/kav4fs-control --install-active-key /etc/kaspersky/license.key
+# Set up locales
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8   
 
 # Configure it
 ADD install.conf install.conf
-RUN $KASPERSKY_SETUP --auto-install install.conf
-
-# Update VDF
-RUN $KASPERSKY_BIN --start-task 6 \
-    && $KASPERSKY_BIN --progress 6 \
-	&& $KASPERSKY_BIN --get-stat Update
+RUN $KASPERSKY_SETUP --autoinstall=install.conf; exit 0
 
 # Add the EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # Test detection
-RUN $KASPERSKY_BIN --scan-file eicar ; exit 0
+RUN service kesl-supervisor start \
+	&& $KASPERSKY_BIN --scan-file eicar \
+	&& $KASPERSKY_BIN -E --query "EventType=='ThreatDetected'" \
+	; exit 0
 
 # Clean up
 RUN rm -rf $KASPERSKY_TMP

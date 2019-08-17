@@ -6,9 +6,10 @@ package route
 
 import (
 	"github.com/labstack/echo"
+	"github.com/saferwall/saferwall/web/app/handler/auth"
 	"github.com/saferwall/saferwall/web/app/handler/file"
 	"github.com/saferwall/saferwall/web/app/handler/user"
-	"github.com/saferwall/saferwall/web/app/middleware"
+	m "github.com/saferwall/saferwall/web/app/middleware"
 )
 
 // New create an echo insance
@@ -18,30 +19,36 @@ func New() *echo.Echo {
 	e := echo.New()
 
 	// Setup middlwares
-	middleware.Init(e)
+	m.Init(e)
+
+	// handle /login
+	e.POST("/auth/login/", auth.Login, m.RequireJSON)
+	e.GET("/auth/confirm/", auth.Confirm, m.RequireEmailConfirmationToken)
 
 	// handle /files endpoint.
-	e.GET("/v1/files", file.GetFiles)
-	e.POST("/v1/files", file.PostFiles)
-	e.PUT("/v1/files", file.PutFiles)
-	e.DELETE("/v1/files", file.DeleteFiles)
+	e.GET("/v1/files/", file.GetFiles)
+	e.POST("/v1/files/", file.PostFiles, m.RequireLogin)
+	e.PUT("/v1/files/", file.PutFiles, m.RequireLogin)
+	e.DELETE("/v1/files/", file.DeleteFiles)
 
 	// handle /files/:sha256 endpoint.
-	e.GET("/v1/files/:sha256", file.GetFile)
-	e.PUT("/v1/files/:sha256", file.PutFile)
-	e.DELETE("/v1/files/:sha256", file.DeleteFile)
+	e.GET("/v1/files/:sha256/", file.GetFile)
+	e.PUT("/v1/files/:sha256/", file.PutFile, m.RequireJSON)
+	e.DELETE("/v1/files/:sha256/", file.DeleteFile)
 
 	// handle /users endpoint.
-	e.GET("/v1/users", user.GetUsers)
-	e.POST("/v1/users", user.PostUsers)
-	e.PUT("/v1/users", user.PutUsers)
-	e.DELETE("/v1/users", user.DeleteUsers)
+	e.GET("/v1/users/", user.GetUsers)
+	e.POST("/v1/users/", user.PostUsers, m.RequireJSON)
+	e.PUT("/v1/users/", user.PutUsers, m.RequireLogin)
+	e.DELETE("/v1/users/", user.DeleteUsers)
 
 	// handle /users/:username  endpoint.
-	e.GET("/v1/users/:username", user.GetUser)
-	e.POST("/v1/users/:username", user.PostUser)
-	e.PUT("/v1/users/:username", user.PutUser)
-	e.DELETE("/v1/users/:username", user.DeleteUser)
+	e.GET("/v1/users/:username/", user.GetUser)
+	e.PUT("/v1/users/:username/", user.PutUser, m.RequireLogin)
+	e.DELETE("/v1/users/:username/", user.DeleteUser)
+
+	// handle /admin endpoint
+	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)
 
 	return e
 }

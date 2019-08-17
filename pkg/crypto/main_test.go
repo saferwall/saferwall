@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/glaslos/ssdeep"
-
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
@@ -16,43 +15,43 @@ var crc32tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", "0x6851cf3c"},
+	{"../../test/multiav/clean/eicar.com", "0x6851cf3c"},
 }
 
 var md5tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", "44d88612fea8a8f36de82e1278abb02f"},
+	{"../../test/multiav/clean/eicar.com", "44d88612fea8a8f36de82e1278abb02f"},
 }
 
 var sha1tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", "3395856ce81f2b7382dee72602f798b642f14140"},
+	{"../../test/multiav/clean/eicar.com", "3395856ce81f2b7382dee72602f798b642f14140"},
 }
 
 var sha256tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"},
+	{"../../test/multiav/clean/eicar.com", "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"},
 }
 
 var sha512tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", "cc805d5fab1fd71a4ab352a9c533e65fb2d5b885518f4e565e68847223b8e6b85cb48f3afad842726d99239c9e36505c64b0dc9a061d9e507d833277ada336ab"},
+	{"../../test/multiav/clean/eicar.com", "cc805d5fab1fd71a4ab352a9c533e65fb2d5b885518f4e565e68847223b8e6b85cb48f3afad842726d99239c9e36505c64b0dc9a061d9e507d833277ada336ab"},
 }
 
 var ssdeeptests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/eicar.com", ""},
-	{"../../test/putty.exe", "12288:CeqW86Tf7xglFIV/4Zf8FkKBPFrmtJxv/znLABkeGevRcAqn9LqgqmlrexDvBIRF:CV6fxg7IeEOKXrmtJx3rLABk1eFElree"},
+	{"../../test/multiav/clean/eicar.com", ""},
+	{"../../test/multiav/clean/putty.exe", "24576:wpPg/wTlg6Xklt9e/Y/iIpNh6liEmE2CebHNpVffB:XwRg6X+twii8N0oCeLNbfB"},
 }
 
 func TestGetCrc32(t *testing.T) {

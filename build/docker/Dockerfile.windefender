@@ -6,8 +6,8 @@ LABEL description="Windows Defender in a docker container"
 # Vars
 ENV WINDOWS_DEFENDER_UPDATE         https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86
 ENV WINDOWS_DEFENDER_LOADLIBRARY    https://codeload.github.com/taviso/loadlibrary/zip/master
-ENV WINDOWS_DEFENDER_INSTALL_DIR    /opt/windowsdefender
-ENV WINDOWS_DEFENDER_TMP            /tmp/windowsdefender
+ENV WINDOWS_DEFENDER_INSTALL_DIR    /opt/windows-defender
+ENV WINDOWS_DEFENDER_TMP            /tmp/windows-defender
 
 # Install Windows Defender
 RUN dpkg --add-architecture i386 \
@@ -29,6 +29,10 @@ RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WIND
 
 # Add EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar
+
+# loadlibrary project from taviso is actually having issues, using local version instead
+RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR
+ADD windows-defender $WINDOWS_DEFENDER_INSTALL_DIR
 
 # Performs a simple test
 RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar

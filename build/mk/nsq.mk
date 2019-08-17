@@ -4,7 +4,7 @@ NSQ_URL = https://s3.amazonaws.com/bitly-downloads/nsq/$(NSQ_ZIP).tar.gz
 nsq-install:	## Install NSQ
 	wget $(NSQ_URL) -P /tmp
 	tar zxvf /tmp/$(NSQ_ZIP).tar.gz -C /tmp
-	mv /tmp/$(NSQ_ZIP)/bin/* /usr/bin
+	sudo mv /tmp/$(NSQ_ZIP)/bin/* /usr/bin
 	rm -rf $(NSQ_ZIP)
 	rm -f /tmp/$(NSQ_ZIP).tar.gz
 
@@ -13,7 +13,7 @@ nsq-start:		## Start nsqlookupd and nsqd locally
 	nsqd --lookupd-tcp-address=127.0.0.1:4160 &
 	nsqadmin --lookupd-http-address=127.0.0.1:4161 &
 
-nsq-start-in-docker:	## Start nsq in docker
+nsq-start-docker:	## Start nsq in docker
 	docker pull nsqio/nsq
 	docker run --name lookupd -p 4160:4160 -p 4161:4161 nsqio/nsq /nsqlookupd
 	ifconfig | grep addr
