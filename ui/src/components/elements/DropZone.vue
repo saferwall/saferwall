@@ -32,50 +32,50 @@ export default {
   props: {
     enabled: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
-  data () {
+  data() {
     return { highlight: false }
   },
   methods: {
-    onDragOver () {
+    onDragOver() {
       if (!this.enabled) return
       this.highlight = true
     },
-    onDragLeave () {
+    onDragLeave() {
       this.highlight = false
     },
-    onDrop (e) {
+    onDrop(e) {
       if (!this.enabled) return
       const files = e.dataTransfer.files
       const fileIsSelected = files.length > 0
 
       if (fileIsSelected) {
         const file = e.dataTransfer.files.item(0)
-        this.$emit('fileAdded', file)
+        this.$emit("fileAdded", file)
         this.highlight = false
       } else {
-        alert('Please select a file to upload')
+        alert("Please select a file to upload")
       }
     },
-    openFileDialog () {
+    openFileDialog() {
       if (!this.enabled) return
       this.$refs.fileInput.click()
     },
-    onFileChange (e) {
+    onFileChange(e) {
       const files = e.target.files
       const fileIsSelected = files.length > 0
 
       if (fileIsSelected) {
         const file = e.target.files.item(0)
-        this.$emit('fileAdded', file)
+        this.$emit("fileAdded", file)
         this.highlight = false
       } else {
-        alert('Please select a file to upload')
+        alert("Please select a file to upload")
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

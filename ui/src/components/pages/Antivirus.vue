@@ -18,7 +18,7 @@
                 <span
                   :class="[
                     { 'has-text-success': !value.detected },
-                    { 'has-text-danger': value.detected }
+                    { 'has-text-danger': value.detected },
                   ]"
                   style="position:relative"
                   @mouseover="mouseOver('first', vendor)"
@@ -29,14 +29,14 @@
                       transparent:
                         value.detected &&
                         JSON.stringify(show) ===
-                          JSON.stringify({ type: 'first', vendor: vendor })
+                          JSON.stringify({ type: 'first', vendor: vendor }),
                     }"
                   >
                     <i
                       class="output-icon icon"
                       :class="[
                         { 'ion-alert-circled': value.detected },
-                        { 'ion-checkmark-circled': !value.detected }
+                        { 'ion-checkmark-circled': !value.detected },
                       ]"
                     ></i>
                     {{ value.result || "Clean" }}
@@ -75,7 +75,7 @@
                 <span
                   :class="[
                     { 'has-text-success': !value.detected },
-                    { 'has-text-danger': value.detected }
+                    { 'has-text-danger': value.detected },
                   ]"
                   style="position:relative"
                   @mouseover="mouseOver('last', vendor)"
@@ -86,14 +86,14 @@
                       transparent:
                         value.detected &&
                         JSON.stringify(show) ===
-                          JSON.stringify({ type: 'last', vendor: vendor })
+                          JSON.stringify({ type: 'last', vendor: vendor }),
                     }"
                   >
                     <i
                       class="output-icon icon"
                       :class="[
                         { 'ion-alert-circled': value.detected },
-                        { 'ion-checkmark-circled': !value.detected }
+                        { 'ion-checkmark-circled': !value.detected },
                       ]"
                     ></i>
                     {{ value.result || "Clean" }}
@@ -118,36 +118,36 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
-import Loader from '@/components/elements/Loader'
-import Copy from '@/components/elements/Copy'
+import axios from "axios"
+import Loader from "@/components/elements/Loader"
+import Copy from "@/components/elements/Copy"
 
 export default {
   components: {
     loader: Loader,
-    copy: Copy
+    copy: Copy,
   },
-  data () {
+  data() {
     return {
       showLoader: true,
       lastScan: {},
       firstScan: {},
-      show: { type: '', vendor: '' }
+      show: { type: "", vendor: "" },
     }
   },
   methods: {
-    mouseOver (type, vendor) {
+    mouseOver(type, vendor) {
       this.show = { type, vendor }
     },
-    mouseLeave (type, index) {
+    mouseLeave(type, index) {
       this.show = {}
-    }
+    },
   },
-  mounted () {
+  mounted() {
     // replace route params with props
     axios
       .get(`/api/v1/files/${this.$route.params.hash}/`)
-      .then(data => {
+      .then((data) => {
         this.showLoader = false
         if (!data.data.multiav) {
           return
@@ -155,15 +155,15 @@ export default {
         this.firstScan = data.data.multiav.first_scan
         this.lastScan = data.data.multiav.last_scan
 
-        Object.keys(this.firstScan).forEach(key => {
+        Object.keys(this.firstScan).forEach((key) => {
           const first = this.firstScan[key]
           first.showCopy = false
           const last = this.lastScan[key]
           last.showCopy = false
         })
       })
-      .catch(err => console.error(err))
-  }
+      .catch((err) => console.error(err))
+  },
 }
 </script>
 <style lang="scss" scoped>

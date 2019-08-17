@@ -1,27 +1,27 @@
 <template>
   <div id="app">
     <transition name="component-fade" mode="out-in">
-    <component :is="layout">
-      <router-view />
-    </component>
+      <component :is="layout">
+        <router-view />
+      </component>
     </transition>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',
+  name: "App",
   computed: {
-    layout () {
-      return (this.$route.meta.layout || 'default') + '-layout'
-    }
+    layout() {
+      return (this.$route.meta.layout || "default") + "-layout"
+    },
   },
-  created () {
+  created() {
     document.title = this.$route.meta.title
   },
-  updated () {
+  updated() {
     document.title = this.$route.meta.title
-  }
+  },
 }
 </script>
 
@@ -33,7 +33,7 @@ export default {
 @import "assets/scss/ionicons";
 
 .notification {
-width: 100%;
+  width: 100%;
 }
 
 * {
@@ -63,11 +63,12 @@ html {
   color: #2c3e50;
 }
 
-.component-fade-enter-active, .component-fade-leave-active {
-  transition: opacity .2s ease;
+.component-fade-enter-active,
+.component-fade-leave-active {
+  transition: opacity 0.2s ease;
 }
-.component-fade-enter, .component-fade-leave-to
- {
+.component-fade-enter,
+.component-fade-leave-to {
   opacity: 0;
 }
 </style>

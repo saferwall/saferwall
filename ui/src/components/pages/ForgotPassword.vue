@@ -9,7 +9,7 @@
       class="input-container"
       :class="{
         valid: !$v.email.$invalid,
-        'not-valid': $v.email.$error
+        'not-valid': $v.email.$error,
       }"
     >
       <label for="email">Email</label>
@@ -35,27 +35,27 @@
 </template>
 
 <script>
-import { required, email } from 'vuelidate/lib/validators'
+import { required, email } from "vuelidate/lib/validators"
 export default {
-  data () {
+  data() {
     return {
-      email: ''
+      email: "",
     }
   },
 
   // notif
 
   methods: {
-    handleSubmit () {
-      console.log('submitted')
-    }
+    handleSubmit() {
+      console.log("submitted")
+    },
   },
   validations: {
     email: {
       required,
-      email
-    }
-  }
+      email,
+    },
+  },
 }
 </script>
 

@@ -88,113 +88,113 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
-import Loader from '@/components/elements/Loader'
+import axios from "axios"
+import Loader from "@/components/elements/Loader"
 
 export default {
   components: {
-    loader: Loader
+    loader: Loader,
   },
-  data () {
+  data() {
     return {
       showLoader: true,
       strings: [],
       filteredStrings: [],
       start: 0,
       limit: 10,
-      encodingSorted: '',
-      valueSorted: '',
-      valueSearched: '',
-      encodingSearched: ''
+      encodingSorted: "",
+      valueSorted: "",
+      valueSearched: "",
+      encodingSearched: "",
     }
   },
   computed: {
-    filteredStringsToShow: function () {
-      return this.filteredStrings.filter(string => string.show)
-    }
+    filteredStringsToShow: function() {
+      return this.filteredStrings.filter((string) => string.show)
+    },
   },
-  created () {
+  created() {
     axios
       .get(`/api/v1/files/${this.$route.params.hash}/`)
-      .then(data => {
+      .then((data) => {
         this.showLoader = false
         this.strings = data.data.strings
-        this.strings.forEach(s => (s.show = true))
+        this.strings.forEach((s) => (s.show = true))
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       })
-      .catch(err => console.error(err))
+      .catch((err) => console.error(err))
   },
 
   methods: {
-    sortTable (key, column) {
-      if (column === 'encoding') {
-        if (key === 'asc') {
+    sortTable(key, column) {
+      if (column === "encoding") {
+        if (key === "asc") {
           this.filteredStrings.sort((a, b) =>
-            a.encoding > b.encoding ? 1 : b.encoding > a.encoding ? -1 : 0
+            a.encoding > b.encoding ? 1 : b.encoding > a.encoding ? -1 : 0,
           )
         }
-        if (key === 'desc') {
+        if (key === "desc") {
           this.filteredStrings.sort((a, b) =>
-            a.encoding > b.encoding ? -1 : b.encoding > a.encoding ? 1 : 0
+            a.encoding > b.encoding ? -1 : b.encoding > a.encoding ? 1 : 0,
           )
         }
 
         this.filteredStrings = this.filteredStrings
-          .filter(s => s.show)
+          .filter((s) => s.show)
           .slice(this.start, this.limit)
-      } else if (column === 'value') {
-        if (key === 'asc') {
+      } else if (column === "value") {
+        if (key === "asc") {
           this.filteredStrings.sort((a, b) =>
-            a.value > b.value ? 1 : b.value > a.value ? -1 : 0
+            a.value > b.value ? 1 : b.value > a.value ? -1 : 0,
           )
         }
-        if (key === 'desc') {
+        if (key === "desc") {
           this.filteredStrings.sort((a, b) =>
-            a.value > b.value ? -1 : b.value > a.value ? 1 : 0
+            a.value > b.value ? -1 : b.value > a.value ? 1 : 0,
           )
         }
 
         this.filteredStrings = this.filteredStrings
-          .filter(s => s.show)
+          .filter((s) => s.show)
           .slice(this.start, this.limit)
       }
     },
-    limitChanged () {
+    limitChanged() {
       this.filteredStrings = this.strings.slice(this.start, this.limit)
     },
-    search (key) {
+    search(key) {
       if (this.encodingSearched.length > 0 || this.valueSearched.length > 0) {
-        if (key === 'encodings') {
+        if (key === "encodings") {
           this.strings.forEach(
-            s =>
+            (s) =>
               (s.show = s.encoding
                 .trim()
                 .toLowerCase()
-                .startsWith(this.encodingSearched.toLowerCase()))
+                .startsWith(this.encodingSearched.toLowerCase())),
           )
           this.filteredStrings = this.strings
-            .filter(s => s.show)
+            .filter((s) => s.show)
             .slice(this.start, this.limit)
         }
-        if (key === 'values') {
+        if (key === "values") {
           this.strings.forEach(
-            s =>
+            (s) =>
               (s.show = s.value
                 .trim()
                 .toLowerCase()
-                .startsWith(this.valueSearched.toLowerCase()))
+                .startsWith(this.valueSearched.toLowerCase())),
           )
           this.filteredStrings = this.strings
-            .filter(s => s.show)
+            .filter((s) => s.show)
             .slice(this.start, this.limit)
           console.log(this.filteredStrings)
         }
       } else {
-        this.strings.forEach(s => (s.show = true))
+        this.strings.forEach((s) => (s.show = true))
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
-    }
-  }
+    },
+  },
 }
 </script>
 <style lang="scss" scoped>
