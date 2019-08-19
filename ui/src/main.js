@@ -7,6 +7,7 @@ import router from './router'
 // import layouts globally
 import Default from './layouts/Default.vue'
 import Unauthenticated from './layouts/Unauthenticated.vue'
+import Error from './layouts/Error.vue'
 
 import Vuelidate from 'vuelidate'
 Vue.use(Vuelidate)
@@ -16,6 +17,7 @@ Vue.use(VueCookie)
 
 Vue.component('default-layout', Default)
 Vue.component('unauthenticated-layout', Unauthenticated)
+Vue.component('error-layout', Error)
 
 Vue.directive('focus', {
   // When the bound element is inserted into the DOM...

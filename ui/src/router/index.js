@@ -8,6 +8,7 @@ import Summary from "@/components/pages/Summary";
 import Strings from "@/components/pages/Strings";
 import Login from "@/components/pages/Login";
 import Signup from "@/components/pages/Signup";
+import NotFound from "@/components/pages/NotFound";
 import { store } from "../store.js";
 
 Vue.use(Router);
@@ -77,6 +78,12 @@ let router = new Router({
       name: "Sign up",
       component: Signup,
       meta: { title: "Sign up", guest: true, layout: "unauthenticated" }
+    },
+    {
+      path: "/404",
+      name: "notFound",
+      component: NotFound,
+      meta: { title: "404 Error", layout: "error" }
     }
   ]
 });
@@ -89,6 +96,8 @@ router.beforeEach(function(to, from, next) {
     });
   } else if (to.matched.some(record => record.meta.guest)) {
     next();
+  } else if (!to.matched.length) {
+    next("/404");
   } else next();
 });
 
