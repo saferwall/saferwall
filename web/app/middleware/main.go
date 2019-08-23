@@ -5,11 +5,12 @@
 package middleware
 
 import (
-	"net/http"
-	"strings"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
+	"net/http"
+	"strings"
 )
 
 var (
@@ -19,6 +20,21 @@ var (
 	// RequireEmailConfirmationToken checks email confirmation token.
 	RequireEmailConfirmationToken echo.MiddlewareFunc
 )
+
+// EmailCustomClaims are custom claims extending default ones.
+type EmailCustomClaims struct {
+	Username string `json:"username"`
+	Purpose string `json:"purpose"`
+	jwt.StandardClaims
+}
+
+// loginCustomClaims are custom claims extending default ones.
+type loginCustomClaims struct {
+	Name  string `json:"name"`
+	Admin bool   `json:"admin"`
+	jwt.StandardClaims
+}
+
 
 // RequireJSON requires an application/json content type.
 func RequireJSON(next echo.HandlerFunc) echo.HandlerFunc {
@@ -38,7 +54,7 @@ func Init(e *echo.Echo) {
 	// logging
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `[${time_rfc3339}]  ${status}  ${method} ${host}${path} ${latency_human}` + "\n",
-	  }))
+	}))
 
 	// cors
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -57,6 +73,7 @@ func Init(e *echo.Echo) {
 	})
 
 	RequireEmailConfirmationToken = middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &EmailCustomClaims{},
 		SigningKey:  []byte(key),
 		TokenLookup: "query:token",
 	})

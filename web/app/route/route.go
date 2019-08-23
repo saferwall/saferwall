@@ -24,6 +24,8 @@ func New() *echo.Echo {
 	// handle /login
 	e.POST("/auth/login/", auth.Login, m.RequireJSON)
 	e.GET("/auth/confirm/", auth.Confirm, m.RequireEmailConfirmationToken)
+	e.POST("/auth/reset/", auth.Reset, m.RequireJSON)
+	e.POST("/auth/change-password/", auth.Reset, m.RequireJSON)
 
 	// handle /files endpoint.
 	e.GET("/v1/files/", file.GetFiles)

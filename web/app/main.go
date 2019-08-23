@@ -54,6 +54,9 @@ var (
 	// LoginSchema represent a user login
 	LoginSchema *gojsonschema.Schema
 
+	// EmailSchema represent a password reset
+	EmailSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -138,6 +141,15 @@ func loadSchemas() {
 	if err != nil {
 		log.Fatalln("Error while loading file schema: ", err)
 	}
+
+	jsonPath = path.Join(dir, "app", "schema", "email.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	EmailSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading email schema: ", err)
+	}
+
 
 	log.Infoln("Schemas were loaded")
 }

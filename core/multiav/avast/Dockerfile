@@ -13,7 +13,7 @@ WORKDIR $GOPATH/src/saferwall/avast/
 COPY . .
 
 # Fetch dependencies.
-RUN go get -d -v 
+RUNq
 
 # Build the binary.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/avastscanner .

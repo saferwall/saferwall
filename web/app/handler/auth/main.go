@@ -12,11 +12,14 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/saferwall/saferwall/web/app"
+	"github.com/saferwall/saferwall/web/app/middleware"
+	"github.com/saferwall/saferwall/web/app/email"
 	"github.com/saferwall/saferwall/web/app/handler/user"
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/crypto/bcrypt"
 )
+
 
 func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	// Since we'll be getting the hashed password from the DB it
@@ -145,6 +148,73 @@ func Login(c echo.Context) error {
 	})
 }
 
+
+// Reset handle password reset.
+func Reset(c echo.Context) error {
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.EmailSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonEmail map[string]interface{}
+	err = json.Unmarshal(b, &jsonEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	resetEmail := jsonEmail["email"].(string)
+
+	// check if email already exists in DB.
+	EmailExist, _ := user.CheckEmailExist(resetEmail)
+	if !EmailExist {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Email does not exists !"})
+	}
+
+	u, err := user.GetUserByEmail(resetEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	token, err := u.GenerateResetPasswordToken()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	// Generate the email confirmation url
+	r := c.Request()
+	baseURL := c.Scheme() + "://" + r.Host
+	link := baseURL + "/auth/confirm" + "?token=" + token
+	go email.Send(u.Username, link, u.Email, "reset")
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}
+
 // Admin shows admin
 func Admin(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, map[string]string{
@@ -163,8 +233,14 @@ func Confirm(c echo.Context) error {
 	}
 
 	u := c.Get("user").(*jwt.Token)
-	claims := u.Claims.(jwt.MapClaims)
-	username := claims["name"].(string)
+	claims := u.Claims.(*middleware.EmailCustomClaims)
+	tokenType := claims.Purpose
+	if tokenType != "confirm-email" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You provided an invalid token type!"})
+	}
+
+	username := claims.Username
 
 	// Confirm account
 	err := user.Confirm(username)

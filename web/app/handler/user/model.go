@@ -193,3 +193,21 @@ func GetByUsername(username string) (User, error) {
 
 	return user, nil
 }
+
+// GetUserByEmail return a user document from email
+func GetUserByEmail(email string) (User, error) {
+	myQuery := "SELECT * FROM `users` WHERE email=$1"
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(gocb.NewN1qlQuery(myQuery), []interface{}{email})
+	var row User
+	if err != nil {
+		return row, err
+	}
+	defer rows.Close()
+
+	err = rows.One(&row)
+	if err != nil {
+		return row, err
+	}
+
+	return row, nil
+}
