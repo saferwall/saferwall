@@ -156,8 +156,9 @@ func PutUsers(c echo.Context) error {
 func DeleteUsers(c echo.Context) error {
 
 	// should be processed in the background
-	DeleteAllUsers()
-	return c.JSON(http.StatusOK, "All users deleted")
+	go DeleteAllUsers()
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok"})
 }
 
 // GetUsers returns all users.
