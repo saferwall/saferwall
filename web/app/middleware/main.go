@@ -17,19 +17,20 @@ var (
 	// RequireLogin check JWT token.
 	RequireLogin echo.MiddlewareFunc
 
-	// RequireEmailConfirmationToken checks email confirmation token.
-	RequireEmailConfirmationToken echo.MiddlewareFunc
+	// RequireToken checks email confirmation token.
+	RequireToken echo.MiddlewareFunc
 )
 
-// EmailCustomClaims are custom claims extending default ones.
-type EmailCustomClaims struct {
+// CustomClaims are custom claims extending default ones.
+// Used for email confirmation and pwd reset.
+type CustomClaims struct {
 	Username string `json:"username"`
 	Purpose string `json:"purpose"`
 	jwt.StandardClaims
 }
 
-// loginCustomClaims are custom claims extending default ones.
-type loginCustomClaims struct {
+// LoginCustomClaims are custom claims extending default ones
+type LoginCustomClaims struct {
 	Name  string `json:"name"`
 	Admin bool   `json:"admin"`
 	jwt.StandardClaims
@@ -72,10 +73,9 @@ func Init(e *echo.Echo) {
 		TokenLookup: "cookie:JWTCookie",
 	})
 
-	RequireEmailConfirmationToken = middleware.JWTWithConfig(middleware.JWTConfig{
-		Claims:     &EmailCustomClaims{},
+	RequireToken = middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &CustomClaims{},
 		SigningKey:  []byte(key),
 		TokenLookup: "query:token",
 	})
-
 }

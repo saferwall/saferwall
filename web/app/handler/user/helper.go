@@ -4,21 +4,25 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/saferwall/saferwall/web/app/middleware"
 	"log"
 	"time"
 )
 
-type emailCustomClaims struct {
-	Username string `json:"username"`
-	Purpose string `json:"purpose"`
-	jwt.StandardClaims
+// UpdatePassword creates a JWT token for email confirmation.
+func (u *User) UpdatePassword(newPassword string) {
+	u.Password = hashAndSalt([]byte(newPassword))
+
+	// Creates the new user and save it to DB.
+	u.Save()
 }
+
 
 // generateEmailConfirmationToken creates a JWT token for email confirmation.
 func (u *User) generateEmailConfirmationToken() (string, error) {
 
 	// Set custom claims
-	claims := &emailCustomClaims{
+	claims := &middleware.CustomClaims{
 		u.Username,
 		"confirm-email",
 		jwt.StandardClaims{
@@ -40,9 +44,9 @@ func (u *User) generateEmailConfirmationToken() (string, error) {
 func (u *User) GenerateResetPasswordToken() (string, error) {
 
 	// Set custom claims
-	claims := &emailCustomClaims{
+	claims := &middleware.CustomClaims{
 		u.Username,
-		"confirm-email",
+		"reset-password",
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
 		},

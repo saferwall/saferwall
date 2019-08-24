@@ -26,25 +26,28 @@ func Send(username, link, recipient, templateToUse string) {
 	// Use the default theme
 	h.Theme = new(hermes.Default)
 
+	options := sendOptions{
+		To: recipient,
+	}
+
 	var t template
 
 	if templateToUse == "confirm"{
 		t = new(confirm)
+		options.Subject = "Saferwall - Confirm Account"
+
 
 	}
 	if templateToUse == "reset" {
 		t = new(reset)
+		options.Subject = "Saferwall - Reset Password"
 	}
 
 	// Generate emails
 	generateEmails(h, t.Email(username, link), t.Name()) 
 
-	options := sendOptions{
-		To: recipient,
-	}
 
-	options.Subject = "Saferwall - Confirm Account"
-	log.Println("Sending email '%s'...\n", options.Subject)
+	log.Printf("Sending email '%s'...", options.Subject)
 	path := fmt.Sprintf("%v/%v.%v.html", h.Theme.Name(), h.Theme.Name(), t.Name())
 	htmlBytes, err := ioutil.ReadFile(path)
 	if err != nil {

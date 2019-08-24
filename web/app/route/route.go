@@ -21,11 +21,20 @@ func New() *echo.Echo {
 	// Setup middlwares
 	m.Init(e)
 
-	// handle /login
-	e.POST("/auth/login/", auth.Login, m.RequireJSON)
-	e.GET("/auth/confirm/", auth.Confirm, m.RequireEmailConfirmationToken)
-	e.POST("/auth/reset/", auth.Reset, m.RequireJSON)
-	e.POST("/auth/change-password/", auth.Reset, m.RequireJSON)
+
+	// handle user login and confirmation via email.
+	e.POST("/v1/auth/login/", auth.Login, m.RequireJSON) 	
+	e.GET("/v1/auth/confirm/", auth.Confirm, m.RequireToken)
+
+	// To reset the current password (in case user forget the password).
+	e.DELETE("/v1/users/password/", auth.ResetPassword, m.RequireJSON)
+
+	// To create new password (if user has reset the password).
+	// new password, activation code and emailID should be given in body.
+	e.POST("/v1/users/password/", auth.NewPassword, m.RequireToken, m.RequireJSON)
+
+	// To update the password (if user knows is old password and new password)
+	// e.PUT("/v1/users/:username/password/", auth.UpdatePassword, m.RequireToken, m.RequireJSON)
 
 	// handle /files endpoint.
 	e.GET("/v1/files/", file.GetFiles)

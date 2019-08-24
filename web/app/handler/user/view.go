@@ -140,7 +140,7 @@ func PostUsers(c echo.Context) error {
 	// Generate the email confirmation url
 	r := c.Request()
 	baseURL := c.Scheme() + "://" + r.Host
-	link := baseURL + "/auth/confirm/" + "?token=" + token
+	link := baseURL + "/v1/auth/confirm/" + "?token=" + token
 	go email.Send(newUser.Username, link, newUser.Email, "confirm")
 
 	return c.JSON(http.StatusCreated, map[string]string{

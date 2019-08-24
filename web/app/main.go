@@ -54,8 +54,11 @@ var (
 	// LoginSchema represent a user login
 	LoginSchema *gojsonschema.Schema
 
-	// EmailSchema represent a password reset
+	// EmailSchema represent a request to change password
 	EmailSchema *gojsonschema.Schema
+
+	// ResetPasswordSchema represent a change password.
+	ResetPasswordSchema *gojsonschema.Schema
 
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
@@ -146,6 +149,14 @@ func loadSchemas() {
 	source = fmt.Sprintf("file:///%s", jsonPath)
 	jsonLoader = gojsonschema.NewReferenceLoader(source)
 	EmailSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading email schema: ", err)
+	}
+
+	jsonPath = path.Join(dir, "app", "schema", "password.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	ResetPasswordSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
 		log.Fatalln("Error while loading email schema: ", err)
 	}

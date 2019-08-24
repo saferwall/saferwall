@@ -20,7 +20,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	// Since we'll be getting the hashed password from the DB it
 	// will be a string so we'll need to convert it to a byte slice
@@ -49,19 +48,23 @@ func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 
 // createJwtToken creates a JWT token.
 func createJwtToken(u user.User) (string, error) {
+	// Set custom claims
+	claims := &middleware.LoginCustomClaims{
+		u.Username,
+		false,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+		},
+	}
 
-	rawToken := jwt.New(jwt.SigningMethodHS256)
-
-	// Set claims
-	claims := rawToken.Claims.(jwt.MapClaims)
-	claims["name"] = u.Username
-	claims["admin"] = u.Admin
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
 	key := viper.GetString("auth.signkey")
-	token, err := rawToken.SignedString([]byte(key))
-	return token, err
+	t, err := token.SignedString([]byte(key))
+	return t, err
+
 }
 
 // create cookie to hold the JWT token.
@@ -149,8 +152,8 @@ func Login(c echo.Context) error {
 }
 
 
-// Reset handle password reset.
-func Reset(c echo.Context) error {
+// ResetPassword handle password reset.
+func ResetPassword(c echo.Context) error {
 	// Read the json body
 	b, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
@@ -207,7 +210,7 @@ func Reset(c echo.Context) error {
 	// Generate the email confirmation url
 	r := c.Request()
 	baseURL := c.Scheme() + "://" + r.Host
-	link := baseURL + "/auth/confirm" + "?token=" + token
+	link := baseURL + "/reset-password" + "?token=" + token
 	go email.Send(u.Username, link, u.Email, "reset")
 
 	return c.JSON(http.StatusOK, map[string]string{
@@ -233,7 +236,7 @@ func Confirm(c echo.Context) error {
 	}
 
 	u := c.Get("user").(*jwt.Token)
-	claims := u.Claims.(*middleware.EmailCustomClaims)
+	claims := u.Claims.(*middleware.CustomClaims)
 	tokenType := claims.Purpose
 	if tokenType != "confirm-email" {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -254,7 +257,72 @@ func Confirm(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:8081/#/upload")
-	// return c.JSON(http.StatusAccepted, map[string]string{
-	// 	"verbose_msg": "Account confirmed !"})
 }
 
+
+// NewPassword handle password reset.
+func NewPassword(c echo.Context) error {
+
+	// get path param
+	token := c.QueryParam("token")
+
+	if token == "" {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "You provided an empty token!"})
+	}
+
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(*middleware.CustomClaims)
+	tokenType := claims.Purpose
+	if tokenType != "reset-password" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You provided an invalid token type!"})
+	}
+
+	usr, err := user.GetByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Username does not exist !"})
+	}
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.ResetPasswordSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonPassword map[string]interface{}
+	err = json.Unmarshal(b, &jsonPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	newPassword := jsonPassword["password"].(string)
+	usr.UpdatePassword(newPassword)
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}
