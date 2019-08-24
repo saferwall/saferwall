@@ -22,6 +22,7 @@ import (
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/couchbase/gocb.v1"
 )
@@ -199,7 +200,11 @@ func DeleteFile(c echo.Context) error {
 // deleteAllFiles will empty files bucket
 func deleteAllFiles() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	db.FilesBucket.Manager("", "").Flush()
+
+	username := viper.GetString("db.username")
+	password := viper.GetString("db.password")
+
+	db.FilesBucket.Manager(username, password).Flush()
 }
 
 // GetFiles returns list of files.
@@ -332,6 +337,7 @@ func PutFiles(c echo.Context) error {
 // DeleteFiles delete all files
 func DeleteFiles(c echo.Context) error {
 
-	deleteAllFiles()
-	return c.String(http.StatusOK, "deleteFiles")
+	go deleteAllFiles()
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok"})
 }

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
-	gocb "gopkg.in/couchbase/gocb.v1"
+	"github.com/spf13/viper"
+	"gopkg.in/couchbase/gocb.v1"
+
 	"time"
 )
 
@@ -137,7 +139,12 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 // DeleteAllUsers will empty users bucket
 func DeleteAllUsers() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	db.UsersBucket.Manager("", "").Flush()
+	username := viper.GetString("db.username")
+	password := viper.GetString("db.password")
+	err := db.UsersBucket.Manager(username, password).Flush()
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 // GetAllUsers return all users (optional: selecting fields)

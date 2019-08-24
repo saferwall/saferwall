@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Email",
+  "description": "This schema is representing a request to change password",
+  "type": "object",
+  "properties": {
+    "email": {
+      "description": "The user's email",
+      "type": "string",
+      "format": "email"
+    }
+  },
+  "required": ["email"],
+  "additionalProperties": false
+}
