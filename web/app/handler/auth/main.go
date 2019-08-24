@@ -208,9 +208,7 @@ func ResetPassword(c echo.Context) error {
 	}
 
 	// Generate the email confirmation url
-	r := c.Request()
-	baseURL := c.Scheme() + "://" + r.Host
-	link := baseURL + "/reset-password" + "?token=" + token
+	link := viper.GetString("ui.address") + "/reset-password" + "?token=" + token
 	go email.Send(u.Username, link, u.Email, "reset")
 
 	return c.JSON(http.StatusOK, map[string]string{
@@ -256,7 +254,8 @@ func Confirm(c echo.Context) error {
 			"verbose_msg": "Internal server error !"})
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:8081/#/upload")
+	url := viper.GetString("ui.address") + "/login"
+	return c.Redirect(http.StatusPermanentRedirect, url)
 }
 
 
