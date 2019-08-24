@@ -12,6 +12,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/saferwall/saferwall/web/app"
+	"github.com/saferwall/saferwall/web/app/middleware"
+	"github.com/saferwall/saferwall/web/app/email"
 	"github.com/saferwall/saferwall/web/app/handler/user"
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
@@ -46,19 +48,23 @@ func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 
 // createJwtToken creates a JWT token.
 func createJwtToken(u user.User) (string, error) {
+	// Set custom claims
+	claims := &middleware.LoginCustomClaims{
+		u.Username,
+		false,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+		},
+	}
 
-	rawToken := jwt.New(jwt.SigningMethodHS256)
-
-	// Set claims
-	claims := rawToken.Claims.(jwt.MapClaims)
-	claims["name"] = u.Username
-	claims["admin"] = u.Admin
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
 	key := viper.GetString("auth.signkey")
-	token, err := rawToken.SignedString([]byte(key))
-	return token, err
+	t, err := token.SignedString([]byte(key))
+	return t, err
+
 }
 
 // create cookie to hold the JWT token.
@@ -145,6 +151,73 @@ func Login(c echo.Context) error {
 	})
 }
 
+
+// ResetPassword handle password reset.
+func ResetPassword(c echo.Context) error {
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.EmailSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonEmail map[string]interface{}
+	err = json.Unmarshal(b, &jsonEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	resetEmail := jsonEmail["email"].(string)
+
+	// check if email already exists in DB.
+	EmailExist, _ := user.CheckEmailExist(resetEmail)
+	if !EmailExist {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Email does not exists !"})
+	}
+
+	u, err := user.GetUserByEmail(resetEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	token, err := u.GenerateResetPasswordToken()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	// Generate the email confirmation url
+	r := c.Request()
+	baseURL := c.Scheme() + "://" + r.Host
+	link := baseURL + "/reset-password" + "?token=" + token
+	go email.Send(u.Username, link, u.Email, "reset")
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}
+
 // Admin shows admin
 func Admin(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, map[string]string{
@@ -163,8 +236,14 @@ func Confirm(c echo.Context) error {
 	}
 
 	u := c.Get("user").(*jwt.Token)
-	claims := u.Claims.(jwt.MapClaims)
-	username := claims["name"].(string)
+	claims := u.Claims.(*middleware.CustomClaims)
+	tokenType := claims.Purpose
+	if tokenType != "confirm-email" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You provided an invalid token type!"})
+	}
+
+	username := claims.Username
 
 	// Confirm account
 	err := user.Confirm(username)
@@ -178,7 +257,72 @@ func Confirm(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:8081/#/upload")
-	// return c.JSON(http.StatusAccepted, map[string]string{
-	// 	"verbose_msg": "Account confirmed !"})
 }
 
+
+// NewPassword handle password reset.
+func NewPassword(c echo.Context) error {
+
+	// get path param
+	token := c.QueryParam("token")
+
+	if token == "" {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "You provided an empty token!"})
+	}
+
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(*middleware.CustomClaims)
+	tokenType := claims.Purpose
+	if tokenType != "reset-password" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You provided an invalid token type!"})
+	}
+
+	usr, err := user.GetByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Username does not exist !"})
+	}
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.ResetPasswordSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonPassword map[string]interface{}
+	err = json.Unmarshal(b, &jsonPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	newPassword := jsonPassword["password"].(string)
+	usr.UpdatePassword(newPassword)
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}

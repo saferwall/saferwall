@@ -4,23 +4,61 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/saferwall/saferwall/web/app/middleware"
 	"log"
 	"time"
 )
 
+// UpdatePassword creates a JWT token for email confirmation.
+func (u *User) UpdatePassword(newPassword string) {
+	u.Password = hashAndSalt([]byte(newPassword))
+
+	// Creates the new user and save it to DB.
+	u.Save()
+}
+
+
 // generateEmailConfirmationToken creates a JWT token for email confirmation.
 func (u *User) generateEmailConfirmationToken() (string, error) {
-	rawToken := jwt.New(jwt.SigningMethodHS256)
 
-	// Set claims
-	claims := rawToken.Claims.(jwt.MapClaims)
-	claims["name"] = u.Username
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	// Set custom claims
+	claims := &middleware.CustomClaims{
+		u.Username,
+		"confirm-email",
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		},
+	}
+
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
 	key := viper.GetString("auth.signkey")
-	token, err := rawToken.SignedString([]byte(key))
-	return token, err
+	t, err := token.SignedString([]byte(key))
+	return t, err
+}
+
+
+// GenerateResetPasswordToken creates a JWT token for password change.
+func (u *User) GenerateResetPasswordToken() (string, error) {
+
+	// Set custom claims
+	claims := &middleware.CustomClaims{
+		u.Username,
+		"reset-password",
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		},
+	}
+
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	key := viper.GetString("auth.signkey")
+	t, err := token.SignedString([]byte(key))
+	return t, err
 }
 
 // hashAndSalt hash with a salt a password.

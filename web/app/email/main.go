@@ -12,33 +12,48 @@ import (
 	"os"
 )
 
-type example interface {
-	Email() hermes.Email
+type template interface {
+	Email(string, string) hermes.Email
 	Name() string
 }
 
 // Send sends an email.
-func Send(username, link, recipient string) {
+func Send(username, link, recipient, templateToUse string) {
 
+	// Get our Hermes instance
 	h := app.Hermes
-	e := new(confirm)
+	
+	// Use the default theme
 	h.Theme = new(hermes.Default)
-
-	// Generate emails
-	generateEmails(h, e.Email(username, link), e.Name())
 
 	options := sendOptions{
 		To: recipient,
 	}
 
-	options.Subject = "Saferwall - Confirm Account"
-	log.Infoln("Sending email '%s'...\n", options.Subject)
-	path := fmt.Sprintf("%v/%v.%v.html", h.Theme.Name(), h.Theme.Name(), e.Name())
+	var t template
+
+	if templateToUse == "confirm"{
+		t = new(confirm)
+		options.Subject = "Saferwall - Confirm Account"
+
+
+	}
+	if templateToUse == "reset" {
+		t = new(reset)
+		options.Subject = "Saferwall - Reset Password"
+	}
+
+	// Generate emails
+	generateEmails(h, t.Email(username, link), t.Name()) 
+
+
+	log.Printf("Sending email '%s'...", options.Subject)
+	path := fmt.Sprintf("%v/%v.%v.html", h.Theme.Name(), h.Theme.Name(), t.Name())
 	htmlBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
-	txtBytes, err := ioutil.ReadFile(fmt.Sprintf("%v/%v.%v.txt", h.Theme.Name(), h.Theme.Name(), e.Name()))
+	txtBytes, err := ioutil.ReadFile(fmt.Sprintf("%v/%v.%v.txt", h.Theme.Name(), h.Theme.Name(), t.Name()))
 	if err != nil {
 		panic(err)
 	}

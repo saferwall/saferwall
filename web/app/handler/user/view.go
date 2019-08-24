@@ -137,10 +137,11 @@ func PostUsers(c echo.Context) error {
 			"verbose_msg": "Internal server error !"})
 	}
 
+	// Generate the email confirmation url
 	r := c.Request()
 	baseURL := c.Scheme() + "://" + r.Host
-	link := baseURL + "/auth/confirm" + "?token=" + token
-	go email.Send(newUser.Username, link, newUser.Email)
+	link := baseURL + "/v1/auth/confirm/" + "?token=" + token
+	go email.Send(newUser.Username, link, newUser.Email, "confirm")
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"verbose_msg": "ok"})

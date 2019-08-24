@@ -193,3 +193,35 @@ func GetByUsername(username string) (User, error) {
 
 	return user, nil
 }
+
+// GetUserByEmail return a user document from email
+func GetUserByEmail(email string) (User, error) {
+
+	statement := "SELECT users.* FROM `users` WHERE email=$1"
+
+	// Setup a new query with a placeholder
+	query := gocb.NewN1qlQuery(statement)
+
+	// Setup an array for parameters
+	var myParams []interface{}
+	myParams = append(myParams, email)
+
+	// Interfaces for handling streaming return values
+	var row User
+
+	// Execute Query
+	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, myParams)
+	if err != nil {
+		fmt.Println("Error executing n1ql query:", err)
+		return row, err
+	}
+
+	defer rows.Close()
+
+	err = rows.One(&row)
+	if err != nil {
+		return row, err
+	}
+
+	return row, nil
+}

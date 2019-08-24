@@ -1,57 +1,53 @@
 {
-	"$schema": "http://json-schema.org/draft-04/schema#",
-	"title": "User",
-	"description": "This schema is representing a user model",
-	"type": "object",
-	"properties": {
-		"email": {
-			"description": "The user email",
-			"type": "string",
-			"format": "email"
-		},
-		"password": {
-			"description": "The user password",
-			"type": "string",
-			"minLength": 8
-		},
-		"first_name": {
-			"description": "The user first name",
-			"type": "string"
-		},
-		"last_name": {
-			"description": "The user last name",
-			"type": "string"
-		},
-		"username": {
-			"description": "The user name",
-			"type": "string",
-			"pattern": "^[a-zA-Z0-9]{1,20}$"
-		},
-		"member_since": {
-			"description": "The user registration date",
-			"type": "string"
-		},
-		"confirmed": {
-			"description": "The user confirmation status",
-			"type": "boolean"
-		},
-		"bio": {
-			"description": "The user bio",
-			"type": "string"
-		},
-		"last_seen": {
-			"description": "Last time we have seen the user",
-			"type": "integer"
-		},
-		"quota": {
-			"description": "The user quota",
-			"type": "integer"
-		}
-	},
-	"required": [
-		"username",
-		"email",
-		"password"
-	],
-	"additionalProperties": false
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "User",
+  "description": "This schema is representing a user model",
+  "type": "object",
+  "properties": {
+    "email": {
+      "description": "The user email",
+      "type": "string",
+      "format": "email"
+    },
+    "password": {
+      "description": "The user password",
+      "type": "string",
+      "minLength": 8
+    },
+    "first_name": {
+      "description": "The user first name",
+      "type": "string"
+    },
+    "last_name": {
+      "description": "The user last name",
+      "type": "string"
+    },
+    "username": {
+      "description": "The user name",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9]{1,20}$"
+    },
+    "member_since": {
+      "description": "The user registration date",
+      "type": "string"
+    },
+    "confirmed": {
+      "description": "The user confirmation status",
+      "type": "boolean"
+    },
+    "bio": {
+      "description": "The user bio",
+      "type": "string"
+    },
+    "last_seen": {
+      "description": "Last time we have seen the user",
+      "type": "integer"
+    },
+    "quota": {
+      "description": "The user quota",
+      "type": "integer"
+    }
+  },
+  "required": ["username", "email", "password"],
+  "additionalProperties": false
 }

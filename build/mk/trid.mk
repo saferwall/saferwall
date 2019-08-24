@@ -8,6 +8,6 @@ trid-install:	## Install TRiD
 	wget -N $(TRID_DEFS) -O $(TRID_DEFS_ZIP)
 	unzip -o $(TRID_ZIP) -d /tmp
 	unzip -o $(TRID_DEFS_ZIP) -d /tmp
-	mv /tmp/trid /usr/bin/
-	mv /tmp/triddefs.trd /usr/bin/
+	sudo mv /tmp/trid /usr/bin/
+	sudo mv /tmp/triddefs.trd /usr/bin/
 	chmod +x /usr/bin/trid
