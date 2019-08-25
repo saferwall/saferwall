@@ -68,6 +68,12 @@ func (pe *File) Parse() error {
 		return err
 	}
 
+	// Parse the Optional Header
+	err = pe.parseOptionalHeader()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -137,6 +143,52 @@ func (pe *File) parseFileHeader() (err error) {
 	err = binary.Read(buf, binary.LittleEndian, &pe.FileHeader)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+
+func (pe *File) parseOptionalHeader() (err error) {
+
+	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+
+	// We read it as OptionHeader32 then we fix up later.
+	size := uint32(binary.Size(pe.OptionalHeader))
+	buf := bytes.NewReader(pe.data[optionalHeaderOffset : optionalHeaderOffset+size])
+	err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader)
+	if err != nil {
+		return err
+	}
+
+	// Probes for PE32/PE32+ optional header magic.
+	if pe.OptionalHeader.Magic != ImageNtOptionalHeader32Magic && pe.OptionalHeader.Magic != ImageNtOptionalHeader64Magic {
+		return ErrImageNtOptionalHeaderMagicNotFound
+	}
+
+	// Are we dealing with a PE64 optional header.
+	if pe.OptionalHeader.Magic == ImageNtOptionalHeader64Magic {
+		size = uint32(binary.Size(pe.OptionalHeader64))
+		buf = bytes.NewReader(pe.data[optionalHeaderOffset : optionalHeaderOffset+size])
+		err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader64)
+		if err != nil {
+			return err
+		}
+		pe.Is64 = true
+	}
+
+	// ImageBase should be multiple of 10000h
+	if pe.Is64 && pe.OptionalHeader64.ImageBase%0x10000 != 0 {
+		return ErrImageBaseNotAligned
+	}
+	if !pe.Is64 && pe.OptionalHeader.ImageBase%0x10000 != 0 {
+		return ErrImageBaseNotAligned
+	}
+
+	// ImageBase can be any value as long as ImageBase + 'SizeOfImage' < 80000000h for PE32
+	if !pe.Is64 && pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
+		return ErrImageBaseOverflow
 	}
 
 	return nil
