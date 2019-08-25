@@ -2,9 +2,13 @@ package pe
 
 // Image executable types
 const (
-	ImageDOSSignature   = 0x5A4D // MZ
-	ImageDOSZMSignature = 0x4D5A // ZM
-
+	ImageDOSSignature   = 0x5A4D     // MZ
+	ImageDOSZMSignature = 0x4D5A     // ZM
+	ImageOS2Signature   = 0x454E     // The New Executable (abbreviated NE or NewEXE) is a 16-bit .exe file format, a successor to the DOS MZ executable format. It was used in Windows 1.0–3.x, multitasking MS-DOS 4.0, OS/2 1.x, and the OS/2 subset of Windows NT up to version 5.0 (Windows 2000). A NE is also called a segmented executable.[2]
+	ImageOS2LESignature = 0x454C     // Linear Executable is an executable file format in the EXE family. It was used by 32-bit OS/2, by some DOS extenders, and by Microsoft Windows VxD files. It is an extension of MS-DOS EXE, and a successor to NE (New Executable).
+	ImageVXDignature    = 0x584C     // There are two main varieties of it: LX (32-bit), and LE (mixed 16/32-bit).
+	ImageTESignature    = 0x5A56     // Terse Executables have a 'VZ' signature
+	ImageNTSignature    = 0x00004550 // PE00
 )
 
 // ImageDosHeader represents the DOS stub of a PE.

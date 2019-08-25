@@ -13,7 +13,8 @@ import (
 // A File represents an open PE file.
 type File struct {
 	DosHeader        ImageDosHeader
-
+	NtHeader         ImageNtHeader
+	FileHeader       ImageFileHeader
 	data mmap.MMap
 }
 
@@ -57,6 +58,12 @@ func (pe *File) Parse() error {
 
 	// Parse the NT header
 	err = pe.parseNtHeader()
+	if err != nil {
+		return err
+	}
+
+	// Parse the File Header
+	err = pe.parseFileHeader()
 	if err != nil {
 		return err
 	}
@@ -117,6 +124,19 @@ func (pe *File) parseNtHeader() (err error) {
 	// this is the smallest requirement for a valid PE
 	if pe.NtHeader.Signature != ImageNTSignature {
 		return ErrImageNtSignatureNotFound
+	}
+
+	return nil
+}
+
+
+func (pe *File) parseFileHeader() (err error) {
+	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	size := uint32(binary.Size(pe.FileHeader))
+	buf := bytes.NewReader(pe.data[fileHeaderOffset : fileHeaderOffset+size])
+	err = binary.Read(buf, binary.LittleEndian, &pe.FileHeader)
+	if err != nil {
+		return err
 	}
 
 	return nil
