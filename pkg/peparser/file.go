@@ -55,6 +55,12 @@ func (pe *File) Parse() error {
 		return err
 	}
 
+	// Parse the NT header
+	err = pe.parseNtHeader()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -79,6 +85,38 @@ func (pe *File) parseDosHeader() (err error) {
 	// can be 4 at minimum
 	if pe.DosHeader.Elfanew < 4 || pe.DosHeader.Elfanew > uint32(len(pe.data)) {
 		return ErrInvalidElfanewValue
+	}
+
+	return nil
+}
+
+
+func (pe *File) parseNtHeader() (err error) {
+	ntHeaderOffset := pe.DosHeader.Elfanew
+	size := uint32(binary.Size(pe.NtHeader))
+	buf := bytes.NewReader(pe.data[ntHeaderOffset : ntHeaderOffset+size])
+	err = binary.Read(buf, binary.LittleEndian, &pe.NtHeader)
+	if err != nil {
+		return err
+	}
+
+	// Probe for PE signature.
+	if pe.NtHeader.Signature == ImageOS2Signature {
+		return ErrImageOS2SignatureFound
+	}
+	if pe.NtHeader.Signature == ImageOS2LESignature {
+		return ErrImageOS2LESignatureFound
+	}
+	if pe.NtHeader.Signature == ImageVXDignature {
+		return ErrImageVXDSignatureFound
+	}
+	if pe.NtHeader.Signature == ImageTESignature {
+		return ErrImageTESignatureFound
+	}
+
+	// this is the smallest requirement for a valid PE
+	if pe.NtHeader.Signature != ImageNTSignature {
+		return ErrImageNtSignatureNotFound
 	}
 
 	return nil

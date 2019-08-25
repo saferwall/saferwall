@@ -29,3 +29,8 @@ type ImageDosHeader struct {
 	Eres2     [10]uint16 // Reserved words
 	Elfanew   uint32     // File address of new exe header
 }
+
+// ImageNtHeader represents the PE header and is the general term for a structure named IMAGE_NT_HEADERS.
+type ImageNtHeader struct {
+	Signature uint32 // Signature is a DWORD containing the value 50h, 45h, 00h, 00h.
+}
