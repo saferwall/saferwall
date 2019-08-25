@@ -74,6 +74,12 @@ func (pe *File) Parse() error {
 		return err
 	}
 
+	// Parse the Section Header
+	err = pe.parseSectionHeader()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -189,6 +195,66 @@ func (pe *File) parseOptionalHeader() (err error) {
 	// ImageBase can be any value as long as ImageBase + 'SizeOfImage' < 80000000h for PE32
 	if !pe.Is64 && pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
 		return ErrImageBaseOverflow
+	}
+
+	return nil
+}
+
+
+func (pe *File) parseSectionHeader() (err error) {
+
+	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+
+	// get the first section offset.
+	offset := optionalHeaderOffset + uint32(pe.FileHeader.SizeOfOptionalHeader)
+
+	sectionHeader := ImageSectionHeader{}
+	sectionCount := pe.FileHeader.NumberOfSections
+	sectionSize := uint32(binary.Size(sectionHeader))
+	for i := uint16(0); i < sectionCount; i++ {
+		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
+		err = binary.Read(buf, binary.LittleEndian, &sectionHeader)
+		if err != nil {
+			return err
+		}
+
+		pe.Sections = append(pe.Sections, sectionHeader)
+		offset += sectionSize
+	}
+
+	// Sort the sections by their VirtualAddress. This will allow to check
+	// for potentially overlapping sections in badly constructed PEs.
+	sort.Sort(byVirtualAddress(pe.Sections))
+
+    // There could be a problem if there are no raw data sections
+    // greater than 0
+    // fc91013eb72529da005110a3403541b6 example
+    // Should this throw an exception in the minimum header offset
+    // can't be found?
+
+	if pe.FileHeader.NumberOfSections > 0 && len(pe.Sections)>0 {
+		offset =  offset + (sectionSize * uint32(pe.FileHeader.NumberOfSections))
+	}
+
+	var rawDataPointers []uint32  
+	for _, s  := range pe.Sections {
+		if s.PointerToRawData>0 {
+			rawDataPointers = append(rawDataPointers, pe.adjustFileAlignment(s.PointerToRawData))
+		}
+	}
+
+	var lowestSectionOffset uint32
+	if len(rawDataPointers) > 0 {
+		lowestSectionOffset = Min(rawDataPointers)
+	} else {
+		lowestSectionOffset = 0
+	}
+
+	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
+		pe.Header = pe.data[:offset]
+	} else {
+		pe.Header =	pe.data[:lowestSectionOffset]
 	}
 
 	return nil
