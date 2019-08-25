@@ -15,7 +15,13 @@ type File struct {
 	DosHeader        ImageDosHeader
 	NtHeader         ImageNtHeader
 	FileHeader       ImageFileHeader
+	OptionalHeader   OptionalHeader32
+	OptionalHeader64 OptionalHeader64
+	Sections         []ImageSectionHeader
+
+
 	data mmap.MMap
+	Is64      bool
 }
 
 // Open opens the named file using os.Open and prepares it for use as a PE binary.
