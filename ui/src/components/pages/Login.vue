@@ -150,7 +150,7 @@ export default {
           "Please correct all highlighted errors and try again"
       } else {
         axios
-          .post("/api/auth/login/", {
+          .post("/api/v1/auth/login/", {
             username: this.username,
             password: this.password,
           })

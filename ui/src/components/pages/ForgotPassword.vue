@@ -1,53 +1,107 @@
 <template>
-  <form class="form" novalidate="true" @submit.prevent="handleSubmit">
-    <h1 class="heading">Forgot Password?</h1>
-    <p class="instruction">
-      Enter your account email address and we will send you a link to reset your
-      password.
-    </p>
-    <div
-      class="input-container"
-      :class="{
-        valid: !$v.email.$invalid,
-        'not-valid': $v.email.$error,
-      }"
-    >
-      <label for="email">Email</label>
+  <div class="container">
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-success"
+        @closeNotif="closeMessage()"
+        v-if="succeeded"
+      >
+        {{ successMessage }}
+      </notification>
+    </transition>
+    <transition name="slide" mode="out-in">
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
+        {{ errorMessage }}
+      </notification>
+    </transition>
+    <form class="form" novalidate="true" @submit.prevent="handleSubmit">
+      <h1 class="heading">Forgot Password?</h1>
+      <p class="instruction">
+        Enter your account email address and we will send you a link to reset
+        your password.
+      </p>
+      <div
+        class="input-container"
+        :class="{
+          valid: !$v.email.$invalid,
+          'not-valid': $v.email.$error,
+        }"
+      >
+        <label for="email">Email</label>
 
-      <input
-        v-focus
-        required
-        class="entry"
-        id="email"
-        type="email"
-        v-model.trim="$v.email.$model"
-        placeholder="name@example.com"
-        autocomplete="email"
-      />
-      <div v-show="$v.email.$dirty">
-        <span v-show="!$v.email.required" class="error">Email is required</span>
+        <input
+          v-focus
+          required
+          class="entry"
+          id="email"
+          type="email"
+          v-model.trim="$v.email.$model"
+          placeholder="name@example.com"
+          autocomplete="email"
+        />
+        <div v-show="$v.email.$dirty">
+          <span v-show="!$v.email.required" class="error"
+            >Email is required</span
+          >
+        </div>
       </div>
-    </div>
-    <button class="reset-btn" type="submit">
-      Request Password Reset
-    </button>
-  </form>
+      <button class="reset-btn" type="submit">
+        Request Password Reset
+      </button>
+    </form>
+  </div>
 </template>
 
 <script>
 import { required, email } from "vuelidate/lib/validators"
+import axios from "axios"
+import Notification from "@/components/elements/Notification"
 export default {
   data() {
     return {
       email: "",
+      succeeded: false,
+      errored: false,
+      errorMessage: "",
+      successMessage:
+        "We've sent a password reset link to the email you specified",
     }
   },
 
-  // notif
-
+  components: {
+    notification: Notification,
+  },
   methods: {
     handleSubmit() {
-      console.log("submitted")
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        this.errored = true
+        this.errorMessage = "Please enter a valid email address"
+      } else {
+        axios
+          .delete("/api/v1/users/password/", {
+            data: {
+              email: this.email,
+            },
+          })
+          .then((response) => {
+            this.succeeded = true
+            this.errored = false
+          })
+          .catch((error) => {
+            this.errored = true
+            this.succeeded = false
+            this.errorMessage =
+              error.response.data.verbose_msg ||
+              "An error occurred. Please try again later!"
+          })
+      }
+    },
+    close() {
+      this.errored = false
+    },
+    closeMessage() {
+      this.succeeded = false
     },
   },
   validations: {

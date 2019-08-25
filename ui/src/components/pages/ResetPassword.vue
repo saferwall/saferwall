@@ -1,116 +1,181 @@
 <!-- refactor input/login markup/logic into reusable vue components -->
 
 <template>
-  <form class="form" novalidate="true" @submit.prevent="handleSubmit">
-    <h1 class="heading">Reset Password</h1>
-    <p class="instruction">
-      Password must be at least 8 characters long.
-    </p>
-    <div
-      class="input-container"
-      :class="{
-        valid: !$v.password.$invalid,
-        'not-valid': $v.password.$error,
-      }"
-    >
-      <label for="password">New Password</label>
-      <div>
+  <div class="container">
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-success"
+        @closeNotif="closeMessage()"
+        v-if="succeeded"
+      >
+        {{ successMessage }}
+      </notification>
+    </transition>
+    <transition name="slide" mode="out-in">
+      <notification type="is-danger" @closeNotif="close()" v-if="errored">
+        {{ errorMessage }}
+      </notification>
+    </transition>
+    <form class="form" novalidate="true" @submit.prevent="handleSubmit">
+      <h1 class="heading">Reset Password</h1>
+      <p class="instruction">
+        Password must be at least 8 characters long.
+      </p>
+      <div
+        class="input-container"
+        :class="{
+          valid: !$v.password.$invalid,
+          'not-valid': $v.password.$error,
+        }"
+      >
+        <label for="password">New Password</label>
+        <div>
+          <input
+            v-focus
+            required
+            class="entry"
+            id="password"
+            :type="showPassword ? 'text' : 'password'"
+            v-model.trim="$v.password.$model"
+            placeholder="Minimum 8 characters"
+            autocomplete="new-password"
+          /><button
+            class="show-hide"
+            @click.prevent="showPassword = !showPassword"
+          >
+            <svg
+              v-if="showPassword"
+              key="show-toggle"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+              />
+            </svg>
+            <svg
+              v-else
+              key="show-toggle"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z"
+                fill="none"
+              />
+              <path
+                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div v-show="$v.password.$dirty">
+          <span v-show="!$v.password.required" class="error"
+            >Password is required</span
+          >
+          <span v-show="!$v.password.minLength" class="error"
+            >Must be at least
+            {{ $v.password.$params.minLength.min }} characters</span
+          >
+        </div>
+      </div>
+      <div
+        class="input-container"
+        :class="{
+          valid: !$v.password.$invalid && !$v.repeatPassword.$invalid,
+          'not-valid': $v.repeatPassword.$error,
+        }"
+      >
+        <label for="repeatPassword">Confirm New Password</label>
+
         <input
-          v-focus
           required
           class="entry"
-          id="password"
-          :type="showPassword ? 'text' : 'password'"
-          v-model.trim="$v.password.$model"
-          placeholder="Minimum 8 characters"
+          id="repeatPassword"
+          type="password"
+          v-model.trim="$v.repeatPassword.$model"
+          placeholder="Retype New Password"
           autocomplete="new-password"
-        /><button
-          class="show-hide"
-          @click.prevent="showPassword = !showPassword"
-        >
-          <svg
-            v-if="showPassword"
-            key="show-toggle"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
+        />
+        <div v-show="$v.repeatPassword.$dirty">
+          <span v-show="!$v.repeatPassword.sameAsPassword" class="error"
+            >Passwords must be identical</span
           >
-            <path d="M0 0h24v24H0z" fill="none" />
-            <path
-              d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-            />
-          </svg>
-          <svg
-            v-else
-            key="show-toggle"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z"
-              fill="none"
-            />
-            <path
-              d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
-            />
-          </svg>
-        </button>
+        </div>
       </div>
-      <div v-show="$v.password.$dirty">
-        <span v-show="!$v.password.required" class="error"
-          >Password is required</span
-        >
-        <span v-show="!$v.password.minLength" class="error"
-          >Must be at least
-          {{ $v.password.$params.minLength.min }} characters</span
-        >
-      </div>
-    </div>
-    <div
-      class="input-container"
-      :class="{
-        valid: !$v.password.$invalid && !$v.repeatPassword.$invalid,
-        'not-valid': $v.repeatPassword.$error,
-      }"
-    >
-      <label for="repeatPassword">Confirm New Password</label>
-
-      <input
-        required
-        class="entry"
-        id="repeatPassword"
-        type="password"
-        v-model.trim="$v.repeatPassword.$model"
-        placeholder="Retype New Password"
-        autocomplete="new-password"
-      />
-      <div v-show="$v.repeatPassword.$dirty">
-        <span v-show="!$v.repeatPassword.sameAsPassword" class="error"
-          >Passwords must be identical</span
-        >
-      </div>
-    </div>
-    <button class="reset-btn" type="submit">
-      Reset Password
-    </button>
-  </form>
+      <button class="reset-btn" type="submit">
+        Reset Password
+      </button>
+    </form>
+  </div>
 </template>
 
 <script>
 import { required, minLength, sameAs } from "vuelidate/lib/validators"
+import axios from "axios"
+import queryString from "query-string"
+import Notification from "@/components/elements/Notification"
+
 export default {
   data() {
     return {
       password: "",
       repeatPassword: "",
       showPassword: false,
+      errored: false,
+      succeeded: false,
+      errorMessage: "",
+      successMessage: "Password reset successful!",
     }
   },
-
+  components: {
+    notification: Notification,
+  },
   methods: {
     handleSubmit() {
-      console.log("submitted")
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        this.errored = true
+        this.errorMessage =
+          "Please correct all highlighted errors and try again"
+      } else {
+        const { token } = this.$route.query
+        const postData = {
+          password: this.password,
+        }
+        const axiosConfig = {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          params: {
+            token,
+          },
+          paramsSerializer: (params) =>
+            queryString.stringify(params, { arrayFormat: "bracket" }),
+        }
+        axios
+          .post("/api/v1/users/password/", postData, axiosConfig)
+          .then((response) => {
+            this.succeeded = true
+            this.errored = false
+          })
+          .catch((error) => {
+            this.errored = true
+            this.succeeded = false
+            this.errorMessage =
+              error.response.data.verbose_msg ||
+              "An error occurred. Please try again later!"
+          })
+      }
+    },
+    close() {
+      this.errored = false
+    },
+    closeMessage() {
+      this.succeeded = false
     },
   },
   validations: {
