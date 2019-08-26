@@ -1,6 +1,6 @@
 module.exports = {
-  extends: ["plugin:vue/essential", "standard", "plugin:prettier/recommended"],
-  plugins: ["vue", "prettier", "standard"],
+  extends: ["plugin:vue/essential", "standard", "prettier"],
+  plugins: ["vue", "standard"],
   rules: {
     // don't require .vue extension when importing
     "import/extensions": [
