@@ -1,63 +1,26 @@
+<!-- refactor input/login markup/logic into reusable vue components -->
+
 <template>
   <div class="container">
+    <transition name="slide" mode="out-in">
+      <notification
+        type="is-success"
+        @closeNotif="closeMessage()"
+        v-if="succeeded"
+      >
+        {{ successMessage }}
+      </notification>
+    </transition>
     <transition name="slide" mode="out-in">
       <notification type="is-danger" @closeNotif="close()" v-if="errored">
         {{ errorMessage }}
       </notification>
     </transition>
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
-      <h1 class="signup">Create Your Account</h1>
-      <div
-        class="input-container"
-        :class="{
-          valid: !$v.username.$invalid,
-          'not-valid': $v.username.$error,
-        }"
-      >
-        <label for="username">Username</label>
-
-        <input
-          v-focus
-          required
-          class="entry"
-          id="username"
-          type="text"
-          v-model.trim="$v.username.$model"
-          placeholder="e.g. John123"
-          autocomplete="username"
-        />
-        <div v-show="$v.username.$dirty">
-          <span v-show="!$v.username.required" class="error"
-            >Username is required</span
-          >
-        </div>
-      </div>
-      <div
-        class="input-container"
-        :class="{
-          valid: !$v.email.$invalid,
-          'not-valid': $v.email.$error,
-        }"
-      >
-        <label for="email">Email</label>
-        <input
-          required
-          class="entry"
-          id="email"
-          type="email"
-          v-model.trim="$v.email.$model"
-          placeholder="name@example.com"
-          autocomplete="email"
-        />
-        <div v-show="$v.email.$dirty">
-          <span v-show="!$v.email.required" class="error"
-            >Email is required</span
-          >
-
-          <span v-show="!$v.email.email" class="error">Email is not valid</span>
-          <!-- Add email in use constraint following backend implementation -->
-        </div>
-      </div>
+      <h1 class="heading">Reset Password</h1>
+      <p class="instruction">
+        Password must be at least 8 characters long.
+      </p>
       <div
         class="input-container"
         :class="{
@@ -65,9 +28,10 @@
           'not-valid': $v.password.$error,
         }"
       >
-        <label for="password">Password</label>
+        <label for="password">New Password</label>
         <div>
           <input
+            v-focus
             required
             class="entry"
             id="password"
@@ -112,57 +76,59 @@
           <span v-show="!$v.password.required" class="error"
             >Password is required</span
           >
-
           <span v-show="!$v.password.minLength" class="error"
             >Must be at least
             {{ $v.password.$params.minLength.min }} characters</span
           >
         </div>
       </div>
-      <p :class="{ 'tos-required': $v.terms.$dirty && !$v.terms.sameAs }">
-        <input v-model="$v.terms.$model" type="checkbox" id="tos" />
-        <label for="tos"
-          >&nbsp;I agree to the&nbsp;<router-link
-            to="/tos"
-            class="has-text-link"
-            >Terms of Service</router-link
-          ></label
-        >
-      </p>
-      <button class="login" type="submit">
-        Create Account
+      <div
+        class="input-container"
+        :class="{
+          valid: !$v.password.$invalid && !$v.repeatPassword.$invalid,
+          'not-valid': $v.repeatPassword.$error,
+        }"
+      >
+        <label for="repeatPassword">Confirm New Password</label>
+
+        <input
+          required
+          class="entry"
+          id="repeatPassword"
+          type="password"
+          v-model.trim="$v.repeatPassword.$model"
+          placeholder="Retype New Password"
+          autocomplete="new-password"
+        />
+        <div v-show="$v.repeatPassword.$dirty">
+          <span v-show="!$v.repeatPassword.sameAsPassword" class="error"
+            >Passwords must be identical</span
+          >
+        </div>
+      </div>
+      <button class="reset-btn" type="submit">
+        Reset Password
       </button>
     </form>
-    <h3 class="already-member">
-      Already have an account?
-      <router-link to="/login" class="has-text-link">Sign in</router-link>
-    </h3>
   </div>
 </template>
 
 <script>
-import {
-  required,
-  minLength,
-  email,
-  helpers,
-  sameAs,
-} from "vuelidate/lib/validators"
+import { required, minLength, sameAs } from "vuelidate/lib/validators"
 import axios from "axios"
+import queryString from "query-string"
 import Notification from "@/components/elements/Notification"
-
-const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
 export default {
   data() {
     return {
-      username: "",
-      email: "",
       password: "",
-      terms: false,
+      repeatPassword: "",
       showPassword: false,
       errored: false,
+      succeeded: false,
       errorMessage: "",
+      successMessage: "Password reset successful!",
     }
   },
   components: {
@@ -176,72 +142,63 @@ export default {
         this.errorMessage =
           "Please correct all highlighted errors and try again"
       } else {
+        const { token } = this.$route.query
+        const postData = {
+          password: this.password,
+        }
+        const axiosConfig = {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          params: {
+            token,
+          },
+          paramsSerializer: (params) =>
+            queryString.stringify(params, { arrayFormat: "bracket" }),
+        }
         axios
-          .post("/api/v1/users/", {
-            username: this.username,
-            email: this.email,
-            password: this.password,
-          })
+          .post("/api/v1/users/password/", postData, axiosConfig)
           .then((response) => {
+            this.succeeded = true
             this.errored = false
-            this.$router.push({
-              path: "login",
-              query: {
-                confirm: "email",
-              },
-            })
           })
-          .catch(
-            // server responded with a status code that falls out of the range of 2xx
-            (error) => {
-              this.errored = true
-              this.errorMessage = error.response.data.verbose_msg
-            },
-          )
+          .catch((error) => {
+            this.errored = true
+            this.succeeded = false
+            this.errorMessage =
+              error.response.data.verbose_msg ||
+              "An error occurred. Please try again later!"
+          })
       }
     },
     close() {
       this.errored = false
     },
+    closeMessage() {
+      this.succeeded = false
+    },
   },
   validations: {
-    username: {
-      required,
-      usernameValid,
-    },
-    email: {
-      required,
-      email,
-    },
     password: {
       required,
       minLength: minLength(8),
     },
-    terms: {
-      sameAs: sameAs(() => true),
+    repeatPassword: {
+      sameAsPassword: sameAs("password"),
     },
   },
 }
 </script>
 
 <style lang="scss" scoped>
-@mixin bounce {
-  display: inline-block;
-  animation-duration: 0.3s;
-  animation-iteration-count: 3;
-  animation-name: bounce;
-  animation-timing-function: ease-in-out;
-}
-.container {
-  margin-bottom: 4em;
-}
 .form {
   display: grid;
+  text-align: center;
+  grid-row-gap: 1em;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
-  width: 100%;
-  grid-row-gap: 0.1em;
+  width: min-content;
   padding: 4em;
   color: #333333;
   background-color: white;
@@ -249,16 +206,46 @@ export default {
   border-radius: 0.25rem;
   border: 1px solid #33333330;
 }
-
-.signup {
-  font-size: 2em;
-  margin-bottom: 1em;
-  text-align: center;
+.input-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
 }
 
-.already-member {
-  font-size: 16px;
-  text-align: center;
+.input-container > label {
+  text-align: left;
+}
+
+.input-container > div {
+  width: 340px;
+  display: flex;
+  flex-direction: row;
+}
+.input-container:hover,
+.input-container:focus-within {
+  .show-hide,
+  .entry {
+    border-color: #3333336b;
+    outline: none;
+  }
+}
+
+.show-hide {
+  width: 12%;
+  background: none;
+  border-radius: 0 0.25rem 0.25rem 0;
+  border-width: 1px 1px 1px 0;
+  border-style: solid;
+  border-color: #33333335;
+  box-shadow: inset -6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
+}
+
+.show-hide > svg {
+  fill: #33333380;
+}
+.input-container > div > input {
+  border-radius: 0.25rem 0 0 0.25rem !important;
+  border-right: 0 !important;
 }
 
 .valid {
@@ -285,72 +272,9 @@ export default {
     border-color: #bb0000 !important;
   }
 }
-
-.input-container {
-  display: flex;
-  height: 100px;
-  flex-direction: column;
+.form .entry:focus {
+  outline: none;
 }
-.input-container > div {
-  width: 340px;
-  display: flex;
-  flex-direction: row;
-}
-
-/* animate tos on error */
-.tos-required {
-  input {
-    outline: 2px solid #bb0000;
-  }
-  label {
-    @include bounce;
-  }
-}
-@keyframes bounce {
-  0% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(4px);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.input-container:hover,
-.input-container:focus-within {
-  .show-hide,
-  .entry {
-    border-color: #3333336b;
-    outline: none;
-  }
-}
-
-.input-container > div > input {
-  border-radius: 0.25rem 0 0 0.25rem !important;
-  border-right: 0 !important;
-}
-
-.show-hide {
-  width: 12%;
-  background: none;
-  border-radius: 0 0.25rem 0.25rem 0;
-  border-width: 1px 1px 1px 0;
-  border-style: solid;
-  border-color: #33333335;
-  box-shadow: inset -6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
-}
-
-.show-hide > svg {
-  fill: #33333380;
-}
-.error {
-  font-size: 0.8em;
-  color: #bb0000;
-  font-weight: 100;
-}
-
 .form .entry {
   width: 340px;
   min-height: 45px;
@@ -363,11 +287,22 @@ export default {
   box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
 }
-
-.form .entry:focus {
-  outline: none;
+.error {
+  font-size: 0.8em;
+  color: #bb0000;
+  font-weight: 100;
 }
-.login {
+
+.heading {
+  font-size: 1.5em;
+}
+
+.instruction {
+  font-size: 1em;
+  line-height: 1.4em;
+  font-weight: 300;
+}
+.reset-btn {
   cursor: pointer;
   border-radius: 0.25rem;
   font-size: inherit;
@@ -376,14 +311,5 @@ export default {
   color: white;
   background-color: #e7501d;
   border: none;
-}
-
-.form label {
-  font-weight: 600;
-}
-.form label[for="tos"] {
-  font-weight: normal;
-  vertical-align: middle;
-  font-size: 0.9em;
 }
 </style>

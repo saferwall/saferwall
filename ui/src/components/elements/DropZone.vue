@@ -32,51 +32,51 @@ export default {
   props: {
     enabled: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   data() {
-    return { highlight: false };
+    return { highlight: false }
   },
   methods: {
     onDragOver() {
-      if (!this.enabled) return;
-      this.highlight = true;
+      if (!this.enabled) return
+      this.highlight = true
     },
     onDragLeave() {
-      this.highlight = false;
+      this.highlight = false
     },
     onDrop(e) {
-      if (!this.enabled) return;
-      const files = e.dataTransfer.files;
-      const fileIsSelected = files.length > 0;
+      if (!this.enabled) return
+      const files = e.dataTransfer.files
+      const fileIsSelected = files.length > 0
 
       if (fileIsSelected) {
-        const file = e.dataTransfer.files.item(0);
-        this.$emit("fileAdded", file);
-        this.highlight = false;
+        const file = e.dataTransfer.files.item(0)
+        this.$emit("fileAdded", file)
+        this.highlight = false
       } else {
-        alert("Please select a file to upload");
+        alert("Please select a file to upload")
       }
     },
     openFileDialog() {
-      if (!this.enabled) return;
-      this.$refs.fileInput.click();
+      if (!this.enabled) return
+      this.$refs.fileInput.click()
     },
     onFileChange(e) {
-      const files = e.target.files;
-      const fileIsSelected = files.length > 0;
+      const files = e.target.files
+      const fileIsSelected = files.length > 0
 
       if (fileIsSelected) {
-        const file = e.target.files.item(0);
-        this.$emit("fileAdded", file);
-        this.highlight = false;
+        const file = e.target.files.item(0)
+        this.$emit("fileAdded", file)
+        this.highlight = false
       } else {
-        alert("Please select a file to upload");
+        alert("Please select a file to upload")
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>

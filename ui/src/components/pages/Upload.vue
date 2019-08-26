@@ -46,22 +46,20 @@
   </div>
 </template>
 <script>
-import Tabs from "@/components/elements/Tabs";
-import Tab from "@/components/elements/Tab";
-import Notification from "@/components/elements/Notification";
-import { sha256 } from "js-sha256";
-import axios from "axios";
-import Scanning from "@/components/pages/Scanning";
-import DropZone from "@/components/elements/DropZone";
-import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker";
+import Tabs from "@/components/elements/Tabs"
+import Tab from "@/components/elements/Tab"
+import Notification from "@/components/elements/Notification"
+import axios from "axios"
+import DropZone from "@/components/elements/DropZone"
+import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
 
 const step = {
   UPLOADED: 1,
   QUEUED: 2,
   PROCESSING: 3,
   FINISHED: 4,
-  READY: 5
-};
+  READY: 5,
+}
 
 export default {
   data() {
@@ -71,8 +69,8 @@ export default {
       notifActive: false,
       uploading: false,
       ongoingStep: 0, // by default, no step has started yet (0), next we move to step 1, 2 and so on
-      pollInterval: null
-    };
+      pollInterval: null,
+    }
   },
   components: {
     tabs: Tabs,
@@ -80,58 +78,58 @@ export default {
     notification: Notification,
     DropZone,
     ProgressTracker,
-    StepItem
+    StepItem,
   },
   methods: {
     tabChanged(selectedTab) {
-      this.selectedTab = selectedTab;
+      this.selectedTab = selectedTab
     },
     close() {
-      this.notifActive = false;
+      this.notifActive = false
     },
     onFileAdded(file) {
       if (!file) {
-        return;
+        return
       }
 
       // check if size exceeds 64mb
       if (file.size > 64000000) {
-        this.notifActive = true;
-        this.notificationError = "File size exceeds 64MB !";
-        return;
+        this.notifActive = true
+        this.notificationError = "File size exceeds 64MB !"
+        return
       }
-      const reader = new FileReader();
-      reader.onload = loadEvent => {
+      const reader = new FileReader()
+      reader.onload = (loadEvent) => {
         // file has been read successfully
-        const fileBuffer = loadEvent.target.result;
+        const fileBuffer = loadEvent.target.result
         crypto.subtle
           .digest("SHA-256", fileBuffer)
-          .then(hashBuffer => {
-            const hashArray = new Uint8Array(hashBuffer);
-            let hashHex = "";
+          .then((hashBuffer) => {
+            const hashArray = new Uint8Array(hashBuffer)
+            let hashHex = ""
             for (let i = 0; i < hashArray.byteLength; i++) {
-              let hex = new Number(hashArray[i]).toString("16");
-              if (hex.length == 1) {
-                hex = "0" + hex;
+              let hex = new Number(hashArray[i]).toString("16")
+              if (hex.length === 1) {
+                hex = "0" + hex
               }
-              hashHex += hex;
+              hashHex += hex
             }
             // hash hexadecimal has been calculated successfully
             axios
-              .get(`/api/v1/files/${hashHex}`)
-              .then(response => {
-                //file exists
-                this.$router.push(`summary/${hashHex}`);
+              .get(`/api/v1/files/${hashHex}/`)
+              .then((response) => {
+                // file exists
+                this.$router.push(`summary/${hashHex}`)
               })
-              .catch(error => {
-                this.ongoingStep = step.UPLOADED;
-                let formData = new FormData();
-                formData.append("file", file);
+              .catch(() => {
+                this.ongoingStep = step.UPLOADED
+                const formData = new FormData()
+                formData.append("file", file)
                 axios
-                  .post("/api/v1/files", formData, {
+                  .post("/api/v1/files/", formData, {
                     headers: {
-                      "Content-Type": "multipart/form-data"
-                    }
+                      "Content-Type": "multipart/form-data",
+                    },
                   })
                   .then(() => {
                     // set a poll interval of 5s
@@ -139,64 +137,63 @@ export default {
                     this.pollInterval = setInterval(
                       this.fetchStatus,
                       5,
-                      hashHex
-                    );
+                      hashHex,
+                    )
                     setTimeout(() => {
-                      clearInterval(this.pollInterval);
-                    }, 36000000); //stop polling after an hour
+                      clearInterval(this.pollInterval)
+                    }, 36000000) // stop polling after an hour
                   })
-                  .catch(console.log);
-              });
+                  .catch(console.log)
+              })
           })
-          .catch(error => {
-            this.notifActive = true;
+          .catch(() => {
+            this.notifActive = true
             this.notificationError =
-              "Sorry, we couldn't upload the file. Please, try again!";
-          });
-      };
-      reader.readAsArrayBuffer(file);
+              "Sorry, we couldn't upload the file. Please, try again!"
+          })
+      }
+      reader.readAsArrayBuffer(file)
     },
     fetchStatus(hashHex) {
       axios
-        .get(`/api/v1/files/${hashHex}`)
-        .then(response => {
-          const status = response.data.status;
-          //change ongoingStep according to status
+        .get(`/api/v1/files/${hashHex}/`)
+        .then((response) => {
+          const status = response.data.status
+          // change ongoingStep according to status
           // status
-          //0: queued
-          //1: processing
-          //2: finished
+          // 0: queued
+          // 1: processing
+          // 2: finished
           switch (status) {
             case 0:
-              this.ongoingStep = step.ENQUEUE;
-              break;
+              this.ongoingStep = step.ENQUEUE
+              break
             case 1:
-              this.ongoingStep = step.PROCESSING;
-              break;
+              this.ongoingStep = step.PROCESSING
+              break
             case 2:
-              this.ongoingStep = step.FINISHED;
+              this.ongoingStep = step.FINISHED
               // stop polling
-              clearInterval(this.pollInterval);
+              clearInterval(this.pollInterval)
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: "Summary",
-                  params: { hash: hashHex }
-                });
-              }, 4000);
-              break;
+                  name: "summary",
+                  params: { hash: hashHex },
+                })
+              }, 4000)
+              break
           }
         })
-        .catch(error => {
-          this.notifActive = true;
-          //this.notificationError = error.response.data.verbose_msg;
+        .catch(() => {
+          this.notifActive = true
         })
         .finally(() => {
-          clearInterval(this.pollInterval);
-        });
-    }
-  }
-};
+          clearInterval(this.pollInterval)
+        })
+    },
+  },
+}
 </script>
 <style lang="scss" scoped>
 .slide-enter-active,

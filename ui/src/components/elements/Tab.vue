@@ -1,8 +1,7 @@
 <template>
-    <div v-show="isActive">
-        <slot>
-        </slot>
-    </div>
+  <div v-show="isActive">
+    <slot> </slot>
+  </div>
 </template>
 <script>
 export default {
@@ -11,20 +10,17 @@ export default {
       required: true,
     },
     selected: {
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
-      isActive: false
+      isActive: false,
     }
   },
   mounted() {
-    this.isActive = this.selected;
-  }
+    this.isActive = this.selected
+  },
 }
 </script>
-<style lang="scss" scoped>
-
-</style>
-
+<style lang="scss" scoped></style>
