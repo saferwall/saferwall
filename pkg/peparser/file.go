@@ -18,10 +18,13 @@ type File struct {
 	OptionalHeader   OptionalHeader32
 	OptionalHeader64 OptionalHeader64
 	Sections         []ImageSectionHeader
+	Imports          []Import
 
-
-	data mmap.MMap
+	Header    []byte
+	data      mmap.MMap
+	closer    io.Closer
 	Is64      bool
+	Anomalies []string
 }
 
 // Open opens the named file using os.Open and prepares it for use as a PE binary.
@@ -45,8 +48,6 @@ func Open(name string) (File, error) {
 	file.data = data
 	return file, nil
 }
-
-
 
 // Parse performs the file parsing for a PE binary.
 func (pe *File) Parse() error {
@@ -86,6 +87,12 @@ func (pe *File) Parse() error {
 		return err
 	}
 
+	// Parse the Data Directory entries
+	err = pe.parseDataDirectories()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -114,7 +121,6 @@ func (pe *File) parseDosHeader() (err error) {
 
 	return nil
 }
-
 
 func (pe *File) parseNtHeader() (err error) {
 	ntHeaderOffset := pe.DosHeader.Elfanew
@@ -147,7 +153,6 @@ func (pe *File) parseNtHeader() (err error) {
 	return nil
 }
 
-
 func (pe *File) parseFileHeader() (err error) {
 	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 	size := uint32(binary.Size(pe.FileHeader))
@@ -159,7 +164,6 @@ func (pe *File) parseFileHeader() (err error) {
 
 	return nil
 }
-
 
 func (pe *File) parseOptionalHeader() (err error) {
 
@@ -206,7 +210,6 @@ func (pe *File) parseOptionalHeader() (err error) {
 	return nil
 }
 
-
 func (pe *File) parseSectionHeader() (err error) {
 
 	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
@@ -233,19 +236,19 @@ func (pe *File) parseSectionHeader() (err error) {
 	// for potentially overlapping sections in badly constructed PEs.
 	sort.Sort(byVirtualAddress(pe.Sections))
 
-    // There could be a problem if there are no raw data sections
-    // greater than 0
-    // fc91013eb72529da005110a3403541b6 example
-    // Should this throw an exception in the minimum header offset
-    // can't be found?
+	// There could be a problem if there are no raw data sections
+	// greater than 0
+	// fc91013eb72529da005110a3403541b6 example
+	// Should this throw an exception in the minimum header offset
+	// can't be found?
 
-	if pe.FileHeader.NumberOfSections > 0 && len(pe.Sections)>0 {
-		offset =  offset + (sectionSize * uint32(pe.FileHeader.NumberOfSections))
+	if pe.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
+		offset = offset + (sectionSize * uint32(pe.FileHeader.NumberOfSections))
 	}
 
-	var rawDataPointers []uint32  
-	for _, s  := range pe.Sections {
-		if s.PointerToRawData>0 {
+	var rawDataPointers []uint32
+	for _, s := range pe.Sections {
+		if s.PointerToRawData > 0 {
 			rawDataPointers = append(rawDataPointers, pe.adjustFileAlignment(s.PointerToRawData))
 		}
 	}
@@ -260,8 +263,23 @@ func (pe *File) parseSectionHeader() (err error) {
 	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
 		pe.Header = pe.data[:offset]
 	} else {
-		pe.Header =	pe.data[:lowestSectionOffset]
+		pe.Header = pe.data[:lowestSectionOffset]
 	}
 
+	return nil
+}
+
+func (pe *File) parseDataDirectories() (err error) {
+	if pe.Is64 {
+		importDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryImport]
+		err := pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		return err
+	}
+
+	if !pe.Is64 {
+		importDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryImport]
+		err := pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		return err
+	}
 	return nil
 }

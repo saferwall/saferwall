@@ -11,6 +11,120 @@ const (
 	ImageNTSignature    = 0x00004550 // PE00
 )
 
+// Optional Header magic
+const (
+	ImageNtOptionalHeader32Magic = 0x10b
+	ImageNtOptionalHeader64Magic = 0x20b
+	ImageROMOptionalHeaderMagic  = 0x10
+)
+
+// Image file machine types
+const (
+	ImageFileMachineUnknown   uint32 = 0x0    // The contents of this field are assumed to be applicable to any machine type
+	ImageFileMachineAM33      uint32 = 0x1d3  // Matsushita AM33
+	ImageFileMachineAMD64     uint32 = 0x8664 // x64
+	ImageFileMachineARM       uint32 = 0x1c0  // ARM little endian
+	ImageFileMachineARM64     uint32 = 0xaa64 // ARM64 little endian
+	ImageFileMachineARMNT     uint32 = 0x1c4  // ARM Thumb-2 little endian
+	ImageFileMachineEBC       uint32 = 0xebc  // EFI byte code
+	ImageFileMachineI386      uint32 = 0x14c  // Intel 386 or later processors and compatible processors
+	ImageFileMachineIA64      uint32 = 0x200  // Intel Itanium processor family
+	ImageFileMachineM32R      uint32 = 0x9041 // Mitsubishi M32R little endian
+	ImageFileMachineMIPS16    uint32 = 0x266  // MIPS16
+	ImageFileMachineMIPSFPU   uint32 = 0x366  // MIPS with FPU
+	ImageFileMachineMIPSFPU16 uint32 = 0x466  // MIPS16 with FPU
+	ImageFileMachinePOWERPC   uint32 = 0x1f0  // Power PC little endian
+	ImageFileMachinePOWERPCFP uint32 = 0x1f1  // Power PC with floating point support
+	ImageFileMachineR4000     uint32 = 0x166  // MIPS little endian
+	ImageFileMachineRISCV32   uint32 = 0x5032 // RISC-V 32-bit address space
+	ImageFileMachineRISCV64   uint32 = 0x5064 // RISC-V 64-bit address space
+	ImageFileMachineRISCV128  uint32 = 0x5128 // RISC-V 128-bit address space
+	ImageFileMachineSH3       uint32 = 0x1a2  // Hitachi SH3
+	ImageFileMachineSH3DSP    uint32 = 0x1a3  // Hitachi SH3 DSP
+	ImageFileMachineSH4       uint32 = 0x1a6  // Hitachi SH4
+	ImageFileMachineSH5       uint32 = 0x1a8  // Hitachi SH5
+	ImageFileMachineTHUMB     uint32 = 0x1c2  // Thumb
+	ImageFileMachineWCEMIPSV2 uint32 = 0x169  // MIPS little-endian WCE v2
+)
+
+// The Characteristics field contains flags that indicate attributes of the object or image file.
+const (
+	ImageFileRelocsStripped       = 0x0001 // Relocation info stripped from file.
+	ImageFileExecutableImage      = 0x0002 // File is executable  (i.e. no unresolved external references).
+	ImageFileLineNumsStripped     = 0x0004 // Line nunbers stripped from file.
+	ImageFileLocalSymsStripped    = 0x0008 // Local symbols stripped from file.
+	ImageFileAgressibeWsTrim      = 0x0010 // Aggressively trim working set
+	ImageFileLargeAddressAware    = 0x0020 // App can handle >2gb addresses
+	ImageFileBytesReservedLow     = 0x0080 // Bytes of machine word are reversed.
+	ImageFile32BitMachine         = 0x0100 // 32 bit word machine.
+	ImageFileDebugStripped        = 0x0200 // Debugging info stripped from file in .DBG file
+	ImageFileRemovableRunFromSwap = 0x0400 // If Image is on removable media, copy and run from the swap file.
+	ImageFileNetRunFromSwap       = 0x0800 // If Image is on Net, copy and run from the swap file.
+	ImageFileSystem               = 0x1000 // System File.
+	ImageFileDLL                  = 0x2000 // File is a DLL.
+	ImageFileUpSystemOnly         = 0x4000 // File should only be run on a UP machine
+	ImageFileBytesReservedHigh    = 0x8000 // Bytes of machine word are reversed.
+)
+
+// Subsystem values of an OptionalHeader
+const (
+	ImageSubsystemUnknown                = 0  // An unknown subsystem.
+	ImageSubsystemNative                 = 1  // Device drivers and native Windows processes
+	ImageSubsystemWindowsGui             = 2  // The Windows graphical user interface (GUI) subsystem.
+	ImageSubsystemWindowsCui             = 3  // The Windows character subsystem
+	ImageSubsystemOS2Cui                 = 5  // The OS/2 character subsystem.
+	ImageSubsystemPosixCui               = 7  // The Posix character subsystem.
+	ImageSubsystemNativeWindows          = 8  // Native Win9x driver
+	ImageSubsystemWindowsCEGui           = 9  // Windows CE
+	ImageSubsystemEFIApplication         = 10 // An Extensible Firmware Interface (EFI) application
+	ImageSubsystemEFIBootServiceDriver   = 11 // An EFI driver with boot services
+	ImageSubsystemEFIRuntimeDriver       = 12 // An EFI driver with run-time services
+	ImageSubsystemEFIRom                 = 13 // An EFI ROM image .
+	ImageSubsystemXBOX                   = 14 // XBOX.
+	ImageSubsystemWindowsBootApplication = 16 // Windows boot application.
+)
+
+// DllCharacteristics values of an OptionalHeader
+const (
+	ImageDllCharacteristicsReserved1            = 0x0001 // Reserved, must be zero.
+	ImageDllCharacteristicsReserved2            = 0x0002 // Reserved, must be zero.
+	ImageDllCharacteristicsReserved4            = 0x0004 // Reserved, must be zero.
+	ImageDllCharacteristicsReserved8            = 0x0008 // Reserved, must be zero.
+	ImageDllCharacteristicsHighEntropyVa        = 0x0020 // Image can handle a high entropy 64-bit virtual address space
+	ImageDllCharacteristicsDynamicBase          = 0x0040 // DLL can be relocated at load time.
+	ImageDllCharacteristicsForceIntegrity       = 0x0080 // Code Integrity checks are enforced.
+	ImageDllCharacteristicsNXCompact            = 0x0100 // Image is NX compatible.
+	ImageDllCharacteristicsoIsolation           = 0x0200 // Isolation aware, but do not isolate the image.
+	ImageDllCharacteristicsNoSEH                = 0x0400 // Does not use structured exception (SE) handling. No SE handler may be called in this image.
+	ImageDllCharacteristicsNoBind               = 0x0800 // Do not bind the image.
+	ImageDllCharacteristicsAppContainer         = 0x1000 // Image must execute in an AppContainer
+	ImageDllCharacteristicsWdmDriver            = 0x2000 // A WDM driver.
+	ImageDllCharacteristicsGuardCf              = 0x4000 // Image supports Control Flow Guard.
+	ImageDllCharacteristicsTerminalServiceAware = 0x8000 // Terminal Server aware.
+
+)
+
+// DataDirectory entries of an OptionalHeader
+const (
+	ImageDirectoryEntryExport       = 0  // Export Table
+	ImageDirectoryEntryImport       = 1  // Import Table
+	ImageDirectoryEntryResource     = 2  // Resource Table
+	ImageDirectoryEntryException    = 3  // Exception Table
+	ImageDirectoryEntryCertificate  = 4  // Certificate Directory
+	ImageDirectoryEntryBaseReloc    = 5  // Base Relocation Table
+	ImageDirectoryEntryDebug        = 6  // Debug
+	ImageDirectoryEntryArchitecture = 7  // Architecture Specific Data
+	ImageDirectoryEntryGlobalPtr    = 8  // The RVA of the value to be stored in the global pointer register.
+	ImageDirectoryEntryTLS          = 9  // The thread local storage (TLS) table
+	ImageDirectoryEntryLoadConfig   = 10 // The load configuration table
+	ImageDirectoryEntryBoundImport  = 11 // The bound import table
+	ImageDirectoryEntryIAT          = 12 // Import Address Table
+	ImageDirectoryEntryDelayImport  = 13 // Delay Import Descriptor
+	ImageDirectoryEntryCLR          = 14 // CLR Runtime Header
+	ImageDirectoryEntryRESERVED     = 15 // Must be zero
+	ImageNumberOfDirectoryEntries   = 16 // Tables count.
+)
+
 // ImageDosHeader represents the DOS stub of a PE.
 type ImageDosHeader struct {
 	Emagic    uint16     // Magic number
@@ -38,8 +152,6 @@ type ImageDosHeader struct {
 type ImageNtHeader struct {
 	Signature uint32 // Signature is a DWORD containing the value 50h, 45h, 00h, 00h.
 }
-
-
 
 // ImageFileHeader contains info about the physical layout and properties of the file.
 type ImageFileHeader struct {
