@@ -94,7 +94,12 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			maxLen = Max(rva-importDesc.OriginalFirstThunk, rva-importDesc.FirstThunk)
 		}
 
-		importedFunctions, err := pe.parseImports32(&importDesc, maxLen)
+		var importedFunctions []*ImportFunction
+		if pe.Is64 {
+			importedFunctions, err = pe.parseImports64(&importDesc, maxLen)
+		} else {
+			importedFunctions, err = pe.parseImports32(&importDesc, maxLen)
+		}
 		if err != nil {
 			return err
 		}
@@ -413,7 +418,7 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 		return []*ImportFunction{}, err
 	}
 
-	importOffset := uint32(0x4)
+	importOffset := uint32(0x8)
 	importedFunctions := make([]*ImportFunction, 0)
 	numInvalid := uint32(0)
 	for idx := uint32(0); idx < uint32(len(table)); idx++ {
@@ -434,11 +439,11 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 					return []*ImportFunction{}, err
 				}
 				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData) + 2)
+				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData + 2))
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}
-				imp.Offset = pe.getOffsetFromRva(uint32(table[idx].AddressOfData) + 2)
+				imp.Offset = uint32(table[idx].AddressOfData)
 			}
 		}
 
