@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	peparser "github.com/saferwall/pe-parser"
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 func parse(filename string) {

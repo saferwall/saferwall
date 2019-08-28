@@ -19,12 +19,14 @@ type File struct {
 	OptionalHeader64 OptionalHeader64
 	Sections         []ImageSectionHeader
 	Imports          []Import
+	Exports          []ExportFunction
 
 	Header    []byte
 	data      mmap.MMap
 	closer    io.Closer
 	Is64      bool
 	Anomalies []string
+	size      uint32
 }
 
 // Open opens the named file using os.Open and prepares it for use as a PE binary.
@@ -46,6 +48,7 @@ func Open(name string) (File, error) {
 	}
 
 	file.data = data
+	file.size = uint32(len(file.data))
 	return file, nil
 }
 
@@ -272,14 +275,18 @@ func (pe *File) parseSectionHeader() (err error) {
 func (pe *File) parseDataDirectories() (err error) {
 	if pe.Is64 {
 		importDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryImport]
-		err := pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
-		return err
+		err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+
+		exportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryExport]
+		err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+
+	} else {
+		importDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryImport]
+		err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+
+		exportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryExport]
+		err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
 	}
 
-	if !pe.Is64 {
-		importDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryImport]
-		err := pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
-		return err
-	}
-	return nil
+	return err
 }

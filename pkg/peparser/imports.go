@@ -13,6 +13,7 @@ const (
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
 	maxRepeatedAddresses = uint32(16)
 	maxAddressSpread     = uint32(0x8000000) // 64 MB
+	maxAddressSpread64     = uint64(0x8000000) // 64 MB
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
 )
@@ -91,7 +92,11 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		maxLen := uint32(len(pe.data)) - fileOffset
 		if rva > importDesc.OriginalFirstThunk ||
 			rva > importDesc.FirstThunk {
-			maxLen = Max(rva-importDesc.OriginalFirstThunk, rva-importDesc.FirstThunk)
+				if rva < importDesc.OriginalFirstThunk {
+					maxLen = rva-importDesc.FirstThunk
+				} else {
+					maxLen = Max(rva-importDesc.OriginalFirstThunk,rva-importDesc.FirstThunk)
+				}
 		}
 
 		var importedFunctions []*ImportFunction
@@ -127,7 +132,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData32)
 	retVal := make([]*ImageThunkData32, 0)
-	minAddressOfData := ^uint32(0)
+	minAddressOfData := uint32(0)
 	maxAddressOfData := uint32(0)
 	repeatedAddress := uint32(0)
 	var size uint32 = 4
@@ -199,6 +204,14 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 				addressesOfData[thunk.AddressOfData] = true
 			}
 
+			if thunk.AddressOfData >= maxAddressOfData {
+				maxAddressOfData = thunk.AddressOfData
+			}
+
+			if thunk.AddressOfData <= minAddressOfData {
+				minAddressOfData = thunk.AddressOfData
+			}
+
 		}
 
 		thunkTable[rva] = &thunk
@@ -213,9 +226,9 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData64)
 	retVal := make([]*ImageThunkData64, 0)
-	minAddressOfData := ^uint32(0)
-	maxAddressOfData := uint32(0)
-	repeatedAddress := uint32(0)
+	minAddressOfData := uint64(0)
+	maxAddressOfData := uint64(0)
+	repeatedAddress := uint64(0)
 	var size uint32 = 8
 	addressesOfData := make(map[uint64]bool)
 
@@ -228,14 +241,14 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
-		if repeatedAddress >= maxAddressSpread {
+		if repeatedAddress >= maxAddressSpread64 {
 			return []*ImageThunkData64{}, errors.New("bogus data found in imports")
 		}
 
 		// if the addresses point somewhere but the difference between the highest
 		// and lowest address is larger than maxAddressSpread we assume a bogus
 		// table as the addresses should be contained within a module
-		if maxAddressOfData-minAddressOfData > maxAddressSpread {
+		if maxAddressOfData-minAddressOfData > maxAddressSpread64 {
 			return []*ImageThunkData64{}, errors.New("data addresses too spread out")
 		}
 
@@ -285,6 +298,13 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 				addressesOfData[thunk.AddressOfData] = true
 			}
 
+			if thunk.AddressOfData >= maxAddressOfData {
+				maxAddressOfData = thunk.AddressOfData
+			}
+
+			if thunk.AddressOfData <= minAddressOfData {
+				minAddressOfData = thunk.AddressOfData
+			}
 		}
 
 		thunkTable[rva] = &thunk
