@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
@@ -48,24 +49,29 @@ func isDirectory(path string) bool {
 }
 
 func main() {
+	var searchDir string
 
-	currentDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
+	if len(os.Args) > 1 {
+		searchDir = os.Args[1]
+
+	} else {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		searchDir = currentDir + string(os.PathSeparator) + "bin"
 	}
 
-	searchDir := currentDir + string(os.PathSeparator) + "bin"
 	log.Printf("Processing directory %s", searchDir)
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-		if !isDirectory(path) {
+		if !isDirectory(path) && (strings.HasSuffix(path, ".dll") || strings.HasSuffix(path, ".exe")) {
 			fileList = append(fileList, path)
 		}
 		return nil
 	})
-
-	log.Println(fileList)
 
 	for _, file := range fileList {
 		parse(file)

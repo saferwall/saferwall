@@ -71,7 +71,8 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 	for {
 		importDesc := ImageImportDescriptor{}
 		fileOffset := pe.getOffsetFromRva(rva)
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+size])
+		importDescSize := uint32(binary.Size(importDesc))
+		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+importDescSize])
 		err := binary.Read(buf, binary.LittleEndian, &importDesc)
 		// If the RVA is invalid all would blow up. Some EXEs seem to be
 		// specially nasty and have an invalid RVA.
@@ -84,7 +85,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			break
 		}
 
-		rva += uint32(binary.Size(importDesc))
+		rva += importDescSize
 
 		// If the array of thunks is somewhere earlier than the import
 		// descriptor we can set a maximum length for the array. Otherwise
@@ -94,6 +95,8 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			rva > importDesc.FirstThunk {
 				if rva < importDesc.OriginalFirstThunk {
 					maxLen = rva-importDesc.FirstThunk
+				} else if rva < importDesc.FirstThunk{
+					maxLen = rva-importDesc.OriginalFirstThunk
 				} else {
 					maxLen = Max(rva-importDesc.OriginalFirstThunk,rva-importDesc.FirstThunk)
 				}
@@ -109,7 +112,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			return err
 		}
 
-		dllName := pe.getStringAtRVA(importDesc.Name)
+		dllName := pe.getStringAtRVA(importDesc.Name, maxLen)
 		if !IsValidDosFilename(dllName) {
 			dllName = "*invalid*"
 			continue
@@ -139,6 +142,10 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 	addressesOfData := make(map[uint32]bool)
 
 	startRVA := rva
+
+	if rva == 0 {
+		return []*ImageThunkData32{}, nil
+	}
 	for {
 		if rva >= startRVA+maxLen {
 			log.Println("Error parsing the import table. Entries go beyond bounds.")
@@ -365,7 +372,7 @@ func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32)
 					return []*ImportFunction{}, err
 				}
 				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData + 2)
+				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData + 2, 0x200)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}
@@ -459,7 +466,7 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 					return []*ImportFunction{}, err
 				}
 				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData + 2))
+				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData + 2), maxLen)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}

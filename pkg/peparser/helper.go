@@ -188,22 +188,22 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 
 
 // getStringAtRVA returns an ASCII string located at the given address.
-func (pe *File) getStringAtRVA(rva uint32) string {
+func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 	if rva == 0 {
 		return ""
 	}
 
 	section := pe.getSectionByRva(rva)
 	if section == nil {
-		s :=  pe.getStringFromData(0, []byte(pe.data[rva:rva+0x100000]))
+		s :=  pe.getStringFromData(0, []byte(pe.data[rva:rva+maxLen]))
 		return string(s)
 	}
-	s :=  pe.getStringFromData(0, section.Data(rva, uint32(0x100000), pe))
+	s :=  pe.getStringFromData(0, section.Data(rva, maxLen, pe))
 	return string(s)
 }
 
 
-// getStringFromData; Get an ASCII string from within the data.
+// getStringFromData returns ASCII string from within the data.
 func (pe *File) getStringFromData(offset uint32, data []byte) ([]byte) {
 	if offset > uint32(len(data)) {
 		return nil

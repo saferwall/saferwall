@@ -31,7 +31,7 @@ func (section *ImageSectionHeader) NameString() string {
 // NextHeaderAddr returns the VirtualAddress of the next section.
 func (section *ImageSectionHeader) NextHeaderAddr(pe* File) uint32 {
 	for i, currentSection := range pe.Sections {
-		if i == len(pe.Sections) {
+		if i == len(pe.Sections)-1 {
 			return 0
 		}
 

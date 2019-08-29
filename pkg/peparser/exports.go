@@ -64,9 +64,14 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 	// bound in the number of items that can be read from the different arrays.
 	lengthUntilEOF := func(rva uint32) uint32 { return pe.size - pe.getOffsetFromRva(rva) }
 	var length uint32
+	var addressOfNames []byte
+
+	if exportDir.NumberOfFunctions == 0 {
+		 return errors.New("Export Directory counts zero number of functions")
+	}
 
 	length = min(lengthUntilEOF(exportDir.AddressOfNames), exportDir.NumberOfNames*4)
-	addressOfNames, err := pe.getData(exportDir.AddressOfNames, length)
+	addressOfNames, err = pe.getData(exportDir.AddressOfNames, length)
 	if err != nil {
 		return errors.New(errorMsg)
 	}
@@ -124,7 +129,7 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 		// it will point to a string with the forwarded symbol's string
 		// instead of pointing the the function start address.
 		if symbolAddress >= rva && symbolAddress < rva+size {
-			forwarderStr = pe.getStringAtRVA(symbolAddress)
+			forwarderStr = pe.getStringAtRVA(symbolAddress, 0x100000)
 			forwarderOffset = pe.getOffsetFromRva(symbolAddress)
 		} else {
 			forwarderStr = ""
@@ -139,7 +144,7 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 				break
 			}
 		}
-		symbolName := pe.getStringAtRVA(symbolNameAddress)
+		symbolName := pe.getStringAtRVA(symbolNameAddress, 0x100000)
 		if !IsValidFunctionName(symbolName) {
 			parsingFailed = true
 			break
@@ -180,7 +185,66 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 	}
 
 	if parsingFailed {
-		fmt.Println("Parsing failed")
+		fmt.Sprintf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
+	}
+
+
+	maxFailedEntries = 10
+	section = pe.getSectionByRva(exportDir.AddressOfFunctions)
+
+	// Overly generous upper bound
+	safetyBoundary = pe.size
+	if section != nil {
+		safetyBoundary = (section.VirtualAddress + uint32(len(section.Data(0, 0, pe)))) - exportDir.AddressOfNames
+	}
+	parsingFailed = false
+	ordinals := make(map[uint32]bool)
+	for _, exp := range pe.Exports {
+		ordinals[exp.Ordinal] = true
+	}
+	numNames = min(exportDir.NumberOfFunctions, safetyBoundary/4)
+	for i:=uint32(0); i < numNames; i++ {
+		value := i+exportDir.Base
+		if ordinals[value] {
+			continue
+		}
+
+		symbolAddress = binary.LittleEndian.Uint32(addressOfFunctions[i*4:])
+		if symbolAddress == 0 {
+			continue
+		}
+
+		// Checking for forwarder again.
+		if symbolAddress >= rva && symbolAddress < rva+size {
+			forwarderStr = pe.getStringAtRVA(symbolAddress, 0x100000)
+			forwarderOffset = pe.getOffsetFromRva(symbolAddress)
+		} else {
+			forwarderStr = ""
+			fileOffset = 0
+		}
+
+		// File 0b1d3d3664915577ab9a32188d29bbf3542b86c7b9ce333e245496c3018819f1
+		// was being parsed as potentially containing millions of exports.
+		// Checking for duplicates addresses the issue.
+		symbolCounts[symbolAddress]++
+		if symbolCounts[symbolAddress] > 10 {
+			fmt.Printf("Export directory contains more than 10 repeated ordinal entries: Address:%s", symbolAddress)
+			break
+		}
+		if len(symbolCounts) > maxExportedSymbols {
+			fmt.Printf("Export directory contains more than %d ordinal entries:%d. Assuming corrupt.", maxExportedSymbols)
+			break
+		}
+		newExport := ExportFunction{
+			Ordinal: exportDir.Base + i,
+			FunctionRVA: symbolAddress,
+			Forwarder: forwarderStr,
+			ForwarderRVA: forwarderOffset,
+		}
+
+		pe.Exports = append(pe.Exports, newExport)
+
+
 	}
 
 	return nil

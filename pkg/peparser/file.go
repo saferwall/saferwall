@@ -10,7 +10,7 @@ import (
 	mmap "github.com/edsrzf/mmap-go"
 )
 
-// A File represents an open PE file.
+// A File represents an open PE file.pcmd
 type File struct {
 	DosHeader        ImageDosHeader
 	NtHeader         ImageNtHeader
@@ -20,6 +20,7 @@ type File struct {
 	Sections         []ImageSectionHeader
 	Imports          []Import
 	Exports          []ExportFunction
+	Debugs           []DebugEntry
 
 	Header    []byte
 	data      mmap.MMap
@@ -275,17 +276,36 @@ func (pe *File) parseSectionHeader() (err error) {
 func (pe *File) parseDataDirectories() (err error) {
 	if pe.Is64 {
 		importDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryImport]
-		err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		if importDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		}
 
 		exportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryExport]
-		err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		if exportDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		}
 
-	} else {
+		debugDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryDebug]
+		if debugDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
+		}
+	}
+
+	if !pe.Is64 {
 		importDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryImport]
-		err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		if importDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		}
 
 		exportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryExport]
-		err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		if exportDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		}
+
+		debugDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryDebug]
+		if debugDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
+		}
 	}
 
 	return err
