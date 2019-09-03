@@ -3,8 +3,11 @@ package pe
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 )
 
+// The Type field of the relocation record indicates what kind of relocation should be performed.
+// Different relocation types are defined for each type of machine.
 const (
 	ImageRelBasedAbsolute      = 0  // The base relocation is skipped. This type can be used to pad a block.
 	ImageRelBasedHigh          = 1  // The base relocation adds the high 16 bits of the difference to the 16-bit field at offset. The 16-bit field represents the high value of a 32-bit word.
@@ -22,39 +25,36 @@ const (
 	ImageRelBasedDir64         = 10 // The base relocation applies the difference to the 64-bit field at offset.
 )
 
-// ImageBaseRelocation
+// ImageBaseRelocation represents the IMAGE_BASE_RELOCATION structure.
+// Each chunk of base relocation data begins with an IMAGE_BASE_RELOCATION structure.
 type ImageBaseRelocation struct {
 	VirtualAddress uint32 // The image base plus the page RVA is added to each offset to create the VA where the base relocation must be applied.
 	SizeOfBlock    uint32 // The total number of bytes in the base relocation block, including the Page RVA and Block Size fields and the Type/Offset fields that follow.
-
 }
 
+// ImageBaseRelocationEntry represents an image base relocation entry.
+type ImageBaseRelocationEntry struct {
+	Data   uint16 // /* Locate data that must be reallocated in buffer (data being an address we use pointer of pointer) */
+	Offset uint16 // The offset of the relocation.  This value plus the VirtualAddress in IMAGE_BASE_RELOCATION is the complete RVA.
+	Type   uint8  // A value that indicates the kind of relocation that should be performed. Valid relocation types depend on machine type.
+}
+
+// Relocation represents the relocation table which holds the data that needs to be relocated.
 type Relocation struct {
-	Data ImageBaseRelocation // Pointd to the ImageBaseRelocation structure.
-	//Entries
+	Data    ImageBaseRelocation        // Points to the ImageBaseRelocation structure.
+	Entries []ImageBaseRelocationEntry // holds the list of entries for each chunk.
 }
 
-func (pe *File) parseRelocDirectory(rva, size uint32) error {
-
-	relocSize := uint32(binary.Size(ImageBaseRelocation{}))
-	end := rva + size
-	for rva < end {
-		baseReloc := ImageBaseRelocation{}
-		offset := pe.getOffsetFromRva(rva)
-		buff := bytes.NewReader(pe.data[offset : offset+relocSize])
-		err := binary.Read(buff, binary.LittleEndian, &baseReloc)
-		if err != nil {
-			return err
-		}
-
-		pe.Relocations = append(pe.Relocations, Relocation{
-			Data: baseReloc,
-		})
-	}
-
-	return nil
-
-}
+func (pe *File) parseRelocations(dataRVA, rva, size uint32) ([]ImageBaseRelocationEntry, error) {
+	var relocEntries []ImageBaseRelocationEntry
+	relocEntriesCount := size / 2
+	offset := pe.getOffsetFromRva(dataRVA)
+	for i := uint32(0); i < relocEntriesCount; i++ {
+		entry := ImageBaseRelocationEntry{}
+		entry.Data = binary.LittleEndian.Uint16(pe.data[offset+(i*2):])
+		entry.Type = uint8(entry.Data >> 12)
+		entry.Offset = entry.Data & 0x0fff
+		relocEntries = append(relocEntries, entry)
 	}
 
 	return relocEntries, nil
@@ -90,7 +90,7 @@ func (pe *File) parseRelocDirectory(rva, size uint32) error {
 		}
 
 		pe.Relocations = append(pe.Relocations, Relocation{
-			Data: baseReloc,
+			Data:    baseReloc,
 			Entries: relocEntries,
 		})
 

@@ -295,6 +295,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if relocDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
 		}
+
+		rsrcDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryResource]
+		if relocDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -316,6 +321,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		relocDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryBaseReloc]
 		if relocDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
+		}
+
+		rsrcDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryResource]
+		if relocDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size)
 		}
 	}
 
