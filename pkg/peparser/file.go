@@ -21,6 +21,7 @@ type File struct {
 	Imports          []Import
 	Exports          []ExportFunction
 	Debugs           []DebugEntry
+	Relocations      []Relocation
 
 	Header    []byte
 	data      mmap.MMap
@@ -289,6 +290,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if debugDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
 		}
+
+		relocDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryBaseReloc]
+		if relocDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -305,6 +311,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		debugDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryDebug]
 		if debugDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
+		}
+
+		relocDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryBaseReloc]
+		if relocDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
 		}
 	}
 
