@@ -1,4 +1,4 @@
-module github.com/saferwall/utils
+module github.com/saferwall/saferwall/pkg/utils
 
 go 1.13
 
