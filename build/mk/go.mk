@@ -18,16 +18,16 @@ go-test:	## Test packages
 	go test -v $(GOPKG)
 
 go-setup:	## Download and install go
-	curl -O https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz
-	tar -xvf go1.12.7.linux-amd64.tar.gz
+	curl -O https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+	tar -xvf go1.13.linux-amd64.tar.gz
 	sudo rm -rf /usr/local/go
 	sudo mv ./go /usr/local/
 	go version
-	go get -u github.com/derekparker/delve/cmd/dlv
-	rm go1.12.7.linux-amd64.tar.gz
+	rm go1.13.linux-amd64.tar.gz
 
-go-mod:
-	go version
-	go mod init
-	go build ./...
+go-govendor: ## Install govendor
+	go get -u github.com/derekparker/delve/cmd/dlv
+	go get -u github.com/kardianos/govendor
+
+
 

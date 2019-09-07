@@ -40,3 +40,6 @@ multiav-eset:			## release eset docker image
 multiav-fsecure:		## release fsecure docker image
 	sudo make docker-release IMG=fsecure VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.fsecure DOCKER_DIR=build/docker
 	sudo make docker-release IMG=gofsecure VERSION=0.0.1 DOCKER_FILE=core/multiav/fsecure/Dockerfile DOCKER_DIR=core/multiav/fsecure/
+
+multiav-buid-av:		## build an AV
+	sudo make docker-release IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/docker

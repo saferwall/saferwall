@@ -32,4 +32,5 @@ ADD http://www.eicar.org/download/eicar.com.txt eicar
 RUN $BITDEFENDER_SCANNER eicar ; exit 0
 
 # Clean up
-RUN rm -rf /tmp/*
+RUN rm -rf /tmp/* \
+	&& && m -rf /var/lib/apt/lists/*
