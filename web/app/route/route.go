@@ -5,7 +5,7 @@
 package route
 
 import (
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/saferwall/saferwall/web/app/handler/auth"
 	"github.com/saferwall/saferwall/web/app/handler/file"
 	"github.com/saferwall/saferwall/web/app/handler/user"

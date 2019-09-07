@@ -35,4 +35,5 @@ ADD http://www.eicar.org/download/eicar.com.txt eicar
 RUN /opt/avira/scancl eicar ; exit 0
 
 # Clean up
-RUN rm -rf $AVIRA_TMP 
+RUN rm -rf /tmp/* \
+	&& && m -rf /var/lib/apt/lists/*

@@ -3,7 +3,7 @@ package email
 import (
 	"errors"
 	"fmt"
-	"github.com/matcornic/hermes"
+	"github.com/matcornic/hermes/v2"
 	"github.com/saferwall/saferwall/web/app"
 	log "github.com/sirupsen/logrus"
 	gomail "gopkg.in/mail.v2"
