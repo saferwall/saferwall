@@ -14,7 +14,7 @@ import (
 	"hash/crc32"
 	"log"
 
-	"github.com/glaslos/ssdeep"
+	"github.com/LordNoteworthy/ssdeep"
 
 )
 

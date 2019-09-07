@@ -7,7 +7,7 @@ package crypto
 import (
 	"testing"
 
-	"github.com/glaslos/ssdeep"
+	"github.com/LordNoteworthy/ssdeep"
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
