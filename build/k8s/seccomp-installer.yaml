@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: seccomp
+  namespace: kube-system
+  labels:
+    security: seccomp
+spec:
+  selector:
+    matchLabels:
+      security: seccomp
+  template:
+    metadata:
+      labels:
+        security: seccomp
+    spec:
+      initContainers:
+        - name: installer
+          image: alpine:3.10.0
+          command: ["/bin/sh", "-c", "cp -r -L /seccomp/*.json /host/seccomp/"]
+          volumeMounts:
+            - name: profiles
+              mountPath: /seccomp
+            - name: hostseccomp
+              mountPath: /host/seccomp
+              readOnly: false
+      containers:
+        - name: pause
+          image: k8s.gcr.io/pause:3.1
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: hostseccomp
+          hostPath:
+            path: /var/lib/kubelet/seccomp
+        - name: profiles
+          configMap:
+            name: seccomp-profile
