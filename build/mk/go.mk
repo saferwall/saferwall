@@ -21,8 +21,12 @@ go-setup:	## Download and install go
 	curl -O https://dl.google.com/go/go1.13.linux-amd64.tar.gz
 	tar -xvf go1.13.linux-amd64.tar.gz
 	sudo rm -rf /usr/local/go
-	sudo mv ./go /usr/local/
-	go version
+	sudo mv go /usr/local/
+	mkdir -p ~/go
+	echo "export GOROOT=$(GOROOT)" | tee -a ~/.profile
+	echo "export GOPATH=$(GOPATH)" | tee -a ~/.profile
+	echo "export PATH=$(PATH):$(GOPATH)/bin:$(GOROOT)/bin" | tee -a ~/.profile
+	source ~/.profile  && go version && go env
 	rm go1.13.linux-amd64.tar.gz
 
 go-govendor: ## Install govendor

@@ -4,14 +4,19 @@ k8s-kubectl-install:	## Install kubectl
 	echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 	sudo apt-get update
 	sudo apt-get install -y kubectl
+	kubectl version
 
 k8s-minikube-install:	## Install minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 	chmod +x minikube
 	sudo cp minikube /usr/local/bin && rm minikube
+	minikube version
 
 k8s-minikube-start:		## Start minikube
-	minikube start --cpus 4 --memory 8192 --disk-size=60GB
+	minikube start --cpus 4 --memory 16384 --disk-size=60GB
+	kubectl proxy --address='0.0.0.0' --disable-filter=true &
+
+k8s-prepare:	k8s-minikube-install k8s-kubectl-install k8s-minikube-start ## Install minikube, kubectl and start a cluster
 
 k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-deploy-nsq k8s-deploy-backend k8s-deploy-consumer k8s-deploy-multiav ## Deploy all stack in k8s
 

@@ -119,7 +119,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Update document
 	updateDocument(sha256, buff)
 
-	// 	Where to save the sample, in k8s, our nfs share
+	// Where to save the sample, in k8s, our nfs share
 	filePath := path.Join("/samples", sha256)
 
 	// Download the sample

@@ -1,7 +1,5 @@
 # Needed SHELL since I'm using zsh
 SHELL := /bin/bash
-.PHONY: help
-
 
 # HELP
 # This will output the help for each task
