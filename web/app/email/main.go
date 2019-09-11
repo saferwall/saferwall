@@ -6,10 +6,11 @@ import (
 	"github.com/matcornic/hermes/v2"
 	"github.com/saferwall/saferwall/web/app"
 	log "github.com/sirupsen/logrus"
-	gomail "gopkg.in/mail.v2"
+	"github.com/go-gomail/gomail"
 	"io/ioutil"
 	"net/mail"
 	"os"
+	"crypto/tls"
 )
 
 type template interface {
@@ -138,6 +139,9 @@ func send(options sendOptions, htmlBody string, txtBody string) error {
 	m.AddAlternative("text/html", htmlBody)
 
 	d := gomail.NewDialer(smtpConfig.Server, smtpConfig.Port, smtpConfig.SMTPUser, smtpConfig.SMTPPassword)
+
+	// skip verification to avoid: panic: x509: certificate signed by unknown authority
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	return d.DialAndSend(m)
 }
