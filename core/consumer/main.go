@@ -17,7 +17,7 @@ import (
 	"time"
 
 	nsq "github.com/bitly/go-nsq"
-	minio "github.com/minio/minio-go"
+	"github.com/minio/minio-go/v6"
 
 	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
 	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
@@ -42,8 +42,7 @@ import (
 )
 
 var (
-	client *minio.Client
-
+	minioClient *minio.Client
 	backendEndpoint string
 )
 
@@ -119,24 +118,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Update document
 	updateDocument(sha256, buff)
 
-	// Where to save the sample, in k8s, our nfs share
-	filePath := path.Join("/samples", sha256)
-
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")
-	err = client.FGetObject(bucketName, sha256, filePath, minio.GetObjectOptions{})
-
-	if err != nil {
-		log.Error("Failed to get object, err: ", err)
-		return err
-	}
-	log.Infof("File fetched success %s", sha256)
-
-	b, err := utils.ReadAll(filePath)
-	if err != nil {
-		log.Error("Failed to read file, err: ", err)
-		return err
-	}
+	minioClient.Download(bucketName, sha256)
 
 	// Run crypto pkg
 	r := crypto.HashBytes(b)
@@ -365,15 +349,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 }
 
 // loadConfig loads our configration.
-func loadConfig() {
+func loadConfig() error {
 	viper.SetConfigName("saferwall") // no need to include file extension
 	viper.AddConfigPath(".")         // set the path of your config file
-
 	err := viper.ReadInConfig()
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	}
+	return err
 }
 
 func updateDocument(sha256 string, buff []byte) {
@@ -409,10 +389,21 @@ func main() {
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
 
-	client = do.GetClient()
-
 	// Load consumer config
-	loadConfig()
+	err := loadConfig()
+	if err != nil {
+		log.Fatal("Error parsing the config")
+	}
+
+	// Get an minio client instance
+	accessKey := viper.GetString("do.accesskey")
+	secKey := viper.GetString("do.seckey")
+	endpoint := viper.GetString("do.endpoint")
+	ssl := viper.GetBool("do.ssl")
+	minioClient, err := minio.New(endpoint, accessKey, secKey, ssl)
+	if err != nil {
+		log.Fatal("Failed to connect to get minio client instance")
+	}
 
 	// Set backend API address
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
