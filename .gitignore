@@ -24,6 +24,8 @@ license.avastlic*
 hbedv.key*
 sav-linux-free
 sep-deb.zip
+**/*.lic-expired
+**/*.key-expired
 
 # Vault
 .vault
