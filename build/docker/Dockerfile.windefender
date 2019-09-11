@@ -1,4 +1,4 @@
-FROM debian:stretch-slim AS final
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="Windows Defender in a docker container"
@@ -31,8 +31,12 @@ RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WIND
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # loadlibrary project from taviso is actually having issues, using local version instead
-RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR
 ADD windows-defender $WINDOWS_DEFENDER_INSTALL_DIR
 
 # Performs a simple test
+RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR
 RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
+
+# Clean up
+RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR \
+	&& rm -rf /var/lib/apt/lists/*

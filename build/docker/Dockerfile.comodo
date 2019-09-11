@@ -28,4 +28,5 @@ ADD http://www.eicar.org/download/eicar.com.txt eicar
 RUN /opt/COMODO/cmdscan -v -s /eicar ; exit 0
 
 # Clean up
-RUN rm -f /tmp/*
+RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*

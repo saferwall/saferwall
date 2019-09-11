@@ -33,5 +33,7 @@ ADD http://www.eicar.org/download/eicar.com.txt eicar
 # Test detection
 RUN /opt/f-secure/fsav/bin/fsav --virus-action1=report --suspected-action1=report eicar ; exit 0
 
+
 # Clean up
-RUN	rm -rf $FSECURE_TMP
+RUN rm -rf $FSECURE_TMP \
+	&& rm -rf /var/lib/apt/lists/*
