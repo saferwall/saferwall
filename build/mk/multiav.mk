@@ -39,5 +39,4 @@ ifeq ($(AV_VENDOR),eset)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
 endif
 	@echo $(DOCKER_BUILD_ARGS)
-	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/docker
-
+	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
