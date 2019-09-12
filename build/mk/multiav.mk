@@ -29,17 +29,15 @@ protobuf-protoc-gen-go:	## Install protoc plugin for Go
 compile-multiav-server: protobuf-generate-api	## Compile gRPC server
 	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go
 
+multiav-build-av:	## build an AV inside a docker contrainer.
+	$(eval DOCKER_BUILD_ARGS := "")
+ifeq ($(AV_VENDOR),sophos)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg SOPHOS_URL=$(SOPHOS_URL)")
+endif
 
-multiav-eset:			## release eset docker image
-	sudo make docker-release \
-		ARGS="--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)" \
-		IMG=eset VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.eset DOCKER_DIR=build/docker
-	sudo make docker-release \
-		IMG=goeset VERSION=0.0.1 DOCKER_FILE=core/multiav/eset/Dockerfile DOCKER_DIR=core/multiav/eset/
+ifeq ($(AV_VENDOR),eset)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
+endif
+	@echo $(DOCKER_BUILD_ARGS)
+	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/docker
 
-multiav-fsecure:		## release fsecure docker image
-	sudo make docker-release IMG=fsecure VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.fsecure DOCKER_DIR=build/docker
-	sudo make docker-release IMG=gofsecure VERSION=0.0.1 DOCKER_FILE=core/multiav/fsecure/Dockerfile DOCKER_DIR=core/multiav/fsecure/
-
-multiav-buid-av:		## build an AV
-	sudo make docker-release IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/docker

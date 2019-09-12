@@ -7,11 +7,11 @@ LABEL description="ESET File Server Security for Linux in a docker container"
 ARG ESET_USER
 ARG ESET_PWD
 
-ENV ESET_URL 			https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
-ENV ESET_LICENSE 		ERA-Endpoint.lic
+ENV ESET_URL		https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
+ENV ESET_LICENSE 	ERA-Endpoint.lic
 ENV ESET_CONFIG_DIR 	/etc/opt/eset
 ENV ESET_INSTALL_DIR 	/opt/eset
-ENV ESET_TEMP			/tmp/eset
+ENV ESET_TEMP		/tmp/eset
 
 # Install dependencies
 RUN apt-get update \
@@ -27,7 +27,7 @@ RUN mkdir $ESET_TEMP \
 ADD ERA-Endpoint.lic $ESET_CONFIG_DIR/esets/license/ERA-Endpoint.lic
 
 # Update the config
-RUN	sed -i "s/#av_update_username = \"\"/av_update_username = \"$ESET_USER\"/g" $ESET_CONFIG_DIR/esets/esets.cfg \
+RUN sed -i "s/#av_update_username = \"\"/av_update_username = \"$ESET_USER\"/g" $ESET_CONFIG_DIR/esets/esets.cfg \
 	&& sed -i "s/#av_update_password = \"\"/av_update_password = \"$ESET_PWD\"/g" $ESET_CONFIG_DIR/esets/esets.cfg \
 	&& $ESET_INSTALL_DIR/esets/sbin/esets_lic --import=$ESET_INSTALL_DIR/esets/etc/license/
 
@@ -41,4 +41,6 @@ ADD http://www.eicar.org/download/eicar.com.txt eicar
 RUN /opt/eset/esets/sbin/esets_scan --clean-mode=NONE eicar ; exit 0
 
 # Clean up
-RUN rm -rf $ESET_TEMP
+# RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*
+

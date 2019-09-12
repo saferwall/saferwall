@@ -33,4 +33,5 @@ RUN $BITDEFENDER_SCANNER eicar ; exit 0
 
 # Clean up
 RUN rm -rf /tmp/* \
-	&& && m -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/*
+

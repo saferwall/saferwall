@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM alpine:3.10
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="The Open Source ClamAV Antivirus in a docker container"
@@ -22,3 +22,4 @@ RUN clamd && clamdscan eicar ; cat /var/log/clamav/clamd.log
 
 # Cleanup
 RUN rm -rf /var/lib/apt/lists/*
+

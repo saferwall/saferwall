@@ -1,14 +1,14 @@
 FROM debian:buster-slim
 
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
-LABEL description="F-Secure for Linux in a docker container"
+LABEL version="0.0.1"
+LABEL description="NSQ consumer in a docker container"
 
 
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \ 
     && apt-get update \
-    && apt-get install wget unzip -y
+    && apt-get install --no-install-recommends wget unzip -y
 
 ######## Installing TRiD ########
 RUN echo "Installing TRiD..." \
@@ -28,3 +28,7 @@ RUN echo "Installing Exiftool..." \
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
     && apt-get install libcapstone-dev -y
+
+# Cleanup
+RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*

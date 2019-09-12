@@ -1,23 +1,35 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="Sophos Anti-Virus for Linux in a docker container"
 
-# Install dependencies
-RUN apt-get update && apt-get install make -y
+# Vars
+ARG SOPHOS_URL
+ENV SOPHOS_INSTALL_DIR		/opt/sophos
+ENV SOPHOS_TMP			/tmp/sophos
+ENV SOPHOS_INSTALL_SCRIPT 	$SOPHOS_TMP/sophos-av/install.sh
+ENV SOPHOS_INSTALL_ARCHIVE 	$SOPHOS_TMP/sav-linux-free
+ENV SOPHOS_INSTALL_ARGS		--update-free --acceptlicence --autostart=False --enableOnBoot=False --automatic --ignore-existing-installation --update-source-type=s
 
-# Use make inside the container to install Kaspersky
-COPY Makefile ./
-RUN make install
+## Install dependencies
+RUN apt-get update \
+    && apt-get install wget -y
 
-# Copy the server binary
-COPY server /bin/server
+# Install Sophos
+RUN mkdir $SOPHOS_TMP \
+       && wget $SOPHOS_URL -P $SOPHOS_TMP 	
+RUN tar zxvf $SOPHOS_INSTALL_ARCHIVE -C $SOPHOS_TMP \
+	&& $SOPHOS_INSTALL_SCRIPT $SOPHOS_INSTALL_DIR $SOPHOS_INSTALL_ARGS
+	
+## Update Anti-Virus for Linux
+RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh
 
 # Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt ./
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Expose our gRPC port
-EXPOSE 50051
+# Test detection
+RUN  /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
 
-# Entry point
-ENTRYPOINT ["/bin/server"]
+# Clean up
+RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*
