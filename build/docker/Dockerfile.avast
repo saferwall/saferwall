@@ -3,7 +3,7 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="Avast for Linux in a docker container"
 
-# Requried for apt-key
+# Required for apt-key
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2
 
 # Install Avast

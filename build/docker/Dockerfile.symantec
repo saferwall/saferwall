@@ -34,3 +34,4 @@ RUN /etc/init.d/symcfgd start \
 # Clean up
 RUN rm -rf $SYMANTEC_TMP \
 	&& rm -rf /var/lib/apt/lists/*
+

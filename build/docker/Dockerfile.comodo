@@ -30,3 +30,4 @@ RUN /opt/COMODO/cmdscan -v -s /eicar ; exit 0
 # Clean up
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
+

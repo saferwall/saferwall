@@ -30,13 +30,11 @@ RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WIND
 # Add EICAR Anti-Virus Test File
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# loadlibrary project from taviso is actually having issues, using local version instead
-ADD windows-defender $WINDOWS_DEFENDER_INSTALL_DIR
-
 # Performs a simple test
-RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR
-RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
+# Commented out as docker does not allow building image with custom seccomp profile
+# RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
 
 # Clean up
-RUN rm -rf WINDOWS_DEFENDER_INSTALL_DIR \
+RUN rm -rf WINDOWS_DEFENDER_TMP \
 	&& rm -rf /var/lib/apt/lists/*
+

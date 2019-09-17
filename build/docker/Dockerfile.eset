@@ -7,11 +7,11 @@ LABEL description="ESET File Server Security for Linux in a docker container"
 ARG ESET_USER
 ARG ESET_PWD
 
-ENV ESET_URL			https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
-ENV ESET_LICENSE		ERA-Endpoint.lic
-ENV ESET_CONFIG_DIR 	/etc/opt/eset
-ENV ESET_INSTALL_DIR 	/opt/eset
-ENV ESET_TEMP			/tmp/eset
+ENV ESET_URL		https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
+ENV ESET_LICENSE	ERA-Endpoint.lic
+ENV ESET_CONFIG_DIR	/etc/opt/eset
+ENV ESET_INSTALL_DIR	/opt/eset
+ENV ESET_TEMP		/tmp/eset
 
 # Install dependencies
 RUN apt-get update \
@@ -43,3 +43,4 @@ RUN /opt/eset/esets/sbin/esets_scan --clean-mode=NONE eicar ; exit 0
 # Clean up
 RUN rm -rf $ESET_TEMP \
 	&& rm -rf /var/lib/apt/lists/*
+

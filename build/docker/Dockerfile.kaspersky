@@ -46,4 +46,3 @@ RUN service kesl-supervisor start \
 RUN rm -rf $KASPERSKY_TMP \
 	&& rm -rf /var/lib/apt/lists/*
 
-
