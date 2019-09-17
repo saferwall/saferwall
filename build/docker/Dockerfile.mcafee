@@ -1,23 +1,39 @@
-FROM ubuntu:xenial
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1"
+LABEL version="0.0.1"
 LABEL description="McAfee VirusScan Command Line Scanner in a docker container"
 
+# Vars
+ENV MCAFEE_URL		http://b2b-download.mcafee.com/products/evaluation/vcl/l64/vscl-l64-604-e.tar.gz
+ENV MCAFEE_UPDATE	http://download.nai.com/products/DatFiles/4.x/nai/
+ENV MCAFEE_INSTALL_DIR	/opt/mcafee
+ENV MCAFEE_TMP		/tmp/mcafee
+
+
 # Install dependencies
-RUN apt-get update && apt-get install make -y
+RUN apt-get update \
+	&& apt-get install make wget unzip -y
 
-# Use make inside the container to install Kaspersky
-COPY Makefile ./
-RUN make install
+# Install McAfee
+RUN mkdir $MCAFEE_TMP \
+	&& wget -N $MCAFEE_URL -P $MCAFEE_TMP \
+	&& mkdir $MCAFEE_INSTALL_DIR \
+	&& tar zxvf $MCAFEE_TMP/vscl-l64-604-e.tar.gz -C $MCAFEE_INSTALL_DIR
 
-# Copy the server binary
-COPY server /bin/server
+# Update McAfee
+RUN wget -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
+	&& cd $MCAFEE_TMP \
+	&& unzip -o 'avvepo*' \
+	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
+	&& $MCAFEE_INSTALL_DIR/uvscan --decompress
 
 # Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt ./
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Expose our gRPC port
-EXPOSE 50051
+# Test detection
+RUN /opt/mcafee/uvscan eicar; exit 0
 
-# Entry point
-ENTRYPOINT ["/bin/server"]
+# Clean up
+RUN rm -rf /tmp/* \
+       && rm -rf /var/lib/apt/lists/*
+
