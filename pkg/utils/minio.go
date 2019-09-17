@@ -13,7 +13,7 @@ import (
 
 
 // Download downloads an object from a bucket.
-func (client *minio.Client) Download (bucketName, objectName string) ([]byte, error) {
+func Download (client* minio.Client, bucketName string, objectName string) ([]byte, error) {
 	filePath := path.Join("/"+ bucketName, objectName)
 	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
 	if err != nil {

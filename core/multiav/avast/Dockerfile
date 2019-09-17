@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.12-alpine AS builder
+FROM golang:1.13-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/avast:0.0.1 AS final
+FROM saferwall/avast:0.0.1
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Avast"
@@ -39,10 +39,11 @@ COPY --from=builder /go/bin/avastscanner /bin/avastscanner
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
 # Update permissions
-RUN usermod -u 101 saferwall
-RUN groupmod -g 102 saferwall
+RUN usermod -u 101 saferwall \
+	&& groupmod -g 102 saferwall
 
 # Switch to our user
 USER saferwall
 
 ENTRYPOINT ["/bin/avastscanner"]
+
