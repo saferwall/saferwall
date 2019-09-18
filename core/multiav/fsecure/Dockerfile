@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.12-alpine AS builder
+FROM golang:1.13-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -23,14 +23,14 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/fsecure:0.0.1 AS final
+FROM saferwall/fsecure:0.0.1
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="FSecure Linux Security in a docker container"
 
 # Vars
 ENV FSECURE_INSTALL_DIR /opt/f-secure
-ENV FSECURE_CONFIG_DIR /etc/opt/f-secure/
+ENV FSECURE_CONFIG_DIR 	/etc/opt/f-secure/
 ENV FSECURE_VERSION     11.10.68
 ENV FSECURE_UPDATE      http://download.f-secure.com/latest/fsdbupdate9.run
 ENV FSECURE_URL         https://download.f-secure.com/corpro/ls/trial/fsls-$FSECURE_VERSION-rtm.tar.gz
@@ -48,16 +48,18 @@ RUN wget $FSECURE_UPDATE -P $FSECURE_TMP \
 	&& /opt/f-secure/fsav/bin/fsav --version
 
 # Create an app user so our program doesn't run as root.
-RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+RUN groupadd -r saferwall \
+	&& useradd --no-log-init -r -g saferwall saferwall
 
 # Update permissions
-RUN usermod -u 103 messagebus
-RUN usermod -u 101 saferwall
-RUN groupmod -g 102 saferwall
-RUN chown -R saferwall:saferwall $FSECURE_INSTALL_DIR
-RUN chown -R saferwall:saferwall $FSECURE_CONFIG_DIR
+RUN usermod -u 103 messagebus \
+	&& usermod -u 101 saferwall \
+	&& groupmod -g 102 saferwall \
+	&& chown -R saferwall:saferwall $FSECURE_INSTALL_DIR \
+	&& chown -R saferwall:saferwall $FSECURE_CONFIG_DIR
 
 # Switch to our user
 USER saferwall
 
 ENTRYPOINT ["/bin/fsecurescanner"]
+

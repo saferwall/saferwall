@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.12-alpine AS builder
+FROM golang:1.13-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/clamav:0.0.1 AS final
+FROM saferwall/clamav:0.0.1
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server clamav"
@@ -32,7 +32,8 @@ LABEL description="gRPC server clamav"
 RUN clamd && freshclam ; clamscan -V
 
 # Create an app user so our program doesn't run as root.
-RUN addgroup -S saferwall && adduser -S -G saferwall saferwall  --shell /bin/sh
+RUN addgroup -S saferwall \
+	&& adduser -S -G saferwall saferwall  --shell /bin/sh
 
 # Copy our binary
 COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
@@ -46,3 +47,4 @@ RUN chown saferwall:saferwall /bin/clamavscanner \
 USER saferwall
 
 ENTRYPOINT ["/bin/clamavscanner"]
+
