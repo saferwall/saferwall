@@ -41,6 +41,9 @@ RUN mkdir $AVIRA_TMP \
     && $AVIRA_TMP/fusebundle.bin \
     && unzip -o $AVIRA_TMP/install/fusebundle-linux_glibc22-int.zip -d $AVIRA_INSTALL_DIR
 
+# Write the update date
+RUN date +%s >> LastUpdate.txt
+
 # Copy our static executable.
 COPY --from=builder /go/bin/avirascanner /bin/avirascanner
 

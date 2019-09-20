@@ -36,13 +36,12 @@ import (
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
-	"github.com/saferwall/saferwall/pkg/utils/do"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 var (
-	minioClient *minio.Client
+	minioClient     *minio.Client
 	backendEndpoint string
 )
 
@@ -120,7 +119,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")
-	minioClient.Download(bucketName, sha256)
+	b, err := utils.Download(minioClient, bucketName, sha256)
+	if err != nil {
+		log.Error("Failed to download file %s", sha256)
+		return err
+	}
+
+	filePath := path.Join("/samples", sha256)
 
 	// Run crypto pkg
 	r := crypto.HashBytes(b)
@@ -400,7 +405,7 @@ func main() {
 	secKey := viper.GetString("do.seckey")
 	endpoint := viper.GetString("do.endpoint")
 	ssl := viper.GetBool("do.ssl")
-	minioClient, err := minio.New(endpoint, accessKey, secKey, ssl)
+	minioClient, err = minio.New(endpoint, accessKey, secKey, ssl)
 	if err != nil {
 		log.Fatal("Failed to connect to get minio client instance")
 	}

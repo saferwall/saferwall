@@ -7,12 +7,13 @@ package main
 import (
 	"bytes"
 	"context"
-	"net"
-
+	"encoding/binary"
 	log "github.com/sirupsen/logrus"
+	"net"
 
 	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avira"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
@@ -23,6 +24,9 @@ const (
 
 	// grpc library default is 4MB
 	maxMsgSize = 1024 * 1024 * 20
+
+	// Path to the file which holds the last time we updated the AV engine.
+	lastUpdatePath = "/LastUpdate.txt"
 )
 
 // DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
@@ -39,7 +43,11 @@ type server struct{}
 // ScanFile implements avira.AviraScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	res, err := avira.ScanFile(in.Filepath)
-	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
+
+	// Read the last time we updated the AV database.
+	data, _ := utils.ReadAll(lastUpdatePath)
+	updateDate := int64(binary.BigEndian.Uint64(data))
+	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output, Update: updateDate}, err
 }
 
 // ActivateLicense implements avira.AviraScanner.

@@ -16,12 +16,16 @@ protobuf-generate-api:		## Generates protocol buffers definitions files.
 		-I${GOPATH}/src \
 		--go_out=plugins=grpc:$(ROOT_DIR)/core/multiav/$(AV_VENDOR)/proto/ \
 		$(ROOT_DIR)/api/protobuf-spec/multiav.$(AV_VENDOR).proto
+	cd $(ROOT_DIR)/core/multiav/$(AV_VENDOR)/proto \
+		&& mv multiav.$(AV_VENDOR).pb.go $(AV_VENDOR).pb.go
 
 protobuf-install-compiler: 	## Install protobuf compiler
 	curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protoc-3.7.1-linux-x86_64.zip
 	unzip protoc-3.7.1-linux-x86_64.zip -d protoc3
 	sudo mv protoc3/bin/* /usr/local/bin/
 	sudo mv protoc3/include/* /usr/local/include/
+	rm protoc-3.7.1-linux-x86_64.zip
+	rm -r proto3/
 
 protobuf-protoc-gen-go:	## Install protoc plugin for Go
 	go get -u github.com/golang/protobuf/protoc-gen-go
@@ -42,5 +46,7 @@ endif
 ifeq ($(AV_VENDOR),eset)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
 endif
-	@echo $(DOCKER_BUILD_ARGS)
 	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/docker
+
+multiav-build-av-go: ## Build the AV with the gRPC server
+	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=core/multiav/$(AV_VENDOR)/Dockerfile DOCKER_DIR=core/multiav/$(AV_VENDOR)/

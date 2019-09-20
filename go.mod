@@ -8,7 +8,7 @@ require (
 	github.com/bnagy/gapstone v0.0.0-20190828052830-ede92aaeaba7
 	github.com/fatih/color v1.7.0
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df // indirect
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/minio/minio-go/v6 v6.0.34
 	github.com/nsqio/go-nsq v1.0.7 // indirect
