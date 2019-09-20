@@ -28,11 +28,15 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 FROM ubuntu:bionic
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.0.1"
+LABEL description="NSQ consumer in a docker container"
+
 
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \ 
     && apt-get update \
-    && apt-get install wget unzip -y
+    && apt-get install --no-install-recommends wget unzip -y
 
 ######## Installing TRiD ########
 RUN echo "Installing TRiD..." \
@@ -90,4 +94,9 @@ RUN chown -R saferwall:saferwall . \
 # Switch to our user
 USER saferwall
 
+# Cleanup
+RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*
+
 ENTRYPOINT ["./consumer"]
+
