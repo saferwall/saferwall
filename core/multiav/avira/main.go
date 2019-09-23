@@ -48,8 +48,11 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 	if err != nil {
 		log.Infoln("Error during reading update date: %s", err)
 	}
-	updateDate := int64(strconv.Atoi(string(data)))
-	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output, Update: updateDate}, err
+	updateDate, _ := strconv.Atoi(string(data))
+	return &pb.ScanResponse{
+		Infected: res.Infected,
+		Output:   res.Output,
+		Update:   int64(updateDate)}, err
 }
 
 // ActivateLicense implements avira.AviraScanner.

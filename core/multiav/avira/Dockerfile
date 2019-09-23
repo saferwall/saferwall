@@ -40,7 +40,7 @@ RUN mkdir $AVIRA_TMP \
     && unzip -o $AVIRA_TMP/avira_fusebundlegen-linux_glibc22-en.zip -d $AVIRA_TMP \
     && $AVIRA_TMP/fusebundle.bin \
     && unzip -o $AVIRA_TMP/install/fusebundle-linux_glibc22-int.zip -d $AVIRA_INSTALL_DIR \
-    && date +%s >> LastUpdate.txt
+    && echo -n "$(date +%s)" >> LastUpdate.txt
 
 # Copy our static executable.
 COPY --from=builder /go/bin/avirascanner /bin/avirascanner
