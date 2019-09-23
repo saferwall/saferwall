@@ -1,0 +1,11 @@
+module github.com/saferwall/saferwall/core/consumer
+
+go 1.13
+
+require (
+	github.com/bitly/go-nsq v1.0.7 // indirect
+	github.com/minio/minio-go/v6 v6.0.36 // indirect
+	github.com/saferwall/saferwall v0.0.1 // indirect
+)
+
+replace github.com/saferwall/saferwall => ../..

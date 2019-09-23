@@ -7,22 +7,25 @@ FROM golang:1.13-alpine AS builder
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk && update-ca-certificates
 
-WORKDIR /consumer
-
-# Copy go mod and sum files
-COPY go.mod go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
+WORKDIR /saferwall
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
-# Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer .
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
 
+####### Installing Capstone #######
+RUN echo "Installing Capstone..." \
+    && git clone https://github.com/aquynh/capstone.git \
+    && cd capstone \
+    && ./make.sh \
+    && sudo ./make.sh install
+
+# Build the binary.
+RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer internal/consumer/main.go
 
 ############################
 # STEP 2 build a small image
@@ -36,7 +39,7 @@ LABEL description="NSQ consumer in a docker container"
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \ 
     && apt-get update \
-    && apt-get install --no-install-recommends wget unzip -y
+    && apt-get install --no-install-recommends wget unzip ca-certificates -y
 
 ######## Installing TRiD ########
 RUN echo "Installing TRiD..." \
@@ -54,10 +57,6 @@ RUN echo "Installing TRiD..." \
 RUN echo "Installing Exiftool..." \
     && apt-get install libimage-exiftool-perl -y
 
-####### Installing Capstone #######
-RUN echo "Installing Capstone..." \
-    && apt-get install libcapstone-dev -y
-
 ####### Installing File #######
 RUN echo "Installing File..." \
     && apt-get install file -y
@@ -69,16 +68,16 @@ ENV DIE_ZIP         /tmp/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_DIR         /opt/die/
 
 RUN echo "Installing DiE..." \
-    && apt-get install libglib2.0-0 -y \
-    && wget $DIE_URL -O $DIE_ZIP \
+	&& apt-get install libglib2.0-0 -y \
+	&& wget $DIE_URL -O $DIE_ZIP \
 	&& tar zxvf $DIE_ZIP -C /tmp \
 	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
-WORKDIR /app
+WORKDIR /consumer
 
 # Copy our static executable.
 COPY --from=builder /go/bin/consumer .
-COPY saferwall.toml saferwall.toml
+COPY configs/saferwall.toml saferwall.toml
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
