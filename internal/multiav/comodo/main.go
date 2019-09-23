@@ -10,7 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/comodo/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/comodo/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/comodo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"

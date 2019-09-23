@@ -11,7 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/avast/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/avast/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avast"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"

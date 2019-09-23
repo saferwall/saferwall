@@ -10,7 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/bitdefender/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/bitdefender/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/bitdefender"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"

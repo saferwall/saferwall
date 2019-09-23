@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/clamav/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/clamav/proto"
 	"google.golang.org/grpc"
 )
 

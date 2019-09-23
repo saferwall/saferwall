@@ -10,7 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/saferwall/saferwall/core/multiav/symantec/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/symantec/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/eset"
 	"github.com/saferwall/saferwall/pkg/multiav/symantec"
 	"github.com/saferwall/saferwall/pkg/utils"

@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net"
 
-	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
+	pb "github.com/saferwall/saferwall/internal/multiav/avira/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avira"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc"
