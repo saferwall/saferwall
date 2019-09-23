@@ -17,7 +17,9 @@ message ScanFileRequest { string filepath = 1; }
 message ScanResponse {
   string output = 1;
   bool infected = 2;
-}
+  int64 update = 3;
+} 
+
 
 // The version request message ask for version.
 message VersionRequest {}

@@ -29,10 +29,11 @@ LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Avira"
 
 # Vars
-ENV AVIRA_URL  		http://professional.avira-update.com/package/scancl/linux_glibc22/en/scancl-linux_glibc22.tar.gz
-ENV AVIRA_FUSEBUNDLE 	http://install.avira-update.com/package/fusebundlegen/linux_glibc22/en/avira_fusebundlegen-linux_glibc22-en.zip
-ENV AVIRA_INSTALL_DIR 	/opt/avira
-ENV AVIRA_TMP 		/tmp/avira
+ENV AVIRA_URL			http://professional.avira-update.com/package/scancl/linux_glibc22/en/scancl-linux_glibc22.tar.gz
+ENV AVIRA_FUSEBUNDLE 		http://install.avira-update.com/package/fusebundlegen/linux_glibc22/en/avira_fusebundlegen-linux_glibc22-en.zip
+ENV AVIRA_INSTALL_DIR 		/opt/avira
+ENV AVIRA_TMP 			/tmp/avira
+ENV AVIRA_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
 RUN mkdir $AVIRA_TMP \ 
@@ -40,7 +41,7 @@ RUN mkdir $AVIRA_TMP \
     && unzip -o $AVIRA_TMP/avira_fusebundlegen-linux_glibc22-en.zip -d $AVIRA_TMP \
     && $AVIRA_TMP/fusebundle.bin \
     && unzip -o $AVIRA_TMP/install/fusebundle-linux_glibc22-int.zip -d $AVIRA_INSTALL_DIR \
-    && echo -n "$(date +%s)" >> LastUpdate.txt
+    && echo -n "$(date +%s)" >> $AVIRA_DB_UPDATE_DATE
 
 # Copy our static executable.
 COPY --from=builder /go/bin/avirascanner /bin/avirascanner
