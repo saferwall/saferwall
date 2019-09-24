@@ -38,4 +38,5 @@ include build/mk/kvm.mk
 include build/mk/helm.mk
 include build/mk/kops.mk
 include build/mk/consumer.mk
+include build/mk/protobuf.mk
 include ui/Makefile
