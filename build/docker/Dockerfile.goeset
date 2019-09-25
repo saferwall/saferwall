@@ -31,9 +31,11 @@ LABEL description="ESET File Server Security for Linux in a docker container"
 # Vars
 ENV ESET_CONFIG_DIR 	/etc/opt/eset
 ENV ESET_INSTALL_DIR 	/opt/eset
+ENV ESET_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
-RUN /opt/eset/esets/sbin/esets_update
+RUN /opt/eset/esets/sbin/esets_update \
+	&& echo -n "$(date +%s)" >> $ESET_DB_UPDATE_DATE
 
 # Copy our binary
 COPY --from=builder /go/bin/esetscanner /bin/esetscanner

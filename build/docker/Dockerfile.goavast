@@ -29,17 +29,19 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Avast"
 
-# Update VPS
-RUN /var/lib/avast/Setup/avast.vpsupdate
+# Vars
+ENV AVAST_DB_UPDATE_DATE        /av_db_update_date.txt
 
-# Write the update date
-RUN date +%s >> LastUpdate.txt
+# Update VPS
+RUN /var/lib/avast/Setup/avast.vpsupdate \
+	&& date +%s >> $AVAST_DB_UPDATE_DATE
 
 # Copy our static executable.
 COPY --from=builder /go/bin/avastscanner /bin/avastscanner
 
 # Create an app user so our program doesn't run as root.
-RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+RUN groupadd -r saferwall \
+	&& useradd --no-log-init -r -g saferwall saferwall
 
 # Update permissions
 RUN usermod -u 101 saferwall \

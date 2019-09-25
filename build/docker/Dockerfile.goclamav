@@ -28,8 +28,12 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server clamav"
 
+# Vars
+ENV CLAMAV_DB_UPDATE_DATE	/av_db_update_date.txt
+
 # Update VPS
-RUN clamd && freshclam ; clamscan -V
+RUN clamd && freshclam ; clamscan -V \
+       && echo -n "$(date +%s)" >> $CLAMAV_DB_UPDATE_DATE
 
 # Create an app user so our program doesn't run as root.
 RUN addgroup -S saferwall \

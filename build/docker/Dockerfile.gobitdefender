@@ -29,10 +29,12 @@ LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Bitdefender"
 
 # Vars
-ENV BITDEFENDER_INSTALL_DIR /opt/BitDefender-scanner/
+ENV BITDEFENDER_INSTALL_DIR 	/opt/BitDefender-scanner/
+ENV BITDEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
-RUN bdscan --update
+RUN bdscan --update \
+	&& echo -n "$(date +%s)" >> $BITDEFENDER_DB_UPDATE_DATE
 
 # Copy our static executable.
 COPY --from=builder /go/bin/bitdefenderscanner /bin/bitdefenderscanner

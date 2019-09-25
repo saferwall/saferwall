@@ -27,6 +27,7 @@ ADD --chown=avast:avast http://www.eicar.org/download/eicar.com.txt eicar
 # Performs a simple test
 RUN service avast start && scan eicar
 
-# RUN rm -rf /tmp/* \
+# Cleanup
+RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
 

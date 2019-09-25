@@ -29,23 +29,26 @@ LABEL version="0.0.1"
 LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker container"
 
 # Vars
-ENV KASPERSKY_BIN 			/opt/kaspersky/kesl/bin/kesl-control
-ENV KASPERSKY_SETUP 		/opt/kaspersky/kesl/bin/kesl-setup.pl
-ENV KASPERSKY_INSTALL_DIR   /opt/kaspersky
-# ENV KASPERSKY_VAR_DIR       /var/opt/kaspersky
-# ENV KASPERSKY_LOG_DIR       /var/log/kaspersky
+ENV KASPERSKY_BIN		/opt/kaspersky/kesl/bin/kesl-control
+ENV KASPERSKY_SETUP		/opt/kaspersky/kesl/bin/kesl-setup.pl
+ENV KASPERSKY_INSTALL_DIR	/opt/kaspersky
+ENV KASPERSKY_DB_UPDATE_DATE	/av_db_update_date.txt
+# ENV KASPERSKY_VAR_DIR       	/var/opt/kaspersky
+# ENV KASPERSKY_LOG_DIR       	/var/log/kaspersky
 
 # Required packages
 RUN apt-get update && apt-get install -y sudo
 
 # Update VDF
 RUN service kesl-supervisor start \
-    && $KASPERSKY_BIN --start-task 6 \
-    && sleep 2m \
-    && $KASPERSKY_BIN --app-info
+	&& $KASPERSKY_BIN --start-task 6 \
+	&& sleep 2m \
+	&& $KASPERSKY_BIN --app-info \
+	&& echo -n "$(date +%s)" >> $KASPERSKY_DB_UPDATE_DATE
 
 # Create an app user so our program doesn't run as root.
-RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+RUN groupadd -r saferwall \
+	&& useradd --no-log-init -r -g saferwall saferwall
 
 # Copy our binary
 COPY --from=builder /go/bin/kasperskyscanner /bin/kasperskyscanner
@@ -62,3 +65,4 @@ RUN usermod -u 101 saferwall \
 USER saferwall
 
 ENTRYPOINT ["/bin/kasperskyscanner"]
+
