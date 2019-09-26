@@ -7,9 +7,9 @@ package avira
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
-
+	"github.com/saferwall/saferwall/core/multiav"
 	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -17,23 +17,16 @@ const (
 	address = "avira-svc:50051"
 )
 
-// MultiAVScanResult av result
-type MultiAVScanResult struct {
-	Output   string `json:"output"`
-	Infected bool   `json:"infected"`
-	Update   int64  `json:"update"`
-}
-
 // ScanFile scans file
 func ScanFile(client pb.AviraScannerClient, path string) (MultiAVScanResult, error) {
 	log.Info("Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
 	if err != nil {
-		return MultiAVScanResult{}, err
+		return multiav.ScanResult{}, err
 	}
 
-	return MultiAVScanResult{
+	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
 		Update:   res.Update,

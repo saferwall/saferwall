@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"context"
+
 	"github.com/saferwall/saferwall/core/multiav"
 	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avira"
