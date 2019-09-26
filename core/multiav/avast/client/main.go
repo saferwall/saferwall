@@ -7,8 +7,7 @@ package avast
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
-
+	"github.com/saferwall/saferwall/core/multiav"
 	pb "github.com/saferwall/saferwall/core/multiav/avast/proto"
 	"google.golang.org/grpc"
 )
@@ -16,12 +15,6 @@ import (
 const (
 	address = "avast-svc:50051"
 )
-
-// MultiAVScanResult av result
-type MultiAVScanResult struct {
-	Output   string `json:"output"`
-	Infected bool   `json:"infected"`
-}
 
 // GetVerion returns version
 func GetVerion(client pb.AvastScannerClient) (*pb.VersionResponse, error) {
@@ -31,25 +24,21 @@ func GetVerion(client pb.AvastScannerClient) (*pb.VersionResponse, error) {
 
 // ScanFile scans file
 func ScanFile(client pb.AvastScannerClient, path string) (MultiAVScanResult, error) {
-	log.Info("Scanning:", path)
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFilePath(context.Background(), scanFile)
 	if err != nil {
-		return MultiAVScanResult{}, err
+		return multiav.ScanResult{}, err
 	}
 
-	return MultiAVScanResult{
+	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
+		Update:   res.Update,
 	}, nil
 }
 
 // Init connection
 func Init() (pb.AvastScannerClient, error) {
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
 	conn, err := grpc.Dial(address, []grpc.DialOption{grpc.WithInsecure()}...)
 	if err != nil {
 		return nil, err

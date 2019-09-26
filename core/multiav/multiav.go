@@ -1,11 +1,12 @@
 package multiav
 
 import (
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"net"
 	"os"
 	"strconv"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -14,12 +15,17 @@ const (
 
 	// grpc library default is 4MB
 	maxMsgSize = 1024 * 1024 * 20
-)
 
-var (
 	// Path to the file which holds the last time we updated the AV engine database.
 	dbUpdateDateFilePath = "av_db_update_date.txt"
 )
+
+// ScanResult av result
+type ScanResult struct {
+	Output   string `json:"output"`
+	Infected bool   `json:"infected"`
+	Update   string `json:"update"`
+}
 
 // DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
 func DefaultServerOpts() []grpc.ServerOption {
