@@ -1,18 +1,30 @@
+// Copyright 2019 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+// Package multiav implements common routines between all gRPC client/server av engines.
+
 package multiav
 
 import (
 	"net"
 	"os"
 	"strconv"
+	"flag"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-const (
-	// grpc port to listen.
-	port = ":50051"
 
+var(
+	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+	caFile             = flag.String("ca_file", "", "The file containing the CA root cert file")
+	serverAddr         = flag.String("server_addr", "127.0.0.1:10000", "The server address in the format of host:port")
+	serverHostOverride = flag.String("server_host_override", "x.test.saferwall.com", "The server name use to verify the hostname returned by TLS handshake"
+)
+
+const (
 	// grpc library default is 4MB
 	maxMsgSize = 1024 * 1024 * 20
 
@@ -87,4 +99,25 @@ func UpdateDate() (int64, error) {
 	}
 	updateDate, _ := strconv.Atoi(string(data))
 	return int64(updateDate), nil
+}
+
+
+// ParseFlags parses the cmd line flags to create grpc conn.
+func ParseFlags() (string, []grpc.DialOption) {
+	flag.Parse()
+	var opts []grpc.DialOption
+	if *tls {
+		if *caFile == "" {
+			*caFile = testdata.Path("ca.pem")
+		}
+		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+		if err != nil {
+			log.Fatalf("Failed to create TLS credentials %v", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
+
+	return *serverAdr, opts 
 }

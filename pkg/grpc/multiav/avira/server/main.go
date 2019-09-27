@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/saferwall/saferwall/core/multiav"
-	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avira"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/grpclog"
@@ -38,7 +38,7 @@ func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (*p
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.Infoln("Starting Avira gRPC server")
+	log.Infoln("Starting Avira gRPC server ...")
 
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
@@ -64,5 +64,4 @@ func main() {
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)
 	}
-
 }

@@ -31,4 +31,6 @@ endif
 	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-build-av-go: ## Build the AV with the gRPC server
-	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) DOCKER_DIR=core/multiav/$(AV_VENDOR)/server
+	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.1 \
+	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
+	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
