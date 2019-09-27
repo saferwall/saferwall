@@ -1,0 +1,77 @@
+// Copyright 2019 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+package avira
+
+import (
+	"context"
+	"flag"
+	"log"
+	"github.com/saferwall/saferwall/core/multiav"
+	pb "github.com/saferwall/saferwall/core/multiav/avira/proto"
+	"google.golang.org/grpc"
+)
+
+var(
+	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+	caFile             = flag.String("ca_file", "", "The file containing the CA root cert file")
+	serverAddr         = flag.String("server_addr", "127.0.0.1:10000", "The server address in the format of host:port")
+	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake"
+)
+
+
+const (
+	address = "avira-svc:50051"
+)
+
+// ScanFile scans file
+func ScanFile(client pb.AviraScannerClient, path string) (multiav.ScanResult, error) {
+	scanFileRequest := &pb.ScanFileRequest{Filepath: path}
+	res, err := client.ScanFile(context.Background(), scanFileRequest)
+	if err != nil {
+		return multiav.ScanResult{}, err
+	}
+
+	return multiav.ScanResult{
+		Output:   res.Output,
+		Infected: res.Infected,
+		Update:   res.Update,
+	}, nil
+}
+
+// Init connection
+func Init() (pb.AviraScannerClient, error) {
+	conn, err := grpc.Dial(address, []grpc.DialOption{grpc.WithInsecure()}...)
+	if err != nil {
+		return nil, err
+	}
+	return pb.NewAviraScannerClient(conn), nil
+}
+
+func main() {
+	flag.Parse()
+	var opts []grpc.DialOption
+	if *tls {
+		if *caFile == "" {
+			*caFile = testdata.Path("ca.pem")
+		}
+		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+		if err != nil {
+			log.Fatalf("Failed to create TLS credentials %v", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
+	conn, err := grpc.Dial(*serverAddr, opts...)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+	client := pb.NewAviraScannerClient(conn)
+
+	// ScanFile
+	ScanFile(client, "/eicar")
+
+}

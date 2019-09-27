@@ -23,7 +23,7 @@ func GetVerion(client pb.AvastScannerClient) (*pb.VersionResponse, error) {
 }
 
 // ScanFile scans file
-func ScanFile(client pb.AvastScannerClient, path string) (MultiAVScanResult, error) {
+func ScanFile(client pb.AvastScannerClient, path string) (multiav.ScanResult, error) {
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFilePath(context.Background(), scanFile)
 	if err != nil {
