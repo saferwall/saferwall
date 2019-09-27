@@ -7,21 +7,23 @@
 package multiav
 
 import (
+	"flag"
+	"log"
 	"net"
 	"os"
 	"strconv"
-	"flag"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/testdata"
 )
 
-
-var(
+var (
 	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	caFile             = flag.String("ca_file", "", "The file containing the CA root cert file")
 	serverAddr         = flag.String("server_addr", "127.0.0.1:10000", "The server address in the format of host:port")
-	serverHostOverride = flag.String("server_host_override", "x.test.saferwall.com", "The server name use to verify the hostname returned by TLS handshake"
+	serverHostOverride = flag.String("server_host_override", "x.test.saferwall.com", "The server name use to verify the hostname returned by TLS handshake")
 )
 
 const (
@@ -30,6 +32,9 @@ const (
 
 	// Path to the file which holds the last time we updated the AV engine database.
 	dbUpdateDateFilePath = "av_db_update_date.txt"
+
+	// port is the gRPC port the server listens on.
+	port = ":50051"
 )
 
 // ScanResult av result
@@ -41,8 +46,7 @@ type ScanResult struct {
 
 // DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
 func DefaultServerOpts() []grpc.ServerOption {
-	return []grpc.ServerOption{
-		grpc.MaxRecvMsgSize(maxMsgSize),
+	return []grpc.ServerOption{grpc.MaxRecvMsgSize(maxMsgSize),
 		grpc.MaxSendMsgSize(maxMsgSize),
 	}
 }
@@ -101,7 +105,6 @@ func UpdateDate() (int64, error) {
 	return int64(updateDate), nil
 }
 
-
 // ParseFlags parses the cmd line flags to create grpc conn.
 func ParseFlags() (string, []grpc.DialOption) {
 	flag.Parse()
@@ -118,6 +121,5 @@ func ParseFlags() (string, []grpc.DialOption) {
 	} else {
 		opts = append(opts, grpc.WithInsecure())
 	}
-
-	return *serverAdr, opts 
+	return *serverAddr, opts
 }
