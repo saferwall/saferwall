@@ -26,6 +26,18 @@ sav-linux-free
 sep-deb.zip
 **/*.lic-expired
 **/*.key-expired
+build/data/install.conf
+## old copy
+build/docker/windows-defender/
+
+# Temp
+build/helm/
+build/packer/
+private/
+test/multiav
+cmd/multiav
+vmi/README.md
+web/config/dev-app.toml
 
 # Vault
 .vault
