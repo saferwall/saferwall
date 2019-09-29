@@ -5,8 +5,8 @@ LABEL description="Sophos Anti-Virus for Linux in a docker container"
 
 # Vars
 ARG SOPHOS_URL
-ENV SOPHOS_INSTALL_DIR      	/opt/sophos
-ENV SOPHOS_TMP			/tmp/sophos
+ENV SOPHOS_INSTALL_DIR      /opt/sophos
+ENV SOPHOS_TMP			    /tmp/sophos
 ENV SOPHOS_INSTALL_SCRIPT	$SOPHOS_TMP/sophos-av/install.sh
 ENV SOPHOS_INSTALL_ARCHIVE 	$SOPHOS_TMP/sav-linux-free
 ENV SOPHOS_INSTALL_ARGS	--update-free --acceptlicence --autostart=False --enableOnBoot=False --automatic --ignore-existing-installation --update-source-type=s
@@ -33,4 +33,3 @@ RUN  /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -
 # Clean up
 RUN rm -rf /tmp/* \
        && rm -rf /var/lib/apt/lists/*
-

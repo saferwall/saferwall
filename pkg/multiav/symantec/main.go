@@ -58,7 +58,6 @@ func ScanFile(filepath string) (Result, error) {
 		return res, err
 	}
 
-
 	data, err := utils.ReadAll(logfile)
 	if err != nil {
 		return res, err

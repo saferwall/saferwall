@@ -19,11 +19,18 @@ import (
 	"google.golang.org/grpc/testdata"
 )
 
+// Scanner defines the common interface for AV engines
+// to scan a file.
+type Scanner interface {
+	Scan()
+}
+
 var (
 	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	caFile             = flag.String("ca_file", "", "The file containing the CA root cert file")
 	serverAddr         = flag.String("server_addr", "172.17.0.2:50051", "The server address in the format of host:port")
 	serverHostOverride = flag.String("server_host_override", "x.test.saferwall.com", "The server name use to verify the hostname returned by TLS handshake")
+	filePath           = flag.String("file_path", "/tmp/eicar.com", "The file path to scan")
 )
 
 const (
@@ -41,7 +48,7 @@ const (
 type ScanResult struct {
 	Output   string `json:"output"`
 	Infected bool   `json:"infected"`
-	Update   int64 `json:"update"`
+	Update   int64  `json:"update"`
 }
 
 // DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
@@ -106,7 +113,7 @@ func UpdateDate() (int64, error) {
 }
 
 // ParseFlags parses the cmd line flags to create grpc conn.
-func ParseFlags() (string, []grpc.DialOption) {
+func ParseFlags() (string, []grpc.DialOption, string) {
 	flag.Parse()
 	var opts []grpc.DialOption
 	if *tls {
@@ -121,5 +128,5 @@ func ParseFlags() (string, []grpc.DialOption) {
 	} else {
 		opts = append(opts, grpc.WithInsecure())
 	}
-	return *serverAddr, opts
+	return *serverAddr, opts, *filePath
 }

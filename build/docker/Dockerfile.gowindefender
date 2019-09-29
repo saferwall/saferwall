@@ -57,4 +57,3 @@ RUN usermod -u 101 saferwall \
 USER saferwall
 
 ENTRYPOINT ["/bin/windefenderscanner"]
-

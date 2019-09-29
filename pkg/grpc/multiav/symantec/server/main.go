@@ -7,34 +7,58 @@ package main
 import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
-	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
-	"github.com/saferwall/saferwall/pkg/multiav/comodo"
 	log "github.com/sirupsen/logrus"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	"github.com/saferwall/saferwall/pkg/multiav/symantec"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc/grpclog"
+
 )
 
-// server is used to implement comodo.ComodoScanner.
+const (
+	symcfgd = "/opt/Symantec/symantec_antivirus/symcfgd"
+	rtvscand = "/opt/Symantec/symantec_antivirus/rtvscand"
+)
+
+
+// server is used to implement symantec.SymantecScanner.
 type server struct {
 	avDbUpdateDate int64
 }
 
-// GetVersion implements comodo.ComodoScanner.
+// GetVersion implements eset.EsetAVScanner.
 func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
-	version, err := comodo.GetProgramVersion()
+	version, err := symantec.GetProgramVersion()
 	return &pb.VersionResponse{Version: version}, err
 }
 
-// ScanFile implements comodo.ComodoScanner.
+// ScanFile implements symantec.SymantecScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	res, err := comodo.ScanFile(in.Filepath)
+	res, err := symantec.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
 		Output:   res.Output,
 		Update:   s.avDbUpdateDate}, err
 }
 
+
 // main start a gRPC server and waits for connection.
 func main() {
+
+	log.Infoln("Starting Symantec daemon `symcfgd`")
+	out, err := utils.ExecCommand("sudo", symcfgd, "-x")
+	if err != nil {
+		grpclog.Fatalf("failed to start symcfgd: %v", err)
+	}
+	log.Infoln(out)
+
+	log.Infoln("Starting Symantec daemon `rtvscand`")
+	out, err = utils.ExecCommand("sudo", rtvscand, "-x")
+	if err != nil {
+		grpclog.Fatalf("failed to start rtvscand: %v", err)
+	}
+	log.Infoln(out)
+
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -51,11 +75,11 @@ func main() {
 	}
 
 	// attach the AviraScanner service to the server
-	pb.RegisterComodoScannerServer(
+	pb.RegisterSymantecScannerServer(
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Comodo gRPC server ...")
+	log.Infoln("Starting Symantec gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

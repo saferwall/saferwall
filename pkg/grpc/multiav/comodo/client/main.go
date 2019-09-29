@@ -2,26 +2,15 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package comodo
+package main
 
 import (
 	"context"
-
-	log "github.com/sirupsen/logrus"
-
-	pb "github.com/saferwall/saferwall/core/multiav/comodo/proto"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
 	"google.golang.org/grpc"
+	"log"
 )
-
-const (
-	address = "comodo-svc:50051"
-)
-
-// MultiAVScanResult av result
-type MultiAVScanResult struct {
-	Output   string `json:"output"`
-	Infected bool   `json:"infected"`
-}
 
 // GetVerion returns version
 func GetVerion(client pb.ComodoScannerClient) (*pb.VersionResponse, error) {
@@ -30,29 +19,32 @@ func GetVerion(client pb.ComodoScannerClient) (*pb.VersionResponse, error) {
 }
 
 // ScanFile scans file
-func ScanFile(client pb.ComodoScannerClient, path string) (MultiAVScanResult, error) {
-	log.Info("Scanning:", path)
+func ScanFile(client pb.ComodoScannerClient, path string) (multiav.ScanResult, error) {
 	scanFile := &pb.ScanFileRequest{Filepath: path}
 	res, err := client.ScanFile(context.Background(), scanFile)
 	if err != nil {
-		return MultiAVScanResult{}, err
+		return multiav.ScanResult{}, err
 	}
 
-	return MultiAVScanResult{
+	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
 	}, nil
 }
 
-// Init connection
-func Init() (pb.ComodoScannerClient, error) {
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
-	conn, err := grpc.Dial(address, []grpc.DialOption{grpc.WithInsecure()}...)
+func main() {
+	serverAddr, opts, filePath := multiav.ParseFlags()
+	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		return nil, err
+		log.Fatalf("fail to dial: %v", err)
 	}
-	return pb.NewComodoScannerClient(conn), nil
+	defer conn.Close()
+	client := pb.NewComodoScannerClient(conn)
+
+	// ScanFile
+	res, err := ScanFile(client, filePath)
+	if err != nil {
+		log.Fatalf("fail to scanfile: %v", err)
+	}
+	log.Println(res)
 }

@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.12-alpine AS builder
+FROM golang:1.13-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -48,7 +48,6 @@ RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $COMODO_INSTALL_DIR
-
 
 # Switch to our user
 USER saferwall

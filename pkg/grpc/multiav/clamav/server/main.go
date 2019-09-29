@@ -6,35 +6,17 @@ package main
 
 import (
 	"context"
-	"net"
-
-	log "github.com/sirupsen/logrus"
-
-	pb "github.com/saferwall/saferwall/core/multiav/clamav/proto"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/clamav"
 	"github.com/saferwall/saferwall/pkg/utils"
-	"google.golang.org/grpc"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/reflection"
 )
 
-const (
-	port = ":50051"
-
-	// grpc library default is 4MB
-	maxMsgSize = 1024 * 1024 * 20
-)
-
-// DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
-func DefaultServerOpts() []grpc.ServerOption {
-	return []grpc.ServerOption{
-		grpc.MaxRecvMsgSize(maxMsgSize),
-		grpc.MaxSendMsgSize(maxMsgSize),
-	}
+type server struct {
+	avDbUpdateDate int64
 }
-
-// server is used to implement clamav.ClamAVScanner.
-type server struct{}
 
 // GetVersion implements clamav.ClamAVScanner.
 func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
@@ -44,49 +26,46 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements clamav.ClamAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Infoln("ScanFile ", in.Filepath)
 	res, err := clamav.ScanFile(in.Filepath)
-	return &pb.ScanResponse{Infected: res.Infected, Output: res.Output}, err
-}
-
-// NewServer creates a new grpc server.
-func NewServer(opts ...grpc.ServerOption) *grpc.Server {
-	return grpc.NewServer(append(DefaultServerOpts(), opts...)...)
-}
-
-// StartService starts the Avast service.
-func StartService() error {
-	_, err := utils.ExecCommand("clamd")
-	return err
+	return &pb.ScanResponse{
+		Infected: res.Infected,
+		Output:   res.Output,
+		Update:   s.avDbUpdateDate}, err
 }
 
 // main start a gRPC server and waits for connection.
 func main() {
 
-	// start by running clamd
-	log.Infoln("Starting clamav daemon")
-	err := StartService()
+	// start clamav daemon
+	log.Infoln("Starting clamav daemon ...")
+	_, err := utils.ExecCommand("clamd")
 	if err != nil {
-		log.Fatal(err)
+		grpclog.Fatalf("failed to start clamav daemon: %v", err)
 	}
 
 	// create a listener on TCP port 50051
-	log.Infoln("Starting clamav gRPC server")
-	lis, err := net.Listen("tcp", port)
+	lis, err := multiav.CreateListener()
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)
 	}
 
 	// create a gRPC server object
-	s := NewServer()
+	s := multiav.NewServer()
 
-	// attach the AvastScanner service to the server
-	pb.RegisterClamAVScannerServer(s, &server{})
-
-	// register reflection service on gRPC server.
-	reflection.Register(s)
-	if err := s.Serve(lis); err != nil {
-		grpclog.Fatalf("failed to serve: %v", err)
+	// get the av db update date
+	avDbUpdateDate, err := multiav.UpdateDate()
+	if err != nil {
+		grpclog.Fatalf("failed to read av db update date %v", err)
 	}
 
+	// attach the AviraScanner service to the server
+	pb.RegisterClamAVScannerServer(
+		s, &server{avDbUpdateDate: avDbUpdateDate})
+
+	// register reflection service on gRPC server and serve.
+	log.Infoln("Starting ClamAV gRPC server ...")
+	err = multiav.Serve(s, lis)
+	if err != nil {
+		grpclog.Fatalf("failed to serve: %v", err)
+	}
 }

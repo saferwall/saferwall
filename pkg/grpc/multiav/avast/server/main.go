@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/saferwall/saferwall/core/multiav"
-	pb "github.com/saferwall/saferwall/core/multiav/avast/proto"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avast"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/grpclog"
@@ -69,14 +69,11 @@ func (s *server) UpdateVPS(ctx context.Context, in *pb.UpdateVPSRequest) (*pb.Up
 func main() {
 
 	// Start by running avast daemon
-	log.Infoln("Starting avast daemon")
+	log.Infoln("Starting avast daemon ...")
 	err := avast.StartDaemon()
 	if err != nil {
 		log.Error(err)
 	}
-
-	log.Infoln("Starting avast gRPC server")
-
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -93,9 +90,11 @@ func main() {
 	}
 
 	// attach the AvastScanner service to the server
-	pb.RegisterAvastScannerServer(s, &server{})
+	pb.RegisterAvastScannerServer(
+		s, &server{avDbUpdateDate: avDbUpdateDate})
 
 	// register reflection service on gRPC server and serve.
+	log.Infoln("Starting avast gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

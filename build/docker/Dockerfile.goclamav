@@ -51,4 +51,3 @@ RUN chown saferwall:saferwall /bin/clamavscanner \
 USER saferwall
 
 ENTRYPOINT ["/bin/clamavscanner"]
-

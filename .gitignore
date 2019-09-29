@@ -28,7 +28,7 @@ sep-deb.zip
 **/*.key-expired
 build/data/install.conf
 ## old copy
-build/docker/windows-defender/
+build/data/windows-defender/
 
 # Temp
 build/helm/

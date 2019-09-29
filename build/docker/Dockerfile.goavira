@@ -29,11 +29,11 @@ LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Avira"
 
 # Vars
-ENV AVIRA_URL			http://professional.avira-update.com/package/scancl/linux_glibc22/en/scancl-linux_glibc22.tar.gz
+ENV AVIRA_URL               http://professional.avira-update.com/package/scancl/linux_glibc22/en/scancl-linux_glibc22.tar.gz
 ENV AVIRA_FUSEBUNDLE 		http://install.avira-update.com/package/fusebundlegen/linux_glibc22/en/avira_fusebundlegen-linux_glibc22-en.zip
 ENV AVIRA_INSTALL_DIR 		/opt/avira
-ENV AVIRA_TMP 			/tmp/avira
-ENV AVIRA_DB_UPDATE_DATE	/av_db_update_date.txt
+ENV AVIRA_TMP 			    /tmp/avira
+ENV AVIRA_DB_UPDATE_DATE    /av_db_update_date.txt
 
 # Update the VDF
 RUN mkdir $AVIRA_TMP \ 
@@ -49,15 +49,14 @@ COPY --from=builder /go/bin/avirascanner /bin/avirascanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
-	&& useradd --no-log-init -r -g saferwall saferwall
+    && useradd --no-log-init -r -g saferwall saferwall
 
 # Update permissions
 RUN usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall \
-	&& chown -R saferwall:saferwall $AVIRA_INSTALL_DIR
+    && groupmod -g 102 saferwall \
+    && chown -R saferwall:saferwall $AVIRA_INSTALL_DIR
 
 # Switch to our user
 USER saferwall
 
 ENTRYPOINT ["/bin/avirascanner"]
-

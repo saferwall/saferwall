@@ -6,10 +6,10 @@ package main
 
 import (
 	"context"
-	"log"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	"google.golang.org/grpc"
+	"log"
 )
 
 // ScanFile scans file
@@ -27,9 +27,8 @@ func ScanFile(client pb.AviraScannerClient, path string) (multiav.ScanResult, er
 	}, nil
 }
 
-
 func main() {
-	serverAddr, opts := multiav.ParseFlags()
+	serverAddr, opts, filePath := multiav.ParseFlags()
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
@@ -38,7 +37,7 @@ func main() {
 	client := pb.NewAviraScannerClient(conn)
 
 	// ScanFile
-	res, err := ScanFile(client, "/tmp/eicar.com")
+	res, err := ScanFile(client, filePath)
 	if err != nil {
 		log.Fatalf("fail to scanfile: %v", err)
 	}

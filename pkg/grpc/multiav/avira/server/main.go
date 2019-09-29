@@ -37,9 +37,6 @@ func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (*p
 
 // main start a gRPC server and waits for connection.
 func main() {
-
-	log.Infoln("Starting Avira gRPC server ...")
-
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -60,6 +57,7 @@ func main() {
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 
 	// register reflection service on gRPC server and serve.
+	log.Infoln("Starting Avira gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)
