@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package avira
+package main
 
 import (
 	"context"
@@ -38,5 +38,9 @@ func main() {
 	client := pb.NewAviraScannerClient(conn)
 
 	// ScanFile
-	ScanFile(client, "/eicar")
+	res, err := ScanFile(client, "/tmp/eicar.com")
+	if err != nil {
+		log.Fatalf("fail to scanfile: %v", err)
+	}
+	log.Println(res)
 }
