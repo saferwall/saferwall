@@ -41,7 +41,7 @@ RUN mkdir $AVIRA_TMP \
     && unzip -o $AVIRA_TMP/avira_fusebundlegen-linux_glibc22-en.zip -d $AVIRA_TMP \
     && $AVIRA_TMP/fusebundle.bin \
     && unzip -o $AVIRA_TMP/install/fusebundle-linux_glibc22-int.zip -d $AVIRA_INSTALL_DIR \
-    && rm -rf $AVIRA_INSTALL_DIR \
+    && rm -rf $AVIRA_TMP \
     && echo -n "$(date +%s)" >> $AVIRA_DB_UPDATE_DATE
 
 # Copy our static executable.

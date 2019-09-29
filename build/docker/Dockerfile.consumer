@@ -25,7 +25,7 @@ RUN echo "Installing Capstone..." \
     && sudo ./make.sh install
 
 # Build the binary.
-RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer internal/consumer/main.go
+RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer pkg/consumer/main.go
 
 ############################
 # STEP 2 build a small image

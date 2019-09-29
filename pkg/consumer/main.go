@@ -5,30 +5,10 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/signal"
-	"path"
-	"syscall"
-	"time"
-
 	nsq "github.com/bitly/go-nsq"
 	"github.com/minio/minio-go/v6"
-
-	avast "github.com/saferwall/saferwall/core/multiav/avast/client"
-	avira "github.com/saferwall/saferwall/core/multiav/avira/client"
-	bitdefender "github.com/saferwall/saferwall/core/multiav/bitdefender/client"
-	clamav "github.com/saferwall/saferwall/core/multiav/clamav/client"
-	comodo "github.com/saferwall/saferwall/core/multiav/comodo/client"
-	eset "github.com/saferwall/saferwall/core/multiav/eset/client"
-	fsecure "github.com/saferwall/saferwall/core/multiav/fsecure/client"
-	kaspersky "github.com/saferwall/saferwall/core/multiav/kaspersky/client"
-	symantec "github.com/saferwall/saferwall/core/multiav/symantec/client"
-	windefender "github.com/saferwall/saferwall/core/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -37,7 +17,12 @@ import (
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
+	"path"
+	"syscall"
 	"github.com/spf13/viper"
+
 )
 
 var (
@@ -65,6 +50,7 @@ type result struct {
 	Status  int                    `json:"status,omitempty"`
 }
 
+// File scan progress status.
 const (
 	queued     = iota
 	processing = iota
@@ -121,7 +107,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	bucketName := viper.GetString("do.spacename")
 	b, err := utils.Download(minioClient, bucketName, sha256)
 	if err != nil {
-		log.Error("Failed to download file %s", sha256)
+		log.Errorf("Failed to download file %s", sha256)
 		return err
 	}
 
@@ -191,149 +177,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.Strings = strResults
 	log.Infof("strings success %s", sha256)
 
-	multiavScanResults := map[string]interface{}{}
-
-	// Scan with Kaspersky
-	kasperskyClient, err := kaspersky.Init()
-	if err != nil {
-		log.Errorf("kaspersky init failed %s", err)
-	} else {
-		kasperskyRes, err := kaspersky.ScanFile(kasperskyClient, filePath)
-		if err != nil {
-			log.Errorf("kaspersky scanfile failed %s", err)
-		} else {
-			multiavScanResults["kaspersky"] = kasperskyRes
-			log.Infof("kaspersky success %s", sha256)
-		}
-	}
-
-	// Scan with ClamAV
-	clamclient, err := clamav.Init()
-	if err != nil {
-		log.Errorf("clamav init failed %s", err)
-	} else {
-		clamres, err := clamav.ScanFile(clamclient, filePath)
-		if err != nil {
-			log.Errorf("clamav scanfile failed %s", err)
-		} else {
-			multiavScanResults["clamav"] = clamres
-			log.Infof("clamav success %s", sha256)
-		}
-	}
-
-	// Scan with Avast
-	avastClient, err := avast.Init()
-	if err != nil {
-		log.Errorf("avast init failed %s", err)
-	} else {
-		avastres, err := avast.ScanFile(avastClient, filePath)
-		if err != nil {
-			log.Errorf("avast scanfile failed %s", err)
-		} else {
-			multiavScanResults["avast"] = avastres
-			log.Infof("avast success %s", sha256)
-		}
-	}
-
-	// Scan with Avira
-	aviraClient, err := avira.Init()
-	if err != nil {
-		log.Errorf("avira init failed %s", err)
-	} else {
-		avirares, err := avira.ScanFile(aviraClient, filePath)
-		if err != nil {
-			log.Errorf("avira scanfile failed %s", err)
-		} else {
-			multiavScanResults["avira"] = avirares
-			log.Infof("avira success %s", sha256)
-		}
-	}
-
-	// Scan with Bitdefender
-	bitdefenderClient, err := bitdefender.Init()
-	if err != nil {
-		log.Errorf("bitdefender init failed %s", err)
-	} else {
-		bitdefenderres, err := bitdefender.ScanFile(bitdefenderClient, filePath)
-		if err != nil {
-			log.Errorf("bitdefender scanfile failed %s", err)
-		} else {
-			multiavScanResults["bitdefender"] = bitdefenderres
-			log.Infof("bitdefender success %s", sha256)
-		}
-	}
-
-	// Scan with Comodo
-	comodoClient, err := comodo.Init()
-	if err != nil {
-		log.Errorf("comodo init failed %s", err)
-	} else {
-		comodores, err := comodo.ScanFile(comodoClient, filePath)
-		if err != nil {
-			log.Errorf("comodo scanfile failed %s", err)
-		} else {
-			multiavScanResults["comodo"] = comodores
-			log.Infof("comodo success %s", sha256)
-		}
-	}
-
-	// Scan with Windows Defender
-	windefenderClient, err := windefender.Init()
-	if err != nil {
-		log.Errorf("windefender init failed %s", err)
-	} else {
-		windefenderRes, err := windefender.ScanFile(windefenderClient, filePath)
-		if err != nil {
-			log.Errorf("windefender scanfile failed %s", err)
-		} else {
-			multiavScanResults["windefender"] = windefenderRes
-			log.Infof("windefender success %s", sha256)
-		}
-	}
-
-	// Scan with FSecure
-	fsecureClient, err := fsecure.Init()
-	if err != nil {
-		log.Errorf("fsecure init failed %s", err)
-	} else {
-		fsecureRes, err := fsecure.ScanFile(fsecureClient, filePath)
-		if err != nil {
-			log.Errorf("fsecure scanfile failed %s", err)
-		} else {
-			multiavScanResults["fsecure"] = fsecureRes
-			log.Infof("fsecure success %s", sha256)
-		}
-	}
-
-	// Scan with Eset
-	esetClient, err := eset.Init()
-	if err != nil {
-		log.Errorf("eset init failed %s", err)
-	} else {
-		esetRes, err := eset.ScanFile(esetClient, filePath)
-		if err != nil {
-			log.Errorf("eset scanfile failed %s", err)
-		} else {
-			multiavScanResults["eset"] = esetRes
-			log.Infof("eset success %s", sha256)
-		}
-	}
-
-	// Scan with Symantec
-	symantecClient, err := symantec.Init()
-	if err != nil {
-		log.Errorf("symantec init failed %s", err)
-	} else {
-		symantecRes, err := symantec.ScanFile(symantecClient, filePath)
-		if err != nil {
-			log.Errorf("symantec scanfile failed %s", err)
-		} else {
-			multiavScanResults["symantec"] = symantecRes
-			log.Infof("symantec success %s", sha256)
-		}
-	}
-
-	res.MultiAV = multiavScanResults
+	// multiav scanning
+	res.MultiAV = multiAvScan(filePath)
 
 	// analysis finished
 	res.Status = finished
@@ -353,41 +198,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	return nil
 }
 
-// loadConfig loads our configration.
-func loadConfig() error {
-	viper.SetConfigName("saferwall") // no need to include file extension
-	viper.AddConfigPath(".")         // set the path of your config file
-	err := viper.ReadInConfig()
-	return err
-}
-
-func updateDocument(sha256 string, buff []byte) {
-	// Update results to DB
-	client := &http.Client{}
-	client.Timeout = time.Second * 15
-	url := backendEndpoint + sha256
-	log.Infoln("Sending results to ", url)
-
-	body := bytes.NewBuffer(buff)
-	req, err := http.NewRequest(http.MethodPut, url, body)
-	if err != nil {
-		log.Errorf("http.NewRequest() failed with '%s'\n", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("client.Do() failed with '%s'\n", err)
-	}
-
-	defer resp.Body.Close()
-	d, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
-	}
-
-	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
-}
 
 func main() {
 
