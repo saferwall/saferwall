@@ -7,16 +7,16 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	nsq "github.com/bitly/go-nsq"
-	"github.com/minio/minio-go/v6"
-	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
-	"github.com/spf13/viper"
 
+	nsq "github.com/bitly/go-nsq"
+	"github.com/minio/minio-go/v6"
+	"github.com/saferwall/saferwall/pkg/utils"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -131,7 +131,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	return nil
 }
 
-
 func main() {
 
 	// Log as JSON instead of the default ASCII formatter.
@@ -142,7 +141,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing the config: %v", err)
 	}
-	
+
 	// Get an minio client instance
 	accessKey := viper.GetString("do.accesskey")
 	secKey := viper.GetString("do.seckey")
@@ -150,11 +149,8 @@ func main() {
 	ssl := viper.GetBool("do.ssl")
 	minioClient, err = minio.New(endpoint, accessKey, secKey, ssl)
 	if err != nil {
-		log.Fatal("Failed to connect to get minio client instance")
+		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
-
-	// Set backend API address
-	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.

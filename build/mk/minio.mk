@@ -11,8 +11,8 @@ minio-start:  ## Start a minio server locally
 	minio server --address localhost:9000 ./minio
 
 minio-docker-run:	## Run a mini docker container
-	docker pull minio/minio
-	docker run --name minio -it -p 9000:9000 minio/minio server /data
+	sudo docker pull minio/minio
+	sudo docker run --name minio -it -p 9000:9000 minio/minio server /data
 
 minio-docker-start:	## Start existing minio  container.
 	docker start minio

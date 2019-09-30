@@ -161,7 +161,6 @@ func loadSchemas() {
 		log.Fatalln("Error while loading email schema: ", err)
 	}
 
-
 	log.Infoln("Schemas were loaded")
 }
 
