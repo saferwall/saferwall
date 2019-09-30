@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: consumer
   labels:
-    app: core
+    app: consumer
 spec:
   selector:
     matchLabels:
-      app: core
+      app: consumer
   replicas: 1
   template:
     metadata:
       labels:
-        app: core
+        app: consumer
     spec:
       containers:
         - name: consumer

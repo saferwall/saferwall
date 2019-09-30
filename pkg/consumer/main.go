@@ -108,7 +108,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	filePath := path.Join("/samples", sha256)
 
 	// static scanning
-	staticScan(sha256, filePath, b)
+	res = staticScan(sha256, filePath, b)
 
 	// multiav scanning
 	res.MultiAV = multiAvScan(filePath)

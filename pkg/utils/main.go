@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/minio/minio-go/v6"
 )
 
 // GetFileSize returns file size in bytes
@@ -284,4 +285,17 @@ func CreateFile(path string) error {
 	}
 
 	return nil
+}
+
+// Download downloads an object from a bucket.
+func Download(client *minio.Client, bucketName string, objectName string) ([]byte, error) {
+
+	filePath := path.Join("/"+bucketName, objectName)
+	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ReadAll(filePath)
+	return data, err
 }
