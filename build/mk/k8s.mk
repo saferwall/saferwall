@@ -109,19 +109,23 @@ k8s-delete-cb:		## Delete all couchbase related objects from k8s
 	kubectl delete pv couchbase-pv ; \
 	kubectl delete sc couchbase-sc
 
+k8s-delete-multiav:		## Delete all multiav related objects from k8s
+	cd  $(ROOT_DIR)/build/k8s ; \
+		kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml ; \
+		kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml ; \
+		kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml ; \
+		kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml ; \
+		kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml ; \
+		kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml ; \
+		kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml ; \
+		kubectl delete deployments kaspersky ; kubectl apply -f multiav-kaspersky.yaml ; \
+		kubectl delete deployments windefender ; kubectl apply -f multiav-windefender.yaml
 
 k8s-delete:			## delete all
 	kubectl delete deployments,service backend -l app=web
 	kubectl delete service backend
 	kubectl delete service consumer
 	kubectl delete deployments consumer ; kubectl apply -f consumer.yaml
-	kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml
-	kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml
-	kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml
-	kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml
-	kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml
-	kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml
-	kubectl delete deployments kaspersky ; kubectl apply -f multiav-kaspersky.yaml
-	kubectl delete deployments windefender ; kubectl apply -f multiav-windefender.yaml
+
 	kubectl delete cbc cb-saferwall ; kubectl create -f couchbase-cluster.yaml
 	kubectl delete deployments backend ; kubectl apply -f backend.yaml

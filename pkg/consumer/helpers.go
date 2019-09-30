@@ -22,6 +22,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav/dummy/proto"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	"google.golang.org/grpc"
 	"context"
@@ -30,13 +31,13 @@ import (
 )
 
 const (
-	avEnginesCount = 10
+	avEnginesCount = 11
 )
 
 // loadConfig loads our configration.
-func loadConfig() error {
+func loadConfig(cfgPath string) error {
 	viper.SetConfigName("saferwall") // no need to include file extension
-	viper.AddConfigPath(".")         // set the path of your config file
+	viper.AddConfigPath(cfgPath)         // set the path of your config file
 	err := viper.ReadInConfig()
 	return err
 }
@@ -74,19 +75,41 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	// We Start as much georoutines as the AV engines we have.
 	// Each goroutines makes a gRPC calls and waits for results.
 	multiavScanResults := map[string]interface{}{}
-	aviraChan := make (chan multiav.ScanResult)
 	avastChan := make (chan multiav.ScanResult)
+	aviraChan := make (chan multiav.ScanResult)
 	bitdefenderChan := make (chan multiav.ScanResult)
 	clamavChan := make (chan multiav.ScanResult)
 	comodoChan := make (chan multiav.ScanResult)
 	esetChan := make (chan multiav.ScanResult)
 	fsecureChan := make (chan multiav.ScanResult)
 	kasperskyChan := make (chan multiav.ScanResult)
-	symantecChan := make (chan multiav.ScanResult)
 	windefenderChan := make (chan multiav.ScanResult)
+	symantecChan := make (chan multiav.ScanResult)
+	dummyChan := make (chan multiav.ScanResult)
 
 	go func () {
-		address := viper.GetString("multiav.avastAddr")
+		address := viper.GetString("multiav.dummy_addr")
+		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
+		if err != nil {
+			log.Fatalf("fail to dial: %v", err)
+		}
+		defer conn.Close()
+
+		client := dummy_api.NewDummyScannerClient(conn)
+		scanFileRequest := &dummy_api.ScanFileRequest{Filepath: filePath}
+		res, err := client.ScanFile(context.Background(), scanFileRequest)
+		if err != nil {
+			log.Errorln("Failed to scan with dummy: :v", err)
+			dummyChan <- multiav.ScanResult{}
+		} else {
+			dummyChan <- multiav.ScanResult{
+				Output:   res.Output,
+				Infected: res.Infected,
+				Update:   res.Update,}
+		}
+	}()
+	go func () {
+		address := viper.GetString("multiav.avast_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -108,7 +131,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.aviraAddr")
+		address := viper.GetString("multiav.avira_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -130,7 +153,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.bitdefenderAddr")
+		address := viper.GetString("multiav.bitdefender_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -152,7 +175,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.clamavAddr")
+		address := viper.GetString("multiav.clamav_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -174,7 +197,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.comodoAddr")
+		address := viper.GetString("multiav.comodo_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -196,7 +219,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.esetAddr")
+		address := viper.GetString("multiav.eset_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -218,7 +241,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.fsecureAddr")
+		address := viper.GetString("multiav.fsecure_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -240,7 +263,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.kasperskyAddr")
+		address := viper.GetString("multiav.kaspersky_addr")
 
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
@@ -264,7 +287,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 
 
 	go func () {
-		address := viper.GetString("multiav.symantecAddr")
+		address := viper.GetString("multiav.symantec_addr")
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
 			log.Fatalf("fail to dial: %v", err)
@@ -286,7 +309,7 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 	}()
 
 	go func () {
-		address := viper.GetString("multiav.windefenderAddr")
+		address := viper.GetString("multiav.windefender_addr")
 
 		conn, err := grpc.Dial(address,[]grpc.DialOption{grpc.WithInsecure()}...)
 		if err != nil {
@@ -308,8 +331,8 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 		}
 	}()
 
+	avCount := 0
 	for {
-		avCount := 0
 		select {
 		case aviraRes := <- aviraChan:
 			multiavScanResults["avira"] = aviraRes
@@ -340,6 +363,9 @@ func multiAvScan (filePath string) (map[string]interface{}) {
 			avCount++
 		case windefenderRes := <- windefenderChan:
 			multiavScanResults["windefender"] = windefenderRes
+			avCount++
+		case dummyRes := <- dummyChan:
+			multiavScanResults["dummy"] = dummyRes
 			avCount++
 		}
 

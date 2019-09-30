@@ -38,7 +38,7 @@ const (
 	maxMsgSize = 1024 * 1024 * 20
 
 	// Path to the file which holds the last time we updated the AV engine database.
-	dbUpdateDateFilePath = "av_db_update_date.txt"
+	dbUpdateDateFilePath = "/av_db_update_date.txt"
 
 	// port is the gRPC port the server listens on.
 	port = ":50051"
