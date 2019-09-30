@@ -1,4 +1,4 @@
-k8s-kubectl-install:	## Install kubectl
+k8s-kubectl-install:		## Install kubectl
 	sudo apt-get update && sudo apt-get install -y apt-transport-https
 	curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 	echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
@@ -6,14 +6,14 @@ k8s-kubectl-install:	## Install kubectl
 	sudo apt-get install -y kubectl
 	kubectl version
 
-k8s-minikube-install:	## Install minikube
+k8s-minikube-install:		## Install minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 	chmod +x minikube
 	sudo cp minikube /usr/local/bin && rm minikube
 	minikube version
 
-k8s-minikube-start:		## Start minikube
-	minikube start --cpus 4 --memory 16384 --disk-size=60GB
+k8s-minikube-start:			## Start minikube
+	minikube start --cpus 8 --memory 20480 --disk-size=80GB
 	kubectl proxy --address='0.0.0.0' --disable-filter=true &
 
 k8s-prepare:	k8s-minikube-install k8s-kubectl-install k8s-minikube-start ## Install minikube, kubectl and start a cluster
@@ -22,7 +22,7 @@ k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-d
 
 k8s-deploy-nfs-server:	## Deploy NFS server in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl create -f nfs-server.yaml \
+	&& kubectl apply -f nfs-server.yaml \
 	&& kubectl apply -f samples-pv.yaml \
 	&& kubectl apply -f samples-pvc.yaml
 
@@ -67,8 +67,10 @@ k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	&& kubectl apply -f multiav-fsecure.yaml \
 	&& kubectl apply -f multiav-bitdefender.yaml \
 	&& kubectl apply -f multiav-avast.yaml \
-	&& kubectl apply -f multiav-windefender.yaml \
 	&& kubectl apply -f multiav-symantec.yaml
+	&& kubectl apply -f seccomp-profile.yaml \
+	&& kubectl apply -f seccomp-installer.yaml \
+	&& kubectl apply -f multiav-windefender.yaml \
 
 k8s-apply-multiav:		## Delete multiav from k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
