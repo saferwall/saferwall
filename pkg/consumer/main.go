@@ -85,12 +85,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// set the file status to `processing`
 	res := result{}
+	var err error
 	res.Status = processing
 
 	// Marshell results
-	buff, err := json.Marshal(res)
-	if err != nil {
-		log.Error("Failed to get object, err: ", err)
+	var buff []byte
+	if buff, err = json.Marshal(res); err != nil {
+		log.Errorln("Failed to get object: ", err)
 		return err
 	}
 
@@ -99,13 +100,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// Download the sample
 	bucketName := viper.GetString("do.spacename")
-	b, err := utils.Download(minioClient, bucketName, sha256)
-	if err != nil {
+	filePath := path.Join("/samples", sha256)
+	var b []byte
+	if b, err = utils.Download(minioClient, bucketName, filePath, sha256); err != nil {
 		log.Errorf("Failed to download file %s", sha256)
 		return err
 	}
-
-	filePath := path.Join("/samples", sha256)
 
 	// static scanning
 	res = staticScan(sha256, filePath, b)
@@ -137,8 +137,8 @@ func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 
 	// Load consumer config
-	err := loadConfig(".")
-	if err != nil {
+	var err error
+	if err = loadConfig("."); err != nil {
 		log.Fatalf("Error parsing the config: %v", err)
 	}
 
@@ -147,8 +147,7 @@ func main() {
 	secKey := viper.GetString("do.seckey")
 	endpoint := viper.GetString("do.endpoint")
 	ssl := viper.GetBool("do.ssl")
-	minioClient, err = minio.New(endpoint, accessKey, secKey, ssl)
-	if err != nil {
+	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
 		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
 

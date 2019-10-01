@@ -288,9 +288,7 @@ func CreateFile(path string) error {
 }
 
 // Download downloads an object from a bucket.
-func Download(client *minio.Client, bucketName string, objectName string) ([]byte, error) {
-
-	filePath := path.Join("/"+bucketName, objectName)
+func Download(client *minio.Client, bucketName, filePath, objectName string) ([]byte, error) {
 	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err

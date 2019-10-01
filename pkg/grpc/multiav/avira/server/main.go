@@ -21,6 +21,7 @@ type server struct {
 
 // ScanFile implements avira.AviraScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Infof("[avira] Scanning %s ...", in.Filepath)
 	res, err := avira.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
