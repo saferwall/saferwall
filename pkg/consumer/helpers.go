@@ -105,6 +105,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		c <- multiav.ScanResult{}
 		return
 	}
+	defer conn.Close()
 
 	switch engine {
 	case "avast":
@@ -168,15 +169,25 @@ func multiAvScan(filePath string) map[string]interface{} {
 	// Each go-routines makes a gRPC calls and waits for results.
 	// Avast
 	go avScan("avast", filePath, avastChan)
+	time.Sleep(10*time.Second)
 	go avScan("avira", filePath, aviraChan)
+	time.Sleep(10*time.Second)
 	go avScan("bitdefender", filePath, bitdefenderChan)
+	time.Sleep(10*time.Second)
 	go avScan("clamav", filePath, clamavChan)
+	time.Sleep(10*time.Second)
 	go avScan("comodo", filePath, comodoChan)
+	time.Sleep(10*time.Second)
 	go avScan("eset", filePath, esetChan)
+	time.Sleep(10*time.Second)
 	go avScan("fsecure", filePath, fsecureChan)
+	time.Sleep(10*time.Second)
 	go avScan("kaspersky", filePath, kasperskyChan)
+	time.Sleep(10*time.Second)
 	go avScan("symantec", filePath, symantecChan)
+	time.Sleep(10*time.Second)
 	go avScan("windefender", filePath, windefenderChan)
+	time.Sleep(10*time.Second)
 
 	multiavScanResults := map[string]interface{}{}
 	avEnginesCount := 10

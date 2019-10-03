@@ -21,7 +21,7 @@ type server struct {
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
 	res, err := fsecure.ScanFile(in.Filepath)
 	output := ""
-	if err != nil && res.Infected {
+	if res.Infected {
 		if res.FSE != "" {
 			output = res.FSE
 		} else {

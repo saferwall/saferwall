@@ -6,9 +6,6 @@ metadata:
     app: windefender
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: "localhost/my-profile.json"
-    # you can specify seccomp profile per container. If you add another profile you can configure
-    # it for a specific container - 'pause' in this case.
-    # container.seccomp.security.alpha.kubernetes.io/pause: "localhost/some-other-profile.json"
 spec:
   selector:
     app: windefender
