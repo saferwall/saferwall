@@ -5,15 +5,14 @@ import (
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
-	"github.com/saferwall/saferwall/pkg/utils"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
+	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
-
 )
 
-func staticScan(sha256, filePath string, b []byte) (result) {
-	res := result {}
+func staticScan(sha256, filePath string, b []byte) result {
+	res := result{}
 	var err error
 
 	// Crypto Pkg
@@ -82,4 +81,3 @@ func staticScan(sha256, filePath string, b []byte) (result) {
 
 	return res
 }
-

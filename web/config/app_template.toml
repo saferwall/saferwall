@@ -2,7 +2,7 @@
 address = ":8800"
 
 [db]
-server = "couchbase://172.17.0.2"
+server = "couchbase://172.17.0.3"
 username = "username"
 password = "password"
 

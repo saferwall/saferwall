@@ -38,7 +38,7 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	kubectl create -f admission.yaml ; \
 	kubectl create -f secret.yaml ; \
 	kubectl create -f operator-deployment.yaml ; \
-	kubectl create -f couchbase-cluster.yaml  
+	kubectl apply -f couchbase-cluster.yaml  
 
 k8s-deploy-nsq:			## Deploy NSQ in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
@@ -67,24 +67,10 @@ k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	&& kubectl apply -f multiav-fsecure.yaml \
 	&& kubectl apply -f multiav-bitdefender.yaml \
 	&& kubectl apply -f multiav-avast.yaml \
-	&& kubectl apply -f multiav-symantec.yaml
+	&& kubectl apply -f multiav-symantec.yaml \
 	&& kubectl apply -f seccomp-profile.yaml \
 	&& kubectl apply -f seccomp-installer.yaml \
 	&& kubectl apply -f multiav-windefender.yaml \
-
-k8s-apply-multiav:		## Delete multiav from k8s cluster
-	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl apply -f multiav-clamav.yaml \
-	&& kubectl apply -f multiav-avira.yaml \
-	&& kubectl apply -f multiav-eset.yaml \
-	&& kubectl apply -f multiav-kaspersky.yaml \
-	&& kubectl apply -f multiav-comodo.yaml \
-	&& kubectl apply -f multiav-fsecure.yaml \
-	&& kubectl apply -f multiav-bitdefender.yaml \
-	&& kubectl apply -f multiav-avast.yaml \
-	&& kubectl apply -f multiav-windefender.yaml \
-	&& kubectl apply -f multiav-symantec.yaml
-
 
 k8s-deploy-backend:		## Deploy backend in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \

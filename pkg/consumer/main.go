@@ -150,6 +150,9 @@ func main() {
 	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
 		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
+	
+	// Set backend API address
+	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.

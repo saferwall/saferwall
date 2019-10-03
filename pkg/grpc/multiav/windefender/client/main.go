@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package main
+package client
 
 import (
 	"context"

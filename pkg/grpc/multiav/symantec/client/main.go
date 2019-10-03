@@ -2,12 +2,12 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package main
+package client
 
 import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
-	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
+	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	"google.golang.org/grpc"
 	"log"
 )
