@@ -70,7 +70,7 @@ k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	&& kubectl apply -f multiav-symantec.yaml \
 	&& kubectl apply -f seccomp-profile.yaml \
 	&& kubectl apply -f seccomp-installer.yaml \
-	&& kubectl apply -f multiav-windefender.yaml \
+	&& kubectl apply -f multiav-windefender.yaml
 
 k8s-deploy-backend:		## Deploy backend in kubernetes cluster
 	cd  $(ROOT_DIR)/build/k8s ; \

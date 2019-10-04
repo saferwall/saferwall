@@ -23,6 +23,7 @@ func ScanFile(client pb.SymantecScannerClient, path string) (multiav.ScanResult,
 	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
+		Update:   res.Update,
 	}, nil
 }
 

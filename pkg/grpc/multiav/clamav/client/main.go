@@ -29,6 +29,7 @@ func ScanFile(client pb.ClamAVScannerClient, path string) (multiav.ScanResult, e
 	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
+		Update:   res.Update,
 	}, nil
 }
 

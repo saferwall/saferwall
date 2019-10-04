@@ -57,6 +57,7 @@ func main() {
 	if err != nil {
 		grpclog.Fatalf("failed to read av db update date %v", err)
 	}
+	log.Infoln(avDbUpdateDate)
 
 	// attach the AviraScanner service to the server
 	pb.RegisterClamAVScannerServer(

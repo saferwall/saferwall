@@ -46,8 +46,10 @@ RUN wget $FSECURE_UPDATE -P $FSECURE_TMP \
 	&& /etc/init.d/fsaua start \
 	&& /etc/init.d/fsupdate start \
 	&& $FSECURE_INSTALL_DIR/fsav/bin/dbupdate $FSECURE_INSTALL_DIR/fsdbupdate9.run ; exit 0 \
-	&& /opt/f-secure/fsav/bin/fsav --version \
-	&& echo -n "$(date +%s)" >> $FSECURE_DB_UPDATE_DATE
+	&& /opt/f-secure/fsav/bin/fsav --version
+
+# Update date
+RUN  echo -n "$(date +%s)" >> $FSECURE_DB_UPDATE_DATE 
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \

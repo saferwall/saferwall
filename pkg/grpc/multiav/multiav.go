@@ -108,7 +108,10 @@ func UpdateDate() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	updateDate, _ := strconv.Atoi(string(data))
+	updateDate, err := strconv.Atoi(string(data))
+	if err != nil {
+		return 0, err
+	}
 	return int64(updateDate), nil
 }
 

@@ -29,6 +29,7 @@ func ScanFile(client pb.EsetScannerClient, path string) (multiav.ScanResult, err
 	return multiav.ScanResult{
 		Output:   res.Output,
 		Infected: res.Infected,
+		Update:   res.Update,
 	}, nil
 }
 
