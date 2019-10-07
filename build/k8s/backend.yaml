@@ -12,8 +12,6 @@ spec:
       targetPort: 8080
       nodePort: 30080
   type: NodePort 
-  # type: LoadBalancer
-  # loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
 
 ---
 apiVersion: apps/v1

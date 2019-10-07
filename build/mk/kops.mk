@@ -7,6 +7,7 @@ kops-install:			## Install Kubernetes Kops
 aws-cli-install:		## Install aws cli tool
 	sudo apt-get update
 	sudo apt-get install awscli -y
+	aws configure
 
 kops-create-user:		## Create user to provision the cluster
 	aws iam create-group --group-name kops
@@ -15,6 +16,7 @@ kops-create-user:		## Create user to provision the cluster
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/IAMFullAccess --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess --group-name kops
+	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess --group-name kops
 	aws iam create-user --user-name kops
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
@@ -23,29 +25,49 @@ kops-create-bucket:		## create s3 bucket
 	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region us-east-1
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
-kops-create-efs:		## create AWS EFS
-	aws efs create-file-system \
-		--creation-token saferwall-efs \
-		--performance-mode generalPurpose \
-		--throughput-mode bursting \
-		--region us-west-2 \
-		--tags Key=Name,Value="Test File System" Key=developer,Value=rhoward \
-
 kops-create-cluster:	## create k8s cluster
-	aws ec2 describe-availability-zones --region us-west-2
-	kops create cluster --zones us-west-2a ${NAME}
+	aws ec2 describe-availability-zones --region us-east-1
+	kops create cluster --zones us-east-1a ${NAME} --node-count 8
 	kops edit cluster ${NAME}
 	kops update cluster ${NAME} --yes
-	sleep 5m
+	sleep 8m
 	kops validate cluster
 	kubectl get nodes
 
-kops-create-efs-provisioner:
-	kubectl create configmap efs-provisioner \
-		--from-literal=file.system.id=fs-47a2c22e \
-		--from-literal=aws.region=us-west-2 \
-		--from-literal=dns.name=""
-		--from-literal=provisioner.name=example.com/aws-efs
+kops-create-efs:		## create AWS EFS file system
+	aws efs create-file-system \
+		--creation-token saferwall-efs \
+		--performance-mode maxIO \
+		--region us-east-1
+
+kops-create-mount-targers:
+	aws efs create-mount-target \
+	--file-system-id fs-428863c3 \
+	--subnet-id subnet-02e23cc2450374db8 \
+	--security-group sg-04a12e4e0b3cdda9d \
+	--region us-east-1 
+
+kops-create-efs-provisioner:		## Create efs provisioner
+	cd ~ \
+		&& git clone https://github.com/kubernetes-incubator/external-storage \
+		&& cd external-storage/aws/efs/deploy/ \
+		&& kubectl apply -f rbac.yaml  
+		## Modify manifest.yaml. In the configmap section change the
+		# file.system.id: and aws.region: to match the details of the
+		#  EFS you created. Change dns.name if you want to mount by your
+		# own DNS name and not by AWS's *file-system-id*.efs.*aws-region*.amazonaws.com.
+		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
 
 kops-delete-cluster:		## delete k8s cluster
 	kops delete cluster --name ${NAME} --yes
+
+kops-update-cluster:
+	kops edit ig --name= nodes
+	kops update cluster --yes
+
+
+
+# aws  ec2 describe-vpcs    
+
+
+

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	"github.com/saferwall/saferwall/pkg/utils"
 	avastclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
 	aviraclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/client"
@@ -107,6 +108,20 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	}
 	defer conn.Close()
 
+	// Make a copy of the file for each AV engine.
+	// This tries to fix the file locking issues which happens
+	// if you try to scan a filepath in a nfs share with
+	// different engines at the same time.
+	filecopyPath := filePath+"-"+engine
+	err = utils.CopyFile(filePath, filecopyPath)
+	if err != nil {
+		log.Error("Failed to copy the file.2")
+		c <- multiav.ScanResult{}
+		return
+	}
+
+	filePath = filecopyPath
+
 	switch engine {
 	case "avast":
 		res, err := avastclient.ScanFile(avast_api.NewAvastScannerClient(conn), filePath)
@@ -168,26 +183,16 @@ func multiAvScan(filePath string) map[string]interface{} {
 	// We Start as much go routines as the AV engines we have.
 	// Each go-routines makes a gRPC calls and waits for results.
 	// Avast
-	go avScan("avast", filePath, avastChan)
-	time.Sleep(10*time.Second)
-	go avScan("avira", filePath, aviraChan)
-	time.Sleep(10*time.Second)
-	go avScan("bitdefender", filePath, bitdefenderChan)
-	time.Sleep(10*time.Second)
-	go avScan("clamav", filePath, clamavChan)
-	time.Sleep(10*time.Second)
-	go avScan("comodo", filePath, comodoChan)
-	time.Sleep(10*time.Second)
 	go avScan("eset", filePath, esetChan)
-	time.Sleep(10*time.Second)
 	go avScan("fsecure", filePath, fsecureChan)
-	time.Sleep(10*time.Second)
+	go avScan("avira", filePath, aviraChan)
+	go avScan("bitdefender", filePath, bitdefenderChan)
 	go avScan("kaspersky", filePath, kasperskyChan)
-	time.Sleep(10*time.Second)
 	go avScan("symantec", filePath, symantecChan)
-	time.Sleep(10*time.Second)
 	go avScan("windefender", filePath, windefenderChan)
-	time.Sleep(10*time.Second)
+	go avScan("clamav", filePath, clamavChan)
+	go avScan("comodo", filePath, comodoChan)
+	go avScan("avast", filePath, avastChan)
 
 	multiavScanResults := map[string]interface{}{}
 	avEnginesCount := 10

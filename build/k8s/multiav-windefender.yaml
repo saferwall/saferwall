@@ -4,8 +4,6 @@ metadata:
   name: windefender-svc
   labels:
     app: windefender
-  annotations:
-    seccomp.security.alpha.kubernetes.io/pod: "localhost/my-profile.json"
 spec:
   selector:
     app: windefender
@@ -20,6 +18,8 @@ metadata:
   name: windefender
   labels:
     app: windefender
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: "localhost/my-profile.json"
 spec:
   selector:
     matchLabels:
