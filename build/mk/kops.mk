@@ -27,7 +27,7 @@ kops-create-bucket:		## create s3 bucket
 
 kops-create-cluster:	## create k8s cluster
 	aws ec2 describe-availability-zones --region us-east-1
-	kops create cluster --zones us-east-1a ${NAME} --node-count 8
+	kops create cluster --zones us-east-1a ${NAME}
 	kops edit cluster ${NAME}
 	kops update cluster ${NAME} --yes
 	sleep 8m
@@ -39,13 +39,16 @@ kops-create-efs:		## create AWS EFS file system
 		--creation-token saferwall-efs \
 		--performance-mode maxIO \
 		--region us-east-1
+	aws efs describe-file-systems
 
 kops-create-mount-targers:
+	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,Subnet:SubnetId,SecurityGroups:SecurityGroups}'
 	aws efs create-mount-target \
-	--file-system-id fs-428863c3 \
-	--subnet-id subnet-02e23cc2450374db8 \
-	--security-group sg-04a12e4e0b3cdda9d \
+	--file-system-id fs-e4d02165 \
+	--subnet-id subnet-0c33094ed35a72ccb \
+	--security-group sg-068b9270c1b989f79 \
 	--region us-east-1 
+	aws efs describe-mount-targets --file-system-id fs-e4d02165
 
 kops-create-efs-provisioner:		## Create efs provisioner
 	cd ~ \

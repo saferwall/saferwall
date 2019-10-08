@@ -52,11 +52,6 @@ k8s-deploy-minio:		## Deploy minio
 	kubectl apply -f minio-standalone-deployment.yaml ; \
 	kubectl apply -f minio-standalone-service.yaml
 
-k8s-deploy-fsecure:		## Deploy fsecure
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl delete deployments fsecure ; \
-	kubectl apply -f multiav-fsecure.yaml
-
 k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
 	&& kubectl apply -f multiav-clamav.yaml \
