@@ -2,7 +2,7 @@ module github.com/saferwall/saferwall/web
 
 go 1.13
 
-replace github.com/saferwall/saferwall/pkg/utils => ../pkg/utils
+replace github.com/saferwall/saferwall/pkg/utils => ./pkg/utils
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0

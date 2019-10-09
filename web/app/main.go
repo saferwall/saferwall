@@ -72,7 +72,7 @@ var (
 
 // loadConfig loads our configration.
 func loadConfig() {
-	viper.SetConfigName("app.dev")    // no need to include file extension
+	viper.SetConfigName("app")    // no need to include file extension
 	viper.AddConfigPath("config") // set the path of your config file
 
 	err := viper.ReadInConfig()
