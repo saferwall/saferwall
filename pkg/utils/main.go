@@ -7,6 +7,8 @@ package utils
 import (
 	"context"
 	"fmt"
+	"github.com/minio/minio-go/v6"
+	"github.com/yeka/zip"
 	"io"
 	"io/ioutil"
 	"log"
@@ -18,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/minio/minio-go/v6"
 )
 
 // GetFileSize returns file size in bytes
@@ -296,4 +297,60 @@ func Download(client *minio.Client, bucketName, filePath, objectName string) ([]
 
 	data, err := ReadAll(filePath)
 	return data, err
+}
+
+// ZipEncrypt compresses binary data to zip using a password.
+func ZipEncrypt(filename string, password string, contents io.Reader) (string, error) {
+	zipFilepath := filename + ".zip"
+	fzip, err := os.Create(zipFilepath)
+	if err != nil {
+		return "", err
+	}
+	zipw := zip.NewWriter(fzip)
+	defer zipw.Close()
+
+	w, err := zipw.Encrypt(filename, password, zip.AES256Encryption)
+	if err != nil {
+		return "", err
+	}
+
+	if err != nil {
+		return "", err
+	}
+	_, err = io.Copy(w, contents)
+	if err != nil {
+		return "", err
+	}
+	zipw.Flush()
+	return zipFilepath, nil
+}
+
+// ZipDecrypt compresses binary data to zip using a password.
+func ZipDecrypt(zipFilepath string, password string) error {
+	r, err := zip.OpenReader(zipFilepath)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		if f.IsEncrypted() {
+			f.SetPassword(password)
+		}
+
+		r, err := f.Open()
+		if err != nil {
+			return err
+		}
+
+		buf, err := ioutil.ReadAll(r)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+
+		fmt.Printf("Size of %v: %v byte(s)\n", f.Name, len(buf))
+	}
+
+	return nil
 }
