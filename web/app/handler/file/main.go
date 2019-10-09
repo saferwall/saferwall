@@ -21,6 +21,7 @@ import (
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
+	u "github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
@@ -285,7 +286,7 @@ func PostFiles(c echo.Context) error {
 	// Upload the sample to DO object storage.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	n, err := app.DOClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,
+	n, err := app.MinioClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,
 		sha256, bytes.NewReader(fileContents), size,
 		minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
@@ -340,4 +341,28 @@ func DeleteFiles(c echo.Context) error {
 	go deleteAllFiles()
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "ok"})
+}
+
+// Download downloads a file.
+func Download (c echo.Context) error {
+	// get path param
+	sha256 := c.Param("sha256")
+
+	reader, err := app.MinioClient.GetObject(
+		app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	defer reader.Close()
+
+	_, err = reader.Stat()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, err.Error())
+	}
+
+	filepath, err := u.ZipEncrypt(sha256, "infected", reader )
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.File(filepath)
 }

@@ -42,8 +42,8 @@ var (
 	// NsqProducer holds an instance of NSQ producer.
 	NsqProducer *nsq.Producer
 
-	// DOClient represents an instance of Object Space API client.
-	DOClient *minio.Client
+	// MinioClient represents an instance of Object Space API client.
+	MinioClient *minio.Client
 
 	// UserSchema represent a user
 	UserSchema *gojsonschema.Schema
@@ -72,7 +72,7 @@ var (
 
 // loadConfig loads our configration.
 func loadConfig() {
-	viper.SetConfigName("app")    // no need to include file extension
+	viper.SetConfigName("app.dev")    // no need to include file extension
 	viper.AddConfigPath("config") // set the path of your config file
 
 	err := viper.ReadInConfig()
@@ -244,7 +244,7 @@ func Init() {
 	db.Connect()
 
 	// Get an Object Storage client instance
-	DOClient = initOSClient()
+	MinioClient = initOSClient()
 
 	StoragePath = viper.GetString("storage.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))

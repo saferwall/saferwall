@@ -313,10 +313,6 @@ func ZipEncrypt(filename string, password string, contents io.Reader) (string, e
 	if err != nil {
 		return "", err
 	}
-
-	if err != nil {
-		return "", err
-	}
 	_, err = io.Copy(w, contents)
 	if err != nil {
 		return "", err
