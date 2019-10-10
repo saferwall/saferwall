@@ -28,7 +28,7 @@ RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # Test detection
-RUN  /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
+RUN /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
 
 # Clean up
 RUN rm -rf /tmp/* \

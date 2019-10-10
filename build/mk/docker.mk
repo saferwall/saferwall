@@ -4,7 +4,7 @@ docker-build: ## Build the container
 	docker build $(ARGS) -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-build-nc: ## Build the container without caching
-	docker build ${ARGS} --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	docker build ${ARGS} -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-run: ## Run container on port configured in `config.env`
 	docker run -d -p 50051:50051 $(REPO)/$(IMG)

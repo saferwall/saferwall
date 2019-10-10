@@ -23,13 +23,12 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/comodo:0.0.1
+FROM saferwall/sophos:0.0.1
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.1"
 LABEL description="gRPC server over linux version of Sophos"
 
 # Vars
-ENV SOPHOS_INSTALL_DIR      /opt/sophos
 ENV SOPHOS_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
@@ -40,7 +39,7 @@ RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh \
 RUN /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
 
 # Copy our static executable.
-COPY --from=builder /go/bin/comodoscanner /bin/sophosscanner
+COPY --from=builder /go/bin/sophosscanner /bin/sophosscanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
@@ -48,7 +47,6 @@ RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 # Update permissions
 RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
-RUN chown -R saferwall:saferwall $SOPHOS_INSTALL_DIR
 
 # Switch to our user
 USER saferwall
