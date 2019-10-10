@@ -28,9 +28,19 @@ endif
 ifeq ($(AV_VENDOR),eset)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
 endif
+	sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+
+multiav-release-av:	multiav-build-av ## release an AV inside a docker contrainer.
 	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
-multiav-build-av-go: ## Build the AV with the gRPC server
+
+multiav-build-av-go: multiav-build-av-go ## Build the AV with the gRPC server
+	sudo make docker-build IMG=go$(AV_VENDOR) VERSION=0.0.1 \
+	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
+	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
+
+
+multiav-release-av-go: ## Release the AV with the gRPC server
 	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.1 \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
