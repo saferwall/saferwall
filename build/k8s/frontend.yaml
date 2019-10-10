@@ -11,9 +11,7 @@ spec:
     - port: 80
       targetPort: 8080
       nodePort: 30080
-  type: LoadBalancer
-  loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
-
+  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,7 +23,7 @@ spec:
   selector:
     matchLabels:
       app: ui
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:

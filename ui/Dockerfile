@@ -4,6 +4,11 @@
 
 FROM node:10-alpine as build-stage
 
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+
 # make the 'app' folder the current working directory
 WORKDIR /app
 
@@ -29,5 +34,4 @@ LABEL version="0.0.1"
 LABEL description="Saferwall UI Dashboard"
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html
-EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

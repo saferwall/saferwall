@@ -39,5 +39,6 @@ include build/mk/helm.mk
 include build/mk/kops.mk
 include build/mk/consumer.mk
 include build/mk/backend.mk
+include build/mk/frontend.mk
 include build/mk/protobuf.mk
-include ui/Makefile
+

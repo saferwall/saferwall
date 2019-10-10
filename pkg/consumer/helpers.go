@@ -28,6 +28,8 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	sophosclient "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/client"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	log "github.com/sirupsen/logrus"
@@ -159,6 +161,10 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		res, err := symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
 		check(engine, err)
 		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+	case "sophos":
+		res, err := sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
+		check(engine, err)
+		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 	case "windefender":
 		res, err := windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
 		check(engine, err)
@@ -178,6 +184,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	fsecureChan := make(chan multiav.ScanResult)
 	kasperskyChan := make(chan multiav.ScanResult)
 	symantecChan := make(chan multiav.ScanResult)
+	sophosChan := make(chan multiav.ScanResult)
 	windefenderChan := make(chan multiav.ScanResult)
 
 	// We Start as much go routines as the AV engines we have.
@@ -189,13 +196,14 @@ func multiAvScan(filePath string) map[string]interface{} {
 	go avScan("bitdefender", filePath, bitdefenderChan)
 	go avScan("kaspersky", filePath, kasperskyChan)
 	go avScan("symantec", filePath, symantecChan)
+	go avScan("sophos", filePath, sophosChan)
 	go avScan("windefender", filePath, windefenderChan)
 	go avScan("clamav", filePath, clamavChan)
 	go avScan("comodo", filePath, comodoChan)
 	go avScan("avast", filePath, avastChan)
 
 	multiavScanResults := map[string]interface{}{}
-	avEnginesCount := 10
+	avEnginesCount := 11
 	avCount := 0
 	for {
 		select {
@@ -225,6 +233,9 @@ func multiAvScan(filePath string) map[string]interface{} {
 			avCount++
 		case symantecRes := <-symantecChan:
 			multiavScanResults["symanetc"] = symantecRes
+			avCount++
+		case sophosRes := <-sophosChan:
+			multiavScanResults["sophos"] = sophosRes
 			avCount++
 		case windefenderRes := <-windefenderChan:
 			multiavScanResults["windefender"] = windefenderRes
