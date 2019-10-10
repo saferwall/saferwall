@@ -1,0 +1,56 @@
+################################
+# STEP 1 build executable binary
+################################
+
+FROM golang:1.13-alpine AS builder
+
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+
+WORKDIR $GOPATH/src/saferwall/sophos/
+COPY . .
+
+# Fetch dependencies.
+RUN go get -d -v 
+
+# Build the binary.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/sophosscanner .
+
+
+############################
+# STEP 2 build a small image
+############################
+
+FROM saferwall/comodo:0.0.1
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.0.1"
+LABEL description="gRPC server over linux version of Sophos"
+
+# Vars
+ENV SOPHOS_INSTALL_DIR      /opt/sophos
+ENV SOPHOS_DB_UPDATE_DATE	/av_db_update_date.txt
+
+# Update the VDF
+RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh \
+    && echo -n "$(date +%s)" >> $SOPHOS_DB_UPDATE_DATE
+
+# Test detection
+RUN /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
+
+# Copy our static executable.
+COPY --from=builder /go/bin/comodoscanner /bin/sophosscanner
+
+# Create an app user so our program doesn't run as root.
+RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+
+# Update permissions
+RUN usermod -u 101 saferwall
+RUN groupmod -g 102 saferwall
+RUN chown -R saferwall:saferwall $SOPHOS_INSTALL_DIR
+
+# Switch to our user
+USER saferwall
+
+ENTRYPOINT ["/bin/sophosscanner"]
