@@ -1,0 +1,63 @@
+################################
+# STEP 1 build executable binary
+################################
+
+FROM golang:1.13-alpine AS builder
+
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+
+WORKDIR $GOPATH/src/saferwall/mcafee/
+COPY . .
+
+# Fetch dependencies.
+RUN go get -d -v 
+
+# Build the binary.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/mcafeescanner .
+
+
+############################
+# STEP 2 build a small image
+############################
+
+FROM saferwall/mcafee:0.0.1
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.0.1"
+LABEL description="gRPC server over linux version of McAfee"
+
+# Vars
+ENV MCAFEE_UPDATE		http://download.nai.com/products/DatFiles/4.x/nai/
+ENV MCAFEE_INSTALL_DIR	/opt/mcafee
+ENV MCAFEE_TMP			/tmp/mcafee
+ENV SOPHOS_DB_UPDATE_DATE	/av_db_update_date.txt
+
+# Update McAfee
+RUN wget -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
+	&& cd $MCAFEE_TMP \
+	&& unzip -o 'avvepo*' \
+	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
+	&& $MCAFEE_INSTALL_DIR/uvscan --decompress \
+    && echo -n "$(date +%s)" >> $SOPHOS_DB_UPDATE_DATE \
+    & rm -rf /tmp/*
+
+# Test detection
+RUN /opt/mcafee/uvscan eicar; exit 0
+
+# Copy our static executable.
+COPY --from=builder /go/bin/mcafeescanner /bin/mcafeescanner
+
+# Create an app user so our program doesn't run as root.
+RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
+
+# Update permissions
+RUN usermod -u 101 saferwall
+RUN groupmod -g 102 saferwall
+# RUN chown -R saferwall:saferwall $SOPHOS_INSTALL_DIR
+
+# Switch to our user
+USER saferwall
+
+# ENTRYPOINT ["/bin/sophosscanner"]

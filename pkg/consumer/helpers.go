@@ -26,6 +26,8 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
 	kasperskyclient "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
+	mcafeeclient "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/client"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	sophosclient "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/client"
@@ -117,7 +119,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	filecopyPath := filePath+"-"+engine
 	err = utils.CopyFile(filePath, filecopyPath)
 	if err != nil {
-		log.Error("Failed to copy the file.2")
+		log.Errorf("Failed to copy the file for engine %s.", engine)
 		c <- multiav.ScanResult{}
 		return
 	}
@@ -157,6 +159,10 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		res, err := kasperskyclient.ScanFile(kaspersky_api.NewKasperskyScannerClient(conn), filePath)
 		check(engine, err)
 		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+	case "mcafee":
+		res, err := mcafeeclient.ScanFile(mcafee_api.NewMcAfeeScannerClient(conn), filePath)
+		check(engine, err)
+		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 	case "symantec":
 		res, err := symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
 		check(engine, err)
@@ -183,6 +189,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	esetChan := make(chan multiav.ScanResult)
 	fsecureChan := make(chan multiav.ScanResult)
 	kasperskyChan := make(chan multiav.ScanResult)
+	mcafeeChan := make(chan multiav.ScanResult)
 	symantecChan := make(chan multiav.ScanResult)
 	sophosChan := make(chan multiav.ScanResult)
 	windefenderChan := make(chan multiav.ScanResult)
@@ -201,6 +208,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	go avScan("clamav", filePath, clamavChan)
 	go avScan("comodo", filePath, comodoChan)
 	go avScan("avast", filePath, avastChan)
+	go avScan("mcafee", filePath, mcafeeChan)
 
 	multiavScanResults := map[string]interface{}{}
 	avEnginesCount := 11
@@ -230,6 +238,9 @@ func multiAvScan(filePath string) map[string]interface{} {
 			avCount++
 		case kasperskyRes := <-kasperskyChan:
 			multiavScanResults["kaspersky"] = kasperskyRes
+			avCount++
+		case mcafeeRes := <-mcafeeChan:
+			multiavScanResults["mcafee"] = mcafeeRes
 			avCount++
 		case symantecRes := <-symantecChan:
 			multiavScanResults["symanetc"] = symantecRes
