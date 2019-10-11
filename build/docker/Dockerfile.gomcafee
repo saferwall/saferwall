@@ -40,8 +40,9 @@ RUN wget -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/
 	&& unzip -o 'avvepo*' \
 	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
 	&& $MCAFEE_INSTALL_DIR/uvscan --decompress \
-    && echo -n "$(date +%s)" >> $MCAFEE_DB_UPDATE_DATE \
-    & rm -rf /tmp/*
+    && rm -rf /tmp/*
+
+RUN echo -n "$(date +%s)" >> $MCAFEE_DB_UPDATE_DATE
 
 # Test detection
 RUN /opt/mcafee/uvscan eicar; exit 0

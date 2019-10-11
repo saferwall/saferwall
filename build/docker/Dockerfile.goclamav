@@ -31,7 +31,6 @@ LABEL description="gRPC server clamav"
 # Vars
 ENV CLAMAV_DB_UPDATE_DATE	/av_db_update_date.txt
 
-RUN ls
 # Update VPS
 RUN clamd && freshclam ; clamscan -V \
        && echo -n "$(date +%s)" >> $CLAMAV_DB_UPDATE_DATE

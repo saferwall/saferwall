@@ -51,7 +51,7 @@ func New() *echo.Echo {
 	e.GET("/v1/files/:sha256/download/", file.Download, m.RequireLogin)
 
 	// handle /users endpoint.
-	e.GET("/v1/users/", user.GetUsers)
+	e.GET("/v1/users/", user.GetUsers, m.RequireLogin, auth.IsAdmin)
 	e.POST("/v1/users/", user.PostUsers, m.RequireJSON)
 	e.PUT("/v1/users/", user.PutUsers, m.RequireLogin)
 	e.DELETE("/v1/users/", user.DeleteUsers, m.RequireLogin, auth.IsAdmin)
