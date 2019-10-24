@@ -1,3 +1,9 @@
 [submodule "build/data/rules"]
 	path = build/data/rules
 	url = https://github.com/Yara-Rules/rules.git
+[submodule "sandbox/lib/Detours"]
+	path = sandbox/lib/Detours
+	url = https://github.com/microsoft/Detours.git
+[submodule "sandbox/include/phnt"]
+	path = sandbox/include/phnt
+	url = https://github.com/processhacker/phnt.git
