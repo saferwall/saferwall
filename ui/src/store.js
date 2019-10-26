@@ -22,6 +22,7 @@ export const store = {
   state: {
     loggedIn: false,
     username: "",
+    hash: ""
   },
   // call setters on mounted/created of the header
   setLoggedIn(token) {
@@ -41,4 +42,7 @@ export const store = {
     Vue.cookie.delete("JWTCookie")
     this.state.loggedIn = false
   },
+  setHash(hash) {
+    this.state.hash = hash
+  }
 }

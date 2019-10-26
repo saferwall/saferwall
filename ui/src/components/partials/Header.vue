@@ -7,7 +7,7 @@
       <i class="icon ion-android-menu"></i>
     </div>
     <div class="header-search" :class="{ active: showinmobile }">
-      <input type="text" placeholder="Quick lookup file hash, URL or IP." />
+      <input type="text" placeholder="Quick lookup file hash, URL or IP." @change.prevent="handleSearch" />
       <button type="submit">
         <i class="icon ion-ios-cloud-upload-outline"></i>
       </button>
@@ -82,6 +82,9 @@ export default {
       const token = this.$cookie.get("JWTCookie")
       return token
     },
+    handleSearch(event) {
+      store.setHash(event.target.value)
+    }
   },
 
   created() {

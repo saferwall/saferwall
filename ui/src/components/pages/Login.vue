@@ -166,7 +166,7 @@ export default {
           })
           .catch((error) => {
             this.errored = true
-            this.errorMessage = error.response.data.verbose_msg
+            this.errorMessage = error.response.data.verbose_msg || `Something went wrong, please try again!`
           })
       }
     },

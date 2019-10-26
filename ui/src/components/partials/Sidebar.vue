@@ -2,7 +2,7 @@
   <aside class="menu sidebar">
     <ul class="menu-list">
       <li
-        v-for="(item, index) in menu"
+        v-for="(item, index) in menuItems"
         :class="{ current: $route.name == item.title }"
         :key="index"
       >
@@ -44,14 +44,15 @@
 </template>
 
 <script>
+import { store } from "../../store.js"
 export default {
   data() {
     return {
+      storeState: store.state,
       menu: [
         {
           title: "Summary",
-          path:
-            "/summary/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c",
+          slug: "summary",
           active: false,
           icon: "ion-android-settings",
         },
@@ -61,16 +62,14 @@ export default {
           active: false,
           icon: "ion-stats-bars",
           children: [
-            { title: "PE", path: "/" },
+            { title: "PE", slug: "pe" },
             {
               title: "Strings",
-              path:
-                "/strings/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c",
+              slug: "strings",
             },
             {
               title: "Antivirus",
-              path:
-                "/antivirus/df50dd428c2c0a6c2bffc6720b10d690061f1e3e0d1f5ef2f926942cbf4fc69c",
+              slug: "antivirus",
             },
           ],
         },
@@ -80,14 +79,31 @@ export default {
           active: false,
           icon: "ion-ios-analytics",
           children: [
-            { title: "API Calls", path: "/" },
-            { title: "Network", path: "/" },
-            { title: "Dropped files", path: "/" },
-            { title: "Memory dumps", path: "/" },
+            { title: "API Calls", slug: "api-calls" },
+            { title: "Network", slug: "network" },
+            { title: "Dropped files", slug: "dropped-files" },
+            { title: "Memory dumps", slug: "memory-dumps" },
           ],
         },
       ],
     }
+  },
+  computed: {
+    menuItems: function() {
+      const { hash } = this.storeState
+      return this.menu.map(({ slug, children, ...item }) => ({
+        ...item,
+        ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+        ...(children
+          ? {
+              children: children.map(({ slug, ...item }) => ({
+                ...item,
+                ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+              })),
+            }
+          : {}),
+      }))
+    },
   },
 
   mounted() {
