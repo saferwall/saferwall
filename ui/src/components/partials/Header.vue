@@ -1,7 +1,7 @@
 <template>
   <header class="dashboard-header">
     <router-link to="/" class="logo">
-      <img src="../../assets/imgs/logo.png" alt="" />
+      <img src="@/assets/imgs/saferwall_jkdgq6_c_scale_w_200.png" alt="" />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
       <i class="icon ion-android-menu"></i>
@@ -14,9 +14,9 @@
     </div>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
-        <li><router-link to="/">Search</router-link></li>
-        <li><router-link to="/">Upload</router-link></li>
-        <li><router-link to="/">Statistics</router-link></li>
+        <!-- <li><router-link to="/">Search</router-link></li> -->
+        <li><router-link to="/">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
+        <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
             <span>{{ storeState.username || "" }}</span>
@@ -94,12 +94,12 @@ export default {
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
-
+$height: 80px;
 header.dashboard-header {
   padding-right: 20px;
   background: #fff;
-  height: 50px;
-  line-height: 50px;
+  height: $height;
+  line-height: $height;
   box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
   z-index: 99;
   position: fixed;
@@ -110,21 +110,21 @@ header.dashboard-header {
   .logo {
     float: left;
     line-height: 62px;
-    height: 50px;
+    height: $height;
     width: 200px;
     text-align: center;
 
     img {
-      height: 20px;
+      height: $height;
     }
   }
 
   .mobile-nav {
     // margin-left:20px;
     float: right;
-    height: 50px;
+    height: $height;
     width: 50px;
-    line-height: 50px;
+    line-height: $height;
     border-left: solid 1px rgba(10, 10, 10, 0.1);
     border-right: solid 1px rgba(10, 10, 10, 0.1);
     text-align: center;
@@ -137,7 +137,7 @@ header.dashboard-header {
   .header-search {
     display: inline-block;
     width: 500px;
-    height: 50px;
+    height: $height;
     position: relative;
     border-left: solid 1px rgba(black, 0.1);
     border-right: solid 1px rgba(black, 0.1);
@@ -156,7 +156,7 @@ header.dashboard-header {
 
     input {
       float: left;
-      height: 50px;
+      height: $height;
       width: calc(100% - 50px);
       padding: 0 10px;
       border: 0;
@@ -166,8 +166,8 @@ header.dashboard-header {
     button {
       float: right;
       width: 50px;
-      height: 50px;
-      line-height: 50px;
+      height: $height;
+      line-height: $height;
       text-align: center;
       color: $primary-color;
       border: 0;
