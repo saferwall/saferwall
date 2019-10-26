@@ -88,7 +88,6 @@
   </div>
 </template>
 <script>
-import axios from "axios"
 import Loader from "@/components/elements/Loader"
 
 export default {
@@ -114,7 +113,7 @@ export default {
     },
   },
   created() {
-    axios
+    this.$http
       .get(`/api/v1/files/${this.$route.params.hash}/`)
       .then((data) => {
         this.showLoader = false

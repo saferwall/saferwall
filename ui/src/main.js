@@ -4,10 +4,12 @@ import Vue from "vue"
 import App from "./App"
 import router from "./router"
 
+
 // import layouts globally
 import Default from "./layouts/Default.vue"
 import Unauthenticated from "./layouts/Unauthenticated.vue"
 
+import axios from "axios"
 import Vuelidate from "vuelidate"
 
 import VueCookie from "vue-cookie"
@@ -57,6 +59,10 @@ Vue.prototype.$clipboard = (function(window, document, navigator) {
     copy: copy,
   }
 })(window, document, navigator)
+
+Vue.prototype.$http = axios.create({
+  baseURL: 'http://dev.api.saferwall.com/'
+})
 
 Vue.component("default-layout", Default)
 Vue.component("unauthenticated-layout", Unauthenticated)

@@ -54,7 +54,6 @@
 
 <script>
 import { required, email } from "vuelidate/lib/validators"
-import axios from "axios"
 import Notification from "@/components/elements/Notification"
 export default {
   data() {
@@ -78,7 +77,7 @@ export default {
         this.errored = true
         this.errorMessage = "Please enter a valid email address"
       } else {
-        axios
+        this.$http
           .delete("/api/v1/users/password/", {
             data: {
               email: this.email,

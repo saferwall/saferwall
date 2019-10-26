@@ -49,7 +49,6 @@
 import Tabs from "@/components/elements/Tabs"
 import Tab from "@/components/elements/Tab"
 import Notification from "@/components/elements/Notification"
-import axios from "axios"
 import DropZone from "@/components/elements/DropZone"
 import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
 
@@ -115,7 +114,7 @@ export default {
               hashHex += hex
             }
             // hash hexadecimal has been calculated successfully
-            axios
+            this.$http
               .get(`/api/v1/files/${hashHex}/`)
               .then((response) => {
                 // file exists
@@ -125,7 +124,7 @@ export default {
                 this.ongoingStep = step.UPLOADED
                 const formData = new FormData()
                 formData.append("file", file)
-                axios
+                this.$http
                   .post("/api/v1/files/", formData, {
                     headers: {
                       "Content-Type": "multipart/form-data",
@@ -155,7 +154,7 @@ export default {
       reader.readAsArrayBuffer(file)
     },
     fetchStatus(hashHex) {
-      axios
+      this.$http
         .get(`/api/v1/files/${hashHex}/`)
         .then((response) => {
           const status = response.data.status

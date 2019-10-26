@@ -116,7 +116,6 @@
 <script>
 import { required, helpers } from "vuelidate/lib/validators"
 import Notification from "@/components/elements/Notification"
-import axios from "axios"
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
@@ -149,7 +148,7 @@ export default {
         this.errorMessage =
           "Please correct all highlighted errors and try again"
       } else {
-        axios
+        this.$http
           .post("/api/v1/auth/login/", {
             username: this.username,
             password: this.password,

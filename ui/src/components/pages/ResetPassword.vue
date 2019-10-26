@@ -115,7 +115,6 @@
 
 <script>
 import { required, minLength, sameAs } from "vuelidate/lib/validators"
-import axios from "axios"
 import queryString from "query-string"
 import Notification from "@/components/elements/Notification"
 
@@ -156,7 +155,7 @@ export default {
           paramsSerializer: (params) =>
             queryString.stringify(params, { arrayFormat: "bracket" }),
         }
-        axios
+        this.$http
           .post("/api/v1/users/password/", postData, axiosConfig)
           .then((response) => {
             this.succeeded = true
