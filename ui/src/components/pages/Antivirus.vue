@@ -152,6 +152,8 @@ export default {
         if (!data.data.multiav) {
           return
         }
+
+        // first_scan & last_scan are not present anymore (change of schema?)
         this.firstScan = data.data.multiav.first_scan
         this.lastScan = data.data.multiav.last_scan
 

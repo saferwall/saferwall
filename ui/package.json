@@ -19,14 +19,16 @@
     "bulma": "^0.6.2",
     "query-string": "^6.8.2",
     "vue": "^2.5.2",
-    "vue-bulma-progress-tracker": "https://github.com/mrassili/progress-tracker",
+    "vue-bulma-progress-tracker": "git+https://github.com/mrassili/progress-tracker.git",
     "vue-router": "^3.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
     "@babel/plugin-syntax-jsx": "^7.2.0",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@babel/runtime": "^7.6.3",
     "@vue/babel-plugin-transform-vue-jsx": "^1.0.0",
     "autoprefixer": "^7.1.2",
     "axios": "^0.19.0",
