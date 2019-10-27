@@ -29,7 +29,7 @@
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
-        <li><router-link to="/">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
+        <li><router-link to="/upload">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
