@@ -7,11 +7,25 @@
       <i class="icon ion-android-menu"></i>
     </div>
     <div class="header-search" :class="{ active: showinmobile }">
-      <input type="text" placeholder="Quick lookup file hash, URL or IP." @change.prevent="handleSearch" />
-      <button type="submit">
+      <input
+        type="search"
+        placeholder="Quick lookup file hash, URL or IP."
+        v-model="hash"
+      />
+      <button type="submit" @click.prevent="searchByHash">
         <i class="icon ion-ios-cloud-upload-outline"></i>
       </button>
     </div>
+    <transition name="slide-fade">
+      <notification
+        :style="notificationStyling"
+        type="is-danger"
+        @closeNotif="close()"
+        v-if="notifActive"
+      >
+        {{ notificationError }}
+      </notification>
+    </transition>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <li><router-link to="/">Search</router-link></li>
@@ -58,14 +72,30 @@
 
 <script>
 import { store } from "../../store.js"
+import axios from "axios"
+import Notification from "@/components/elements/Notification"
 export default {
   name: "Header",
   data() {
     return {
+      hash: "",
+      notificationError: "",
+      notifActive: false,
       dropdownActive: false,
       showinmobile: false,
       storeState: store.state,
+      notificationStyling: {
+        width: "fit-content",
+        height: "auto",
+        position: "absolute",
+        left: "50%",
+        top: "10px",
+        transform: "translateX(-50%)",
+      },
     }
+  },
+  components: {
+    notification: Notification,
   },
   methods: {
     showMobileSearch() {},
@@ -82,9 +112,27 @@ export default {
       const token = this.$cookie.get("JWTCookie")
       return token
     },
-    handleSearch(event) {
-      store.setHash(event.target.value)
-    }
+    close() {
+      this.notifActive = false
+    },
+    searchByHash() {
+      axios
+        .get(`/api/v1/files/${this.hash}/`, {
+          validateStatus: (status) => status === 200,
+        })
+        .then(() => {
+          store.setHash(this.hash)
+          this.$router.push(`/summary/${this.hash}`)
+        })
+        .catch(() => {
+          this.notifActive = true
+          this.notificationError =
+            "Sorry, we couldn't find the file you were looking for, please upload it to view the results!"
+          setTimeout(() => {
+            this.notifActive = false
+          }, 3000)
+        })
+    },
   },
 
   created() {
@@ -310,6 +358,18 @@ header.dashboard-header {
         }
       }
     }
+  }
+
+  .slide-fade-enter-active {
+    transition: all 0.3s ease;
+  }
+  .slide-fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+  }
+  .slide-fade-enter,
+  .slide-fade-leave-to {
+    transform: translateX(10px);
+    opacity: 0;
   }
 
   @media screen and (max-width: 792px) {
