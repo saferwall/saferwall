@@ -73,18 +73,18 @@ export default {
             },
           ],
         },
-        {
-          title: "Dynamic analysis",
-          path: false,
-          active: false,
-          icon: "ion-ios-analytics",
-          children: [
-            { title: "API Calls", path: "/" },
-            { title: "Network", path: "/" },
-            { title: "Dropped files", path: "/" },
-            { title: "Memory dumps", path: "/" },
-          ],
-        },
+        // {
+        //   title: "Dynamic analysis",
+        //   path: false,
+        //   active: false,
+        //   icon: "ion-ios-analytics",
+        //   children: [
+        //     { title: "API Calls", path: "/" },
+        //     { title: "Network", path: "/" },
+        //     { title: "Dropped files", path: "/" },
+        //     { title: "Memory dumps", path: "/" },
+        //   ],
+        // },
       ],
     }
   },
