@@ -1,7 +1,7 @@
 <template>
   <header class="dashboard-header">
     <router-link to="/" class="logo">
-      <img src="../../assets/imgs/logo.png" alt="" />
+      <img src="../../assets/imgs/logo-horizontal.png" alt="" />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
       <i class="icon ion-android-menu"></i>
@@ -13,7 +13,7 @@
         v-model="hash"
       />
       <button type="submit" @click.prevent="searchByHash">
-        <i class="icon ion-ios-cloud-upload-outline"></i>
+        <i class="icon ion-ios-search"></i>
       </button>
     </div>
     <transition name="slide-fade">
@@ -28,9 +28,9 @@
     </transition>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
-        <li><router-link to="/">Search</router-link></li>
-        <li><router-link to="/">Upload</router-link></li>
-        <li><router-link to="/">Statistics</router-link></li>
+        <!-- <li><router-link to="/">Search</router-link></li> -->
+        <li><router-link to="/upload">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
+        <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
             <span>{{ storeState.username || "" }}</span>
@@ -145,37 +145,41 @@ export default {
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
+$header-height: 50px;
 
 header.dashboard-header {
   padding-right: 20px;
   background: #fff;
-  height: 50px;
-  line-height: 50px;
+  height: $header-height;
+  line-height: $header-height;
   box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
   z-index: 99;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
+  display: flex;
 
   .logo {
     float: left;
     line-height: 62px;
-    height: 50px;
+    height: $header-height;
     width: 200px;
     text-align: center;
 
     img {
-      height: 20px;
+      height: calc(#{ $header-height - 10px });
+      display: inline-block;
+      margin-top: 5px;
     }
   }
 
   .mobile-nav {
     // margin-left:20px;
     float: right;
-    height: 50px;
+    height: $header-height;
     width: 50px;
-    line-height: 50px;
+    line-height: $header-height;
     border-left: solid 1px rgba(10, 10, 10, 0.1);
     border-right: solid 1px rgba(10, 10, 10, 0.1);
     text-align: center;
@@ -188,10 +192,12 @@ header.dashboard-header {
   .header-search {
     display: inline-block;
     width: 500px;
-    height: 50px;
+    height: $header-height;
     position: relative;
     border-left: solid 1px rgba(black, 0.1);
     border-right: solid 1px rgba(black, 0.1);
+    flex: 1;
+    margin-right: 20px;
 
     @media screen and (max-width: 1086px) {
       width: 400px;
@@ -207,8 +213,8 @@ header.dashboard-header {
 
     input {
       float: left;
-      height: 50px;
-      width: calc(100% - 50px);
+      height: $header-height;
+      width: calc(100% - #{ $header-height });
       padding: 0 10px;
       border: 0;
       font-size: 13px;
@@ -217,8 +223,8 @@ header.dashboard-header {
     button {
       float: right;
       width: 50px;
-      height: 50px;
-      line-height: 50px;
+      height: $header-height;
+      line-height: $header-height;
       text-align: center;
       color: $primary-color;
       border: 0;
@@ -242,7 +248,7 @@ header.dashboard-header {
     ul {
       li {
         display: inline-block;
-        line-height: 50px;
+        line-height: $header-height;
 
         a {
           display: inline-block;

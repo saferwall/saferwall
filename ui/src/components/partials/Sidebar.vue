@@ -73,18 +73,18 @@ export default {
             },
           ],
         },
-        {
-          title: "Dynamic analysis",
-          path: false,
-          active: false,
-          icon: "ion-ios-analytics",
-          children: [
-            { title: "API Calls", slug: "api-calls" },
-            { title: "Network", slug: "network" },
-            { title: "Dropped files", slug: "dropped-files" },
-            { title: "Memory dumps", slug: "memory-dumps" },
-          ],
-        },
+        // {
+        //   title: "Dynamic analysis",
+        //   path: false,
+        //   active: false,
+        //   icon: "ion-ios-analytics",
+        //   children: [
+        //     { title: "API Calls", path: "/" },
+        //     { title: "Network", path: "/" },
+        //     { title: "Dropped files", path: "/" },
+        //     { title: "Memory dumps", path: "/" },
+        //   ],
+        // },
       ],
     }
   },
@@ -140,13 +140,13 @@ export default {
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
-
+$header-height: 50px;
 aside.sidebar {
   background-color: #fff;
   position: fixed;
-  top: 50px;
+  top: $header-height;
   left: 0;
-  height: calc(100% - 50px);
+  height: calc(100% - #{ $header-height });
   width: 200px;
   box-shadow: 0 0 30px rgba(black, 0.05);
   padding-top: 20px;

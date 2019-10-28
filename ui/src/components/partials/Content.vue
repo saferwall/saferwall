@@ -20,10 +20,11 @@ export default {
 </script>
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
+$header-height: 50px;
 section.main-content {
   float: right;
   padding-top: 20px;
-  margin-top: 50px;
+  margin-top: $header-height;
 
   &:not(.fullwidth) {
     width: calc(100% - 200px);
