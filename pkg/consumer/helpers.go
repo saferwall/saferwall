@@ -258,5 +258,6 @@ func multiAvScan(filePath string) map[string]interface{} {
 		}
 	}
 
+	log.Infoln("multiav scan finished")
 	return multiavScanResults
 }

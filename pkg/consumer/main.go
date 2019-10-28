@@ -111,7 +111,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res = staticScan(sha256, filePath, b)
 
 	// multiav scanning
-	res.MultiAV = multiAvScan(filePath)
+	multiavScanResults := multiAvScan(filePath)
+	res.MultiAV = map[string]interface{}{}
+	res.MultiAV["first_scan"] = multiavScanResults
+	res.MultiAV["last_scan"] = multiavScanResults
 
 	// analysis finished
 	res.Status = finished
@@ -150,7 +153,7 @@ func main() {
 	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
 		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
-	
+
 	// Set backend API address
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 

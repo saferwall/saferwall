@@ -63,6 +63,8 @@ k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
 	&& kubectl apply -f multiav-bitdefender.yaml \
 	&& kubectl apply -f multiav-avast.yaml \
 	&& kubectl apply -f multiav-symantec.yaml \
+	&& kubectl apply -f multiav-sophos.yaml \
+	&& kubectl apply -f multiav-mcafee.yaml \
 	&& kubectl apply -f seccomp-profile.yaml \
 	&& kubectl apply -f seccomp-installer.yaml \
 	&& kubectl apply -f multiav-windefender.yaml

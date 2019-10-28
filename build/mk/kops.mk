@@ -44,22 +44,25 @@ kops-create-efs:		## create AWS EFS file system
 kops-create-mount-targers:
 	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,Subnet:SubnetId,SecurityGroups:SecurityGroups}'
 	aws efs create-mount-target \
-	--file-system-id fs-e4d02165 \
-	--subnet-id subnet-0c33094ed35a72ccb \
-	--security-group sg-068b9270c1b989f79 \
+	--file-system-id fs-cfe6404e \
+	--subnet-id subnet-02de5b2281953ed36 \
+	--security-group sg-016dcb61e9518e91e \
 	--region us-east-1 
-	aws efs describe-mount-targets --file-system-id fs-e4d02165
+	aws efs describe-mount-targets --file-system-id fs-cfe6404e
 
 kops-create-efs-provisioner:		## Create efs provisioner
 	cd ~ \
 		&& git clone https://github.com/kubernetes-incubator/external-storage \
 		&& cd external-storage/aws/efs/deploy/ \
-		&& kubectl apply -f rbac.yaml  
-		## Modify manifest.yaml. In the configmap section change the
+		&& kubectl apply -f rbac.yaml \
+		
+		# Modify manifest.yaml. In the configmap section change the
 		# file.system.id: and aws.region: to match the details of the
 		#  EFS you created. Change dns.name if you want to mount by your
 		# own DNS name and not by AWS's *file-system-id*.efs.*aws-region*.amazonaws.com.
 		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
+		&& kubectl apply -f manifest.yaml
+
 
 kops-delete-cluster:		## delete k8s cluster
 	kops delete cluster --name ${NAME} --yes
