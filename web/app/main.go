@@ -39,6 +39,9 @@ var (
 	// MaxFileSize allowed
 	MaxFileSize int64
 
+	// Debug mode
+	Debug bool
+
 	// NsqProducer holds an instance of NSQ producer.
 	NsqProducer *nsq.Producer
 
@@ -72,9 +75,22 @@ var (
 
 // loadConfig loads our configration.
 func loadConfig() {
-	viper.SetConfigName("app")    // no need to include file extension
 	viper.AddConfigPath("config") // set the path of your config file
 
+	// Load the config type depending on env variable.
+	var name string
+	env := os.Getenv("ENVIRONMENT")
+	switch env {
+	case "dev":
+		name = "app.dev"
+	case "prod":
+		name = "app.prod"
+	case "test":
+		name = "app.test"
+	default:
+		log.Fatal("ENVIRONMENT is not set")
+	}
+	viper.SetConfigName(name)    // no need to include file extension
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -246,6 +262,7 @@ func Init() {
 	// Get an Object Storage client instance
 	MinioClient = initOSClient()
 
+	Debug = viper.GetBool("app.debug")
 	StoragePath = viper.GetString("storage.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))
 	os.MkdirAll(StoragePath, os.ModePerm)

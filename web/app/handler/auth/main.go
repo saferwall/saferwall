@@ -74,8 +74,15 @@ func createJwtCookie(token string) *http.Cookie {
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(time.Hour * 72)
 	cookie.Path = "/"
-	cookie.HttpOnly = false // change this later
-	cookie.Secure = false   // change this later
+
+	if app.Debug {
+		cookie.HttpOnly = false 
+		cookie.Secure = false   
+	} else {
+		cookie.HttpOnly = true 
+		cookie.Secure = true   
+	}
+
 	// cookie.SameSite = http.SameSiteLaxMode
 	// cookie.Domain = "api.saferwall.com"
 	return cookie

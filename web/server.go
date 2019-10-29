@@ -8,7 +8,10 @@ import (
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/route"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/acme/autocert"
 )
+
+
 
 func main() {
 
@@ -18,7 +21,14 @@ func main() {
 	// Create echo instance and load all routes
 	e := route.New()
 
+	address := viper.GetString("app.address")
+	if !app.Debug {
+		// Cache certificates
+		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+
+		e.Logger.Fatal(e.StartAutoTLS(address))
+	}
+
 	// Start the server
-	address := viper.GetString("backend.address")
 	e.Logger.Fatal(e.Start(address))
 }

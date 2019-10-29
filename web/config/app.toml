@@ -1,0 +1,36 @@
+### Config sample, needs to be edited.
+
+[ui]
+address = "http://localhost:8081"
+
+[app]
+address = "<host:port>"
+debug = true
+tmp_samples = "/tmp/samples"
+max_file_size = 64000000 # 64MB
+
+[db]
+server = "couchbase://<host>"
+username = "<username>"
+password = "<password>"
+
+[nsq]
+addr = "localhost:4150"
+
+[do]
+endpoint = "localhost:9000"
+seckey = "<seckey>"
+accesskey = "<accesskey>"
+spacename = "samples" 
+ssl = false
+
+[auth]
+signkey = "<signkey>"
+
+[smtp]
+server = "smtp.example.com"
+port = 465
+user =  "user@example.com"
+password = "password"
+identity =  "identity"
+sender =  "sender@example.com"
