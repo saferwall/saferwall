@@ -29,6 +29,13 @@ Return Value:
 	PDEVICE_OBJECT  deviceObject = NULL;	// ptr to device object
 	UNICODE_STRING  ntUnicodeString;		// NT Device Name "\Device\SIOCTL"
 	UNICODE_STRING  ntWin32NameString;		// Win32 Name "\DosDevices\IoctlTest"
+	BOOLEAN SymLinkCreated = FALSE;
+	BOOLEAN CreateProcessCallbackCreate = FALSE;
+
+	__debugbreak();
+
+	LOG(("EEntry point !!!\n"));
+
 
 	RtlInitUnicodeString(&ntUnicodeString, NT_DEVICE_NAME);
 
@@ -50,7 +57,7 @@ Return Value:
 	if (!NT_SUCCESS(ntStatus))
 	{
 		LOG(("Couldn't create the device object\n"));
-		return ntStatus;
+		goto Exit;
 	}
 
 
@@ -74,23 +81,68 @@ Return Value:
 	// Create a symbolic link between our device name  and the Win32 name
 	//
 
-	ntStatus = IoCreateSymbolicLink(
-		&ntWin32NameString, &ntUnicodeString);
+	ntStatus = IoCreateSymbolicLink(&ntWin32NameString, &ntUnicodeString);
+
+	if (!NT_SUCCESS(ntStatus))
+	{
+		LOG(("Couldn't create symbolic link\n"));
+		goto Exit;
+		
+	}
+	SymLinkCreated = TRUE;
+
+
+	//
+	// Registers a process notification callback that notifies the us
+	// when a process is created or exits.
+	//
+
+	ntStatus = PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutine, FALSE);
+	if (!NT_SUCCESS(ntStatus))
+	{
+		if (ntStatus == STATUS_ACCESS_DENIED) {
+			// Project Properties -> Linker -> All Options then add /INTEGRITYCHECK
+			// See: https://www.osronline.com/showthread.cfm?link=169632
+			// See: https://msdn.microsoft.com/en-us/library/dn195769.aspx?f=255&MSPPError=-2147217396
+			KdPrint(("PsSetCreateProcessNotifyRoutineEx() failed; ensure /INTEGRITYCHECK linker flag was used during linking\n"));
+		}
+		else {
+			KdPrint(("Unable to add process creation notification routine\n"));
+		}
+
+
+		//DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "ObCallbackTest: DriverEntry: PsSetCreateProcessNotifyRoutineEx(2) returned 0x%x\n", ntStatus);
+		goto Exit;
+	}
+	CreateProcessCallbackCreate = TRUE;
+
+Exit:
 
 	if (!NT_SUCCESS(ntStatus))
 	{
 		//
 		// Delete everything that this routine has allocated.
 		//
-		LOG(("Couldn't create symbolic link\n"));
-		IoDeleteDevice(deviceObject);
+
+		if (CreateProcessCallbackCreate == TRUE)
+		{
+			ntStatus = PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutine, TRUE);
+			ASSERT_EX(ntStatus == STATUS_SUCCESS);
+			CreateProcessCallbackCreate = FALSE;
+		}
+
+		if (SymLinkCreated == TRUE)
+		{
+			IoDeleteSymbolicLink(&ntWin32NameString);
+		}
+
+		if (deviceObject != NULL)
+		{
+			IoDeleteDevice(deviceObject);
+		}
 	}
 
-
 	return ntStatus;
-
-
-
 }
 
 
@@ -249,4 +301,40 @@ End:
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
 	return ntStatus;
+}
+
+
+
+VOID
+CreateProcessNotifyRoutine(
+	_Inout_ PEPROCESS Process,
+	_In_ HANDLE ProcessId,
+	_In_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo
+)
+{
+	if (CreateInfo != NULL)
+	{
+
+		DbgPrintEx(
+			DPFLTR_IHVDRIVER_ID, DPFLTR_TRACE_LEVEL,
+			"CreateProcessNotifyRoutine: process %p (ID 0x%p) created, creator %Ix:%Ix\n"
+			"    command line %wZ\n"
+			"    file name %wZ (FileOpenNameAvailable: %d)\n",
+			Process,
+			(PVOID)ProcessId,
+			(ULONG_PTR)CreateInfo->CreatingThreadId.UniqueProcess,
+			(ULONG_PTR)CreateInfo->CreatingThreadId.UniqueThread,
+			CreateInfo->CommandLine,
+			CreateInfo->ImageFileName,
+			CreateInfo->FileOpenNameAvailable
+		);
+	}
+	else
+	{
+		DbgPrintEx(
+			DPFLTR_IHVDRIVER_ID, DPFLTR_TRACE_LEVEL, "CreateProcessNotifyRoutine: process %p (ID 0x%p) destroyed\n",
+			Process,
+			(PVOID)ProcessId
+		);
+	}
 }
