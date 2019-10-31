@@ -22,7 +22,8 @@ NTSTATUS NTAPI HookNtAllocateVirtualMemory(
 		goto end;
 	}
 
-	//GetStackWalk();
+	GetStackWalk();
+
 	TraceAPI(L"NtAllocateVirtualMemory(ProcessHandle:0x%p, AllocationType:%lu, Protect:%lu), RETN: 0x%p",
 		ProcessHandle, AllocationType, Protect, _ReturnAddress()); // , Protect
 
@@ -115,13 +116,14 @@ NTSTATUS WINAPI HookNtWriteVirtualMemory(
 {
 
 	if (IsInsideHook() == FALSE) {
-		return TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
+		goto end;
 	}
 
 	GetStackWalk();
 
 	TraceAPI(L"NtWriteVirtualMemory(ProcessHandle:0x%p, BaseAddress:0x%p, BufferSize:0x%08lu), RETN: %p",
 		ProcessHandle, BaseAddress, BufferSize, _ReturnAddress());
+
 	ReleaseHookGuard();
 end:
 	return TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);;
@@ -166,8 +168,7 @@ NTSTATUS WINAPI HookNtMapViewOfSection(
 {
 
 	if (IsInsideHook() == FALSE) {
-		return TrueNtMapViewOfSection(SectionHandle, ProcessHandle, BaseAddress, ZeroBits, CommitSize,
-			SectionOffset, ViewSize, InheritDisposition, AllocationType, Win32Protect);
+		goto end;
 	}
 
 	GetStackWalk();

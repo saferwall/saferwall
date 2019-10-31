@@ -23,3 +23,12 @@ VOID TraceAPI(PCWSTR Format, ...) {
 }
 
 
+VOID LogMessage(PCWSTR Format, ...) {
+	WCHAR Buffer[256];
+
+	va_list arglist;
+	va_start(arglist, Format);
+	_vsnwprintf(Buffer, RTL_NUMBER_OF(Buffer), Format, arglist);
+	EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
+	va_end(arglist);
+}
