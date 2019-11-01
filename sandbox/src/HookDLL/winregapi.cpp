@@ -22,7 +22,7 @@ NTSTATUS WINAPI HookNtOpenKey(
 
 	GetStackWalk();
 
-	TraceAPI(L"NtOpenKey(DesiredAccess: 0x%d, ObjectName:0x%ws, ReturnLength:0x%p), RETN: %p",
+	TraceAPI(L"NtOpenKey(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
 		DesiredAccess, ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
 
 	ReleaseHookGuard();
@@ -48,7 +48,7 @@ NTSTATUS WINAPI HookNtOpenKeyEx(
 
 	GetStackWalk();
 
-	TraceAPI(L"NtOpenKeyEx(DesiredAccess: 0x%d, ObjectName:0x%ws, ReturnLength:0x%p), RETN: %p",
+	TraceAPI(L"NtOpenKeyEx(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
 		DesiredAccess, ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
 
 	ReleaseHookGuard();
