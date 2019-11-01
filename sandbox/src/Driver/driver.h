@@ -5,6 +5,7 @@
 //
 
 #include <ntddk.h>          // various NT definitions
+#include "injection.h"
 #include "shared.h"
 
 
@@ -15,15 +16,6 @@
 #define NT_DEVICE_NAME      L"\\Device\\SAFERWALL_SANDBOX"
 #define DOS_DEVICE_NAME     L"\\DosDevices\\SaferwallSandbox"
 
-#if DBG
-#define LOG(_x_) \
-                DbgPrint("SIOCTL.SYS: ");\
-                DbgPrint _x_;
-
-#else
-#define SIOCTL_KDPRINT(_x_)
-#endif
-
 
 
 //
@@ -31,13 +23,13 @@
 //
 
 NTSTATUS
-DeviceCreateClose(
+DispatchCreateClose(
 	PDEVICE_OBJECT DeviceObject,
 	PIRP Irp
 );
 
 NTSTATUS
-IoctlDeviceControl(
+DispatchDeviceControl(
 	PDEVICE_OBJECT DeviceObject,
 	PIRP Irp
 );
@@ -50,8 +42,19 @@ UnloadDriver(
 
 
 VOID
+NTAPI
 CreateProcessNotifyRoutine(
 	_Inout_ PEPROCESS Process,
 	_In_ HANDLE ProcessId,
 	_In_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo
+);
+
+
+
+VOID
+NTAPI
+LoadImageNotifyRoutine(
+	_In_opt_ PUNICODE_STRING FullImageName,
+	_In_ HANDLE ProcessId,
+	_In_ PIMAGE_INFO ImageInfo
 );

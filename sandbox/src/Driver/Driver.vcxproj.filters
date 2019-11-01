@@ -27,12 +27,21 @@
     <ClCompile Include="driver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="callback.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="injection.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="driver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="injection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
