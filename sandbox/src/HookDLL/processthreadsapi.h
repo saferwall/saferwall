@@ -68,3 +68,11 @@ HookNtResumeThread(
 	_In_ HANDLE ThreadHandle,
 	_Out_opt_ PULONG PreviousSuspendCount
 );
+
+
+NTSTATUS
+NTAPI
+HookNtTerminateProcess(
+	_In_opt_ HANDLE ProcessHandle,
+	_In_ NTSTATUS ExitStatus
+);

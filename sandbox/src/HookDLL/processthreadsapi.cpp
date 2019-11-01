@@ -8,6 +8,7 @@ decltype(NtCreateThreadEx)* TrueNtCreateThreadEx = nullptr;
 decltype(NtResumeThread)* TrueNtResumeThread = nullptr;
 decltype(NtSuspendThread)* TrueNtSuspendThread = nullptr;
 decltype(NtOpenProcess)* TrueNtOpenProcess = nullptr;
+decltype(NtTerminateProcess)* TrueNtTerminateProcess = nullptr;
 
 
 
@@ -169,4 +170,26 @@ NTSTATUS NTAPI HookNtOpenProcess(
 end:
 	return TrueNtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes,
 		ClientId);
+}
+
+
+
+NTSTATUS NTAPI HookNtTerminateProcess(
+	_In_opt_ HANDLE ProcessHandle,
+	_In_ NTSTATUS ExitStatus
+)
+{
+	if (IsInsideHook() == FALSE) {
+		goto end;
+	}
+
+	GetStackWalk();
+
+	TraceAPI(L"NtTerminateProcess(ProcessHandle: 0x%p, ExitStatus: %d), RETN: %p",
+		ProcessHandle, ExitStatus, _ReturnAddress());
+
+	ReleaseHookGuard();
+
+end:
+	return TrueNtTerminateProcess(ProcessHandle, ExitStatus);
 }
