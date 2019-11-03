@@ -3,6 +3,7 @@
 
 
 decltype(NtCreateFile)* TrueNtCreateFile = nullptr;
+decltype(NtReadFile)* TrueNtReadFile = nullptr;
 pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW = nullptr;
 
 
@@ -40,6 +41,38 @@ end:
 	return TrueNtCreateFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize,
 		FileAttributes, ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
 }
+
+
+NTSTATUS NTAPI HookNtReadFile(
+	_In_ HANDLE FileHandle,
+	_In_opt_ HANDLE Event,
+	_In_opt_ PIO_APC_ROUTINE ApcRoutine,
+	_In_opt_ PVOID ApcContext,
+	_Out_ PIO_STATUS_BLOCK IoStatusBlock,
+	_Out_writes_bytes_(Length) PVOID Buffer,
+	_In_ ULONG Length,
+	_In_opt_ PLARGE_INTEGER ByteOffset,
+	_In_opt_ PULONG Key
+)
+{
+	if (IsInsideHook() == FALSE) {
+		goto end;
+	}
+
+	GetStackWalk();
+
+	TraceAPI(L"NtReadFile(FileHandle: %p), RETN: %p",
+		FileHandle, _ReturnAddress());
+
+	ReleaseHookGuard();
+
+end:
+	return TrueNtReadFile(FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock,
+		Buffer, Length, ByteOffset, Key);
+}
+
+
+
 
 NTSTATUS WINAPI HookMoveFileWithProgressTransactedW(
 	__in      LPWSTR lpExistingFileName,

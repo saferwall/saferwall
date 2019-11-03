@@ -56,7 +56,9 @@ NTSTATUS NTAPI HookNtFreeVirtualMemory(
 );
 
 
-NTSTATUS NTAPI HookNtMapViewOfSection(
+NTSTATUS
+NTAPI
+HookNtMapViewOfSection(
 	_In_ HANDLE SectionHandle,
 	_In_ HANDLE ProcessHandle,
 	_Inout_ _At_(*BaseAddress, _Readable_bytes_(*ViewSize) _Writable_bytes_(*ViewSize) _Post_readable_byte_size_(*ViewSize)) PVOID *BaseAddress,
@@ -69,3 +71,11 @@ NTSTATUS NTAPI HookNtMapViewOfSection(
 	_In_ ULONG Win32Protect
 );
 
+
+
+NTSTATUS
+NTAPI
+HookNtUnmapViewOfSection(
+	_In_ HANDLE ProcessHandle,
+	_In_opt_ PVOID BaseAddress
+);

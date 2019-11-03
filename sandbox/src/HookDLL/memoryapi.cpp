@@ -8,6 +8,8 @@ decltype(NtReadVirtualMemory)* TrueNtReadVirtualMemory = nullptr;
 decltype(NtWriteVirtualMemory)* TrueNtWriteVirtualMemory = nullptr;
 decltype(NtFreeVirtualMemory)* TrueNtFreeVirtualMemory = nullptr;
 decltype(NtMapViewOfSection)* TrueNtMapViewOfSection = nullptr;
+decltype(NtUnmapViewOfSection)* TrueNtUnmapViewOfSection = nullptr;
+
 
 
 NTSTATUS NTAPI HookNtAllocateVirtualMemory(
@@ -181,5 +183,29 @@ NTSTATUS WINAPI HookNtMapViewOfSection(
 end:
 	return TrueNtMapViewOfSection(SectionHandle, ProcessHandle, BaseAddress, ZeroBits, CommitSize,
 		SectionOffset, ViewSize, InheritDisposition, AllocationType, Win32Protect);
+
+}
+
+
+
+NTSTATUS WINAPI HookNtUnmapViewOfSection(
+	_In_ HANDLE ProcessHandle,
+	_In_opt_ PVOID BaseAddress
+)
+{
+
+	if (IsInsideHook() == FALSE) {
+		goto end;
+	}
+
+	GetStackWalk();
+
+	TraceAPI(L"NtUnmapViewOfSection(ProcessHandle:0x%p, BaseAddress:0x%p), RETN: %p",
+		ProcessHandle, BaseAddress, _ReturnAddress());
+
+	ReleaseHookGuard();
+
+end:
+	return TrueNtUnmapViewOfSection(ProcessHandle, BaseAddress);
 
 }
