@@ -13,7 +13,8 @@ NTSTATUS WINAPI HookNtCreateFile(_Out_ PHANDLE FileHandle,
 	_In_ ULONG CreateDisposition,
 	_In_ ULONG CreateOptions,
 	_In_reads_bytes_opt_(EaLength) PVOID EaBuffer,
-	_In_ ULONG EaLength);
+	_In_ ULONG EaLength
+);
 
 
 NTSTATUS
