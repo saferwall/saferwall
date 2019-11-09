@@ -118,7 +118,6 @@
   </div>
 </template>
 <script>
-import axios from "axios"
 import Loader from "@/components/elements/Loader"
 import Copy from "@/components/elements/Copy"
 
@@ -145,8 +144,8 @@ export default {
   },
   mounted() {
     // replace route params with props
-    axios
-      .get(`/api/v1/files/${this.$route.params.hash}/`)
+    this.$http
+      .get(`/v1/files/${this.$route.params.hash}/`)
       .then((data) => {
         this.showLoader = false
         if (!data.data.multiav) {

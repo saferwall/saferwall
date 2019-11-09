@@ -72,7 +72,6 @@
 
 <script>
 import { store } from "../../store.js"
-import axios from "axios"
 import Notification from "@/components/elements/Notification"
 export default {
   name: "Header",
@@ -116,8 +115,8 @@ export default {
       this.notifActive = false
     },
     searchByHash() {
-      axios
-        .get(`/api/v1/files/${this.hash}/`, {
+      this.$http
+        .get(`/v1/files/${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
         .then(() => {

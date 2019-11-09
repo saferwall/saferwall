@@ -10,7 +10,10 @@ import Unauthenticated from "./layouts/Unauthenticated.vue"
 
 import Vuelidate from "vuelidate"
 
+import axios from "axios"
+
 import VueCookie from "vue-cookie"
+
 Vue.use(Vuelidate)
 Vue.use(VueCookie)
 
@@ -70,6 +73,10 @@ Vue.directive("focus", {
 })
 
 Vue.config.productionTip = false
+
+Vue.prototype.$http = axios.create({
+  baseURL: process.env.API_ROOT,
+})
 
 /* eslint-disable no-new */
 new Vue({

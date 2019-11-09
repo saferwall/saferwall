@@ -71,7 +71,6 @@
   </div>
 </template>
 <script>
-import axios from "axios"
 import Loader from "@/components/elements/Loader"
 import Copy from "@/components/elements/Copy"
 
@@ -116,7 +115,7 @@ export default {
     },
   },
   mounted() {
-    axios.get(`/api/v1/files/${this.$route.params.hash}/`).then((data) => {
+    this.$http.get(`/v1/files/${this.$route.params.hash}/`).then((data) => {
       this.showLoader = false
 
       data.data["sha-1"] = data.data.sha1

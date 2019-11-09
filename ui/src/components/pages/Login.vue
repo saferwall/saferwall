@@ -116,9 +116,9 @@
 <script>
 import { required, helpers } from "vuelidate/lib/validators"
 import Notification from "@/components/elements/Notification"
-import axios from "axios"
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
+const defaultErrorMessage = `Something went wrong, please try again!`
 
 export default {
   data() {
@@ -149,8 +149,8 @@ export default {
         this.errorMessage =
           "Please correct all highlighted errors and try again"
       } else {
-        axios
-          .post("/api/v1/auth/login/", {
+        this.$http
+          .post("/v1/auth/login/", {
             username: this.username,
             password: this.password,
           })
@@ -164,10 +164,16 @@ export default {
               }
             }
           })
-          .catch((error) => {
-            this.errored = true
-            this.errorMessage = error.response.data.verbose_msg || `Something went wrong, please try again!`
-          })
+          .catch(
+            ({
+              response: {
+                data: { verbose_msg: verboseMsg = defaultErrorMessage } = {},
+              } = {},
+            } = {}) => {
+              this.errored = true
+              this.errorMessage = verboseMsg
+            },
+          )
       }
     },
     close() {
