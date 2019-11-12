@@ -37,15 +37,15 @@ func New() *echo.Echo {
 	// e.PUT("/v1/users/:username/password/", auth.UpdatePassword, m.RequireToken, m.RequireJSON)
 
 	// handle /files endpoint.
-	e.GET("/v1/files/", file.GetFiles)
+	e.GET("/v1/files/", file.GetFiles, m.RequireLogin, auth.IsAdmin)
 	e.POST("/v1/files/", file.PostFiles, m.RequireLogin)
-	e.PUT("/v1/files/", file.PutFiles, m.RequireLogin)
+	e.PUT("/v1/files/", file.PutFiles, m.RequireLogin, auth.IsAdmin)
 	e.DELETE("/v1/files/", file.DeleteFiles, m.RequireLogin, auth.IsAdmin)
 
 	// handle /files/:sha256 endpoint.
 	e.GET("/v1/files/:sha256/", file.GetFile)
-	e.PUT("/v1/files/:sha256/", file.PutFile, m.RequireJSON)
-	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin, auth.IsAdmin)
+	e.PUT("/v1/files/:sha256/", file.PutFile, m.RequireLogin, m.RequireJSON)
+	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin)
 
 	// handle file download.
 	e.GET("/v1/files/:sha256/download/", file.Download, m.RequireLogin)
@@ -53,13 +53,13 @@ func New() *echo.Echo {
 	// handle /users endpoint.
 	e.GET("/v1/users/", user.GetUsers, m.RequireLogin, auth.IsAdmin)
 	e.POST("/v1/users/", user.PostUsers, m.RequireJSON)
-	e.PUT("/v1/users/", user.PutUsers, m.RequireLogin)
+	e.PUT("/v1/users/", user.PutUsers, m.RequireLogin, auth.IsAdmin)
 	e.DELETE("/v1/users/", user.DeleteUsers, m.RequireLogin, auth.IsAdmin)
 
 	// handle /users/:username  endpoint.
-	e.GET("/v1/users/:username/", user.GetUser)
+	e.GET("/v1/users/:username/", user.GetUser, m.RequireLogin)
 	e.PUT("/v1/users/:username/", user.PutUser, m.RequireLogin)
-	e.DELETE("/v1/users/:username/", user.DeleteUser, m.RequireLogin, auth.IsAdmin)
+	e.DELETE("/v1/users/:username/", user.DeleteUser, m.RequireLogin)
 
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)
