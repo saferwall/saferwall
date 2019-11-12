@@ -90,13 +90,14 @@ func loadConfig() {
 	default:
 		log.Fatal("ENVIRONMENT is not set")
 	}
+
 	viper.SetConfigName(name)    // no need to include file extension
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Infoln("Config was loaded")
+	log.Infof("Config %s was loaded", name)
 }
 
 // createNSQProducer creates a new NSQ producer.
@@ -107,7 +108,7 @@ func createNSQProducer() *nsq.Producer {
 	config := nsq.NewConfig()
 
 	// Create a NewProducer with the name of our topic, the channel, and our config
-	addr := viper.GetString("nsq.addr")
+	addr := viper.GetString("nsq.address")
 	p, err := nsq.NewProducer(addr, config)
 	if err != nil {
 		log.Fatal(err)
@@ -183,11 +184,11 @@ func loadSchemas() {
 
 // initOSClient returns a client for our Object Storage interface.
 func initOSClient() *minio.Client {
-	accessKey := viper.GetString("do.accesskey")
-	secKey := viper.GetString("do.seckey")
-	endpoint := viper.GetString("do.endpoint")
-	SamplesSpaceBucket = viper.GetString("do.spacename")
-	ssl := viper.GetBool("do.ssl")
+	accessKey := viper.GetString("minio.accesskey")
+	secKey := viper.GetString("minio.seckey")
+	endpoint := viper.GetString("minio.endpoint")
+	SamplesSpaceBucket = viper.GetString("minio.spacename")
+	ssl := viper.GetBool("minio.ssl")
 
 	// Initiate a client using DigitalOcean Spaces.
 	client, err := minio.New(endpoint, accessKey, secKey, ssl)

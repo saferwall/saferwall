@@ -9,6 +9,8 @@ import (
 	"github.com/saferwall/saferwall/web/app/route"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
+	log "github.com/sirupsen/logrus"
+
 )
 
 
@@ -23,6 +25,7 @@ func main() {
 
 	address := viper.GetString("app.address")
 	if !app.Debug {
+		log.Info("Running in prod mode, HTTPs enabled")
 		// Cache certificates
 		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
 
@@ -30,5 +33,6 @@ func main() {
 	}
 
 	// Start the server
+	log.Info("Running in debug mode")
 	e.Logger.Fatal(e.Start(address))
 }

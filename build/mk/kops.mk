@@ -44,11 +44,11 @@ kops-create-efs:		## create AWS EFS file system
 kops-create-mount-targers:
 	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,Subnet:SubnetId,SecurityGroups:SecurityGroups}'
 	aws efs create-mount-target \
-	--file-system-id fs-cfe6404e \
-	--subnet-id subnet-02de5b2281953ed36 \
-	--security-group sg-016dcb61e9518e91e \
+	--file-system-id fs-04f47285 \
+	--subnet-id subnet-0806281d75ce0c581 \
+	--security-group sg-0bc97a80b78efb528 \
 	--region us-east-1 
-	aws efs describe-mount-targets --file-system-id fs-cfe6404e
+	aws efs describe-mount-targets --file-system-id fs-04f47285
 
 kops-create-efs-provisioner:		## Create efs provisioner
 	cd ~ \
