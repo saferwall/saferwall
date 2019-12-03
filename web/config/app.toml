@@ -17,7 +17,7 @@ password = "<password>"
 [nsq]
 addr = "localhost:4150"
 
-[dmino]
+[minio]
 endpoint = "localhost:9000"
 seckey = "<seckey>"
 accesskey = "<accesskey>"

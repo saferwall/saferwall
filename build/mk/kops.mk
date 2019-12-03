@@ -39,16 +39,17 @@ kops-create-efs:		## create AWS EFS file system
 		--creation-token saferwall-efs \
 		--performance-mode maxIO \
 		--region us-east-1
-	aws efs describe-file-systems
 
 kops-create-mount-targers:
-	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,Subnet:SubnetId,SecurityGroups:SecurityGroups}'
+	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
+	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.saferwall.k8s.local`]' --output text | head -n 1 | cut -d '	' -f1))	
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[0].Instances[0].SubnetId'))
 	aws efs create-mount-target \
-	--file-system-id fs-04f47285 \
-	--subnet-id subnet-0806281d75ce0c581 \
-	--security-group sg-0bc97a80b78efb528 \
-	--region us-east-1 
-	aws efs describe-mount-targets --file-system-id fs-04f47285
+		--file-system-id $(FS_ID) \
+		--subnet-id $(SUBNET) \
+		--security-group $(SEC_GROUP) \
+		--region us-east-1 
+	aws efs describe-mount-targets --file-system-id $(FS_ID)
 
 kops-create-efs-provisioner:		## Create efs provisioner
 	cd ~ \
