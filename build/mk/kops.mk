@@ -64,17 +64,9 @@ kops-create-efs-provisioner:		## Create efs provisioner
 		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
 		&& kubectl apply -f manifest.yaml
 
-
-kops-delete-cluster:		## delete k8s cluster
+kops-delete-cluster:		## Delete k8s cluster
 	kops delete cluster --name ${NAME} --yes
 
-kops-update-cluster:
+kops-update-cluster:		## Update k8s cluster
 	kops edit ig --name= nodes
 	kops update cluster --yes
-
-
-
-# aws  ec2 describe-vpcs    
-
-
-
