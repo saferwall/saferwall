@@ -1,0 +1,29 @@
+[backend]
+address = "http://localhost:8081"
+admin_user = "<admin>"
+admin_pwd = "<password>"
+
+[nsq]
+lookupd = ["localhost:4161",]
+
+[minio]
+endpoint = "localhost:9000"
+seckey = "<seckey>"
+accesskey = "<accesskey>"
+spacename = "samples"
+ssl = false
+
+[multiav]
+avast_addr = "avast-svc:50051"
+avira_addr = "avira-svc:50051"
+bitdefender_addr = "bitdefender-svc:50051"
+clamav_addr = "clamav-svc:50051"
+comodo_addr = "comodo-svc:50051"
+eset_addr = "eset-svc:50051"
+fsecure_addr = "fsecure-svc:50051"
+kaspersky_addr = "kaspersky-svc:50051"
+symantec_addr = "symantec-svc:50051"
+sophos_addr = "sophos-svc:50051"
+mcafee_addr = "mcafee-svc:50051"
+windefender_addr = "windefender-svc:50051"
+dummy_addr = "localhost:50051"

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"os"
 	"bytes"
 	"errors"
 	"fmt"
@@ -42,12 +43,31 @@ import (
 	"time"
 )
 
-// loadConfig loads our configration.
-func loadConfig(cfgPath string) error {
-	viper.SetConfigName("saferwall") // no need to include file extension
-	viper.AddConfigPath(cfgPath)         // set the path of your config file
+// LoadConfig loads our configration.
+func LoadConfig() {
+	viper.AddConfigPath("../../configs") // set the path of your config file
+
+	// Load the config type depending on env variable.
+	var name string
+	env := os.Getenv("ENVIRONMENT")
+	switch env {
+	case "dev":
+		name = "saferwall.dev"
+	case "prod":
+		name = "saferwall.prod"
+	case "test":
+		name = "saferwall.test"
+	default:
+		log.Fatal("ENVIRONMENT is not set")
+	}
+
+	viper.SetConfigName(name)    // no need to include file extension
 	err := viper.ReadInConfig()
-	return err
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Infof("Config %s was loaded", name)
 }
 
 func updateDocument(sha256 string, buff []byte) {

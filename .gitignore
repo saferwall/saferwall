@@ -43,4 +43,4 @@ web/config/dev-app.toml
 .vault
 
 # Configs
-saferwall.toml
+saferwall.*.toml

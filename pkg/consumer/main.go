@@ -99,7 +99,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	updateDocument(sha256, buff)
 
 	// Download the sample
-	bucketName := viper.GetString("do.spacename")
+	bucketName := viper.GetString("minio.spacename")
 	filePath := path.Join("/samples", sha256)
 	var b []byte
 	if b, err = utils.Download(minioClient, bucketName, filePath, sha256); err != nil {
@@ -141,15 +141,13 @@ func main() {
 
 	// Load consumer config
 	var err error
-	if err = loadConfig("."); err != nil {
-		log.Fatalf("Error parsing the config: %v", err)
-	}
-
+	LoadConfig()
+	
 	// Get an minio client instance
-	accessKey := viper.GetString("do.accesskey")
-	secKey := viper.GetString("do.seckey")
-	endpoint := viper.GetString("do.endpoint")
-	ssl := viper.GetBool("do.ssl")
+	accessKey := viper.GetString("minio.accesskey")
+	secKey := viper.GetString("minio.seckey")
+	endpoint := viper.GetString("minio.endpoint")
+	ssl := viper.GetBool("minio.ssl")
 	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
 		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
