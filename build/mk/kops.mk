@@ -40,7 +40,7 @@ kops-create-efs:		## create AWS EFS file system
 		--performance-mode maxIO \
 		--region us-east-1
 
-kops-create-mount-targers:
+kops-create-mount-targers:	## Create mount targets
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.saferwall.k8s.local`]' --output text | head -n 1 | cut -d '	' -f1))	
 	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[0].Instances[0].SubnetId'))
@@ -50,6 +50,15 @@ kops-create-mount-targers:
 		--security-group $(SEC_GROUP) \
 		--region us-east-1 
 	aws efs describe-mount-targets --file-system-id $(FS_ID)
+
+kops-delete-mount-targets:		## Delete mount targets
+		$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
+		$(eval MOUNT_TARGET_ID = $(shell aws efs describe-mount-targets --file-system-id $(FS_ID) --query 'MountTargets[0].MountTargetId'))
+		aws efs delete-mount-target --mount-target-id $(MOUNT_TARGET_ID)
+
+kops-delete-file-system:		## Delete file system
+	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
+	aws efs delete-file-system --file-system-id $(FS_ID)
 
 kops-create-efs-provisioner:		## Create efs provisioner
 	cd ~ \
