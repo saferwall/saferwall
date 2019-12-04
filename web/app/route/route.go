@@ -24,6 +24,7 @@ func New() *echo.Echo {
 	// handle user login and confirmation via email.
 	e.POST("/v1/auth/login/", auth.Login, m.RequireJSON) 	
 	e.GET("/v1/auth/confirm/", auth.Confirm, m.RequireToken)
+	e.POST("/v1/auth/resend-confirmation/", auth.ReconfirmAccount)
 
 	// To reset the current password (in case user forget the password).
 	e.DELETE("/v1/users/password/", auth.ResetPassword, m.RequireJSON)

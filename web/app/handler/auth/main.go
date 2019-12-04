@@ -263,6 +263,75 @@ func Confirm(c echo.Context) error {
 	return c.Redirect(http.StatusPermanentRedirect, url)
 }
 
+// ReconfirmAccount resend email confirmation.
+func ReconfirmAccount(c echo.Context) error {
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.EmailSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonEmail map[string]interface{}
+	err = json.Unmarshal(b, &jsonEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	confirmEmail := jsonEmail["email"].(string)
+
+	// check if email already exists in DB.
+	EmailExist, _ := user.CheckEmailExist(confirmEmail)
+	if !EmailExist {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Email does not exists !"})
+	}
+
+	// get user by email
+	u, err := user.GetUserByEmail(confirmEmail)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	// generate token
+	token, err := u.GenerateEmailConfirmationToken()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": "Internal server error !"})
+	}
+
+	// Generate the email confirmation url
+	r := c.Request()
+	baseURL := c.Scheme() + "://" + r.Host
+	link := baseURL + "/v1/auth/confirm/" + "?token=" + token
+	go email.Send(u.Username, link, u.Email, "confirm")
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}
+
 
 // NewPassword handle password reset.
 func NewPassword(c echo.Context) error {

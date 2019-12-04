@@ -131,7 +131,7 @@ func PostUsers(c echo.Context) error {
 	newUser.Save()
 
 	// Send confirmation email
-	token, err := newUser.generateEmailConfirmationToken()
+	token, err := newUser.GenerateEmailConfirmationToken()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": "Internal server error !"})

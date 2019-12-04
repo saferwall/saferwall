@@ -18,8 +18,8 @@ func (u *User) UpdatePassword(newPassword string) {
 }
 
 
-// generateEmailConfirmationToken creates a JWT token for email confirmation.
-func (u *User) generateEmailConfirmationToken() (string, error) {
+// GenerateEmailConfirmationToken creates a JWT token for email confirmation.
+func (u *User) GenerateEmailConfirmationToken() (string, error) {
 
 	// Set custom claims
 	claims := &middleware.CustomClaims{

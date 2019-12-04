@@ -60,7 +60,7 @@ func login() string {
 	body := bytes.NewBuffer(requestBody)
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
-		log.Errorf("http.NewRequest() failed with '%s'\n", err)
+		log.Fatalf("http.NewRequest() failed with '%s'\n", err)
 	}
 
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
@@ -96,13 +96,13 @@ func updateDocument(sha256 string, buff []byte) {
 	req.Header.Set("Cookie", "JWTCookie="+backendToken)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("client.Do() failed with '%s'\n", err)
+		log.Errorf("client.Do() failed with '%s'\n", err)
 	}
 
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
+		log.Errorf("ioutil.ReadAll() failed with '%s'\n", err)
 	}
 
 	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
