@@ -21,7 +21,6 @@ func New() *echo.Echo {
 	// Setup middlwares
 	m.Init(e)
 
-
 	// handle user login and confirmation via email.
 	e.POST("/v1/auth/login/", auth.Login, m.RequireJSON) 	
 	e.GET("/v1/auth/confirm/", auth.Confirm, m.RequireToken)
@@ -64,5 +63,8 @@ func New() *echo.Echo {
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)
 
+	// ugly hack
+	user.CreateAdminUser()
+	
 	return e
 }

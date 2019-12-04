@@ -264,8 +264,8 @@ func Init() {
 	MinioClient = initOSClient()
 
 	Debug = viper.GetBool("app.debug")
-	StoragePath = viper.GetString("storage.tmp_samples")
-	MaxFileSize = int64(viper.GetInt("storage.max_file_size"))
+	StoragePath = viper.GetString("app.tmp_samples")
+	MaxFileSize = int64(viper.GetInt("app.max_file_size"))
 	os.MkdirAll(StoragePath, os.ModePerm)
 
 }

@@ -34,7 +34,7 @@ type User struct {
 // Save adds user to a database.
 func (u *User) Save() {
 	db.UsersBucket.Upsert(u.Username, u, 0)
-	log.Infof("User was created successefuly: %s", u.Username)
+	log.Infof("User %s was created successefuly", u.Username)
 }
 
 // Create creates a new user
@@ -231,4 +231,28 @@ func GetUserByEmail(email string) (User, error) {
 	}
 
 	return row, nil
+}
+
+// CreateAdminUser creates admin user.
+func CreateAdminUser() {
+	username := viper.GetString("app.admin_user")
+	password := viper.GetString("app.admin_pwd")
+	email := viper.GetString("app.admin_email")
+
+	u, _ := GetByUsername(username)
+	if u.Username != "" {
+		return
+	}
+
+	newUser := User{
+		Username: username,
+		Email: email,
+	}
+
+	t := time.Now().UTC()
+	newUser.MemberSince = &t
+	newUser.Admin = true
+	newUser.Password = hashAndSalt([]byte(password))
+	newUser.Confirmed = true
+	newUser.Save()
 }

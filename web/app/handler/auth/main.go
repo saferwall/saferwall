@@ -51,7 +51,7 @@ func createJwtToken(u user.User) (string, error) {
 	// Set custom claims
 	claims := &middleware.LoginCustomClaims{
 		u.Username,
-		false,
+		u.Admin,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},

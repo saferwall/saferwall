@@ -8,6 +8,9 @@ address = "<host:port>"
 debug = true
 tmp_samples = "/tmp/samples"
 max_file_size = 64000000 # 64MB
+admin_user = "<admin>"
+admin_pwd = "<password>"
+admin_email = "<admin@company.com>"
 
 [db]
 server = "couchbase://<host>"

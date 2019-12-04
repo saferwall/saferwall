@@ -145,7 +145,11 @@ func GetFile(c echo.Context) error {
 	sha256 := c.Param("sha256")
 	file, err := GetFileBySHA256(sha256)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusNotFound,  Response{
+			Message:     err.Error(),
+			Description: "File not found",
+			Sha256:      sha256,
+		})
 	}
 	return c.JSON(http.StatusOK, file)
 }
