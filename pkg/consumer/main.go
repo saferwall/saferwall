@@ -22,6 +22,7 @@ import (
 var (
 	minioClient     *minio.Client
 	backendEndpoint string
+	backendToken string
 )
 
 type stringStruct struct {
@@ -143,6 +144,13 @@ func main() {
 	var err error
 	LoadConfig()
 	
+	// Set backend API address
+	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
+
+	// Login to backend
+	backendToken = Login()
+	log.Printf("Token is: %s", backendToken)
+	
 	// Get an minio client instance
 	accessKey := viper.GetString("minio.accesskey")
 	secKey := viper.GetString("minio.seckey")
@@ -151,9 +159,6 @@ func main() {
 	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
 		log.Fatalf("Failed to connect to get minio client instance: %v", err)
 	}
-
-	// Set backend API address
-	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.

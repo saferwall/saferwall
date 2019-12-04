@@ -41,11 +41,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"encoding/json"
 )
 
 // LoadConfig loads our configration.
 func LoadConfig() {
-	viper.AddConfigPath("../../configs") // set the path of your config file
+	viper.AddConfigPath("configs") // set the path of your config file
 
 	// Load the config type depending on env variable.
 	var name string
@@ -70,6 +71,47 @@ func LoadConfig() {
 	log.Infof("Config %s was loaded", name)
 }
 
+
+// Login to backend
+func Login() string {
+	username := viper.GetString("backend.admin_user")
+	password := viper.GetString("backend.admin_pwd")
+	requestBody, err := json.Marshal(map[string]string{
+		"username": username,
+		"password" : password,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	timeout := time.Duration(5 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	url := viper.GetString("backend.address") + "/v1/auth/login"
+	body := bytes.NewBuffer(requestBody)
+	request, err := http.NewRequest(http.MethodPost, url,  body)
+	if err != nil {
+		log.Errorf("http.NewRequest() failed with '%s'\n", err)
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatalf("client.Do() failed with '%s'\n", err)
+	}
+
+	defer resp.Body.Close()
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
+	}
+
+	var res map[string]string
+	json.Unmarshal(d, &res)
+	return res["token"]
+}
+
 func updateDocument(sha256 string, buff []byte) {
 	// Update results to DB
 	client := &http.Client{}
@@ -84,6 +126,7 @@ func updateDocument(sha256 string, buff []byte) {
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Cookie", "JWTCookie="+backendToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("client.Do() failed with '%s'\n", err)
