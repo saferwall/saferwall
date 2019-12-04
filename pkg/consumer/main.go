@@ -22,7 +22,7 @@ import (
 var (
 	minioClient     *minio.Client
 	backendEndpoint string
-	backendToken string
+	backendToken    string
 )
 
 type stringStruct struct {
@@ -142,15 +142,15 @@ func main() {
 
 	// Load consumer config
 	var err error
-	LoadConfig()
-	
+	loadConfig()
+
 	// Set backend API address
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// Login to backend
-	backendToken = Login()
+	backendToken = login()
 	log.Printf("Token is: %s", backendToken)
-	
+
 	// Get an minio client instance
 	accessKey := viper.GetString("minio.accesskey")
 	secKey := viper.GetString("minio.seckey")

@@ -78,7 +78,7 @@ WORKDIR /consumer
 
 # Copy our static executable.
 COPY --from=builder /go/bin/consumer .
-COPY ./config ./config
+COPY ./configs ./configs
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
