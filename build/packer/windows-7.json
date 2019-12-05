@@ -1,0 +1,66 @@
+{
+  "_comment": "Build with `packer build windows-7.json`",
+  "builders": [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "cpus": "{{ user `cpus` }}",
+      "disk_interface": "virtio",
+      "disk_size": "{{ user `disk_size` }}",
+      "format": "qcow2",
+      "headless": "{{ user `headless` }}",
+      "memory": "{{ user `memory` }}",
+      "net_device": "virtio-net",
+      "output_directory": "output-{{ user `vm_name` }}",
+      "vm_name": "{{ user `vm_name` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "iso_url": "{{ user `iso_url` }}",
+      "boot_wait": "2m",
+      "floppy_files": "{{ user `floppy_files_list` }}",
+      "qemuargs": [
+        ["-m", "{{ user `memory` }}"],
+        ["-smp", "cpus={{ user `cpus`}}"]
+      ],
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "10000s"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "windows-shell",
+      "scripts": [
+        "scripts/unlimited-password-expiration.bat",
+        "scripts/enable-rdp.bat",
+        "scripts/uac-disable.bat",
+        "scripts/disablewinupdate.bat",
+        "scripts/disable-hibernate.bat",
+        "scripts/firewall-open-ping.bat",
+        "scripts/firewall-open-rdp.bat"
+      ]
+    },
+
+    {
+      "type": "windows-shell",
+      "inline": ["net user vagrant {{ user `password`}}"]
+    }
+  ],
+
+  "variables": {
+    "disk_size": "65536",
+    "cpus": "4",
+    "memory": "4096",
+    "headless": "false",
+    "iso_checksum_type": "md5",
+    "iso_checksum": "187a6e3b6cc1581de00a9266e8fe62c1",
+    "iso_url": "./iso/Win10_Pro_1703_En_x64.iso",
+    "preseed": "windows-2016-standard/*",
+    "vagrantfile_template": "vagrantfile-windows-2016-standard.template",
+    "version": "1",
+    "vm_name": "windows-7-x64",
+    "floppy_files_list": "floppy/drivers/virtio-win-0.1.135/viostor/2k16/amd64/*,floppy/drivers/virtio-win-0.1.135/NetKVM/2k16/amd64/*,floppy/common/*,floppy/windows-2016-standard/*"
+  }
+}

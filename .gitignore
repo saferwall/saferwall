@@ -27,12 +27,12 @@ sep-deb.zip
 **/*.lic-expired
 **/*.key-expired
 build/data/install.conf
+
 ## old copy
 build/data/windows-defender/
 
 # Temp
 build/helm/
-build/packer/
 private/
 test/multiav
 cmd/multiav
