@@ -60,18 +60,17 @@ kops-delete-file-system:		## Delete file system
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	aws efs delete-file-system --file-system-id $(FS_ID)
 
-kops-create-efs-provisioner:		## Create efs provisioner
+kops-create-efs-provisioner:	## Create efs provisioner
 	cd ~ \
-		&& git clone https://github.com/kubernetes-incubator/external-storage \
+		&& git clone https://github.com/kubernetes-incubator/external-storage || true \
 		&& cd external-storage/aws/efs/deploy/ \
 		&& kubectl apply -f rbac.yaml \
-		
+		&& kubectl apply -f manifest.yaml
 		# Modify manifest.yaml. In the configmap section change the
 		# file.system.id: and aws.region: to match the details of the
 		#  EFS you created. Change dns.name if you want to mount by your
 		# own DNS name and not by AWS's *file-system-id*.efs.*aws-region*.amazonaws.com.
 		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
-		&& kubectl apply -f manifest.yaml
 
 kops-delete-cluster:		## Delete k8s cluster
 	kops delete cluster --name ${NAME} --yes

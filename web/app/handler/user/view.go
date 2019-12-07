@@ -20,6 +20,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+
 // deleteUser will delete a user
 func deleteUser(username string) error {
 
@@ -46,7 +47,8 @@ func GetUser(c echo.Context) error {
 	username := c.Param("username")
 	user, err := GetUserByUsernameFields(filters, username)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, username)
+		return c.JSON(http.StatusNotFound,  map[string]string{
+			"verbose_msg": "User not found"})
 	}
 	return c.JSON(http.StatusOK, user)
 }
