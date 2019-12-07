@@ -78,3 +78,4 @@ kops-delete-cluster:		## Delete k8s cluster
 kops-update-cluster:		## Update k8s cluster
 	kops edit ig --name= nodes
 	kops update cluster --yes
+	kops rolling-update cluster --yes

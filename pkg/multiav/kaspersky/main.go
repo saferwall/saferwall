@@ -82,6 +82,17 @@ func ScanFile(filePath string) (Result, error) {
 	// Clean the states
 	res := Result{}
 
+	// Return codes
+	// 0 – command / task completed successfully.
+	// 1 – general error in command arguments.
+	// 2 – error in passed application settings.
+	// 64 – Kaspersky Endpoint Security is not running.
+	// 66 – anti-virus databases have not been downloaded (used only for the command kesl-control --app-info).
+	// 67 – activation 2.0 ended with an error due to network problems.
+	// 68 – the command cannot be executed because the application is running under a policy.
+	// 128 – unknown error.
+	// 65 – all other errors.
+
 	// Run now
 	out, err := utils.ExecCommand("sudo", kesl, "--scan-file", filePath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip

@@ -245,7 +245,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	go avScan("mcafee", filePath, mcafeeChan)
 
 	multiavScanResults := map[string]interface{}{}
-	avEnginesCount := 11
+	avEnginesCount := 12
 	avCount := 0
 	for {
 		select {

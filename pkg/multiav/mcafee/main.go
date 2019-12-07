@@ -63,6 +63,7 @@ func ScanFile(filepath string) (Result, error) {
 	// --MACRO-HEURISTICS         : Turn on macro heuristics.
 	// --UNZIP                    : Scan inside archive files, such as those saved in ZIP, LHA, PKarc, ARJ, TAR, CHM, and RAR.
 
+	// /opt/mcafee/uvscan --ANALYZE --ASCII --MANALYZE --MACRO-HEURISTICS --UNZIP sample
 	uvscanOut, err := utils.ExecCommand(cmd, "--ANALYZE", "--ASCII",
 		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filepath)
 
