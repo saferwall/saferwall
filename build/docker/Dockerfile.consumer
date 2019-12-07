@@ -74,6 +74,29 @@ RUN echo "Installing DiE..." \
 	&& tar zxvf $DIE_ZIP -C /tmp \
 	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
+####### Installing Yara #######
+ENV YARA_VERSION        3.11.0
+ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz
+ENV YARA_DOWNLOAD_URL   https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
+ENV YARA_RULES_DIR      /yararules
+
+RUN echo "Installing Yara..." \
+    && sudo apt-get install automake libtool make gcc pkg-config -y \
+	&& sudo apt-get install libssl-dev -y \
+	&& apt-get install libglib2.0-0 -y \
+	&& wget $YARA_DOWNLOAD_URL \
+	&& tar zxvf $YARA_ARCHIVE \
+	&& cd ./yara-$YARA_VERSION \
+	&& ./bootstrap.sh \
+	&& ./configure \
+	&& make \
+	&& sudo make install \
+	&& rm -rf ./yara-$YARA_VERSION \
+	&& rm -f $YARA_ARCHIVE
+
+# Copy yara rules
+COPY ./build/data/rules $YARA_RULES_DIR
+
 WORKDIR /consumer
 
 # Copy our static executable.
@@ -89,7 +112,8 @@ RUN chown -R saferwall:saferwall . \
 	&& chmod +x consumer \
 	&& usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
-	&& chown -R saferwall:saferwall $DIE_DIR
+	&& chown -R saferwall:saferwall $DIE_DIR \
+	&& chown -R saferwall:saferwall $YARA_RULES_DIR
 
 # Cleanup
 RUN rm -rf /tmp/* \

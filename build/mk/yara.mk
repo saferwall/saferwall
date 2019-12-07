@@ -4,7 +4,7 @@ YARA_DOWNLOAD_URL = https://github.com/VirusTotal/yara/archive/v$(YARA_ARCHIVE)
 
 yara-install:	# Install yara
 	sudo apt-get install automake libtool make gcc pkg-config -y
-	sudo apt-get install libssl-dev
+	sudo apt-get install libssl-dev -y
 	wget $(YARA_DOWNLOAD_URL)
 	tar zxvf $(YARA_ARCHIVE)
 	cd ./yara-$(YARA_VERSION) \
