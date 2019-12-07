@@ -44,3 +44,10 @@ web/config/dev-app.toml
 
 # Configs
 saferwall.*.toml
+
+# NSQ
+nsqd.*.dat
+nsqd.dat
+
+# Minio
+minio/
