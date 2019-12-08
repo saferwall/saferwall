@@ -16,9 +16,8 @@ CreateProcessNotifyRoutine(
 {
 	if (CreateInfo != NULL)
 	{
-		LOG_INFO("CreateProcessNotifyRoutine: process %p (ID 0x%p) created, creator %Ix:%Ix"
-			"    command line %wZ\n"
-			"    file name %wZ (FileOpenNameAvailable: %d)",
+		LOG_INFO("CreateProcessNotifyRoutine: process %p (ID 0x%p) created\n"
+			"    creator %Ix:%Ix, command line %wZ, file name %wZ (FileOpenNameAvailable: %d)",
 			Process,
 			(PVOID)ProcessId,
 			(ULONG_PTR)CreateInfo->CreatingThreadId.UniqueProcess,
@@ -82,8 +81,6 @@ LoadImageNotifyRoutine(
 
 	LOG_INFO("LoadImageNotifyRoutine: Process: %s, FullImageName %wZ",
 		PsGetProcessImageFileName(PsGetCurrentProcess()), FullImageName);
-
-
 
 	if (PsIsProtectedProcess(PsGetCurrentProcess()))
 	{
@@ -149,7 +146,7 @@ LoadImageNotifyRoutine(
 				RtlxSuffixUnicodeString(&System32User32Path, FullImageName, TRUE) ||
 				RtlxSuffixUnicodeString(&SysWOW64User32Path, FullImageName, TRUE))
 			{
-				LOG_INFO("Postponing injection (%wZ)\n", FullImageName);
+				LOG_INFO("Postponing injection (%wZ)", FullImageName);
 				return;
 			}
 		}
