@@ -3,7 +3,10 @@
 #include "stdafx.h"
 
 
-NTSTATUS WINAPI HookNtCreateFile(_Out_ PHANDLE FileHandle,
+NTSTATUS
+WINAPI
+HookNtCreateFile(
+	_Out_ PHANDLE FileHandle,
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
 	_Out_ PIO_STATUS_BLOCK IoStatusBlock,
@@ -45,7 +48,17 @@ HookNtWriteFile(
 	_In_opt_ PULONG Key
 );
 
-NTSTATUS WINAPI HookMoveFileWithProgressTransactedW(
+
+NTSTATUS
+NTAPI
+HookNtDeleteFile(
+	_In_ POBJECT_ATTRIBUTES ObjectAttributes
+);
+
+
+NTSTATUS
+WINAPI
+HookMoveFileWithProgressTransactedW(
 	__in      LPWSTR lpExistingFileName,
 	__in_opt  LPWSTR lpNewFileName,
 	__in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,

@@ -5,6 +5,7 @@
 decltype(NtCreateFile)* TrueNtCreateFile = nullptr;
 decltype(NtReadFile)* TrueNtReadFile = nullptr;
 decltype(NtWriteFile)* TrueNtWriteFile = nullptr;
+decltype(NtDeleteFile)* TrueNtDeleteFile = nullptr;
 pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW = nullptr;
 
 
@@ -103,6 +104,24 @@ end:
 
 
 
+NTSTATUS
+WINAPI
+HookNtDeleteFile(
+	_In_ POBJECT_ATTRIBUTES ObjectAttributes
+)
+{
+	if (IsInsideHook() == FALSE) {
+		goto end;
+	}
+
+	GetStackWalk();
+
+	TraceAPI(L"NtDeleteFile(Filename:%ws), RETN: %p", ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
+
+	ReleaseHookGuard();
+end:
+	return TrueNtDeleteFile(ObjectAttributes);
+}
 
 NTSTATUS WINAPI HookMoveFileWithProgressTransactedW(
 	__in      LPWSTR lpExistingFileName,
