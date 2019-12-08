@@ -209,6 +209,21 @@ Return Value:
 		IoDeleteDevice(deviceObject);
 	}
 
+	//
+	// Removes the LoadImageNotifyRoutine.
+	//
+	PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
+
+	//
+	// Removes the CreateProcessNotifyRoutine.
+	//
+	PsSetCreateProcessNotifyRoutineEx(&CreateProcessNotifyRoutine, TRUE);
+
+	//
+	// Release memory of all injection-info entries.
+	//
+	InjDestroy();
+
 }
 
 

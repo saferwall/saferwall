@@ -152,6 +152,11 @@
       <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="Driver.inf" />
   </ItemGroup>
@@ -161,10 +166,12 @@
   <ItemGroup>
     <ClCompile Include="callback.c" />
     <ClCompile Include="driver.c" />
+    <ClCompile Include="helpers.c" />
     <ClCompile Include="injection.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="injection.h" />
     <ClInclude Include="shared.h" />
   </ItemGroup>

@@ -359,3 +359,9 @@ NTAPI
 InjInject(
 	_In_ PINJECTION_INFO InjectionInfo
 );
+
+VOID
+NTAPI
+InjDestroy(
+	VOID
+);

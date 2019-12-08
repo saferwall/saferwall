@@ -681,6 +681,34 @@ InjInitialize(
 
 VOID
 NTAPI
+InjDestroy(VOID)
+{
+	//
+	// Release memory of all injection-info entries.
+	//
+
+	PLIST_ENTRY NextEntry = InjInfoListHead.Flink;
+
+	while (NextEntry != &InjInfoListHead)
+	{
+		PINJECTION_INFO InjectionInfo = CONTAINING_RECORD(NextEntry, INJECTION_INFO, ListEntry);
+		NextEntry = NextEntry->Flink;
+
+		ExFreePoolWithTag(InjectionInfo, INJ_MEMORY_TAG);
+	}
+
+	//
+	// Release memory of all buffers.
+	//
+
+	for (ULONG Architecture = 0; Architecture < InjArchitectureMax; Architecture += 1)
+	{
+		RtlFreeUnicodeString(&InjDllPath[Architecture]);
+	}
+}
+
+VOID
+NTAPI
 InjpInjectApcNormalRoutine(
 	_In_ PVOID NormalContext,
 	_In_ PVOID SystemArgument1,

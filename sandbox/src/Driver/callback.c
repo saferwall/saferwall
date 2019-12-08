@@ -6,6 +6,7 @@ extern BOOLEAN g_InjIsWindows7;
 extern LIST_ENTRY InjInfoListHead;
 
 
+
 VOID
 CreateProcessNotifyRoutine(
 	_Inout_ PEPROCESS Process,
@@ -27,6 +28,12 @@ CreateProcessNotifyRoutine(
 			CreateInfo->FileOpenNameAvailable
 		);
 
+		UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"TestHook.exe");
+		if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE)) {
+			return;
+		}
+	
+
 		PINJECTION_INFO CapturedInjectionInfo;
 
 		CapturedInjectionInfo = ExAllocatePoolWithTag(NonPagedPoolNx,sizeof(INJECTION_INFO), INJ_MEMORY_TAG);
@@ -35,8 +42,6 @@ CreateProcessNotifyRoutine(
 			return;
 			//return STATUS_INSUFFICIENT_RESOURCES;
 		}
-
-
 
 		RtlZeroMemory(CapturedInjectionInfo, sizeof(INJECTION_INFO));
 
@@ -64,8 +69,6 @@ LoadImageNotifyRoutine(
 	UNREFERENCED_PARAMETER(ProcessId);
 	UNREFERENCED_PARAMETER(ImageInfo);
 
-	LOG_INFO("LoadImageNotifyRoutine: FullImageName %wZ", FullImageName);
-
 	//
 	// Check if current process is injected.
 	//
@@ -76,6 +79,11 @@ LoadImageNotifyRoutine(
 	{
 		return;
 	}
+
+	LOG_INFO("LoadImageNotifyRoutine: Process: %s, FullImageName %wZ",
+		PsGetProcessImageFileName(PsGetCurrentProcess()), FullImageName);
+
+
 
 	if (PsIsProtectedProcess(PsGetCurrentProcess()))
 	{
