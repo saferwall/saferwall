@@ -259,7 +259,7 @@ func Confirm(c echo.Context) error {
 			"verbose_msg": "Internal server error !"})
 	}
 
-	url := viper.GetString("ui.address") + "/login"
+	url := viper.GetString("ui.address")
 	return c.Redirect(http.StatusPermanentRedirect, url)
 }
 
