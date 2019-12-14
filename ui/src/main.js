@@ -8,6 +8,8 @@ import router from "./router"
 import Default from "./layouts/Default.vue"
 import Unauthenticated from "./layouts/Unauthenticated.vue"
 
+import prodenv from '../config/prod.env'
+
 import Vuelidate from "vuelidate"
 
 import axios from "axios"
@@ -74,10 +76,17 @@ Vue.directive("focus", {
 
 Vue.config.productionTip = false
 
-Vue.prototype.$http = axios.create({
-  baseURL: process.env.API_ROOT,
-})
+let URL;
+if(process.env.NODE_ENV === "development"){
+  URL =  prodenv.ROOT_API
+} else{
+  URL = prodenv.ROOT_API
+}
 
+Vue.prototype.$http = axios.create({
+  baseURL: URL,
+})
+// alert(URL)
 /* eslint-disable no-new */
 new Vue({
   el: "#app",

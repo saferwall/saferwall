@@ -16,7 +16,7 @@
       </notification>
     </transition>
     <form novalidate="true" class="form" @submit.prevent="handleSubmit">
-      <h1 class="signin">Sign In</h1>
+      <div class="signin">Sign In</div>
       <div
         class="input-container"
         :class="{
@@ -106,9 +106,9 @@
         >
       </h3>
     </form>
-    <h3 class="not-member ">
+    <h3 class="not-member">
       Not a member?
-      <router-link to="/signup" class="has-text-link">Sign up</router-link>
+      <router-link to="/signup">Sign up</router-link>
     </h3>
   </div>
 </template>
@@ -156,13 +156,12 @@ export default {
           })
           .then((response) => {
             this.errored = false
-            if (this.$cookie.get("JWTCookie") !== null) {
+            this.$cookie.set('JWTCookie', response.data.token, { expires: 7 });
               if (this.$route.params.nextUrl != null) {
                 this.$router.push(this.$route.params.nextUrl)
               } else {
                 this.$router.push("/")
               }
-            }
           })
           .catch(
             ({
@@ -219,7 +218,7 @@ export default {
   justify-content: center;
   width: 100%;
   grid-row-gap: 0.1em;
-  padding: 4em;
+  padding: 3em 4em;
   color: #333333;
   background-color: white;
   font-size: 16px;
@@ -250,6 +249,7 @@ export default {
 .input-container > div > input {
   border-radius: 0.25rem 0 0 0.25rem !important;
   border-right: 0 !important;
+  font-size: .8em;
 }
 
 .show-hide {
@@ -278,12 +278,13 @@ export default {
 }
 
 .signin {
-  font-size: 2em;
-  margin-bottom: 1em;
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-bottom: .8em;
 }
 
 .not-member {
-  font-size: 16px;
+  font-size: .9em;
   text-align: center;
 }
 
@@ -294,7 +295,7 @@ export default {
   background: none;
   border: 1px solid #33333335;
   padding: 0.5em;
-  font-size: inherit;
+  font-size: .8em;
   border-radius: 0.25rem;
   box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
@@ -306,17 +307,21 @@ export default {
 
 .login {
   cursor: pointer;
+  font-size: .8em;
   border-radius: 0.25rem;
-  font-size: inherit;
-  padding: 0.7em;
+  padding: 1em;
   font-weight: 600;
   color: white;
   background-color: #e7501d;
   border: none;
-  margin-top: 1em;
+  margin-top: .8em;
 }
 
 .form label {
   font-weight: 600;
+  font-size: .8em;
+}
+.has-text-link{
+  font-size: .8em;
 }
 </style>
