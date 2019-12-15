@@ -25,9 +25,15 @@ kops-create-bucket:		## create s3 bucket
 	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region us-east-1
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
+NODE_COUNT = 1
+NODE_SIZE = t2.xlarge
 kops-create-cluster:	## create k8s cluster
 	aws ec2 describe-availability-zones --region us-east-1
-	kops create cluster --zones us-east-1a ${NAME}
+	kops create cluster \
+		--zones us-east-1a \
+		--node-count $(NODE_COUNT) \
+		--node-size $(NODE_SIZE) \
+		${NAME} 
 	kops edit cluster ${NAME}
 	kops update cluster ${NAME} --yes
 	sleep 8m
@@ -43,7 +49,7 @@ kops-create-efs:		## create AWS EFS file system
 kops-create-mount-targers:	## Create mount targets
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.saferwall.k8s.local`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[0].Instances[0].SubnetId'))
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SubnetId' --output text | head -n 1))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
 		--subnet-id $(SUBNET) \
@@ -72,7 +78,7 @@ kops-create-efs-provisioner:	## Create efs provisioner
 		# own DNS name and not by AWS's *file-system-id*.efs.*aws-region*.amazonaws.com.
 		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
 
-kops-delete-cluster:		## Delete k8s cluster
+kops-delete-cluster:	kops-delete-mount-targets kops-delete-file-system 	## Delete k8s cluster
 	kops delete cluster --name ${NAME} --yes
 
 kops-update-cluster:		## Update k8s cluster

@@ -45,7 +45,8 @@ COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
 # Configure permissions
 RUN chown saferwall:saferwall /bin/clamavscanner \
     && chmod -R o+rw /var/log/clamav/ \ 
-    && chmod -R o+rw /run/clamav/
+    && chmod -R o+rw /run/clamav/ \
+    && chmod -R o+rw /var/lib/clamav/
 
 # Switch to our user
 USER saferwall

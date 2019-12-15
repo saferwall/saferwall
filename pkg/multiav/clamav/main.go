@@ -30,6 +30,8 @@ func ScanFile(filePath string) (Result, error) {
 	// clamscan return values (documented from man clamscan)
 	//   0 : No virus found.
 	//   1 : Virus(es) found.
+	//   2 : Some error(s) occured.
+
 	//  40: Unknown option passed.
 	//  50: Database initialization error.
 	//  52: Not supported file type.
