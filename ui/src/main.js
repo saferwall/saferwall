@@ -84,7 +84,6 @@ if(process.env.NODE_ENV === "development"){
 } else if (process.env.NODE_ENV === "production"){
   URL = prodenv.ROOT_API
 }
-  URL = "http://localhost:8880"
 
 Vue.prototype.$http = axios.create({
   baseURL: URL,
