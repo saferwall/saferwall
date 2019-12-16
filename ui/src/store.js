@@ -1,7 +1,7 @@
 import Vue from "vue"
 
-const getTokenExpirationDate = (token) => {
-  const jwtData = JSON.parse(atob(token.split(".")[1]))
+const getTokenExpirationDate = (payload) => {
+  const jwtData = JSON.parse(atob(payload))
   if (!jwtData.exp) {
     return null
   }
@@ -12,8 +12,8 @@ const getTokenExpirationDate = (token) => {
   return date
 }
 
-const isTokenExpired = (token) => {
-  const expirationDate = getTokenExpirationDate(token)
+const isTokenExpired = (payloda) => {
+  const expirationDate = getTokenExpirationDate(payloda)
   return expirationDate < new Date()
 }
 
@@ -25,21 +25,21 @@ export const store = {
     hash: ""
   },
   // call setters on mounted/created of the header
-  setLoggedIn(token) {
-    if (!token) {
+  setLoggedIn(payload) {
+    if (!payload) {
       return
     }
-    this.state.loggedIn = Boolean(token) && !isTokenExpired(token)
+    this.state.loggedIn = Boolean(payload) && !isTokenExpired(payload)
   },
-  setUsername(token) {
-    if (!token) {
+  setUsername(payload) {
+    if (!payload) {
       return
     }
-    const jwtData = JSON.parse(atob(token.split(".")[1]))
+    const jwtData = JSON.parse(atob(payload))
     this.state.username = jwtData.name || null
   },
   logOut() {
-    Vue.cookie.delete("JWTCookie")
+    Vue.$cookies.remove("JWTPayload")
     this.state.loggedIn = false
   },
   setHash(hash) {
