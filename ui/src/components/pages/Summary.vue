@@ -90,7 +90,7 @@ export default {
     basicProperties: function() {
       const allPropsEntries = Object.entries(this.summaryData)
       const basicPropsEntries = allPropsEntries.filter((entry) =>
-        ["av", "exif"].includes(entry[0]),
+        !["av", "exif"].includes(entry[0]),
       )
       return Object.fromEntries(basicPropsEntries)
     },
