@@ -136,7 +136,7 @@ export default {
 
                     this.pollInterval = setInterval(
                       this.fetchStatus,
-                      5,
+                      3000,
                       hashHex,
                     )
                     setTimeout(() => {
