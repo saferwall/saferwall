@@ -9,15 +9,17 @@ import Default from "./layouts/Default.vue"
 import Unauthenticated from "./layouts/Unauthenticated.vue"
 
 import prodenv from '../config/prod.env'
-
+import devenv from '../config/dev.env'
 import Vuelidate from "vuelidate"
-
 import axios from "axios"
-
-import VueCookie from "vue-cookie"
+import VueCookies from "vue-cookies"
 
 Vue.use(Vuelidate)
-Vue.use(VueCookie)
+Vue.use(VueCookies)
+
+// set default config
+Vue.$cookies.config('7d')
+
 
 Vue.prototype.$clipboard = (function(window, document, navigator) {
   var textArea, copy
@@ -78,15 +80,17 @@ Vue.config.productionTip = false
 
 let URL;
 if(process.env.NODE_ENV === "development"){
-  URL =  prodenv.ROOT_API
-} else{
+  URL =  devenv.ROOT_API
+} else if (process.env.NODE_ENV === "production"){
   URL = prodenv.ROOT_API
 }
+  URL = "http://localhost:8880"
 
 Vue.prototype.$http = axios.create({
   baseURL: URL,
+  withCredentials: true,
 })
-// alert(URL)
+
 /* eslint-disable no-new */
 new Vue({
   el: "#app",

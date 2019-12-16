@@ -156,7 +156,9 @@ export default {
           })
           .then((response) => {
             this.errored = false
-            this.$cookie.set('JWTCookie', response.data.token, { expires: 7 });
+            // We store a second cookie which contains the payload only.
+            // The cookie which contains the auth token is stored on a httpOnly cookie.
+            this.$cookies.set("JWTPayload", response.data.token.split(".")[1]);
               if (this.$route.params.nextUrl != null) {
                 this.$router.push(this.$route.params.nextUrl)
               } else {

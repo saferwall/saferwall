@@ -74,6 +74,7 @@ func createJwtCookie(token string) *http.Cookie {
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(time.Hour * 72)
 	cookie.Path = "/"
+	cookie.Domain = "localhost"
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteLaxMode
 
