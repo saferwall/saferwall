@@ -17,7 +17,6 @@ require (
 	github.com/minio/minio-go/v6 v6.0.39
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
 	github.com/saferwall/saferwall/pkg/utils v0.0.2
-	github.com/saferwall/saferwall/web v0.0.0-20191214063719-f3466cb72be2 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.4.0
 	github.com/stoewer/go-strcase v1.0.2
