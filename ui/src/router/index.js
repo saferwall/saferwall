@@ -11,16 +11,15 @@ import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
 import { store } from "../store.js"
-
 Vue.use(Router)
 
 const storeLoggedIn = store.state.loggedIn
 const loadTokenFromCookie = () => {
-  const token = Vue.cookie.get("JWTCookie")
-  if (token !== null) {
-    store.setLoggedIn(token)
-    store.setUsername(token)
-    return true
+  const payload = Vue.$cookies.get("JWTPayload")
+  if (payload !== null) {
+    store.setLoggedIn(payload)
+    store.setUsername(payload)
+    return payload
   } else return false
 }
 

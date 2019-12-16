@@ -59,8 +59,9 @@ func Init(e *echo.Echo) {
 
 	// cors
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+		AllowOrigins: []string{viper.GetString("ui.address")},
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.OPTIONS},
+		AllowCredentials: true,
 	}))
 
 	// trailing slash

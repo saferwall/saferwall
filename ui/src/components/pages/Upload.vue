@@ -52,6 +52,7 @@ import Notification from "@/components/elements/Notification"
 import DropZone from "@/components/elements/DropZone"
 import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
 
+
 const step = {
   UPLOADED: 1,
   QUEUED: 2,
@@ -135,7 +136,7 @@ export default {
 
                     this.pollInterval = setInterval(
                       this.fetchStatus,
-                      5,
+                      3000,
                       hashHex,
                     )
                     setTimeout(() => {

@@ -107,9 +107,9 @@ export default {
       }
     },
 
-    getJWTToken() {
-      const token = this.$cookie.get("JWTCookie")
-      return token
+    getJWTPayload() {
+      const payload = this.$cookies.get("JWTPayload")
+      return payload
     },
     close() {
       this.notifActive = false
@@ -135,9 +135,9 @@ export default {
   },
 
   created() {
-    const token = this.getJWTToken()
-    store.setLoggedIn(token)
-    store.setUsername(token)
+    const payload = this.getJWTPayload()
+    store.setLoggedIn(payload)
+    store.setUsername(payload)
   },
 }
 </script>
