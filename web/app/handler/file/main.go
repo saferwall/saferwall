@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
@@ -18,12 +19,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v6"
 	"github.com/saferwall/saferwall/pkg/crypto"
+	u "github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
-	u "github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/tomasen/realip"
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/couchbase/gocb.v1"
 )
@@ -33,23 +35,32 @@ type stringStruct struct {
 	Value    string `json:"value"`
 }
 
+type submission struct {
+	Date     time.Time `json:"date,omitempty"`
+	Filename string    `json:"filename,omitempty"`
+	Source   string    `json:"source,omitempty"`
+	Country  string    `json:"country,omitempty"`
+}
+
 // File represent a sample
 type File struct {
-	Md5       string                 `json:"md5,omitempty"`
-	Sha1      string                 `json:"sha1,omitempty"`
-	Sha256    string                 `json:"sha256,omitempty"`
-	Sha512    string                 `json:"sha512,omitempty"`
-	Ssdeep    string                 `json:"ssdeep,omitempty"`
-	Crc32     string                 `json:"crc32,omitempty"`
-	Magic     string                 `json:"magic,omitempty"`
-	Size      int64                  `json:"size,omitempty"`
-	Exif      map[string]string      `json:"exif"`
-	TriD      []string               `json:"trid"`
-	Packer    []string               `json:"packer"`
-	FirstSeen time.Time              `json:"first_seen,omitempty"`
-	Strings   []stringStruct         `json:"strings"`
-	MultiAV   map[string]interface{} `json:"multiav"`
-	Status    int                    `json:"status"`
+	Md5             string                 `json:"md5,omitempty"`
+	Sha1            string                 `json:"sha1,omitempty"`
+	Sha256          string                 `json:"sha256,omitempty"`
+	Sha512          string                 `json:"sha512,omitempty"`
+	Ssdeep          string                 `json:"ssdeep,omitempty"`
+	Crc32           string                 `json:"crc32,omitempty"`
+	Magic           string                 `json:"magic,omitempty"`
+	Size            int64                  `json:"size,omitempty"`
+	Exif            map[string]string      `json:"exif"`
+	TriD            []string               `json:"trid"`
+	Packer          []string               `json:"packer"`
+	FirstSubmission time.Time              `json:"first_submission,omitempty"`
+	LastSUbmission  time.Time              `json:"last_submission,omitempty"`
+	Submissions     []submission           `json:"submissions,omitempty"`
+	Strings         []stringStruct         `json:"strings"`
+	MultiAV         map[string]interface{} `json:"multiav"`
+	Status          int                    `json:"status"`
 }
 
 // Response JSON
@@ -90,7 +101,6 @@ func GetFileBySHA256(sha256 string) (File, error) {
 	cas, err := db.FilesBucket.Get(sha256, &file)
 	if err != nil {
 		log.Errorln(err, cas)
-		return file, err
 	}
 
 	return file, err
@@ -144,10 +154,10 @@ func GetFile(c echo.Context) error {
 	// get path param
 	sha256 := c.Param("sha256")
 	file, err := GetFileBySHA256(sha256)
-	if err != nil {
-		return c.JSON(http.StatusNotFound,  Response{
+	if err != nil && err == gocb.ErrKeyNotFound {
+		return c.JSON(http.StatusNotFound, Response{
 			Message:     err.Error(),
-			Description: "File not found",
+			Description: "File was not found in our database",
 			Sha256:      sha256,
 		})
 	}
@@ -239,6 +249,7 @@ func PostFiles(c echo.Context) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	log.Infoln("New file uploaded by", name)
+
 	// Source
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -287,51 +298,89 @@ func PostFiles(c echo.Context) error {
 	sha256 := crypto.GetSha256(fileContents)
 	log.Infoln("File hash: ", sha256)
 
-	// Upload the sample to DO object storage.
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	n, err := app.MinioClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,
-		sha256, bytes.NewReader(fileContents), size,
-		minio.PutObjectOptions{ContentType: "application/octet-stream"})
-	if err != nil {
-		log.Error("Failed to upload object, err: ", err)
+	// Have we seen this file before
+	fileDocument, err := GetFileBySHA256(sha256)
+	if err != nil && err != gocb.ErrKeyNotFound {
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "PutObject failed",
+			Message:     "Something unexpected happened",
 			Description: err.Error(),
 			Filename:    fileHeader.Filename,
-			Sha256:      sha256,
 		})
 	}
-	log.Println("Successfully uploaded bytes: ", n)
 
-	// Save to DB
-	NewFile := File{
-		Sha256:    sha256,
-		FirstSeen: time.Now().UTC(),
-		Size:      fileHeader.Size,
-		Status:    queued,
-	}
-	NewFile.Create()
+	if err == gocb.ErrKeyNotFound {
+		// Upload the sample to DO object storage.
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		n, err := app.MinioClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,
+			sha256, bytes.NewReader(fileContents), size,
+			minio.PutObjectOptions{ContentType: "application/octet-stream"})
+		if err != nil {
+			log.Error("Failed to upload object, err: ", err)
+			return c.JSON(http.StatusInternalServerError, Response{
+				Message:     "PutObject failed",
+				Description: err.Error(),
+				Filename:    fileHeader.Filename,
+				Sha256:      sha256,
+			})
+		}
+		log.Println("Successfully uploaded bytes: ", n)
 
-	// Push it to NSQ
-	err = app.NsqProducer.Publish("scan", []byte(sha256))
-	if err != nil {
-		log.Error("Failed to publish to NSQ, err: ", err)
-		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Publish failed",
-			Description: "Internal error",
+		// Save to DB
+		now := time.Now().UTC()
+		newFile := File{
+			Sha256:          sha256,
+			FirstSubmission: now,
+			LastSUbmission:  now,
+			Size:            fileHeader.Size,
+			Status:          queued,
+		}
+
+		// Get user IP
+		clientIP := realip.FromRequest(c.Request())
+		clientIP2 := utils.GetIPAdress(c.Request())
+		log.Infoln(clientIP)
+		log.Infoln(clientIP2)
+		ip := net.ParseIP(clientIP)
+		country, err := app.GeoIPDB.Country(ip)
+		if err != nil {
+			log.Error(err)
+		}
+
+		// Create new submission
+		s := submission{
+			Date:     now,
+			Filename: fileHeader.Filename,
+			Source:   "api",
+			Country:  country.Country.IsoCode,
+		}
+		newFile.Submissions = append(newFile.Submissions, s)
+		newFile.Create()
+
+		// Push it to NSQ
+		err = app.NsqProducer.Publish("scan", []byte(sha256))
+		if err != nil {
+			log.Error("Failed to publish to NSQ, err: ", err)
+			return c.JSON(http.StatusInternalServerError, Response{
+				Message:     "Publish failed",
+				Description: "Internal error",
+				Filename:    fileHeader.Filename,
+				Sha256:      sha256,
+			})
+		}
+
+		// All went fine
+		return c.JSON(http.StatusCreated, Response{
+			Sha256:      sha256,
+			Message:     "ok",
+			Description: "File queued successfully for analysis",
 			Filename:    fileHeader.Filename,
-			Sha256:      sha256,
 		})
 	}
 
-	// All went fine
-	return c.JSON(http.StatusCreated, Response{
-		Sha256:      sha256,
-		Message:     "ok",
-		Description: "File queued successfully for analysis",
-		Filename:    fileHeader.Filename,
-	})
+	// We have already seen this file
+	return c.JSON(http.StatusOK, fileDocument)
+
 }
 
 // PutFiles bulk updates of files
@@ -348,7 +397,7 @@ func DeleteFiles(c echo.Context) error {
 }
 
 // Download downloads a file.
-func Download (c echo.Context) error {
+func Download(c echo.Context) error {
 	// get path param
 	sha256 := c.Param("sha256")
 
@@ -364,7 +413,7 @@ func Download (c echo.Context) error {
 		return c.JSON(http.StatusNotFound, err.Error())
 	}
 
-	filepath, err := u.ZipEncrypt(sha256, "infected", reader )
+	filepath, err := u.ZipEncrypt(sha256, "infected", reader)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}

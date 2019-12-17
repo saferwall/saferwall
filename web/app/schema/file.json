@@ -35,8 +35,34 @@
       "description": "The file type",
       "type": "string"
     },
-    "first_seen": {
-      "description": "First seen in the wild",
+    "submissions" : {
+      "description": "File upload history",
+      "type": "object",
+      "properties": {
+        "date" : {
+          "description": "Timestamp when the file was submitted",
+          "type": "integer"
+        },
+        "filename": {
+          "description": "Filename",
+          "type": "string"
+        },
+        "source": {
+          "description": "Either web or apis",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country of IP",
+          "type": "string"
+        }
+      }
+    },
+    "first_submission": {
+      "description": "First time the file was submitted",
+      "type": "integer"
+    },
+    "last_submission": {
+      "description": "Last time the file was submitted",
       "type": "integer"
     },
     "comments": {
