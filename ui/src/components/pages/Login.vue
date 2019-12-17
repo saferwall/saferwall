@@ -101,14 +101,14 @@
       </div>
       <button class="login" type="submit">Sign In</button>
       <h3 class="forgot">
-        <router-link to="/forgot_password" class="has-text-link"
+        <router-link :to="this.$routes.FORGOT_PWD.path" class="has-text-link"
           >Forgot password?</router-link
         >
       </h3>
     </form>
     <h3 class="not-member">
       Not a member?
-      <router-link to="/signup">Sign up</router-link>
+      <router-link :to="this.$routes.SIGNUP.path">Sign up</router-link>
     </h3>
   </div>
 </template>
@@ -150,7 +150,7 @@ export default {
           "Please correct all highlighted errors and try again"
       } else {
         this.$http
-          .post("/v1/auth/login/", {
+          .post(this.$api_endpoints.AUTH_LOGIN, {
             username: this.username,
             password: this.password,
           })
@@ -162,7 +162,7 @@ export default {
               if (this.$route.params.nextUrl != null) {
                 this.$router.push(this.$route.params.nextUrl)
               } else {
-                this.$router.push("/")
+                this.$router.push(this.$routes.HOME.path)
               }
           })
           .catch(

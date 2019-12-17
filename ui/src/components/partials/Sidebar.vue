@@ -93,12 +93,12 @@ export default {
       const { hash } = this.storeState
       return this.menu.map(({ slug, children, ...item }) => ({
         ...item,
-        ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+        ...(slug ? { path: `/${slug}/${hash}` } : {}),
         ...(children
           ? {
               children: children.map(({ slug, ...item }) => ({
                 ...item,
-                ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+                ...(slug ? { path: `/${slug}/${hash}` } : {}),
               })),
             }
           : {}),

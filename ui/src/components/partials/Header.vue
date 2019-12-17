@@ -1,6 +1,6 @@
 <template>
   <header class="dashboard-header">
-    <router-link to="/" class="logo">
+    <router-link :to="this.$routes.HOME.path" class="logo">
       <img src="../../assets/imgs/logo-horizontal.png" alt="" />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
@@ -29,7 +29,7 @@
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
-        <li><router-link to="/upload">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
+        <li><router-link :to="this.$routes.UPLOAD.path">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
@@ -101,9 +101,9 @@ export default {
     loginOrLogout() {
       if (this.storeState.loggedIn) {
         store.logOut()
-        this.$router.go("/")
+        this.$router.go(this.$routes.HOME.path)
       } else {
-        this.$router.push("/login")
+        this.$router.push(this.$routes.LOGIN.path)
       }
     },
 
@@ -116,12 +116,12 @@ export default {
     },
     searchByHash() {
       this.$http
-        .get(`/v1/files/${this.hash}/`, {
+        .get(`${this.$api_endpoints.GET_FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
         .then(() => {
           store.setHash(this.hash)
-          this.$router.push(`/summary/${this.hash}`)
+          this.$router.push(this.$routes.SUMMARY.path+this.hash)
         })
         .catch(() => {
           this.notifActive = true

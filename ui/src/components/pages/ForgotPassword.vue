@@ -78,7 +78,7 @@ export default {
         this.errorMessage = "Please enter a valid email address"
       } else {
         this.$http
-          .delete("/api/v1/users/password/", {
+          .delete(this.api_endpoints.AUTH_CHANGE_PWD, {
             data: {
               email: this.email,
             },

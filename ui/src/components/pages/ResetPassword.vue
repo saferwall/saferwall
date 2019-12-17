@@ -156,7 +156,7 @@ export default {
             queryString.stringify(params, { arrayFormat: "bracket" }),
         }
         this.$http
-          .post("/v1/users/password/", postData, axiosConfig)
+          .post(this.$api_endpoints.AUTH_CHANGE_PWD, postData, axiosConfig)
           .then((response) => {
             this.succeeded = true
             this.errored = false

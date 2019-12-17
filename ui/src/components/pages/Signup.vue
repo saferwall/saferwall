@@ -135,7 +135,7 @@
     </form>
     <h3 class="already-member">
       Already have an account?
-      <router-link to="/login" class="has-text-link">Sign in</router-link>
+      <router-link :to="this.$router.LOGIN.path" class="has-text-link">Sign in</router-link>
     </h3>
   </div>
 </template>
@@ -176,7 +176,7 @@ export default {
           "Please correct all highlighted errors and try again"
       } else {
         this.$http
-          .post("/v1/users/", {
+          .post(this.$api_endpoints.POST_USER, {
             username: this.username,
             email: this.email,
             password: this.password,
@@ -184,7 +184,7 @@ export default {
           .then((response) => {
             this.errored = false
             this.$router.push({
-              path: "login",
+              path: this.$routes.LOGIN.path,
               query: {
                 confirm: "email",
               },

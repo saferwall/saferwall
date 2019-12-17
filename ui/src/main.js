@@ -78,17 +78,22 @@ Vue.directive("focus", {
 
 Vue.config.productionTip = false
 
-let URL;
+let URL, API_ENDPOINTS;
+
 if(process.env.NODE_ENV === "development"){
   URL =  devenv.ROOT_API
+  API_ENDPOINTS = devenv.API_ENDPOINTS
 } else if (process.env.NODE_ENV === "production"){
   URL = prodenv.ROOT_API
+  API_ENDPOINTS = devenv.API_ENDPOINTS
 }
 
 Vue.prototype.$http = axios.create({
   baseURL: URL,
   withCredentials: true,
 })
+
+Vue.prototype.$api_endpoints = API_ENDPOINTS
 
 /* eslint-disable no-new */
 new Vue({

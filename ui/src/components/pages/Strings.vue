@@ -114,7 +114,7 @@ export default {
   },
   created() {
     this.$http
-      .get(`/v1/files/${this.$route.params.hash}/`)
+      .get(this.$api_endpoints.GET_FILES+this.$route.params.hash)
       .then((data) => {
         this.showLoader = false
         this.strings = data.data.strings

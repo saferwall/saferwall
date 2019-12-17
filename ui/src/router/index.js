@@ -10,8 +10,20 @@ import Login from "@/components/pages/Login"
 import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
-import { store } from "../store.js"
+import {store} from "../store.js"
+import prodenv from '../../config/prod.env'
+import devenv from '../../config/dev.env'
+
 Vue.use(Router)
+
+var ROUTES;
+if (process.env.NODE_ENV === "development") {
+  ROUTES = devenv.ROUTES
+} else if (process.env.NODE_ENV === "production") {
+  ROUTES = prodenv.ROUTES
+}
+Vue.prototype.$routes = ROUTES
+
 
 const storeLoggedIn = store.state.loggedIn
 const loadTokenFromCookie = () => {
@@ -27,86 +39,105 @@ const isLogged = () => storeLoggedIn || loadTokenFromCookie()
 
 const router = new Router({
   mode: "history",
-  routes: [
-    {
-      path: "/",
-      name: "home",
+  routes: [{
+      path: ROUTES.HOME.path,
+      name: ROUTES.HOME.name,
       component: Home,
-      meta: { title: "Home" },
+      meta: {
+        title: ROUTES.HOME.meta.title
+      },
     },
     {
-      path: "/upload",
-      name: "upload",
+      path: ROUTES.UPLOAD.path,
+      name: ROUTES.UPLOAD.name,
       component: Upload,
       meta: {
-        title: "Upload",
-        requiresAuth: true,
+        title: ROUTES.UPLOAD.meta.title,
+        requiresAuth: ROUTES.UPLOAD.meta.requiresAuth,
       },
     },
     {
-      path: "/scanning",
-      name: "scanning",
+      path: ROUTES.SCANNING.path,
+      name: ROUTES.SCANNING.name,
       component: Scanning,
-      meta: { title: "Scanning" },
+      meta: {
+        title: ROUTES.SCANNING.meta.title
+      },
     },
     {
-      path: "/antivirus/:hash",
-      name: "antivirus",
+      path: ROUTES.ANTIVIRUS.path+":hash",
+      name: ROUTES.ANTIVIRUS.name,
       component: Antivirus,
-      meta: { title: "Antivirus" },
+      meta: {
+        title: ROUTES.ANTIVIRUS.meta.title
+      },
     },
     {
-      path: "/summary/:hash",
-      name: "summary",
+      path: ROUTES.SUMMARY.path+":hash",
+      name: ROUTES.SUMMARY.name,
       component: Summary,
-      meta: { title: "Summary" },
+      meta: {
+        title: ROUTES.SUMMARY.meta.title
+      },
     },
     {
-      path: "/strings/:hash",
-      name: "strings",
+      path: ROUTES.STRINGS.path+":hash",
+      name: ROUTES.STRINGS.name,
       component: Strings,
-      meta: { title: "Strings" },
+      meta: {
+        title: ROUTES.STRINGS.meta.title
+      },
     },
     {
-      path: "/login",
-      name: "login",
+      path: ROUTES.LOGIN.path,
+      name: ROUTES.LOGIN.name,
       component: Login,
-      meta: { title: "Log in", guest: true, layout: "unauthenticated" },
+      meta: {
+        title: ROUTES.LOGIN.meta.title,
+        guest: ROUTES.LOGIN.meta.guest,
+        layout: ROUTES.LOGIN.meta.layout
+      },
     },
     {
-      path: "/signup",
-      name: "signUp",
+      path: ROUTES.SIGNUP.path,
+      name: ROUTES.SIGNUP.name,
       component: Signup,
-      meta: { title: "Sign up", guest: true, layout: "unauthenticated" },
+      meta: {
+        title: ROUTES.SIGNUP.meta.title,
+        guest: ROUTES.SIGNUP.meta.guest,
+        layout: ROUTES.SIGNUP.meta.layout
+      },
     },
     {
-      path: "/forgot_password",
-      name: "forgotPassword",
+      path: ROUTES.FORGOT_PWD.path,
+      name: ROUTES.FORGOT_PWD.name,
       component: ForgotPassword,
       meta: {
-        title: "Forgot Password?",
-        guest: true,
-        layout: "unauthenticated",
+        title: ROUTES.FORGOT_PWD.meta.title,
+        guest: ROUTES.FORGOT_PWD.meta.guest,
+        layout: ROUTES.FORGOT_PWD.meta.layout,
       },
     },
     {
-      path: "/reset_password",
-      name: "resetPassword",
+      path: ROUTES.RESET_PWD.path,
+      name: ROUTES.RESET_PWD.name,
       component: ResetPassword,
       meta: {
-        title: "Reset Password",
-        guest: true,
-        layout: "unauthenticated",
+        title: ROUTES.RESET_PWD.meta.title,
+        guest: ROUTES.RESET_PWD.meta.guest,
+        layout: ROUTES.RESET_PWD.meta.layout,
       },
     },
   ],
 })
 
-router.beforeEach(function(to, from, next) {
+router.beforeEach(function (to, from, next) {
   if (to.matched.some((record) => record.meta.requiresAuth) && !isLogged()) {
     next({
-      name: "login",
-      params: { nextUrl: to.fullPath },
+      name: ROUTES.LOGIN.name,
+      params: {
+        nextUrl: to.fullPath
+      },
     })
   } else if (to.matched.some((record) => record.meta.guest)) {
     next()

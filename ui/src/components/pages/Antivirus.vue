@@ -145,7 +145,7 @@ export default {
   mounted() {
     // replace route params with props
     this.$http
-      .get(`/v1/files/${this.$route.params.hash}/`)
+      .get(this.$api_endpoints.GET_FILES+this.$route.params.hash)
       .then((data) => {
         this.showLoader = false
         if (!data.data.multiav) {

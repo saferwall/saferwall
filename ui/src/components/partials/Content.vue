@@ -3,7 +3,7 @@
     <div class="container is-fluid">
       <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
         <ul>
-          <li><router-link to="/">Dashboard</router-link></li>
+          <li><router-link :to="this.$routes.HOME.path">Dashboard</router-link></li>
           <li class="is-active">
             <a href="#" aria-current="page">{{ $route.name }}</a>
           </li>
