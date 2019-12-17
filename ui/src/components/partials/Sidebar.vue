@@ -62,7 +62,7 @@ export default {
           active: false,
           icon: "ion-stats-bars",
           children: [
-            { title: "PE", slug: "pe" },
+            // { title: "PE", slug: "pe" },
             {
               title: "Strings",
               slug: "strings",
