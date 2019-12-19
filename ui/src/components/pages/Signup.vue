@@ -25,6 +25,7 @@
           v-model.trim="$v.username.$model"
           placeholder="e.g. John123"
           autocomplete="username"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.username.$dirty">
           <span v-show="!$v.username.required" class="error"
@@ -48,6 +49,7 @@
           v-model.trim="$v.email.$model"
           placeholder="name@example.com"
           autocomplete="email"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.email.$dirty">
           <span v-show="!$v.email.required" class="error"
@@ -75,6 +77,7 @@
             v-model.trim="$v.password.$model"
             placeholder="Minimum 8 characters"
             autocomplete="new-password"
+            @keyup.enter="handleSubmit"
           /><button
             class="show-hide"
             @click.prevent="showPassword = !showPassword"
@@ -135,7 +138,9 @@
     </form>
     <h3 class="already-member">
       Already have an account?
-      <router-link to="/login" class="has-text-link">Sign in</router-link>
+      <router-link :to="this.$routes.LOGIN.path" class="has-text-link"
+        >Sign in</router-link
+      >
     </h3>
   </div>
 </template>
@@ -176,7 +181,7 @@ export default {
           "Please correct all highlighted errors and try again"
       } else {
         this.$http
-          .post("/v1/users/", {
+          .post(this.$api_endpoints.USERS, {
             username: this.username,
             email: this.email,
             password: this.password,
@@ -184,7 +189,7 @@ export default {
           .then((response) => {
             this.errored = false
             this.$router.push({
-              path: "login",
+              path: this.$routes.LOGIN.path,
               query: {
                 confirm: "email",
               },

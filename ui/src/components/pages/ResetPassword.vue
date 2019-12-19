@@ -39,6 +39,7 @@
             v-model.trim="$v.password.$model"
             placeholder="Minimum 8 characters"
             autocomplete="new-password"
+            @keyup.enter="handleSubmit"
           /><button
             class="show-hide"
             @click.prevent="showPassword = !showPassword"
@@ -99,6 +100,7 @@
           v-model.trim="$v.repeatPassword.$model"
           placeholder="Retype New Password"
           autocomplete="new-password"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.repeatPassword.$dirty">
           <span v-show="!$v.repeatPassword.sameAsPassword" class="error"
@@ -156,7 +158,7 @@ export default {
             queryString.stringify(params, { arrayFormat: "bracket" }),
         }
         this.$http
-          .post("/v1/users/password/", postData, axiosConfig)
+          .post(this.$api_endpoints.AUTH_CHANGE_PWD, postData, axiosConfig)
           .then((response) => {
             this.succeeded = true
             this.errored = false

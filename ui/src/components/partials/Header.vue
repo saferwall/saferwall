@@ -1,6 +1,6 @@
 <template>
   <header class="dashboard-header">
-    <router-link to="/" class="logo">
+    <router-link :to="this.$routes.HOME.path" class="logo">
       <img src="../../assets/imgs/logo-horizontal.png" alt="" />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
@@ -11,6 +11,7 @@
         type="search"
         placeholder="Quick lookup file hash, URL or IP."
         v-model="hash"
+        @keyup.enter="searchByHash"
       />
       <button type="submit" @click.prevent="searchByHash">
         <i class="icon ion-ios-search"></i>
@@ -29,11 +30,16 @@
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
-        <li><router-link to="/upload">Upload <i class="icon ion-ios-cloud-upload-outline" style="font-size: 16px"></i></router-link></li>
+        <li>
+          <router-link :to="this.$routes.UPLOAD.path">
+            Upload
+            <i class="icon fas fa-cloud-upload-alt" style="padding-top:10%;"></i>
+          </router-link>
+        </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
           <div class="profile">
-            <span>{{ storeState.username || "" }}</span>
+            <span>{{ getUsername || "" }}</span>
             <img src="../../assets/imgs/avatar.jpg" alt="" />
           </div>
           <ul class="dropdown-container" :class="{ active: dropdownActive }">
@@ -51,16 +57,14 @@
             </li>
             <li>
               <button
-                :class="
-                  storeState.loggedIn ? 'has-text-danger' : 'has-text-link'
-                "
+                :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
                 @click="loginOrLogout"
               >
                 <i
                   class="icon"
-                  :class="storeState.loggedIn ? 'ion-log-out' : 'ion-log-in'"
+                  :class="getLoggedIn ? 'ion-log-out' : 'ion-log-in'"
                 ></i>
-                {{ storeState.loggedIn ? "Sign Out" : "Sign In" }}
+                {{ getLoggedIn ? "Sign Out" : "Sign In" }}
               </button>
             </li>
           </ul>
@@ -71,7 +75,7 @@
 </template>
 
 <script>
-import { store } from "../../store.js"
+import { mapGetters, mapActions } from "vuex"
 import Notification from "@/components/elements/Notification"
 export default {
   name: "Header",
@@ -82,7 +86,6 @@ export default {
       notifActive: false,
       dropdownActive: false,
       showinmobile: false,
-      storeState: store.state,
       notificationStyling: {
         width: "fit-content",
         height: "auto",
@@ -93,17 +96,21 @@ export default {
       },
     }
   },
+  computed: {
+    ...mapGetters(["getLoggedIn", "getUsername"]),
+  },
   components: {
     notification: Notification,
   },
   methods: {
+    ...mapActions(["updateUsername", "updateLoggedIn", "logOut", "updateHash"]),
     showMobileSearch() {},
     loginOrLogout() {
-      if (this.storeState.loggedIn) {
-        store.logOut()
-        this.$router.go("/")
+      if (this.getLoggedIn) {
+        this.logOut()
+        this.$router.go(this.$routes.HOME.path)
       } else {
-        this.$router.push("/login")
+        this.$router.push(this.$routes.LOGIN.path)
       }
     },
 
@@ -116,12 +123,12 @@ export default {
     },
     searchByHash() {
       this.$http
-        .get(`/v1/files/${this.hash}/`, {
+        .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
         .then(() => {
-          store.setHash(this.hash)
-          this.$router.push(`/summary/${this.hash}`)
+          this.updateHash(this.hash)
+          this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
           this.notifActive = true
@@ -134,10 +141,10 @@ export default {
     },
   },
 
-  created() {
+  mounted() {
     const payload = this.getJWTPayload()
-    store.setLoggedIn(payload)
-    store.setUsername(payload)
+    this.updateLoggedIn(payload)
+    this.updateUsername(payload)
   },
 }
 </script>
@@ -167,7 +174,7 @@ header.dashboard-header {
     text-align: center;
 
     img {
-      height: calc(#{ $header-height - 10px });
+      height: calc(#{$header-height - 10px});
       display: inline-block;
       margin-top: 5px;
     }
@@ -213,7 +220,7 @@ header.dashboard-header {
     input {
       float: left;
       height: $header-height;
-      width: calc(100% - #{ $header-height });
+      width: calc(100% - #{$header-height});
       padding: 0 10px;
       border: 0;
       font-size: 13px;
