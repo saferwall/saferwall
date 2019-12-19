@@ -162,7 +162,7 @@ export default {
 
   .data-label {
     float: left;
-    width: 100px;
+    width: 20%;
     text-transform: capitalize;
     margin-right: 1.4em;
   }
