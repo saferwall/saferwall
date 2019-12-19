@@ -31,13 +31,10 @@
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
         <li>
-          <router-link :to="this.$routes.UPLOAD.path"
-            >Upload
-            <i
-              class="icon ion-ios-cloud-upload-outline"
-              style="font-size: 16px"
-            ></i
-          ></router-link>
+          <router-link :to="this.$routes.UPLOAD.path">
+            Upload
+            <i class="icon fas fa-cloud-upload-alt" style="padding-top:10%;"></i>
+          </router-link>
         </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
@@ -60,9 +57,7 @@
             </li>
             <li>
               <button
-                :class="
-                  getLoggedIn ? 'has-text-danger' : 'has-text-link'
-                "
+                :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
                 @click="loginOrLogout"
               >
                 <i
@@ -102,7 +97,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getLoggedIn', 'getUsername']),
+    ...mapGetters(["getLoggedIn", "getUsername"]),
   },
   components: {
     notification: Notification,
@@ -128,7 +123,7 @@ export default {
     },
     searchByHash() {
       this.$http
-        .get(`${this.$api_endpoints.GET_FILES}${this.hash}/`, {
+        .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
         .then(() => {

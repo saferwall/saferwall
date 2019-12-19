@@ -187,7 +187,7 @@ export default {
     },
     showData(hash) {
       this.$http
-        .get(this.$api_endpoints.GET_FILES + hash)
+        .get(this.$api_endpoints.FILES + hash)
         .then((data) => {
           this.showLoader = false
           this.strings = data.data.strings

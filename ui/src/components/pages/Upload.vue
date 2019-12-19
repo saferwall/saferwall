@@ -116,7 +116,7 @@ export default {
             }
             // hash hexadecimal has been calculated successfully
             this.$http
-              .get(`${this.$api_endpoints.GET_FILES}${hashHex}/`)
+              .get(`${this.$api_endpoints.FILES}${hashHex}/`)
               .then((response) => {
                 // file exists
                 this.$router.push(this.$routes.SUMMARY.path+hashHex)
@@ -126,7 +126,7 @@ export default {
                 const formData = new FormData()
                 formData.append("file", file)
                 this.$http
-                  .post(this.$api_endpoints.POST_FILE, formData, {
+                  .post(this.$api_endpoints.FILES, formData, {
                     headers: {
                       "Content-Type": "multipart/form-data",
                     },
@@ -156,7 +156,7 @@ export default {
     },
     fetchStatus(hashHex) {
       this.$http
-        .get(`${this.$api_endpoints.GET_FILES}${hashHex}/`)
+        .get(`${this.$api_endpoints.FILES}${hashHex}/`)
         .then((response) => {
           const status = response.data.status
           // change ongoingStep according to status

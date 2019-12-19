@@ -1,7 +1,7 @@
 <template>
   <form
     method="post"
-    :action="this.$api_endpoints.POST_FILE"
+    :action="this.$api_endpoints.FILES"
     enctype="multipart/form-data"
     class="tile is-child box dropzone has-padding"
     @dragover.prevent="onDragOver"

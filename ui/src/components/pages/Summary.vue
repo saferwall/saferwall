@@ -114,7 +114,7 @@ export default {
         : key
     },
     showData(hash) {
-      this.$http.get(this.$api_endpoints.GET_FILES + hash).then((data) => {
+      this.$http.get(this.$api_endpoints.FILES + hash).then((data) => {
 
         this.showLoader = false
 

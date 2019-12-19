@@ -144,7 +144,7 @@ export default {
     showData(hash) {
       // replace route params with props
       this.$http
-        .get(this.$api_endpoints.GET_FILES + hash)
+        .get(this.$api_endpoints.FILES + hash)
         .then((data) => {
           this.showLoader = false
           if (!data.data.multiav) {

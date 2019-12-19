@@ -10,10 +10,12 @@ import Unauthenticated from "./layouts/Unauthenticated.vue"
 
 import prodenv from '../config/prod.env'
 import devenv from '../config/dev.env'
+
+import store from './store/index'
+
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
-import store from "./store/index"
 
 
 Vue.use(Vuelidate)
@@ -96,6 +98,7 @@ Vue.prototype.$http = axios.create({
 })
 
 Vue.prototype.$api_endpoints = API_ENDPOINTS
+
 
 /* eslint-disable no-new */
 new Vue({

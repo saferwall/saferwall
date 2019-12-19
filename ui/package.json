@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
+    "prod":"webpack-dev-server --inline --open --progress --config build/webpack.prod.conf.js --port 8081",
     "start": "yarn run dev",
     "build": "node build/build.js",
     "build:report": "cross-env npm_config_report=true node build/build.js",
@@ -31,6 +32,7 @@
     "@babel/plugin-transform-runtime": "^7.7.6",
     "@babel/preset-env": "^7.7.6",
     "@babel/runtime": "^7.7.6",
+    "@fortawesome/fontawesome-free": "^5.12.0",
     "@vue/babel-plugin-transform-vue-jsx": "^1.1.2",
     "autoprefixer": "^7.1.2",
     "axios": "^0.19.0",

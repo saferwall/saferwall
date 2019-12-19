@@ -11,17 +11,12 @@ import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
 import store from "../store/index"
-import prodenv from '../../config/prod.env'
-import devenv from '../../config/dev.env'
+import routes from '../../config/routes'
+
 
 Vue.use(Router)
 
-var ROUTES;
-if (process.env.NODE_ENV === "development") {
-  ROUTES = devenv.ROUTES
-} else if (process.env.NODE_ENV === "production") {
-  ROUTES = prodenv.ROUTES
-}
+var ROUTES = routes;
 Vue.prototype.$routes = ROUTES
 
 const loadTokenFromCookie = () => {

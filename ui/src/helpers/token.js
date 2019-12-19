@@ -11,7 +11,6 @@ const getTokenExpirationDate = (payload) => {
   }
 const isTokenExpired = (payload) => {
     const expirationDate = getTokenExpirationDate(payload)
-    console.log(expirationDate)
     return expirationDate < new Date()
   }
 export default isTokenExpired;

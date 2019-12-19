@@ -181,7 +181,7 @@ export default {
           "Please correct all highlighted errors and try again"
       } else {
         this.$http
-          .post(this.$api_endpoints.POST_USER, {
+          .post(this.$api_endpoints.USERS, {
             username: this.username,
             email: this.email,
             password: this.password,
