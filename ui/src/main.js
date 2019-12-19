@@ -83,7 +83,7 @@ Vue.directive("focus", {
 Vue.config.productionTip = false
 
 let URL, API_ENDPOINTS;
-
+console.log(process.env.NODE_ENV)
 if(process.env.NODE_ENV === "development"){
   URL =  devenv.ROOT_API
   API_ENDPOINTS = devenv.API_ENDPOINTS

@@ -5,8 +5,8 @@
   "author": "saferwall@saferwall.com",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.conf.js --port 8081",
-    "prod":"webpack-dev-server --inline --open --progress --config build/webpack.prod.conf.js --port 8081",
+    "dev": "webpack-dev-server --inline --open --progress --config build/webpack.dev.dev.conf.js  --port 8081",
+    "prod":"webpack-dev-server --inline --open --progress --config build/webpack.dev.prod.conf.js  --port 8081",
     "start": "yarn run dev",
     "build": "node build/build.js",
     "build:report": "cross-env npm_config_report=true node build/build.js",
