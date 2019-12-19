@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -146,10 +147,31 @@ func GetAllFiles(fields []string) ([]File, error) {
 	return retValues, nil
 }
 
+// DumpRequest sdsds sd fd
+func DumpRequest(req *http.Request) {
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		fmt.Print(err.Error())
+	} else {
+		fmt.Print(string(requestDump))
+	}
+
+}
+
 //=================== /file/sha256 handlers ===================
 
 // GetFile returns file informations.
 func GetFile(c echo.Context) error {
+
+	DumpRequest(c.Request())
+	// Get user IP
+	clientIP := realip.FromRequest(c.Request())
+	clientIP2 := utils.GetIPAdress(c.Request())
+	clientIP3 := c.RealIP()
+	log.Infoln(clientIP)
+	log.Infoln(clientIP2)
+	log.Infoln(clientIP3)
+
 
 	// get path param
 	sha256 := c.Param("sha256")

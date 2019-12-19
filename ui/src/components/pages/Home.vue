@@ -1,6 +1,6 @@
 <template>
   <p>
-    <router-link to="/upload">go to upload</router-link>
+    <router-link :to="this.$routes.UPLOAD.path">go to upload</router-link>
   </p>
 </template>
 

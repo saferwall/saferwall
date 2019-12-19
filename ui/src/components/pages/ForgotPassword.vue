@@ -38,6 +38,7 @@
           v-model.trim="$v.email.$model"
           placeholder="name@example.com"
           autocomplete="email"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.email.$dirty">
           <span v-show="!$v.email.required" class="error"
@@ -78,7 +79,7 @@ export default {
         this.errorMessage = "Please enter a valid email address"
       } else {
         this.$http
-          .delete("/api/v1/users/password/", {
+          .delete(this.api_endpoints.AUTH_CHANGE_PWD, {
             data: {
               email: this.email,
             },

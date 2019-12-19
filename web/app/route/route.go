@@ -64,6 +64,10 @@ func New() *echo.Echo {
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)
 
+
+	e.GET("/.well-known/acme-challenge/:token/", auth.AcmeChallenge)
+
+
 	// ugly hack
 	user.CreateAdminUser()
 	

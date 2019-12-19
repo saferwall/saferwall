@@ -44,11 +44,10 @@
 </template>
 
 <script>
-import { store } from "../../store.js"
+import {mapGetters} from 'vuex'
 export default {
   data() {
     return {
-      storeState: store.state,
       menu: [
         {
           title: "Summary",
@@ -89,16 +88,17 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['getHashContext']),
     menuItems: function() {
-      const { hash } = this.storeState
+      const hash  = this.getHashContext
       return this.menu.map(({ slug, children, ...item }) => ({
         ...item,
-        ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+        ...(slug ? { path: `/${slug}/${hash}` } : {}),
         ...(children
           ? {
               children: children.map(({ slug, ...item }) => ({
                 ...item,
-                ...(slug ? { path: `/files/${hash}/${slug}` } : {}),
+                ...(slug ? { path: `/${slug}/${hash}` } : {}),
               })),
             }
           : {}),

@@ -23,7 +23,7 @@
             <p class="is-centered" style="margin-top:10px;">
               <small>
                 By using Saferwall you consent to our
-                <router-link to="/">Terms of Service</router-link> and
+                <router-link :to="this.$routes.HOME.path">Terms of Service</router-link> and
                 <router-link to="">Privacy Policy</router-link> and allow us to
                 share your submission with the security community.
                 <router-link to="">Learn more.</router-link>
@@ -116,17 +116,17 @@ export default {
             }
             // hash hexadecimal has been calculated successfully
             this.$http
-              .get(`/v1/files/${hashHex}/`)
+              .get(`${this.$api_endpoints.FILES}${hashHex}/`)
               .then((response) => {
                 // file exists
-                this.$router.push(`summary/${hashHex}`)
+                this.$router.push(this.$routes.SUMMARY.path+hashHex)
               })
               .catch(() => {
                 this.ongoingStep = step.UPLOADED
                 const formData = new FormData()
                 formData.append("file", file)
                 this.$http
-                  .post("/v1/files/", formData, {
+                  .post(this.$api_endpoints.FILES, formData, {
                     headers: {
                       "Content-Type": "multipart/form-data",
                     },
@@ -156,7 +156,7 @@ export default {
     },
     fetchStatus(hashHex) {
       this.$http
-        .get(`/v1/files/${hashHex}/`)
+        .get(`${this.$api_endpoints.FILES}${hashHex}/`)
         .then((response) => {
           const status = response.data.status
           // change ongoingStep according to status
@@ -178,7 +178,7 @@ export default {
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: "summary",
+                  name: this.$router.SUMMARY.name,
                   params: { hash: hashHex },
                 })
               }, 4000)

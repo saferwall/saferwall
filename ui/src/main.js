@@ -10,9 +10,13 @@ import Unauthenticated from "./layouts/Unauthenticated.vue"
 
 import prodenv from '../config/prod.env'
 import devenv from '../config/dev.env'
+
+import store from './store/index'
+
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
+
 
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
@@ -78,11 +82,14 @@ Vue.directive("focus", {
 
 Vue.config.productionTip = false
 
-let URL;
+let URL, API_ENDPOINTS;
+console.log(process.env.NODE_ENV)
 if(process.env.NODE_ENV === "development"){
   URL =  devenv.ROOT_API
+  API_ENDPOINTS = devenv.API_ENDPOINTS
 } else if (process.env.NODE_ENV === "production"){
   URL = prodenv.ROOT_API
+  API_ENDPOINTS = devenv.API_ENDPOINTS
 }
 
 Vue.prototype.$http = axios.create({
@@ -90,10 +97,14 @@ Vue.prototype.$http = axios.create({
   withCredentials: true,
 })
 
+Vue.prototype.$api_endpoints = API_ENDPOINTS
+
+
 /* eslint-disable no-new */
 new Vue({
   el: "#app",
   router,
+  store,
   components: { App },
   render: (h) => h(App),
 })

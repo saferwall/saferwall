@@ -400,3 +400,9 @@ func NewPassword(c echo.Context) error {
 		"verbose_msg": "ok",
 	})
 }
+
+func AcmeChallenge(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}

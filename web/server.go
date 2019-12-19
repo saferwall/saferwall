@@ -24,15 +24,21 @@ func main() {
 	e := route.New()
 
 	address := viper.GetString("app.address")
-	if !app.Debug {
-		log.Info("Running in prod mode, HTTPs enabled")
-		// Cache certificates
-		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-
-		e.Logger.Fatal(e.StartAutoTLS(address))
-	}
+	address = ":8080"
 
 	// Start the server
 	log.Info("Running in debug mode")
 	e.Logger.Fatal(e.Start(address))
+
+	if !app.Debug {
+		log.Info("Running in prod mode, HTTPs enabled")
+
+		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist("dev.api.saferwall.com")
+		e.AutoTLSManager.Cache = autocert.DirCache("/certs")
+		e.AutoTLSManager.Prompt = autocert.AcceptTOS
+
+		e.Logger.Fatal(e.StartAutoTLS(address))
+	}
+
+
 }

@@ -112,16 +112,8 @@ export default {
       return this.filteredStrings.filter((string) => string.show)
     },
   },
-  created() {
-    this.$http
-      .get(`/v1/files/${this.$route.params.hash}/`)
-      .then((data) => {
-        this.showLoader = false
-        this.strings = data.data.strings
-        this.strings.forEach((s) => (s.show = true))
-        this.filteredStrings = this.strings.slice(this.start, this.limit)
-      })
-      .catch((err) => console.error(err))
+  mounted() {
+    if (this.$store.getters.getHashContext) this.showData(this.$store.getters.getHashContext)
   },
 
   methods: {
@@ -192,6 +184,17 @@ export default {
         this.strings.forEach((s) => (s.show = true))
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
+    },
+    showData(hash) {
+      this.$http
+        .get(this.$api_endpoints.FILES + hash)
+        .then((data) => {
+          this.showLoader = false
+          this.strings = data.data.strings
+          this.strings.forEach((s) => (s.show = true))
+          this.filteredStrings = this.strings.slice(this.start, this.limit)
+        })
+        .catch((err) => console.error(err))
     },
   },
 }
