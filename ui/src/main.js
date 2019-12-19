@@ -13,6 +13,8 @@ import devenv from '../config/dev.env'
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
+import store from "./store/index"
+
 
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
@@ -99,6 +101,7 @@ Vue.prototype.$api_endpoints = API_ENDPOINTS
 new Vue({
   el: "#app",
   router,
+  store,
   components: { App },
   render: (h) => h(App),
 })

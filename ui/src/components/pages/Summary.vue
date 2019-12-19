@@ -114,7 +114,6 @@ export default {
         : key
     },
     showData(hash) {
-      this.hash = hash
       this.$http.get(this.$api_endpoints.GET_FILES + hash).then((data) => {
 
         this.showLoader = false
@@ -141,11 +140,8 @@ export default {
     },
   },
   mounted() {
-    this.showData(this.$route.params.hash)
-  },
-  beforeRouteUpdate(to, from, next) {
-    this.showData(to.params.hash)
-    next()
+    if(this.$store.getters.getHashContext)
+      this.showData(this.$store.getters.getHashContext)
   },
 }
 </script>

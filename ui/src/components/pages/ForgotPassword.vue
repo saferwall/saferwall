@@ -38,6 +38,7 @@
           v-model.trim="$v.email.$model"
           placeholder="name@example.com"
           autocomplete="email"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.email.$dirty">
           <span v-show="!$v.email.required" class="error"

@@ -34,6 +34,7 @@
           v-model.trim="username"
           placeholder="e.g. John123"
           autocomplete="username"
+          @keyup.enter="handleSubmit"
         />
         <div v-show="$v.username.$dirty">
           <span v-show="!$v.username.required" class="error"
@@ -58,6 +59,7 @@
             v-model.trim="password"
             placeholder="Password"
             autocomplete="current-password"
+            @keyup.enter="handleSubmit"
           />
 
           <button
@@ -116,6 +118,7 @@
 <script>
 import { required, helpers } from "vuelidate/lib/validators"
 import Notification from "@/components/elements/Notification"
+import { mapActions } from "vuex"
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 const defaultErrorMessage = `Something went wrong, please try again!`
@@ -142,6 +145,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(["updateLoggedIn", "updateUsername"]),
     handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
@@ -158,12 +162,15 @@ export default {
             this.errored = false
             // We store a second cookie which contains the payload only.
             // The cookie which contains the auth token is stored on a httpOnly cookie.
-            this.$cookies.set("JWTPayload", response.data.token.split(".")[1]);
-              if (this.$route.params.nextUrl != null) {
-                this.$router.push(this.$route.params.nextUrl)
-              } else {
-                this.$router.push(this.$routes.HOME.path)
-              }
+            this.$cookies.set("JWTPayload", response.data.token.split(".")[1])
+            this.updateLoggedIn(response.data.token.split(".")[1])
+            this.updateUsername(response.data.token.split(".")[1])
+
+            if (this.$route.params.nextUrl != null) {
+              this.$router.push(this.$route.params.nextUrl)
+            } else {
+              this.$router.push(this.$routes.HOME.path)
+            }
           })
           .catch(
             ({
@@ -251,7 +258,7 @@ export default {
 .input-container > div > input {
   border-radius: 0.25rem 0 0 0.25rem !important;
   border-right: 0 !important;
-  font-size: .8em;
+  font-size: 0.8em;
 }
 
 .show-hide {
@@ -282,11 +289,11 @@ export default {
 .signin {
   font-size: 1.5em;
   font-weight: 600;
-  margin-bottom: .8em;
+  margin-bottom: 0.8em;
 }
 
 .not-member {
-  font-size: .9em;
+  font-size: 0.9em;
   text-align: center;
 }
 
@@ -297,7 +304,7 @@ export default {
   background: none;
   border: 1px solid #33333335;
   padding: 0.5em;
-  font-size: .8em;
+  font-size: 0.8em;
   border-radius: 0.25rem;
   box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
@@ -309,21 +316,21 @@ export default {
 
 .login {
   cursor: pointer;
-  font-size: .8em;
+  font-size: 0.8em;
   border-radius: 0.25rem;
   padding: 1em;
   font-weight: 600;
   color: white;
   background-color: #e7501d;
   border: none;
-  margin-top: .8em;
+  margin-top: 0.8em;
 }
 
 .form label {
   font-weight: 600;
-  font-size: .8em;
+  font-size: 0.8em;
 }
-.has-text-link{
-  font-size: .8em;
+.has-text-link {
+  font-size: 0.8em;
 }
 </style>

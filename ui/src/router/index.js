@@ -10,7 +10,7 @@ import Login from "@/components/pages/Login"
 import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
-import {store} from "../store.js"
+import store from "../store/index"
 import prodenv from '../../config/prod.env'
 import devenv from '../../config/dev.env'
 
@@ -24,18 +24,16 @@ if (process.env.NODE_ENV === "development") {
 }
 Vue.prototype.$routes = ROUTES
 
-
-const storeLoggedIn = store.state.loggedIn
 const loadTokenFromCookie = () => {
   const payload = Vue.$cookies.get("JWTPayload")
   if (payload !== null) {
-    store.setLoggedIn(payload)
-    store.setUsername(payload)
-    return payload
+    store.dispatch('setLoggedIn', payload)
+    store.dispatch('setUsername', payload)
+    return true
   } else return false
 }
 
-const isLogged = () => storeLoggedIn || loadTokenFromCookie()
+const isLogged = () => store.getters.getLoggedIn || loadTokenFromCookie()
 
 const router = new Router({
   mode: "history",
@@ -65,7 +63,7 @@ const router = new Router({
       },
     },
     {
-      path: ROUTES.ANTIVIRUS.path+":hash",
+      path: ROUTES.ANTIVIRUS.path + ":hash",
       name: ROUTES.ANTIVIRUS.name,
       component: Antivirus,
       meta: {
@@ -73,7 +71,7 @@ const router = new Router({
       },
     },
     {
-      path: ROUTES.SUMMARY.path+":hash",
+      path: ROUTES.SUMMARY.path + ":hash",
       name: ROUTES.SUMMARY.name,
       component: Summary,
       meta: {
@@ -81,7 +79,7 @@ const router = new Router({
       },
     },
     {
-      path: ROUTES.STRINGS.path+":hash",
+      path: ROUTES.STRINGS.path + ":hash",
       name: ROUTES.STRINGS.name,
       component: Strings,
       meta: {

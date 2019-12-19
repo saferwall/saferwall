@@ -141,29 +141,33 @@ export default {
     mouseLeave(type, index) {
       this.show = {}
     },
+    showData(hash) {
+      // replace route params with props
+      this.$http
+        .get(this.$api_endpoints.GET_FILES + hash)
+        .then((data) => {
+          this.showLoader = false
+          if (!data.data.multiav) {
+            return
+          }
+
+          // first_scan & last_scan are not present anymore (change of schema?)
+          this.firstScan = data.data.multiav.first_scan
+          this.lastScan = data.data.multiav.last_scan
+
+          Object.keys(this.firstScan).forEach((key) => {
+            const first = this.firstScan[key]
+            first.showCopy = false
+            const last = this.lastScan[key]
+            last.showCopy = false
+          })
+        })
+        .catch((err) => console.error(err))
+    },
   },
   mounted() {
-    // replace route params with props
-    this.$http
-      .get(this.$api_endpoints.GET_FILES+this.$route.params.hash)
-      .then((data) => {
-        this.showLoader = false
-        if (!data.data.multiav) {
-          return
-        }
-
-        // first_scan & last_scan are not present anymore (change of schema?)
-        this.firstScan = data.data.multiav.first_scan
-        this.lastScan = data.data.multiav.last_scan
-
-        Object.keys(this.firstScan).forEach((key) => {
-          const first = this.firstScan[key]
-          first.showCopy = false
-          const last = this.lastScan[key]
-          last.showCopy = false
-        })
-      })
-      .catch((err) => console.error(err))
+    if(this.$store.getters.getHashContext)
+      this.showData(this.$store.getters.getHashContext);
   },
 }
 </script>
