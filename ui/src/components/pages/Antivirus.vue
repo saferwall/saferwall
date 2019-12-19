@@ -17,8 +17,8 @@
               <td>
                 <span
                   :class="[
-                    { 'has-text-success': !value.detected },
-                    { 'has-text-danger': value.detected },
+                    { 'has-text-success': !value.infected },
+                    { 'has-text-danger': value.infected },
                   ]"
                   style="position:relative"
                   @mouseover="mouseOver('first', vendor)"
@@ -27,7 +27,7 @@
                   <span
                     :class="{
                       transparent:
-                        value.detected &&
+                        value.infected &&
                         JSON.stringify(show) ===
                           JSON.stringify({ type: 'first', vendor: vendor }),
                     }"
@@ -35,20 +35,20 @@
                     <i
                       class="output-icon icon"
                       :class="[
-                        { 'ion-alert-circled': value.detected },
-                        { 'ion-checkmark-circled': !value.detected },
+                        { 'ion-alert-circled': value.infected },
+                        { 'ion-checkmark-circled': !value.infected },
                       ]"
                     ></i>
-                    {{ value.result || "Clean" }}
+                    {{ value.output || "Clean" }}
                   </span>
                   <transition name="fade">
                     <copy
                       v-if="
-                        value.detected &&
+                        value.infected &&
                           JSON.stringify(show) ===
                             JSON.stringify({ type: 'first', vendor: vendor })
                       "
-                      :content="value.result"
+                      :content="value.output"
                     ></copy>
                   </transition>
                 </span>
@@ -74,8 +74,8 @@
               <td>
                 <span
                   :class="[
-                    { 'has-text-success': !value.detected },
-                    { 'has-text-danger': value.detected },
+                    { 'has-text-success': !value.infected },
+                    { 'has-text-danger': value.infected },
                   ]"
                   style="position:relative"
                   @mouseover="mouseOver('last', vendor)"
@@ -84,7 +84,7 @@
                   <span
                     :class="{
                       transparent:
-                        value.detected &&
+                        value.infected &&
                         JSON.stringify(show) ===
                           JSON.stringify({ type: 'last', vendor: vendor }),
                     }"
@@ -92,20 +92,20 @@
                     <i
                       class="output-icon icon"
                       :class="[
-                        { 'ion-alert-circled': value.detected },
-                        { 'ion-checkmark-circled': !value.detected },
+                        { 'ion-alert-circled': value.infected },
+                        { 'ion-checkmark-circled': !value.infected },
                       ]"
                     ></i>
-                    {{ value.result || "Clean" }}
+                    {{ value.output || "Clean" }}
                   </span>
                   <transition name="fade">
                     <copy
                       v-if="
-                        value.detected &&
+                        value.infected &&
                           JSON.stringify(show) ===
                             JSON.stringify({ type: 'last', vendor: vendor })
                       "
-                      :content="value.result"
+                      :content="value.output"
                     ></copy>
                   </transition>
                 </span>
@@ -151,7 +151,6 @@ export default {
             return
           }
 
-          // first_scan & last_scan are not present anymore (change of schema?)
           this.firstScan = data.data.multiav.first_scan
           this.lastScan = data.data.multiav.last_scan
 
