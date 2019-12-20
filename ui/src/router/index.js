@@ -16,7 +16,7 @@ import routes from '../../config/routes'
 
 Vue.use(Router)
 
-var ROUTES = routes;
+var ROUTES = routes
 Vue.prototype.$routes = ROUTES
 
 const loadTokenFromCookie = () => {

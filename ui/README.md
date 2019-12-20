@@ -6,8 +6,11 @@
 # install dependencies
 yarn install
 
-# serve with hot reload at localhost:8081
+# serve with hot reload at localhost:8081 (development global variables)
 yarn dev
+
+# serve with hot reload at localhost:8081 (production global variables)
+yarn prod
 
 # build for production with minification
 yarn build
