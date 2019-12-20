@@ -89,8 +89,6 @@ Vue.prototype.$http = axios.create({
 
 Vue.prototype.$api_endpoints = endpoints
 
-console.log(process.env)
-
 /* eslint-disable no-new */
 new Vue({
   el: "#app",
