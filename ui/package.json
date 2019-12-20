@@ -5,9 +5,9 @@
   "author": "saferwall@saferwall.com",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve --port 8081 --open",
-    "prod": "vue-cli-service serve --mode production --port 8081 --open",
-    "build_dev": "vue-cli-service build --mode development",
+    "serve": "vue-cli-service serve",
+    "serve_win": "npx vue-cli-service serve --mode $Env:ENVIRONEMENT --port 8081 --open ./src/main.js",
+    "serve_lin": "npx vue-cli-service serve --mode $ENVIRONEMENT --port 8081 --open ./src/main.js",
     "build_prod": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
