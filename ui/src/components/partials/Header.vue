@@ -32,8 +32,7 @@
         <!-- <li><router-link to="/">Search</router-link></li> -->
         <li>
           <router-link :to="this.$routes.UPLOAD.path">
-            Upload
-            <i class="icon fas fa-cloud-upload-alt" style="padding-top:10%;"></i>
+            <i class="icon is-medium fas fa-upload upload-icon"></i>
           </router-link>
         </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
@@ -251,6 +250,9 @@ header.dashboard-header {
       display: none;
     }
 
+    .icon {
+      display: inline-block;
+    }
     ul {
       li {
         display: inline-block;
@@ -258,7 +260,7 @@ header.dashboard-header {
 
         a {
           display: inline-block;
-          padding: 0 5px;
+          padding: 0;
           font-size: 14px;
           color: #2c3e50;
           font-weight: 500;

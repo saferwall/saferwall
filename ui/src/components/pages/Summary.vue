@@ -115,7 +115,6 @@ export default {
     },
     showData(hash) {
       this.$http.get(this.$api_endpoints.FILES + hash).then((data) => {
-
         this.showLoader = false
 
         data.data["sha-1"] = data.data.sha1
@@ -130,7 +129,7 @@ export default {
         this.summaryData.crc32 = data.data.crc32
         this.summaryData.md5 = data.data.md5
         this.summaryData["sha-1"] = data.data["sha-1"]
-        this.$set(this.summaryData,"sha-256", data.data["sha-256"]) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
+        this.$set(this.summaryData, "sha-256", data.data["sha-256"]) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
         this.summaryData["sha-512"] = data.data["sha-512"]
         this.summaryData.ssdeep = data.data.ssdeep
         this.summaryData.trid = data.data.trid
@@ -140,8 +139,11 @@ export default {
     },
   },
   mounted() {
-    if(this.$store.getters.getHashContext)
+    if (this.$store.getters.getHashContext)
       this.showData(this.$store.getters.getHashContext)
+  },
+  beforeRouteUpdate(to, from, next) {
+    this.showData(this.$store.getters.getHashContext)
   },
 }
 </script>
@@ -162,7 +164,7 @@ export default {
 
   .data-label {
     float: left;
-    width: 20%;
+    width: 10.5%;
     text-transform: capitalize;
     margin-right: 1.4em;
   }

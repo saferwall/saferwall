@@ -23,9 +23,11 @@
             <p class="is-centered" style="margin-top:10px;">
               <small>
                 By using Saferwall you consent to our
-                <router-link :to="this.$routes.HOME.path">Terms of Service</router-link> and
-                <router-link to="">Privacy Policy</router-link> and allow us to
-                share your submission with the security community.
+                <router-link :to="this.$routes.HOME.path"
+                  >Terms of Service</router-link
+                >
+                and <router-link to="">Privacy Policy</router-link> and allow us
+                to share your submission with the security community.
                 <router-link to="">Learn more.</router-link>
               </small>
             </p>
@@ -51,7 +53,6 @@ import Tab from "@/components/elements/Tab"
 import Notification from "@/components/elements/Notification"
 import DropZone from "@/components/elements/DropZone"
 import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
-
 
 const step = {
   UPLOADED: 1,
@@ -119,7 +120,7 @@ export default {
               .get(`${this.$api_endpoints.FILES}${hashHex}/`)
               .then((response) => {
                 // file exists
-                this.$router.push(this.$routes.SUMMARY.path+hashHex)
+                this.$router.push(this.$routes.SUMMARY.path + hashHex)
               })
               .catch(() => {
                 this.ongoingStep = step.UPLOADED
@@ -182,14 +183,13 @@ export default {
                   params: { hash: hashHex },
                 })
               }, 4000)
+              this.$store.dispatch("updateHash", hashHex)
+              this.$router.push({ name: 'summary'})
               break
           }
         })
         .catch(() => {
           this.notifActive = true
-        })
-        .finally(() => {
-          clearInterval(this.pollInterval)
         })
     },
   },
