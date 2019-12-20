@@ -32,7 +32,7 @@
         <!-- <li><router-link to="/">Search</router-link></li> -->
         <li>
           <router-link :to="this.$routes.UPLOAD.path">
-            <i class="icon is-medium fas fa-upload upload-icon"></i>
+            <i class="icon fas fa-upload fa-2x"></i>
           </router-link>
         </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
@@ -153,7 +153,7 @@ export default {
 $header-height: 50px;
 
 header.dashboard-header {
-  padding-right: 20px;
+  margin-right: 20px;
   background: #fff;
   height: $header-height;
   line-height: $header-height;
@@ -202,7 +202,6 @@ header.dashboard-header {
     border-left: solid 1px rgba(black, 0.1);
     border-right: solid 1px rgba(black, 0.1);
     flex: 1;
-    margin-right: 20px;
 
     @media screen and (max-width: 1086px) {
       width: 400px;
@@ -260,7 +259,7 @@ header.dashboard-header {
 
         a {
           display: inline-block;
-          padding: 0;
+          margin: 0 15px 0 15px;
           font-size: 14px;
           color: #2c3e50;
           font-weight: 500;
@@ -272,15 +271,14 @@ header.dashboard-header {
         }
 
         & > .profile {
-          margin-left: 10px;
           cursor: pointer;
           border-left: solid 1px rgba(10, 10, 10, 0.1);
           padding-left: 10px;
 
           span {
             font-size: 14px;
-            padding-right: 10px;
             font-weight: 500;
+            margin-right: 10px;
           }
 
           img {

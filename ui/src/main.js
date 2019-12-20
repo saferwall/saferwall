@@ -8,8 +8,7 @@ import router from "./router"
 import Default from "./layouts/Default.vue"
 import Unauthenticated from "./layouts/Unauthenticated.vue"
 
-import prodenv from '../config/prod.env'
-import devenv from '../config/dev.env'
+import endpoints from '../config/endpoints'
 
 import store from './store/index'
 
@@ -82,21 +81,13 @@ Vue.directive("focus", {
 
 Vue.config.productionTip = false
 
-let URL, API_ENDPOINTS;
-if(process.env.NODE_ENV === "development"){
-  URL =  devenv.ROOT_API
-  API_ENDPOINTS = devenv.API_ENDPOINTS
-} else if (process.env.NODE_ENV === "production"){
-  URL = prodenv.ROOT_API
-  API_ENDPOINTS = devenv.API_ENDPOINTS
-}
 
 Vue.prototype.$http = axios.create({
-  baseURL: URL,
+  baseURL: process.env.VUE_APP_ROOT_API,
   withCredentials: true,
 })
 
-Vue.prototype.$api_endpoints = API_ENDPOINTS
+Vue.prototype.$api_endpoints = endpoints
 
 
 /* eslint-disable no-new */
