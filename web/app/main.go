@@ -64,6 +64,9 @@ var (
 	// ResetPasswordSchema represent a change password.
 	ResetPasswordSchema *gojsonschema.Schema
 
+	// FileActionSchema represent a change password.
+	FileActionSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -182,6 +185,13 @@ func loadSchemas() {
 		log.Fatalln("Error while loading email schema: ", err)
 	}
 
+	jsonPath = path.Join(dir, "app", "schema", "action.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	FileActionSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading file actions schema: ", err)
+	}
 
 	log.Infoln("Schemas were loaded")
 }

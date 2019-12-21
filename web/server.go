@@ -24,7 +24,6 @@ func main() {
 	e := route.New()
 
 	address := viper.GetString("app.address")
-	address = ":8080"
 
 	// Start the server
 	log.Info("Running in debug mode")

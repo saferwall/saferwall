@@ -15,6 +15,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"time"
+	"strings"
+	"regexp"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -175,6 +177,15 @@ func GetFile(c echo.Context) error {
 
 	// get path param
 	sha256 := c.Param("sha256")
+
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
+	if (!matched) {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha265",
+			Description: "Invalid hash submitted: " + sha256,
+		})
+	}
+
 	file, err := GetFileBySHA256(sha256)
 	if err != nil && err == gocb.ErrKeyNotFound {
 		return c.JSON(http.StatusNotFound, Response{
@@ -210,6 +221,15 @@ func PutFile(c echo.Context) error {
 			log.Printf("- %s\n", desc)
 		}
 		return c.JSON(http.StatusBadRequest, errors.New("json validation failed"))
+	}
+
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
+	if (!matched) {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha265",
+			Description: "File hash is not a sha256 hash" + sha256,
+			Sha256:      sha256,
+		})
 	}
 
 	// Updates the document.
@@ -440,4 +460,109 @@ func Download(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	return c.File(filepath)
+}
+
+// Actions over a file. Rescan or Download.
+func Actions(c echo.Context) error {
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.FileActionSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// get the type of action
+	var actions map[string]interface{}
+	err = json.Unmarshal(b, &actions)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	actionType := actions["type"].(string)
+
+	// get path param
+	sha256 := c.Param("sha256")
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
+	if (!matched) {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha265",
+			Description: "File hash is not a sha256 hash" + sha256,
+			Sha256:      sha256,
+		})
+	}
+
+	log.Print(sha256)
+	_, err = GetFileBySHA256(sha256)
+	if err != nil && err == gocb.ErrKeyNotFound {
+		return c.JSON(http.StatusNotFound, Response{
+			Message:     err.Error(),
+			Description: "File was not found in our database",
+			Sha256:      sha256,
+		})
+	}
+
+	if actionType == "rescan" {
+
+		// Push it to NSQ
+		err = app.NsqProducer.Publish("scan", []byte(sha256))
+		if err != nil {
+			log.Error("Failed to publish to NSQ, err: ", err)
+			return c.JSON(http.StatusInternalServerError, Response{
+				Message:     "Publish failed",
+				Description: "Internal error",
+				Sha256:      sha256,
+			})
+		}
+		return c.JSON(http.StatusOK, Response{
+			Message:     "File rescan successful",
+			Description: "Type of action: " + actionType,
+			Sha256:      sha256,
+		})
+	} else if (actionType == "download") {
+		reader, err := app.MinioClient.GetObject(
+			app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+		defer reader.Close()
+	
+		_, err = reader.Stat()
+		if err != nil {
+			return c.JSON(http.StatusNotFound, err.Error())
+		}
+	
+		filepath, err := u.ZipEncrypt(sha256, "infected", reader)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+		return c.File(filepath)
+	}
+
+	return c.JSON(http.StatusInternalServerError, Response{
+		Message:     "Unknown action",
+		Description: "Type of action: " + actionType,
+		Sha256:      sha256,
+	})
 }

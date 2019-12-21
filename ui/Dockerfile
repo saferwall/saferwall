@@ -15,14 +15,14 @@ WORKDIR /app
 # copy both 'package.json' and 'package-lock.json' (if available)
 COPY package.json ./
 COPY yarn.lock ./
-COPY .env ./
+COPY .env* ./
 
 # install project dependencies
 RUN yarn install
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
-RUN yarn build
+RUN yarn build_prod
 
 
 ############################
@@ -35,4 +35,5 @@ LABEL version="0.0.1"
 LABEL description="Saferwall UI Dashboard"
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]
