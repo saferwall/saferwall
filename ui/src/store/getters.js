@@ -7,5 +7,8 @@ export default {
   },
   getUsername: state => {
     return state.username
+  },
+  getFileData: state => {
+    return state.fileData
   }
 }

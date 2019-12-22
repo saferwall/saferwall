@@ -15,6 +15,23 @@ import store from './store/index'
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
+import VueProgressBar from 'vue-progressbar'
+
+const options = {
+  color: '#12a19a',
+  failedColor: '#874b4b',
+  thickness: '5px',
+  transition: {
+    speed: '1s',
+    opacity: '0.6s',
+    termination: 300
+  },
+  autoRevert: true,
+  location: 'top',
+  inverse: false,
+}
+
+Vue.use(VueProgressBar, options)
 
 
 Vue.use(Vuelidate)
@@ -24,7 +41,7 @@ Vue.use(VueCookies)
 Vue.$cookies.config('7d')
 
 
-Vue.prototype.$clipboard = (function(window, document, navigator) {
+Vue.prototype.$clipboard = (function (window, document, navigator) {
   var textArea, copy
 
   function isOS() {
@@ -57,7 +74,7 @@ Vue.prototype.$clipboard = (function(window, document, navigator) {
     document.body.removeChild(textArea)
   }
 
-  copy = function(text) {
+  copy = function (text) {
     createTextArea(text)
     selectText()
     copyToClipboard()
@@ -73,7 +90,7 @@ Vue.component("unauthenticated-layout", Unauthenticated)
 
 Vue.directive("focus", {
   // When the bound element is inserted into the DOM...
-  inserted: function(el) {
+  inserted: function (el) {
     // Focus the element
     el.focus()
   },
@@ -88,11 +105,14 @@ Vue.prototype.$http = axios.create({
 })
 
 Vue.prototype.$api_endpoints = endpoints
+
 /* eslint-disable no-new */
 new Vue({
   el: "#app",
   router,
   store,
-  components: { App },
+  components: {
+    App
+  },
   render: (h) => h(App),
 })

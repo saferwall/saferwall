@@ -141,32 +141,31 @@ export default {
     mouseLeave(type, index) {
       this.show = {}
     },
-    showData(hash) {
+    showData() {
       // replace route params with props
-      this.$http
-        .get(this.$api_endpoints.FILES + hash)
-        .then((data) => {
-          this.showLoader = false
-          if (!data.data.multiav) {
-            return
-          }
+      var fileData = this.$store.getters.getFileData
 
-          this.firstScan = data.data.multiav.first_scan
-          this.lastScan = data.data.multiav.last_scan
+      if (fileData === {} || !fileData) return
+      this.showLoader = false
 
-          Object.keys(this.firstScan).forEach((key) => {
-            const first = this.firstScan[key]
-            first.showCopy = false
-            const last = this.lastScan[key]
-            last.showCopy = false
-          })
-        })
-        .catch((err) => console.error(err))
+      this.showLoader = false
+      if (!fileData.data.multiav) {
+        return
+      }
+
+      this.firstScan = fileData.data.multiav.first_scan
+      this.lastScan = fileData.data.multiav.last_scan
+
+      Object.keys(this.firstScan).forEach((key) => {
+        const first = this.firstScan[key]
+        first.showCopy = false
+        const last = this.lastScan[key]
+        last.showCopy = false
+      })
     },
   },
   mounted() {
-    if(this.$store.getters.getHashContext)
-      this.showData(this.$store.getters.getHashContext);
+    if (this.$store.getters.getHashContext) this.showData()
   },
 }
 </script>

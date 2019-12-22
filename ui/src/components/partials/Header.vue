@@ -20,11 +20,11 @@
     <transition name="slide-fade">
       <notification
         :style="notificationStyling"
-        type="is-danger"
+        :type="notifType"
         @closeNotif="close()"
         v-if="notifActive"
       >
-        {{ notificationError }}
+        {{ notificationText }}
       </notification>
     </transition>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
@@ -36,37 +36,15 @@
           </router-link>
         </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
-        <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
+        <li>
           <div class="profile">
-            <span>{{ getUsername || "" }}</span>
-            <img src="../../assets/imgs/avatar.jpg" alt="" />
+            <button
+              :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
+              @click="loginOrLogout"
+            >
+              {{ getLoggedIn ? "Sign Out" : "Sign In" }}
+            </button>
           </div>
-          <ul class="dropdown-container" :class="{ active: dropdownActive }">
-            <li>
-              <router-link to="/">
-                <i class="icon ion-grid"></i>
-                Your Submissions
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/">
-                <i class="icon ion-android-settings"></i>
-                Settings
-              </router-link>
-            </li>
-            <li>
-              <button
-                :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
-                @click="loginOrLogout"
-              >
-                <i
-                  class="icon"
-                  :class="getLoggedIn ? 'ion-log-out' : 'ion-log-in'"
-                ></i>
-                {{ getLoggedIn ? "Sign Out" : "Sign In" }}
-              </button>
-            </li>
-          </ul>
         </li>
       </ul>
     </nav>
@@ -81,9 +59,9 @@ export default {
   data() {
     return {
       hash: "",
-      notificationError: "",
+      notificationText: "",
       notifActive: false,
-      dropdownActive: false,
+      notifType : "",
       showinmobile: false,
       notificationStyling: {
         width: "fit-content",
@@ -102,7 +80,13 @@ export default {
     notification: Notification,
   },
   methods: {
-    ...mapActions(["updateUsername", "updateLoggedIn", "logOut", "updateHash"]),
+    ...mapActions([
+      "updateUsername",
+      "updateLoggedIn",
+      "logOut",
+      "updateHash",
+      "updateFileData",
+    ]),
     showMobileSearch() {},
     loginOrLogout() {
       if (this.getLoggedIn) {
@@ -125,13 +109,16 @@ export default {
         .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
-        .then(() => {
+        .then((data) => {
           this.updateHash(this.hash)
+          this.updateFileData(data)
+
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
           this.notifActive = true
-          this.notificationError =
+          this.notifType = "is-danger"
+          this.notificationText =
             "Sorry, we couldn't find the file you were looking for, please upload it to view the results!"
           setTimeout(() => {
             this.notifActive = false
@@ -274,71 +261,28 @@ header.dashboard-header {
           cursor: pointer;
           border-left: solid 1px rgba(10, 10, 10, 0.1);
           padding-left: 10px;
+          padding-right: 10px;
+        }
 
-          span {
-            font-size: 14px;
-            font-weight: 500;
-            margin-right: 10px;
-          }
+        button {
+          display: inline-block;
+          width: 100%;
+          color: rgba(black, 0.6);
+          font-weight: 600;
+          font-size: 14px;
 
-          img {
-            display: inline-block;
-            vertical-align: middle;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            border: solid 1px rgba(10, 10, 10, 0.1);
+          &:hover {
+            color: $primary-color !important;
           }
         }
 
-        &.has-dropdown {
-          position: relative;
-
-          .dropdown-container {
-            transform: scale(0);
-            transform-origin: 100% 0;
-            transition: all 0.2s;
-            position: absolute;
-            top: 40px;
-            right: 0;
-            width: 200px;
-            padding: 0 10px;
-            background: #fff;
-            // box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
-            box-shadow: -2px 3px 10px rgba(10, 10, 10, 0.1);
-            border-radius: 4px;
-
-            &.active {
-              transform: scale(1);
-            }
-
-            li {
-              line-height: 30px;
-              display: inline;
-
-              a,
-              button {
-                display: inline-block;
-                width: 100%;
-                color: rgba(black, 0.6);
-                font-weight: 500;
-                font-size: 14px;
-
-                &:hover {
-                  color: $primary-color !important;
-                }
-              }
-
-              button {
-                text-align: left;
-                padding: 0 5px 0 5px;
-                transition: all 0.2s;
-                background: none;
-                border: none;
-                cursor: pointer;
-              }
-            }
-          }
+        button {
+          text-align: left;
+          padding: 0 5px 0 5px;
+          transition: all 0.2s;
+          background: none;
+          border: none;
+          cursor: pointer;
         }
       }
     }

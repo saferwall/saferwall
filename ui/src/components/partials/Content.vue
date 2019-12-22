@@ -1,5 +1,10 @@
 <template>
   <section class="main-content" :class="{ fullwidth: fullwidth }">
+    <transition name="slide" mode="out-in">
+      <notification :type="notifType" @closeNotif="close()" v-if="notifActive">
+        {{ notifText }}
+      </notification>
+    </transition>
     <div class="container is-fluid">
       <div class="columns">
         <div class="column is-four-fifths">
@@ -17,44 +22,104 @@
           </nav>
         </div>
         <div class="column">
-          <Download v-if="show"/>
+          <Download v-if="showDownload" />
         </div>
         <div class="column">
-          <Rescan v-if="show"/>
+          <Rescan v-if="showRescan" :route="route" @notify="showNotification" />
         </div>
       </div>
-      <slot></slot>
+      <slot @notify="showNotification" v-if="showContent"></slot>
     </div>
   </section>
 </template>
 <script>
 import Download from "../elements/Download"
 import Rescan from "../elements/Rescan"
+import Notification from "../elements/Notification"
+
 export default {
   props: ["fullwidth"],
   data() {
     return {
-      route : ""
+      route: "",
+      notifText: "",
+      notifActive: false,
+      notifType: "",
     }
   },
   components: {
     Download,
     Rescan,
+    Notification,
   },
-  computed : {
-    show : function(){
-      return (this.$store.getters.getHashContext && this.$store.getters.getLoggedIn && this.route !== "upload")
+  computed: {
+    showDownload: function() {
+      return (
+        this.$store.getters.getHashContext &&
+        this.$store.getters.getLoggedIn &&
+        this.route !== "upload"
+      )
+    },
+    showRescan: function() {
+      return (
+        this.$store.getters.getHashContext && this.$store.getters.getLoggedIn
+      )
+    },
+    showContent : function(){
+      return this.$store.getters.getHashContext || this.route === "upload"
     }
+  },
+  methods: {
+    close: function() {
+      this.notifActive = false
+    },
+    showNotification: function(type, text) {
+      this.notifActive = true
+      this.notifType = type
+      this.notifText = text
+    },
   },
   created() {
     this.route = this.$router.currentRoute.name
-    if (this.$router.currentRoute.params.hash)
-      this.$store.dispatch("updateHash", this.$router.currentRoute.params.hash)
-    else this.$store.dispatch("updateHash", "")
+    if (
+      this.$router.currentRoute.params.hash &&
+      this.$router.currentRoute.params.hash !==
+        this.$store.getters.getHashContext
+    ) {
+      this.$http
+        .get(this.$api_endpoints.FILES + this.$router.currentRoute.params.hash)
+        .then((data) => {
+          this.$store.dispatch(
+            "updateHash",
+            this.$router.currentRoute.params.hash,
+            this.$store.dispatch("updateFileData", data),
+          )
+        })
+    } else if (!this.$router.currentRoute.params.hash)
+      this.$store.dispatch("updateHash", "")
   },
-  updated(){
+  updated() {
     this.route = this.$router.currentRoute.name
-  }
+    if (
+      this.$router.currentRoute.params.hash &&
+      this.$router.currentRoute.params.hash !==
+        this.$store.getters.getHashContext
+    ) {
+      this.$http
+        .get(this.$api_endpoints.FILES + this.$router.currentRoute.params.hash)
+        .then((data) => {
+          this.$store.dispatch(
+            "updateHash",
+            this.$router.currentRoute.params.hash,
+          )
+          this.$store.dispatch("updateFileData", data)
+        })
+    } else if (
+      !this.$router.currentRoute.params.hash &&
+      !this.$store.getters.getHashContext
+    )
+      this.$store.dispatch("updateHash", "")
+  },
 }
 </script>
 <style scoped lang="scss">

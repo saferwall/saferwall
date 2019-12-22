@@ -3,18 +3,7 @@
     <div class="column is-8 is-offset-2">
       <tabs @tabChanged="tabChanged" type="is-boxed">
         <tab name="File" icon="ion-android-folder-open" :selected="true">
-          <DropZone
-            @fileAdded="onFileAdded"
-            :enabled="ongoingStep === 0"
-          /><transition name="slide" mode="out-in">
-            <notification
-              type="is-danger"
-              @closeNotif="close()"
-              v-if="notifActive"
-            >
-              {{ notificationError }}
-            </notification>
-          </transition>
+          <DropZone @fileAdded="onFileAdded" :enabled="ongoingStep === 0" />
         </tab>
         <tab name="Url" icon="ion-ios-world-outline">
           <form class="tile is-child box">
@@ -50,7 +39,6 @@
 <script>
 import Tabs from "@/components/elements/Tabs"
 import Tab from "@/components/elements/Tab"
-import Notification from "@/components/elements/Notification"
 import DropZone from "@/components/elements/DropZone"
 import ProgressTracker, { StepItem } from "vue-bulma-progress-tracker"
 
@@ -66,8 +54,6 @@ export default {
   data() {
     return {
       selectedTab: "File",
-      notificationError: "",
-      notifActive: false,
       uploading: false,
       ongoingStep: 0, // by default, no step has started yet (0), next we move to step 1, 2 and so on
       pollInterval: null,
@@ -76,7 +62,6 @@ export default {
   components: {
     tabs: Tabs,
     tab: Tab,
-    notification: Notification,
     DropZone,
     ProgressTracker,
     StepItem,
@@ -85,9 +70,6 @@ export default {
     tabChanged(selectedTab) {
       this.selectedTab = selectedTab
     },
-    close() {
-      this.notifActive = false
-    },
     onFileAdded(file) {
       if (!file) {
         return
@@ -95,8 +77,7 @@ export default {
 
       // check if size exceeds 64mb
       if (file.size > 64000000) {
-        this.notifActive = true
-        this.notificationError = "File size exceeds 64MB !"
+        this.$emit("notify", "is-danger", "File size exceeds 64MB !")
         return
       }
       const reader = new FileReader()
@@ -148,9 +129,11 @@ export default {
               })
           })
           .catch(() => {
-            this.notifActive = true
-            this.notificationError =
-              "Sorry, we couldn't upload the file. Please, try again!"
+            this.$emit(
+              "notify",
+              "is-danger",
+              "Sorry, we couldn't upload the file. Please, try again!",
+            )
           })
       }
       reader.readAsArrayBuffer(file)
@@ -184,12 +167,16 @@ export default {
                 })
               }, 4000)
               this.$store.dispatch("updateHash", hashHex)
-              this.$router.push({ name: 'summary'})
+              this.$router.push({ name: "summary" })
               break
           }
         })
         .catch(() => {
-          this.notifActive = true
+          this.$emit(
+            "notify",
+            "is-danger",
+            "Problem occured while uploading, try again",
+          )
         })
     },
   },

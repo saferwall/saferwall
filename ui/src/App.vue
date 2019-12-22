@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <vue-progress-bar></vue-progress-bar>
     <transition name="component-fade" mode="out-in">
       <component :is="layout">
         <router-view />
@@ -21,6 +22,9 @@ export default {
   },
   updated() {
     document.title = this.$route.meta.title
+  },
+  mounted() {
+    this.$Progress.finish()
   },
 }
 </script>
