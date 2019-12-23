@@ -8,3 +8,16 @@ helm-install:		## install vault
 	sudo mv linux-amd64/helm /usr/local/bin/helm
 	rm -f $(HELM_ZIP)
 	helm version
+
+helm-init:			## init helm repo
+	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	# Make sure we get the latest list of charts
+	helm repo update
+
+helm-create:		## create a helm release
+	cd  $(ROOT_DIR)/deployments \
+		&& helm create saferwall \ 
+		&& helm ls
+
+helm-update:		## upgrade a given release
+	helm upgrade $(RELEASE_NAME) saferwall

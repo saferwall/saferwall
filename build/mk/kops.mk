@@ -28,6 +28,7 @@ kops-create-bucket:		## create s3 bucket
 NODE_COUNT = 1
 NODE_SIZE = t2.xlarge
 kops-create-cluster:	## create k8s cluster
+	kubectl config current-context
 	aws ec2 describe-availability-zones --region us-east-1
 	kops create cluster \
 		--zones us-east-1a \
