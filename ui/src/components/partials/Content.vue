@@ -1,10 +1,5 @@
 <template>
   <section class="main-content" :class="{ fullwidth: fullwidth }">
-    <transition name="slide" mode="out-in">
-      <notification :type="notifType" @closeNotif="close()" v-if="notifActive">
-        {{ notifText }}
-      </notification>
-    </transition>
     <div class="container is-fluid">
       <div class="columns">
         <div class="column is-four-fifths">
@@ -25,32 +20,27 @@
           <Download v-if="showDownload" />
         </div>
         <div class="column">
-          <Rescan v-if="showRescan" :route="route" @notify="showNotification" />
+          <Rescan v-if="showRescan" :route="route" />
         </div>
       </div>
-      <slot @notify="showNotification" v-if="showContent"></slot>
+      <slot v-if="showContent"></slot>
     </div>
   </section>
 </template>
 <script>
 import Download from "../elements/Download"
 import Rescan from "../elements/Rescan"
-import Notification from "../elements/Notification"
 
 export default {
   props: ["fullwidth"],
   data() {
     return {
       route: "",
-      notifText: "",
-      notifActive: false,
-      notifType: "",
     }
   },
   components: {
     Download,
     Rescan,
-    Notification,
   },
   computed: {
     showDownload: function() {
@@ -65,60 +55,44 @@ export default {
         this.$store.getters.getHashContext && this.$store.getters.getLoggedIn
       )
     },
-    showContent : function(){
-      return this.$store.getters.getHashContext || this.route === "upload"
-    }
+    showContent: function() {
+      return (
+        this.$store.getters.getHashContext !== "" || this.route === "upload"
+      )
+    },
   },
   methods: {
-    close: function() {
-      this.notifActive = false
-    },
-    showNotification: function(type, text) {
-      this.notifActive = true
-      this.notifType = type
-      this.notifText = text
+    getData: function() {
+      this.route = this.$router.currentRoute.name
+      if (
+        this.$router.currentRoute.params.hash &&
+        this.$router.currentRoute.params.hash !==
+          this.$store.getters.getHashContext
+      ) {
+        this.$http
+          .get(
+            this.$api_endpoints.FILES + this.$router.currentRoute.params.hash,
+          )
+          .then((data) => {
+            this.$store.dispatch(
+              "updateHash",
+              this.$router.currentRoute.params.hash,
+              this.$store.dispatch("updateFileData", data),
+            )
+          })
+          .catch(() => {
+            this.$awn.alert(
+              "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
+            )
+          })
+      }
     },
   },
   created() {
-    this.route = this.$router.currentRoute.name
-    if (
-      this.$router.currentRoute.params.hash &&
-      this.$router.currentRoute.params.hash !==
-        this.$store.getters.getHashContext
-    ) {
-      this.$http
-        .get(this.$api_endpoints.FILES + this.$router.currentRoute.params.hash)
-        .then((data) => {
-          this.$store.dispatch(
-            "updateHash",
-            this.$router.currentRoute.params.hash,
-            this.$store.dispatch("updateFileData", data),
-          )
-        })
-    } else if (!this.$router.currentRoute.params.hash)
-      this.$store.dispatch("updateHash", "")
+    this.getData()
   },
   updated() {
-    this.route = this.$router.currentRoute.name
-    if (
-      this.$router.currentRoute.params.hash &&
-      this.$router.currentRoute.params.hash !==
-        this.$store.getters.getHashContext
-    ) {
-      this.$http
-        .get(this.$api_endpoints.FILES + this.$router.currentRoute.params.hash)
-        .then((data) => {
-          this.$store.dispatch(
-            "updateHash",
-            this.$router.currentRoute.params.hash,
-          )
-          this.$store.dispatch("updateFileData", data)
-        })
-    } else if (
-      !this.$router.currentRoute.params.hash &&
-      !this.$store.getters.getHashContext
-    )
-      this.$store.dispatch("updateHash", "")
+    this.getData()
   },
 }
 </script>

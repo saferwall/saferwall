@@ -38,7 +38,6 @@ export default {
       ongoingStep: 0,
       Rescanning: false,
       pollInterval: null,
-      progress: 20,
     }
   },
   computed: {
@@ -62,15 +61,19 @@ export default {
           type: "rescan",
         })
         .then(() => {
-          // set a poll interval of 5s
-          this.$Progress.set(this.progress)
-          this.Rescanning = true
-          this.pollInterval = setInterval(this.fetchStatus, 3000)
-          setTimeout(() => {
-            clearInterval(this.pollInterval)
-          }, 36000000) // stop polling after an hour
+          this.$awn.async(this.setPollInterval())
         })
-        .catch(console.log)
+        .catch()
+    },
+    setPollInterval() {
+      this.Rescanning = true
+      this.pollInterval = setInterval(this.fetchStatus, 3000)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          this.$awn.alert("Something went wrong, try again")
+          clearInterval(this.pollInterval)
+        }, 36000000) // stop polling after an hour
+      })
     },
     fetchStatus() {
       this.$http
@@ -88,8 +91,6 @@ export default {
               break
             case 1:
               this.ongoingStep = step.PROCESSING
-              this.progress += 5
-              this.$Progress.set(this.progress)
               break
             case 2:
               this.ongoingStep = step.FINISHED
@@ -106,23 +107,15 @@ export default {
               this.$store.dispatch("updateFileData", response)
               this.Rescanning = false
               this.ongoingStep = 0
-              this.$emit(
-                "notify",
-                "is-success",
-                "successfully rescaned the file",
-              )
-              this.$router.push({ name: "summary" })
-              this.progress = 20
-              this.$Progress.finish()
+              this.$awn.closeToasts()
+              this.$awn.success("successfully rescaned the file")
+              if (this.$router.currentRoute.name !== "summary")
+                this.$router.push({ name: "summary" })
               break
           }
         })
         .catch(() => {
-          this.$Progress.fail()
-
-          this.$emit(
-            "notify",
-            "is-danger",
+          this.$awn.alert(
             "Problem occured while rescanning the file, try again",
           )
         })

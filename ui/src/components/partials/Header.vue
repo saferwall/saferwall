@@ -1,7 +1,7 @@
 <template>
   <header class="dashboard-header">
     <router-link :to="this.$routes.HOME.path" class="logo">
-      <img src="../../assets/imgs/logo-horizontal.png" alt="" />
+      <img src="../../assets/imgs/logo-horizontal_rescaled.png" alt="Saferwall" />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
       <i class="icon ion-android-menu"></i>
@@ -17,16 +17,6 @@
         <i class="icon ion-ios-search"></i>
       </button>
     </div>
-    <transition name="slide-fade">
-      <notification
-        :style="notificationStyling"
-        :type="notifType"
-        @closeNotif="close()"
-        v-if="notifActive"
-      >
-        {{ notificationText }}
-      </notification>
-    </transition>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
@@ -53,31 +43,16 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex"
-import Notification from "@/components/elements/Notification"
 export default {
   name: "Header",
   data() {
     return {
       hash: "",
-      notificationText: "",
-      notifActive: false,
-      notifType : "",
       showinmobile: false,
-      notificationStyling: {
-        width: "fit-content",
-        height: "auto",
-        position: "absolute",
-        left: "50%",
-        top: "10px",
-        transform: "translateX(-50%)",
-      },
     }
   },
   computed: {
     ...mapGetters(["getLoggedIn", "getUsername"]),
-  },
-  components: {
-    notification: Notification,
   },
   methods: {
     ...mapActions([
@@ -101,9 +76,6 @@ export default {
       const payload = this.$cookies.get("JWTPayload")
       return payload
     },
-    close() {
-      this.notifActive = false
-    },
     searchByHash() {
       this.$http
         .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
@@ -116,13 +88,7 @@ export default {
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
-          this.notifActive = true
-          this.notifType = "is-danger"
-          this.notificationText =
-            "Sorry, we couldn't find the file you were looking for, please upload it to view the results!"
-          setTimeout(() => {
-            this.notifActive = false
-          }, 3000)
+          this.$awn.alert("Sorry, we couldn't find the file you were looking for, please upload it to view the results!")
         })
     },
   },

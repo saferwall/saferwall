@@ -1,21 +1,6 @@
 <template>
   <div class="container">
-    <transition name="slide" mode="out-in">
-      <notification type="is-danger" @closeNotif="close()" v-if="errored">
-        {{ errorMessage }}
-      </notification>
-    </transition>
-
-    <transition name="slide" mode="out-in">
-      <notification
-        type="is-warning"
-        @closeNotif="closeWarning"
-        v-if="emailConfirmationPrompt"
-      >
-        {{ confirmationWarning }}
-      </notification>
-    </transition>
-    <form novalidate="true" class="form" @submit.prevent="handleSubmit">
+    <form novalidate="true" class="form" @submit.prevent="handleSubmit" v-if="emailConfirmed">
       <div class="signin">Sign In</div>
       <div
         class="input-container"
@@ -108,6 +93,7 @@
         >
       </h3>
     </form>
+    <confirm v-if="!emailConfirmed" @sent="emailSent"/>
     <h3 class="not-member">
       Not a member?
       <router-link :to="this.$routes.SIGNUP.path">Sign up</router-link>
@@ -117,11 +103,10 @@
 
 <script>
 import { required, helpers } from "vuelidate/lib/validators"
-import Notification from "@/components/elements/Notification"
+import ConfirmEmailForm from '../elements/ConfirmEmailForm'
 import { mapActions } from "vuex"
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
-const defaultErrorMessage = `Something went wrong, please try again!`
 
 export default {
   data() {
@@ -129,19 +114,17 @@ export default {
       username: "",
       password: "",
       showPassword: false,
-      errored: false,
-      errorMessage: "",
       confirmationWarning:
         "Confirm your email by clicking the verification link we just sent to your inbox.",
-      emailConfirmationPrompt: false,
+      emailConfirmed : true,
     }
   },
   components: {
-    notification: Notification,
+    confirm: ConfirmEmailForm
   },
   mounted() {
     if (this.$route.query.confirm) {
-      this.emailConfirmationPrompt = true
+      this.$awn.warning(this.confirmationWarning)
     }
   },
   methods: {
@@ -149,9 +132,7 @@ export default {
     handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
-        this.errored = true
-        this.errorMessage =
-          "Please correct all highlighted errors and try again"
+        this.$awn.alert("Please correct all highlighted errors and try again")
       } else {
         this.$http
           .post(this.$api_endpoints.AUTH_LOGIN, {
@@ -159,7 +140,6 @@ export default {
             password: this.password,
           })
           .then((response) => {
-            this.errored = false
             // We store a second cookie which contains the payload only.
             // The cookie which contains the auth token is stored on a httpOnly cookie.
             this.$cookies.set("JWTPayload", response.data.token.split(".")[1])
@@ -172,24 +152,18 @@ export default {
               this.$router.push(this.$routes.HOME.path)
             }
           })
-          .catch(
-            ({
-              response: {
-                data: { verbose_msg: verboseMsg = defaultErrorMessage } = {},
-              } = {},
-            } = {}) => {
-              this.errored = true
-              this.errorMessage = verboseMsg
-            },
-          )
+          .catch((e) => {
+            var verboseMsg = e.response.data.verbose_msg
+            this.$awn.alert(verboseMsg)
+            if(verboseMsg === "Account not confirmed, please confirm your email !"){
+              this.emailConfirmed = false
+            }
+          })
       }
     },
-    close() {
-      this.errored = false
-    },
-    closeWarning() {
-      this.emailConfirmationPrompt = false
-    },
+    emailSent(){
+      this.emailConfirmed = true
+    }
   },
   validations: {
     username: {

@@ -15,23 +15,31 @@ import store from './store/index'
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
-import VueProgressBar from 'vue-progressbar'
+import VueAWN from "vue-awesome-notifications"
+
+require('../node_modules/vue-awesome-notifications/dist/styles/style.css')
 
 const options = {
-  color: '#12a19a',
-  failedColor: '#874b4b',
-  thickness: '5px',
-  transition: {
-    speed: '1s',
-    opacity: '0.6s',
-    termination: 300
+  position: "bottom-right",
+  maxNotification: 5,
+  animationDuration: 300,
+  duration: {
+    global: 20000,
   },
-  autoRevert: true,
-  location: 'top',
-  inverse: false,
+  minDurations: {
+    "async-block": 1000,
+    async: 1000,
+  },
+  labels : {
+    info: "Information",
+    success: "Success",
+    warning: "Attention",
+    alert: "Failure",
+    async: "Processing",
+  }
 }
 
-Vue.use(VueProgressBar, options)
+Vue.use(VueAWN, options)
 
 
 Vue.use(Vuelidate)

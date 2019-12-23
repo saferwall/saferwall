@@ -77,7 +77,7 @@ export default {
 
       // check if size exceeds 64mb
       if (file.size > 64000000) {
-        this.$emit("notify", "is-danger", "File size exceeds 64MB !")
+        this.$awn.alert("File size exceeds 64MB !")
         return
       }
       const reader = new FileReader()
@@ -129,11 +129,7 @@ export default {
               })
           })
           .catch(() => {
-            this.$emit(
-              "notify",
-              "is-danger",
-              "Sorry, we couldn't upload the file. Please, try again!",
-            )
+          this.$awn.alert("Sorry, we couldn't upload the file. Please, try again!")
           })
       }
       reader.readAsArrayBuffer(file)
@@ -172,11 +168,7 @@ export default {
           }
         })
         .catch(() => {
-          this.$emit(
-            "notify",
-            "is-danger",
-            "Problem occured while uploading, try again",
-          )
+          this.$awn.alert("Problem occured while uploading, try again")
         })
     },
   },
