@@ -23,3 +23,6 @@ dependencies:
       version: 0.1.2
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-cluster.enabled
+    - name: efs-provisioner
+      version: 0.8.0
+      repository: https://kubernetes-charts.storage.googleapis.com/

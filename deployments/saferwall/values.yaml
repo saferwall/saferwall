@@ -18,4 +18,11 @@ minio:
     size: 1Gi
 
   accessKey: "12345"
-  secretKey: "sjkdhskjfhs" 
+  secretKey: "sjkdhskjfhs"
+
+
+efsProvisioner:
+  efsFileSystemId: fs-da361d5b
+  awsRegion: us-east-1
+  # provisionerName: "saferwall.com/aws-efs"
+  # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"

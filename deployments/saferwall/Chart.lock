@@ -8,5 +8,8 @@ dependencies:
 - name: couchbase-cluster
   repository: https://couchbase-partners.github.io/helm-charts/
   version: 0.1.2
-digest: sha256:c2ca05ee6454e00587442a56b4b3cb9106b9794bc0d6f69fa2306e8fec628ea3
-generated: "2019-12-23T23:43:05.839708366-08:00"
+- name: efs-provisioner
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.8.0
+digest: sha256:747cf5efea4cd59a8857c2634b399098a6195bff25b79e89189c470c57f9d197
+generated: "2019-12-24T02:17:32.56373289-08:00"
