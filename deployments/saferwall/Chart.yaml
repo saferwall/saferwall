@@ -13,5 +13,5 @@ maintainers:
 dependencies:
     - name: minio
       version: 4.0.1
-      repository: https://kubernetes-charts-incubator.storage.googleapis.com/
+      repository: https://kubernetes-charts.storage.googleapis.com/
       condition: minio.enabled
