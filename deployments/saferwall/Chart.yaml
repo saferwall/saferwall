@@ -15,3 +15,11 @@ dependencies:
       version: 4.0.1
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: minio.enabled
+    - name: couchbase-operator
+      version: 0.1.2
+      repository: https://couchbase-partners.github.io/helm-charts/
+      condition: couchbase-operator.enabled
+    - name: couchbase-cluster
+      version: 0.1.2
+      repository: https://couchbase-partners.github.io/helm-charts/
+      condition: couchbase-cluster.enabled
