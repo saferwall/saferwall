@@ -109,14 +109,30 @@ export default {
               this.ongoingStep = 0
               this.$awn.closeToasts()
               this.$awn.success("successfully rescaned the file")
-              if (this.$router.currentRoute.name !== "summary")
-                this.$router.push({ name: "summary" })
+              this.UpdateData()
               break
           }
         })
         .catch(() => {
           this.$awn.alert(
             "Problem occured while rescanning the file, try again",
+          )
+        })
+    },
+    UpdateData: function() {
+      this.$http
+        .get(this.$api_endpoints.FILES + this.hash)
+        .then((data) => {
+          this.$store.dispatch(
+            "updateHash",
+            this.$router.currentRoute.params.hash,
+            this.$store.dispatch("updateFileData", data),
+          )
+          this.$awn.success("successfully updated the data")
+        })
+        .catch(() => {
+          this.$awn.alert(
+            "Error occured while updating file info, try refreshing the page",
           )
         })
     },

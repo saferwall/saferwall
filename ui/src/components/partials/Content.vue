@@ -2,7 +2,7 @@
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
       <div class="columns">
-        <div class="column is-four-fifths">
+        <div class="column is-four-fifths-fullhd is-three-quarters-desktop is-three-fifths-tablet is-half-mobile">
           <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
             <ul>
               <li>
@@ -17,12 +17,17 @@
           </nav>
         </div>
         <div class="column">
-          <Download v-if="showDownload" />
-        </div>
-        <div class="column">
-          <Rescan v-if="showRescan" :route="route" />
+          <div class="columns">
+            <div class="column is-half">
+              <Download v-if="showDownload" />
+            </div>
+            <div class="column is-half">
+              <Rescan v-if="showRescan" :route="route" />
+            </div>
+          </div>
         </div>
       </div>
+      <p class="no_file" v-if="!showContent">No file Specified</p>
       <slot v-if="showContent"></slot>
     </div>
   </section>
@@ -116,5 +121,9 @@ section.main-content {
   a {
     color: $primary-color;
   }
+}
+.no_file {
+  font-size: 20px;
+  font-weight: 200;
 }
 </style>

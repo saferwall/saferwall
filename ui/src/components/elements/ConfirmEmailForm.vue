@@ -1,31 +1,33 @@
 <template>
   <div class="container">
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
-      <h1 class="heading">Confirm Email</h1>
       <p class="instruction">
         Enter your account email address and we will send you a link to confirm
         it.
       </p>
       <div
-        class="input-container"
+        class="entry input-container"
         :class="{
           valid: !$v.email.$invalid,
           'not-valid': $v.email.$error,
         }"
       >
-        <label for="email">Email</label>
-
-        <input
-          v-focus
-          required
-          class="entry"
-          id="email"
-          type="email"
-          v-model.trim="$v.email.$model"
-          placeholder="name@example.com"
-          autocomplete="email"
-          @keyup.enter="handleSubmit"
-        />
+        <p class="control has-icons-left has-icons-right">
+          <input
+            v-focus
+            required
+            class="input"
+            id="email"
+            type="email"
+            v-model.trim="$v.email.$model"
+            placeholder="name@example.com"
+            autocomplete="email"
+            @keyup.enter="handleSubmit"
+          />
+          <span class="icon is-small is-left">
+            <i class="fas fa-envelope"></i>
+          </span>
+        </p>
         <div v-show="$v.email.$dirty">
           <span v-show="!$v.email.required" class="error"
             >Email is required</span
@@ -84,7 +86,6 @@ export default {
 <style lang="scss" scoped>
 .form {
   display: grid;
-  grid-template-rows: 1fr 1fr minmax(70px, min-content) 1fr;
   text-align: center;
   grid-row-gap: 1.5em;
   line-height: 2em;
@@ -159,11 +160,9 @@ export default {
   min-height: 45px;
   color: #333333;
   background: none;
-  border: 1px solid #33333335;
   padding: 0.5em;
   font-size: inherit;
   border-radius: 0.25rem;
-  box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
 }
 .error {
@@ -188,7 +187,7 @@ export default {
   padding: 0.7em;
   font-weight: 600;
   color: white;
-  background-color: #e7501d;
+  background-color: #18a096;
   border: none;
 }
 </style>

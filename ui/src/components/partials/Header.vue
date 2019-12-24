@@ -1,7 +1,10 @@
 <template>
   <header class="dashboard-header">
     <router-link :to="this.$routes.HOME.path" class="logo">
-      <img src="../../assets/imgs/logo-horizontal_rescaled.png" alt="Saferwall" />
+      <img
+        src="../../assets/imgs/logo-horizontal_rescaled.png"
+        alt="Saferwall"
+      />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
       <i class="icon ion-android-menu"></i>
@@ -28,12 +31,35 @@
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li>
           <div class="profile">
-            <button
-              :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
-              @click="loginOrLogout"
-            >
-              {{ getLoggedIn ? "Sign Out" : "Sign In" }}
-            </button>
+            <div class="dropdown is-hoverable is-right">
+              <div class="dropdown-trigger">
+                <button
+                  :class="getLoggedIn ? 'dropdown_text' : 'has-text-link'"
+                  aria-haspopup="true"
+                  aria-controls="dropdown-menu4"
+                  @click="loginOrLogout"
+                >
+                  <span>{{ getLoggedIn ? getUsername : "Sign In" }}</span>
+                </button>
+              </div>
+              <div
+                class="dropdown-menu"
+                id="dropdown-menu4"
+                role="menu"
+                v-if="getLoggedIn"
+              >
+                <div class="dropdown-content">
+                  <div class="dropdown-item">
+                    <div @click="loginOrLogout" class="has-text-danger">
+                      <span>
+                        <i class="icon fas fa-sign-out-alt fa-lg"></i>
+                        Logout
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </li>
       </ul>
@@ -88,7 +114,9 @@ export default {
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
-          this.$awn.alert("Sorry, we couldn't find the file you were looking for, please upload it to view the results!")
+          this.$awn.alert(
+            "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
+          )
         })
     },
   },
@@ -228,6 +256,20 @@ header.dashboard-header {
           border-left: solid 1px rgba(10, 10, 10, 0.1);
           padding-left: 10px;
           padding-right: 10px;
+
+          .has-text-danger {
+            font-weight: 400;
+            font-size: 14px;
+            display: inline-block;
+
+            &:hover {
+              font-weight: 600;
+            }
+          }
+
+          .dropdown-menu {
+            min-width: 10rem;
+          }
         }
 
         button {

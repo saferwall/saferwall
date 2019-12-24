@@ -1,45 +1,33 @@
 <template>
   <div class="container">
-    <transition name="slide" mode="out-in">
-      <notification
-        type="is-success"
-        @closeNotif="closeMessage()"
-        v-if="succeeded"
-      >
-        {{ successMessage }}
-      </notification>
-    </transition>
-    <transition name="slide" mode="out-in">
-      <notification type="is-danger" @closeNotif="close()" v-if="errored">
-        {{ errorMessage }}
-      </notification>
-    </transition>
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
-      <h1 class="heading">Forgot Password?</h1>
       <p class="instruction">
         Enter your account email address and we will send you a link to reset
         your password.
       </p>
       <div
-        class="input-container"
+        class="entry input-container"
         :class="{
           valid: !$v.email.$invalid,
           'not-valid': $v.email.$error,
         }"
       >
-        <label for="email">Email</label>
-
-        <input
-          v-focus
-          required
-          class="entry"
-          id="email"
-          type="email"
-          v-model.trim="$v.email.$model"
-          placeholder="name@example.com"
-          autocomplete="email"
-          @keyup.enter="handleSubmit"
-        />
+        <p class="control has-icons-left has-icons-right">
+          <input
+            v-focus
+            required
+            class="input"
+            id="email"
+            type="email"
+            v-model.trim="$v.email.$model"
+            placeholder="name@example.com"
+            autocomplete="email"
+            @keyup.enter="handleSubmit"
+          />
+          <span class="icon is-small is-left">
+            <i class="fas fa-envelope"></i>
+          </span>
+        </p>
         <div v-show="$v.email.$dirty">
           <span v-show="!$v.email.required" class="error"
             >Email is required</span
@@ -55,53 +43,38 @@
 
 <script>
 import { required, email } from "vuelidate/lib/validators"
-import Notification from "@/components/elements/Notification"
 export default {
   data() {
     return {
       email: "",
-      succeeded: false,
-      errored: false,
-      errorMessage: "",
       successMessage:
         "We've sent a password reset link to the email you specified",
     }
   },
 
-  components: {
-    notification: Notification,
-  },
   methods: {
     handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
-        this.errored = true
-        this.errorMessage = "Please enter a valid email address"
+        this.$awn.alert("Please enter a valid email address")
       } else {
         this.$http
-          .delete(this.api_endpoints.AUTH_CHANGE_PWD, {
+          .delete(this.$api_endpoints.AUTH_CHANGE_PWD, {
             data: {
               email: this.email,
             },
           })
           .then((response) => {
-            this.succeeded = true
-            this.errored = false
+            this.$awn.success(this.successMessage)
+            this.$router.push({name: "login"})
           })
           .catch((error) => {
-            this.errored = true
-            this.succeeded = false
-            this.errorMessage =
+            this.$awn.alert(
               error.response.data.verbose_msg ||
-              "An error occurred. Please try again later!"
+                "An error occurred. Please try again later!",
+            )
           })
       }
-    },
-    close() {
-      this.errored = false
-    },
-    closeMessage() {
-      this.succeeded = false
     },
   },
   validations: {
@@ -116,14 +89,13 @@ export default {
 <style lang="scss" scoped>
 .form {
   display: grid;
-  grid-template-rows: 1fr 1fr minmax(70px, min-content) 1fr;
   text-align: center;
   grid-row-gap: 1.5em;
   line-height: 2em;
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
   width: min-content;
-  padding: 4em;
+  padding: 2em;
   color: #333333;
   background-color: white;
   font-size: 16px;
@@ -191,11 +163,9 @@ export default {
   min-height: 45px;
   color: #333333;
   background: none;
-  border: 1px solid #33333335;
   padding: 0.5em;
   font-size: inherit;
   border-radius: 0.25rem;
-  box-shadow: inset 6px 2px 4px 0 hsla(0, 0%, 0%, 0.03);
   transition: border 0.1s ease;
 }
 .error {
@@ -220,7 +190,7 @@ export default {
   padding: 0.7em;
   font-weight: 600;
   color: white;
-  background-color: #e7501d;
+  background-color: #18a096;
   border: none;
 }
 </style>
