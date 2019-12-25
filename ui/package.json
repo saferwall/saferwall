@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --port 8081",
-    "serve_win_powerShell": "npx vue-cli-service serve --mode $Env:ENVIRONMENT --port 8081 --open",
-    "serve_win_cmd": "npx vue-cli-service serve --mode %ENVIRONMENT% --port 8081 --open",
+    "serve_win_powerShell": "npx vue-cli-service serve --mode $Env:ENVIRONMENT --port 8081",
+    "serve_win_cmd": "npx vue-cli-service serve --mode %ENVIRONMENT% --port 8081",
     "serve_lin": "npx vue-cli-service serve --mode $ENVIRONMENT --port 8081 --open",
     "build_prod": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -17,6 +17,7 @@
     "bulma": "^0.8.0",
     "core-js": "^3.4.3",
     "vue": "^2.6.10",
+    "vue-awesome-notifications": "^3.1.0",
     "vue-bulma-progress-tracker": "git+https://github.com/mrassili/progress-tracker.git",
     "vue-cookies": "^1.6.0",
     "vue-router": "^3.1.3",

@@ -17,10 +17,10 @@ export default {
     },
   },
   created() {
-    document.title = this.$route.meta.title
+    document.title = this.$route.meta.title || "SaferWall"
   },
   updated() {
-    document.title = this.$route.meta.title
+    document.title = this.$route.meta.title || "SaferWall"
   },
 }
 </script>

@@ -23,4 +23,7 @@ export default {
     context.commit("setLoggedIn", false)
     context.commit("setUsername", "")
   },
+  updateFileData : (context, payload) => {
+    context.commit('setFileData', payload)
+  }
 }
