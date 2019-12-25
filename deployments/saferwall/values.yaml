@@ -1,3 +1,4 @@
+########### MINIO ###########
 minio:
   # We choose distributed for HA. This can be set to standalone in dev env.
   mode: standalone
@@ -21,8 +22,8 @@ minio:
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"
 
+########### EFS-PROVISONNER ###########
 efs-provisioner:
-
   efsProvisioner:
     efsFileSystemId: "fs-da361d5b"
     awsRegion: "us-east-1"
@@ -31,6 +32,7 @@ efs-provisioner:
     # storageClass:
     #   name:  {{ include "saferwall.fullname" . }}-efs
 
+########### BACKEND ###########
 backend:
   enabled: true
   name: backend
@@ -38,6 +40,21 @@ backend:
   containerPort: 8080
   image:
     repository: saferwall/backend
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8080
+
+########### FRONTEND ###########
+frontend:
+  frontend: true
+  name: frontend
+  replicaCount: 1
+  containerPort: 8080
+  image:
+    repository: saferwall/ui
     tag: latest
     pullPolicy: Always
   service:

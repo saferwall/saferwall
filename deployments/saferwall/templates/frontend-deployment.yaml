@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "saferwall.frontend.fullname" . }}
+  labels:
+    app: {{ include "saferwall.frontend.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "saferwall.frontend.fullname" . }}
+  replicas:  {{ .Values.frontend.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "saferwall.frontend.fullname" . }}
+    spec:
+      containers:
+        - name: "{{ .Values.frontend.name }}"
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: "{{ .Values.frontend.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.frontend.containerPort }}

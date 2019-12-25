@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "saferwall.frontend.fullname" . }}
+  labels:
+    app: {{ include "saferwall.frontend.fullname" . }}
+spec:
+  selector:
+    app: {{ include "saferwall.frontend.fullname" . }}
+  ports:
+    - port: {{ .Values.frontend.service.port }}
+      targetPort: {{ .Values.frontend.service.targetPort }}
+    {{- if .Values.frontend.service.nodePort }}
+      nodePort: {{ .Values.bafrontendckend.service.nodePort }}
+    {{- end }}
+  type: {{ .Values.frontend.service.type }}
