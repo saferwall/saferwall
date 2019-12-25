@@ -1,3 +1,4 @@
+{{- if .Values.backend.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,3 +21,14 @@ spec:
           imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
           ports:
             - containerPort: {{ .Values.backend.containerPort }}
+          env:
+            - name: ENVIRONMENT
+              value: "dev"
+      volumes:
+      - name: {{ $.Release.Name }}-configmap-volume
+        configMap:
+          name: {{ include "saferwall.backend.fullname" . }}
+          items:
+            - key: backends_conf
+              path: app.dev.toml
+{{- end }}

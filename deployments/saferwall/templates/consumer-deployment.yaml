@@ -1,23 +1,24 @@
+{{- if .Values.consumer.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "saferwall.consummer.fullname" . }}
+  name: {{ include "saferwall.consumer.fullname" . }}
   labels:
-    app: {{ include "saferwall.consummer.fullname" . }}
+    app: {{ include "saferwall.consumer.fullname" . }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "saferwall.consummer.fullname" . }}
-  replicas:  {{ .Values.consummer.replicaCount }}
-  replicas:  {{ .Values.consummer.replicaCount }}
+      app: {{ include "saferwall.consumer.fullname" . }}
+  replicas:  {{ .Values.consumer.replicaCount }}
+  template:
     metadata:
       labels:
-        app: {{ include "saferwall.consummer.fullname" . }}
+        app: {{ include "saferwall.consumer.fullname" . }}
     spec:
       containers:
-        - name: "{{ .Values.consummer.name }}"
-        image: "{{ .Values.consummer.image.repository }}:{{ .Values.consummer.image.tag }}"
-        imagePullPolicy: "{{ .Values.consummer.image.pullPolicy }}"
+        - name: "{{ .Values.consumer.name }}"
+          image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
+          imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"
           volumeMounts:
           - name: samples
             mountPath: /samples
@@ -25,3 +26,4 @@ spec:
       - name: samples
         persistentVolumeClaim:
           claimName: {{ include "saferwall.fullname" . }}-pvc
+{{- end }}

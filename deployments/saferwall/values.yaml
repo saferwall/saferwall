@@ -49,7 +49,7 @@ backend:
 
 ########### FRONTEND ###########
 frontend:
-  frontend: true
+  enabled: false
   name: frontend
   replicaCount: 1
   containerPort: 8080
@@ -64,7 +64,7 @@ frontend:
 
 ########### CONSUMER ###########
 consumer:
-  consumer: true
+  enabled: false
   name: consumer
   replicaCount: 1
   image:
