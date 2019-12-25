@@ -10,6 +10,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     hashContext: "",
+    fileData : {},
     loggedIn: false,
     username: "",
   },

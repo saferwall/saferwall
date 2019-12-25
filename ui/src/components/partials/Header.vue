@@ -1,7 +1,10 @@
 <template>
   <header class="dashboard-header">
     <router-link :to="this.$routes.HOME.path" class="logo">
-      <img src="../../assets/imgs/logo-horizontal.png" alt="" />
+      <img
+        src="../../assets/imgs/logo-horizontal_rescaled.png"
+        alt="Saferwall"
+      />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
       <i class="icon ion-android-menu"></i>
@@ -17,16 +20,6 @@
         <i class="icon ion-ios-search"></i>
       </button>
     </div>
-    <transition name="slide-fade">
-      <notification
-        :style="notificationStyling"
-        type="is-danger"
-        @closeNotif="close()"
-        v-if="notifActive"
-      >
-        {{ notificationError }}
-      </notification>
-    </transition>
     <nav class="dashboard-nav" :class="{ mobile: showinmobile }">
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
@@ -36,37 +29,38 @@
           </router-link>
         </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
-        <li class="has-dropdown" @click="dropdownActive = !dropdownActive">
+        <li>
           <div class="profile">
-            <span>{{ getUsername || "" }}</span>
-            <img src="../../assets/imgs/avatar.jpg" alt="" />
-          </div>
-          <ul class="dropdown-container" :class="{ active: dropdownActive }">
-            <li>
-              <router-link to="/">
-                <i class="icon ion-grid"></i>
-                Your Submissions
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/">
-                <i class="icon ion-android-settings"></i>
-                Settings
-              </router-link>
-            </li>
-            <li>
-              <button
-                :class="getLoggedIn ? 'has-text-danger' : 'has-text-link'"
-                @click="loginOrLogout"
+            <div class="dropdown is-hoverable is-right">
+              <div class="dropdown-trigger">
+                <button
+                  :class="getLoggedIn ? 'dropdown_text' : 'has-text-link'"
+                  aria-haspopup="true"
+                  aria-controls="dropdown-menu4"
+                  @click="loginOrLogout"
+                >
+                  <span>{{ getLoggedIn ? getUsername : "Sign In" }}</span>
+                </button>
+              </div>
+              <div
+                class="dropdown-menu"
+                id="dropdown-menu4"
+                role="menu"
+                v-if="getLoggedIn"
               >
-                <i
-                  class="icon"
-                  :class="getLoggedIn ? 'ion-log-out' : 'ion-log-in'"
-                ></i>
-                {{ getLoggedIn ? "Sign Out" : "Sign In" }}
-              </button>
-            </li>
-          </ul>
+                <div class="dropdown-content">
+                  <div class="dropdown-item">
+                    <div @click="loginOrLogout" class="has-text-danger">
+                      <span>
+                        <i class="icon fas fa-sign-out-alt fa-lg"></i>
+                        Logout
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </li>
       </ul>
     </nav>
@@ -75,34 +69,25 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex"
-import Notification from "@/components/elements/Notification"
 export default {
   name: "Header",
   data() {
     return {
       hash: "",
-      notificationError: "",
-      notifActive: false,
-      dropdownActive: false,
       showinmobile: false,
-      notificationStyling: {
-        width: "fit-content",
-        height: "auto",
-        position: "absolute",
-        left: "50%",
-        top: "10px",
-        transform: "translateX(-50%)",
-      },
     }
   },
   computed: {
     ...mapGetters(["getLoggedIn", "getUsername"]),
   },
-  components: {
-    notification: Notification,
-  },
   methods: {
-    ...mapActions(["updateUsername", "updateLoggedIn", "logOut", "updateHash"]),
+    ...mapActions([
+      "updateUsername",
+      "updateLoggedIn",
+      "logOut",
+      "updateHash",
+      "updateFileData",
+    ]),
     showMobileSearch() {},
     loginOrLogout() {
       if (this.getLoggedIn) {
@@ -117,25 +102,21 @@ export default {
       const payload = this.$cookies.get("JWTPayload")
       return payload
     },
-    close() {
-      this.notifActive = false
-    },
     searchByHash() {
       this.$http
         .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
         })
-        .then(() => {
+        .then((data) => {
           this.updateHash(this.hash)
+          this.updateFileData(data)
+
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
-          this.notifActive = true
-          this.notificationError =
-            "Sorry, we couldn't find the file you were looking for, please upload it to view the results!"
-          setTimeout(() => {
-            this.notifActive = false
-          }, 3000)
+          this.$awn.alert(
+            "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
+          )
         })
     },
   },
@@ -274,71 +255,42 @@ header.dashboard-header {
           cursor: pointer;
           border-left: solid 1px rgba(10, 10, 10, 0.1);
           padding-left: 10px;
+          padding-right: 10px;
 
-          span {
+          .has-text-danger {
+            font-weight: 400;
             font-size: 14px;
-            font-weight: 500;
-            margin-right: 10px;
+            display: inline-block;
+
+            &:hover {
+              font-weight: 600;
+            }
           }
 
-          img {
-            display: inline-block;
-            vertical-align: middle;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            border: solid 1px rgba(10, 10, 10, 0.1);
+          .dropdown-menu {
+            min-width: 10rem;
           }
         }
 
-        &.has-dropdown {
-          position: relative;
+        button {
+          display: inline-block;
+          width: 100%;
+          color: rgba(black, 0.6);
+          font-weight: 600;
+          font-size: 14px;
 
-          .dropdown-container {
-            transform: scale(0);
-            transform-origin: 100% 0;
-            transition: all 0.2s;
-            position: absolute;
-            top: 40px;
-            right: 0;
-            width: 200px;
-            padding: 0 10px;
-            background: #fff;
-            // box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
-            box-shadow: -2px 3px 10px rgba(10, 10, 10, 0.1);
-            border-radius: 4px;
-
-            &.active {
-              transform: scale(1);
-            }
-
-            li {
-              line-height: 30px;
-              display: inline;
-
-              a,
-              button {
-                display: inline-block;
-                width: 100%;
-                color: rgba(black, 0.6);
-                font-weight: 500;
-                font-size: 14px;
-
-                &:hover {
-                  color: $primary-color !important;
-                }
-              }
-
-              button {
-                text-align: left;
-                padding: 0 5px 0 5px;
-                transition: all 0.2s;
-                background: none;
-                border: none;
-                cursor: pointer;
-              }
-            }
+          &:hover {
+            color: $primary-color !important;
           }
+        }
+
+        button {
+          text-align: left;
+          padding: 0 5px 0 5px;
+          transition: all 0.2s;
+          background: none;
+          border: none;
+          cursor: pointer;
         }
       }
     }

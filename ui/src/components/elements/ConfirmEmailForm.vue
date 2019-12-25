@@ -2,8 +2,8 @@
   <div class="container">
     <form class="form" novalidate="true" @submit.prevent="handleSubmit">
       <p class="instruction">
-        Enter your account email address and we will send you a link to reset
-        your password.
+        Enter your account email address and we will send you a link to confirm
+        it.
       </p>
       <div
         class="entry input-container"
@@ -35,7 +35,7 @@
         </div>
       </div>
       <button class="reset-btn" type="submit">
-        Request Password Reset
+        Send confirmation email
       </button>
     </form>
   </div>
@@ -48,10 +48,9 @@ export default {
     return {
       email: "",
       successMessage:
-        "We've sent a password reset link to the email you specified",
+        "We've sent a confirmation link to the email you specified",
     }
   },
-
   methods: {
     handleSubmit() {
       this.$v.$touch()
@@ -59,14 +58,12 @@ export default {
         this.$awn.alert("Please enter a valid email address")
       } else {
         this.$http
-          .delete(this.$api_endpoints.AUTH_CHANGE_PWD, {
-            data: {
-              email: this.email,
-            },
+          .post(this.$api_endpoints.CONFIRM_EMAIL, {
+            email: this.email,
           })
           .then((response) => {
             this.$awn.success(this.successMessage)
-            this.$router.push({name: "login"})
+            this.$emit("sent")
           })
           .catch((error) => {
             this.$awn.alert(
@@ -95,7 +92,7 @@ export default {
   align-items: center; /* align-self every label item vertically in its row!*/
   justify-content: center;
   width: min-content;
-  padding: 2em;
+  padding: 4em;
   color: #333333;
   background-color: white;
   font-size: 16px;

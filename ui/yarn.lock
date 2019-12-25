@@ -1523,6 +1523,11 @@ autoprefixer@^9.7.2, autoprefixer@^9.7.3:
     postcss "^7.0.23"
     postcss-value-parser "^4.0.2"
 
+awesome-notifications@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/awesome-notifications/-/awesome-notifications-3.1.0.tgz#2a9cfc2153af66168d6dbbca17d8e3babfa56632"
+  integrity sha512-+5CW/Gk5IIZ89iNlQ57EVuE88Oqf2ovMOBZVFdZIflu3z8acUdmlXwo2pVv+1WF+zqq6UCMCrobWNWX+VT7wwQ==
+
 aws-sign2@~0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/aws-sign2/-/aws-sign2-0.7.0.tgz#b46e890934a9591f2d2f6f86d7e6a9f1b3fe76a8"
@@ -8583,6 +8588,13 @@ vm-browserify@^1.0.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
+
+vue-awesome-notifications@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/vue-awesome-notifications/-/vue-awesome-notifications-3.1.0.tgz#296723f845ab3738db6917f6e84697280b18adaf"
+  integrity sha512-R3tcwkrU3u9Cd+YqmpV8noUSVv6ncWs8ZDIMyIgp8JmQ4GSglcOxZhpqPmlDRS1lMhtf0J4bvEBhxyQda/ShPA==
+  dependencies:
+    awesome-notifications "^3.1.0"
 
 "vue-bulma-progress-tracker@git+https://github.com/mrassili/progress-tracker.git":
   version "0.0.4"

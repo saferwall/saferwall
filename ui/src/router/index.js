@@ -22,8 +22,8 @@ Vue.prototype.$routes = ROUTES
 const loadTokenFromCookie = () => {
   const payload = Vue.$cookies.get("JWTPayload")
   if (payload !== null) {
-    store.dispatch('setLoggedIn', payload)
-    store.dispatch('setUsername', payload)
+    store.commit('setLoggedIn', payload)
+    store.commit('setUsername', payload)
     return true
   } else return false
 }

@@ -15,6 +15,31 @@ import store from './store/index'
 import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
+import VueAWN from "vue-awesome-notifications"
+
+require('../node_modules/vue-awesome-notifications/dist/styles/style.css')
+
+const options = {
+  position: "bottom-right",
+  maxNotification: 5,
+  animationDuration: 300,
+  duration: {
+    global: 20000,
+  },
+  minDurations: {
+    "async-block": 1000,
+    async: 1000,
+  },
+  labels : {
+    info: "Information",
+    success: "Success",
+    warning: "Attention",
+    alert: "Failure",
+    async: "Processing",
+  }
+}
+
+Vue.use(VueAWN, options)
 
 
 Vue.use(Vuelidate)
@@ -24,7 +49,7 @@ Vue.use(VueCookies)
 Vue.$cookies.config('7d')
 
 
-Vue.prototype.$clipboard = (function(window, document, navigator) {
+Vue.prototype.$clipboard = (function (window, document, navigator) {
   var textArea, copy
 
   function isOS() {
@@ -57,7 +82,7 @@ Vue.prototype.$clipboard = (function(window, document, navigator) {
     document.body.removeChild(textArea)
   }
 
-  copy = function(text) {
+  copy = function (text) {
     createTextArea(text)
     selectText()
     copyToClipboard()
@@ -73,7 +98,7 @@ Vue.component("unauthenticated-layout", Unauthenticated)
 
 Vue.directive("focus", {
   // When the bound element is inserted into the DOM...
-  inserted: function(el) {
+  inserted: function (el) {
     // Focus the element
     el.focus()
   },
@@ -88,11 +113,14 @@ Vue.prototype.$http = axios.create({
 })
 
 Vue.prototype.$api_endpoints = endpoints
+
 /* eslint-disable no-new */
 new Vue({
   el: "#app",
   router,
   store,
-  components: { App },
+  components: {
+    App
+  },
   render: (h) => h(App),
 })

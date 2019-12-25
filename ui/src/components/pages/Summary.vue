@@ -113,37 +113,29 @@ export default {
         ? "SSDeep"
         : key
     },
-    showData(hash) {
-      this.$http.get(this.$api_endpoints.FILES + hash).then((data) => {
-        this.showLoader = false
+    showData() {
+      var fileData = this.$store.getters.getFileData
+      if(fileData === {} || !fileData) return
+      this.showLoader = false
 
-        data.data["sha-1"] = data.data.sha1
-        data.data["sha-256"] = data.data.sha256
-        data.data["sha-512"] = data.data.sha512
-        delete data.data.sha1
-        delete data.data.sha256
-        delete data.data.sha512
-
-        this.summaryData.filesize = this.bytesToSize(data.data.size)
-        this.summaryData.magic = data.data.magic
-        this.summaryData.crc32 = data.data.crc32
-        this.summaryData.md5 = data.data.md5
-        this.summaryData["sha-1"] = data.data["sha-1"]
-        this.$set(this.summaryData, "sha-256", data.data["sha-256"]) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
-        this.summaryData["sha-512"] = data.data["sha-512"]
-        this.summaryData.ssdeep = data.data.ssdeep
-        this.summaryData.trid = data.data.trid
-        this.summaryData.exif = data.data.exif
-        this.summaryData.packer = data.data.packer
-      })
+      this.summaryData.filesize = this.bytesToSize(fileData.data.size)
+      this.summaryData.magic = fileData.data.magic
+      this.summaryData.crc32 = fileData.data.crc32
+      this.summaryData.md5 = fileData.data.md5
+      this.summaryData["sha-1"] = fileData.data.sha1
+      this.$set(this.summaryData, "sha-256", fileData.data.sha256) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
+      this.summaryData["sha-512"] = fileData.data.sha512
+      this.summaryData.ssdeep = fileData.data.ssdeep
+      this.summaryData.trid = fileData.data.trid
+      this.summaryData.exif = fileData.data.exif
+      this.summaryData.packer = fileData.data.packer
     },
   },
   mounted() {
-    if (this.$store.getters.getHashContext)
-      this.showData(this.$store.getters.getHashContext)
+    if (this.$store.getters.getHashContext) this.showData()
   },
   beforeRouteUpdate(to, from, next) {
-    this.showData(this.$store.getters.getHashContext)
+    this.showData()
   },
 }
 </script>

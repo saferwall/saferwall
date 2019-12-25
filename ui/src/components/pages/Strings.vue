@@ -113,7 +113,7 @@ export default {
     },
   },
   mounted() {
-    if (this.$store.getters.getHashContext) this.showData(this.$store.getters.getHashContext)
+    if (this.$store.getters.getHashContext) this.showData()
   },
 
   methods: {
@@ -185,16 +185,16 @@ export default {
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
     },
-    showData(hash) {
-      this.$http
-        .get(this.$api_endpoints.FILES + hash)
-        .then((data) => {
-          this.showLoader = false
-          this.strings = data.data.strings
-          this.strings.forEach((s) => (s.show = true))
-          this.filteredStrings = this.strings.slice(this.start, this.limit)
-        })
-        .catch((err) => console.error(err))
+    showData() {
+      var fileData = this.$store.getters.getFileData
+
+      if (fileData === {} || !fileData) return
+      this.showLoader = false
+
+      this.showLoader = false
+      this.strings = fileData.data.strings
+      this.strings.forEach((s) => (s.show = true))
+      this.filteredStrings = this.strings.slice(this.start, this.limit)
     },
   },
 }
