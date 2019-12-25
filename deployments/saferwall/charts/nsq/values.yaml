@@ -8,7 +8,7 @@ nsqd:
     type: ClusterIP
     annotations: {}
 
-  replicaCount: 3
+  replicaCount: 2
   podManagementPolicy: "Parallel"
   podAnnotations: {}
   # updateStrategy: {}
@@ -53,7 +53,7 @@ nsqlookupd:
   service:
     annotations: {}
 
-  replicaCount: 3
+  replicaCount: 2
   podManagementPolicy: "Parallel"
   podAnnotations: {}
   # updateStrategy: {}
@@ -81,7 +81,7 @@ nsqadmin:
     enabled: true
     annotations: {}
     minReplicas: 1
-    maxReplicas: 2
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 60
 

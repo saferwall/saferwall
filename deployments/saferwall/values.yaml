@@ -1,11 +1,12 @@
 minio:
-  # We choose distributed for HA. This can be set to standalone in dev env. 
-  mode: distributed
+  # We choose distributed for HA. This can be set to standalone in dev env.
+  mode: standalone
+  # mode: distributed
 
   # Number of nodes (applicable only for MinIO distributed mode)
   # Should be a minimum value of 4.
-  replicas: 4
-  
+  # replicas: 1
+
   service:
     type: ClusterIP
     port: 9000
@@ -14,15 +15,18 @@ minio:
     # Use persistent volume to store data
     enabled: true
 
-    # Size of persistent volume claim	
+    # Size of persistent volume claim
     size: 1Gi
 
   accessKey: "12345"
   secretKey: "sjkdhskjfhs"
 
+efs-provisioner:
 
-efsProvisioner:
-  efsFileSystemId: fs-da361d5b
-  awsRegion: us-east-1
-  # provisionerName: "saferwall.com/aws-efs"
-  # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
+  efsProvisioner:
+    efsFileSystemId: "fs-da361d5b"
+    awsRegion: "us-east-1"
+    provisionerName: "saferwall.com/aws-efs"
+    # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
+    # storageClass:
+    #   name:  {{ include "saferwall.fullname" . }}-efs

@@ -50,7 +50,7 @@ kops-create-efs:		## create AWS EFS file system
 
 kops-create-mount-targers:	## Create mount targets
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
-	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.saferwall.k8s.local`]' --output text | head -n 1 | cut -d '	' -f1))	
+	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
 	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SubnetId' --output text | head -n 1))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
