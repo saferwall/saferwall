@@ -118,20 +118,13 @@ export default {
       if(fileData === {} || !fileData) return
       this.showLoader = false
 
-      fileData.data["sha-1"] = fileData.data.sha1
-      fileData.data["sha-256"] = fileData.data.sha256
-      fileData.data["sha-512"] = fileData.data.sha512
-      delete fileData.data.sha1
-      delete fileData.data.sha256
-      delete fileData.data.sha512
-
       this.summaryData.filesize = this.bytesToSize(fileData.data.size)
       this.summaryData.magic = fileData.data.magic
       this.summaryData.crc32 = fileData.data.crc32
       this.summaryData.md5 = fileData.data.md5
-      this.summaryData["sha-1"] = fileData.data["sha-1"]
-      this.$set(this.summaryData, "sha-256", fileData.data["sha-256"]) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
-      this.summaryData["sha-512"] = fileData.data["sha-512"]
+      this.summaryData["sha-1"] = fileData.data.sha1
+      this.$set(this.summaryData, "sha-256", fileData.data.sha256) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
+      this.summaryData["sha-512"] = fileData.data.sha512
       this.summaryData.ssdeep = fileData.data.ssdeep
       this.summaryData.trid = fileData.data.trid
       this.summaryData.exif = fileData.data.exif
