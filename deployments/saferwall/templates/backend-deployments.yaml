@@ -24,6 +24,9 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "dev"
+          volumeMounts:
+            - name:  {{ $.Release.Name }}-configmap-volume
+              mountPath: /config/
       volumes:
       - name: {{ $.Release.Name }}-configmap-volume
         configMap:
@@ -32,3 +35,6 @@ spec:
             - key: backends_conf
               path: app.dev.toml
 {{- end }}
+
+
+

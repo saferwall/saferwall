@@ -22,10 +22,89 @@ minio:
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"
 
+####### COUCHBASE #########
+couchbase-cluster:
+  enabled: false
+  couchbaseCluster:
+    create: true
+    name: ""
+    username: "Administrator"
+    password: "password"
+    authSecretOverride: ""
+    baseImage: "couchbase/server"
+    version: "enterprise-6.0.1"
+    exposeAdminConsole: true
+    adminConsoleServices:
+      - data
+    exposedFeatures:
+      - xdcr
+    adminConsoleServiceType: NodePort
+    exposedFeatureServiceType: NodePort
+    dns:
+      domain:
+    platform:
+    cluster:
+      dataServiceMemoryQuota: 256
+      indexServiceMemoryQuota: 256
+      searchServiceMemoryQuota: 256
+      eventingServiceMemoryQuota: 256
+      analyticsServiceMemoryQuota: 1024
+      indexStorageSetting: memory_optimized
+      autoFailoverTimeout: 120
+      autoFailoverMaxCount: 3
+      autoFailoverOnDataDiskIssues: true
+      autoFailoverOnDataDiskIssuesTimePeriod: 120
+      autoFailoverServerGroup: false
+      logRetentionTime: 604800s
+      logRetentionCount: 20
+    buckets:
+      files:
+        name: files
+        type: couchbase
+        memoryQuota: 128
+        replicas: 1
+        ioPriority: high
+        evictionPolicy: fullEviction
+        conflictResolution: seqno
+        enableFlush: true
+        enableIndexReplica: false
+      users:
+        name: users
+        type: couchbase
+        memoryQuota: 128
+        replicas: 1
+        ioPriority: high
+        evictionPolicy: fullEviction
+        conflictResolution: seqno
+        enableFlush: true
+        enableIndexReplica: false
+
+    servers:
+      all_services:
+        size: 3
+        services:
+          - data
+          - index
+          - query
+          - search
+          - eventing
+          - analytics
+        serverGroups: []
+        pod: {}
+    securityContext: {}
+    volumeClaimTemplates: []
+
+
+########### NSQ ###########
+nsq:
+  nsqd:
+    name: nsqd
+
+
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
   efsProvisioner:
-    efsFileSystemId: "fs-da361d5b"
+    efsFileSystemId: "fs-e9a29668"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
@@ -39,7 +118,7 @@ backend:
   replicaCount: 1
   containerPort: 8080
   image:
-    repository: saferwall/backend
+    repository: saferwall/goavast
     tag: latest
     pullPolicy: Always
   service:

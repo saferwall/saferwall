@@ -26,9 +26,9 @@ kops-create-bucket:		## create s3 bucket
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
 NODE_COUNT = 1
-NODE_SIZE = t2.medium
+NODE_SIZE = t2.xlarge
 kops-create-cluster:	## create k8s cluster
-	kubectl config current-context
+	kubectl config get-contexts
 	aws ec2 describe-availability-zones --region us-east-1
 	kops create cluster \
 		--zones us-east-1a \
@@ -40,7 +40,8 @@ kops-create-cluster:	## create k8s cluster
 	sleep 8m
 	kops validate cluster
 	kubectl get nodes
-	kubectl config get-contexts
+	kubectl config current-context
+
 
 kops-create-efs:		## create AWS EFS file system
 	aws efs create-file-system \
