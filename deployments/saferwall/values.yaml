@@ -61,3 +61,13 @@ frontend:
     type: LoadBalancer
     port: 80
     targetPort: 8080
+
+########### CONSUMER ###########
+consumer:
+  consumer: true
+  name: consumer
+  replicaCount: 1
+  image:
+    repository: saferwall/consumer
+    tag: latest
+    pullPolicy: Always

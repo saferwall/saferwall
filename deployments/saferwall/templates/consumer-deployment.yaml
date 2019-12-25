@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "saferwall.consummer.fullname" . }}
+  labels:
+    app: {{ include "saferwall.consummer.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "saferwall.consummer.fullname" . }}
+  replicas:  {{ .Values.consummer.replicaCount }}
+  replicas:  {{ .Values.consummer.replicaCount }}
+    metadata:
+      labels:
+        app: {{ include "saferwall.consummer.fullname" . }}
+    spec:
+      containers:
+        - name: "{{ .Values.consummer.name }}"
+        image: "{{ .Values.consummer.image.repository }}:{{ .Values.consummer.image.tag }}"
+        imagePullPolicy: "{{ .Values.consummer.image.pullPolicy }}"
+          volumeMounts:
+          - name: samples
+            mountPath: /samples
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: {{ include "saferwall.fullname" . }}-pvc
