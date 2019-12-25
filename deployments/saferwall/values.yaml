@@ -18,8 +18,8 @@ minio:
     # Size of persistent volume claim
     size: 1Gi
 
-  accessKey: "12345"
-  secretKey: "sjkdhskjfhs"
+  accessKey: "<accessKey>"
+  secretKey: "<secretKey>"
 
 efs-provisioner:
 
@@ -30,3 +30,17 @@ efs-provisioner:
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
     # storageClass:
     #   name:  {{ include "saferwall.fullname" . }}-efs
+
+backend:
+  enabled: true
+  name: backend
+  replicaCount: 1
+  containerPort: 8080
+  image:
+    repository: saferwall/backend
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8080

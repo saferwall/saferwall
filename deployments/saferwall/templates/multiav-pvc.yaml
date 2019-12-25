@@ -1,0 +1,14 @@
+ 
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "saferwall.fullname" . }}-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: efs
+spec:
+  storageClassName: efs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
