@@ -1,0 +1,35 @@
+{{- if .Values.multiav.enabled -}}
+{{- $root := . -}}
+{{- range $av, $value := .Values.multiav.vendors }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+  labels:
+    app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+  replicas: {{ $value.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+    spec:
+      containers:
+        - name: "{{ $av }}"
+          image: "{{ $value.image.repository }}:{{ $value.image.tag }}"
+          imagePullPolicy: "{{ $value.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ $value.containerPort }}
+          volumeMounts:
+            - name: samples
+              mountPath: /samples
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: {{ include "saferwall.fullname" $root }}-pvc
+---
+{{- end }}
+{{- end }}

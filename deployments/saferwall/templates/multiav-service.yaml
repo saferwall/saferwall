@@ -1,0 +1,19 @@
+{{- if .Values.multiav.enabled -}}
+{{- $root := . -}}
+{{- range $av, $value := .Values.multiav.vendors }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+  labels:
+    app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+spec:
+  selector:
+    app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
+  ports:
+    - port: {{ $value.service.port }}
+      targetPort: {{  $value.service.port }}
+      protocol: TCP
+---
+{{- end }}
+{{- end }}

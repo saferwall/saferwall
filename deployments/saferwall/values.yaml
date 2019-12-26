@@ -162,3 +162,141 @@ consumer:
     repository: saferwall/consumer
     tag: latest
     pullPolicy: Always
+
+########### MULTIAV ###########
+multiav:
+  enabled: true
+  name: multiav
+  vendors:
+    avast:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goavast
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    avira:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goavira
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    bitdefender:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gobitdefender
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    clamav:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goclamav
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    comodo:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gocomodo
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    eset:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goeset
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    fsecure:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gofsecure
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    kaspersky:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gokaspersky
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    mcafee:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gomcafee
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    sophos:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gosophos
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    symantec:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gomsymantec
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    windefender:
+      enabled: true
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gowindefender
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051

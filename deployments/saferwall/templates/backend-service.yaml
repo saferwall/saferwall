@@ -15,4 +15,4 @@ spec:
       nodePort: {{ .Values.backend.service.nodePort }}
     {{- end }}
   type: {{ .Values.backend.service.type }}
-  {{- end }}
+{{- end }}
