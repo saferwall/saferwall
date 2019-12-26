@@ -19,7 +19,6 @@ spec:
         - name: "{{ .Values.consumer.name }}"
           image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
           imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"
-          # command: ["/bin/sh", "-c", "cat /consumer/configs/saferwall.dev.toml"]
           volumeMounts:
           - name: samples
             mountPath: /samples
