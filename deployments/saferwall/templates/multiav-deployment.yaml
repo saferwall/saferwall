@@ -29,7 +29,7 @@ spec:
       volumes:
       - name: samples
         persistentVolumeClaim:
-          claimName: {{ include "saferwall.fullname" $root }}-pvc
+          claimName: {{ include "saferwall.fullname" $root }}-samples
 ---
 {{- end }}
 {{- end }}

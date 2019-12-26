@@ -19,11 +19,23 @@ spec:
         - name: "{{ .Values.consumer.name }}"
           image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
           imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"
+          # command: ["/bin/sh", "-c", "cat /consumer/configs/saferwall.dev.toml"]
           volumeMounts:
           - name: samples
             mountPath: /samples
+          - name:  {{ $.Release.Name }}-consumer-configmap-volume
+            mountPath: /consumer/configs/
+          env:
+            - name: ENVIRONMENT
+              value: "dev"
       volumes:
       - name: samples
         persistentVolumeClaim:
-          claimName: {{ include "saferwall.fullname" . }}-pvc
+          claimName: {{ include "saferwall.fullname" . }}-samples
+      - name: {{ $.Release.Name }}-consumer-configmap-volume
+        configMap:
+          name: {{ include "saferwall.consumer.fullname" . }}
+          items:
+            - key: consumer_conf
+              path: saferwall.dev.toml
 {{- end }}

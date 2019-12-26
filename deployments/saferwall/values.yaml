@@ -111,7 +111,10 @@ couchbase-cluster:
 nsq:
   nsqd:
     name: nsqd
-
+    replicaCount: 2
+  nsqlookupd:
+    name: nsqlookupd
+    replicaCount: 2
 
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
@@ -155,7 +158,7 @@ frontend:
 
 ########### CONSUMER ###########
 consumer:
-  enabled: false
+  enabled: true
   name: consumer
   replicaCount: 1
   image:
@@ -283,7 +286,7 @@ multiav:
       replicaCount: 1
       containerPort: 50051
       image:
-        repository: saferwall/gomsymantec
+        repository: saferwall/gosymantec
         tag: latest
         pullPolicy: Always
       service:

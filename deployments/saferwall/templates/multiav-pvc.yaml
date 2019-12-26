@@ -2,7 +2,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ include "saferwall.fullname" . }}-pvc
+  name: {{ include "saferwall.fullname" . }}-samples
   annotations:
     volume.beta.kubernetes.io/storage-class: efs
 spec:
