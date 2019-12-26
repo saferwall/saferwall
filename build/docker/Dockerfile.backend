@@ -40,6 +40,7 @@ WORKDIR /backend
 # Copy the app
 COPY --from=builder /go/bin/server .
 COPY ./config ./config
+COPY ./files ./files
 COPY ./app/schema ./app/schema
 
 # Run the server.

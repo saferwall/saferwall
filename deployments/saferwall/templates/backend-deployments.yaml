@@ -26,7 +26,7 @@ spec:
               value: "dev"
           volumeMounts:
             - name:  {{ $.Release.Name }}-configmap-volume
-              mountPath: /config/
+              mountPath: /backend/config/
       volumes:
       - name: {{ $.Release.Name }}-configmap-volume
         configMap:

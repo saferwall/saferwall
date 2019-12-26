@@ -261,7 +261,7 @@ func initGeoIP(){
 		log.Fatalln("Failed to GetWd, err: ", err)
 	}
 
-	dbPath := path.Join(dir, "config", "GeoLite2-City.mmdb")
+	dbPath := path.Join(dir, "files", "GeoLite2-City.mmdb")
 
 	GeoIPDB, err = geoip2.Open(dbPath)
 	if err != nil {

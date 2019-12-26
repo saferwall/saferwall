@@ -1,5 +1,7 @@
 ########### MINIO ###########
 minio:
+  enabled: true
+
   # We choose distributed for HA. This can be set to standalone in dev env.
   mode: standalone
   # mode: distributed
@@ -21,10 +23,11 @@ minio:
 
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"
+  spacename: samples
 
 ####### COUCHBASE #########
 couchbase-cluster:
-  enabled: false
+  enabled: true
   couchbaseCluster:
     create: true
     name: ""
@@ -40,14 +43,14 @@ couchbase-cluster:
       - xdcr
     adminConsoleServiceType: NodePort
     exposedFeatureServiceType: NodePort
-    dns:
-      domain:
+    # dns:
+    #   domain:
     platform:
     cluster:
-      dataServiceMemoryQuota: 256
-      indexServiceMemoryQuota: 256
-      searchServiceMemoryQuota: 256
-      eventingServiceMemoryQuota: 256
+      dataServiceMemoryQuota: 512
+      indexServiceMemoryQuota: 512
+      searchServiceMemoryQuota: 512
+      eventingServiceMemoryQuota: 512
       analyticsServiceMemoryQuota: 1024
       indexStorageSetting: memory_optimized
       autoFailoverTimeout: 120
@@ -78,7 +81,6 @@ couchbase-cluster:
         conflictResolution: seqno
         enableFlush: true
         enableIndexReplica: false
-
     servers:
       all_services:
         size: 3
@@ -90,10 +92,20 @@ couchbase-cluster:
           - eventing
           - analytics
         serverGroups: []
-        pod: {}
-    securityContext: {}
-    volumeClaimTemplates: []
-
+        pod:
+          volumeMounts:
+            default: couchbase
+            data:  couchbase
+    securityContext:
+      fsGroup: 1000
+    volumeClaimTemplates:
+      - metadata:
+          name: couchbase
+        spec:
+          storageClassName: "default"
+          resources:
+            requests:
+              storage: 1Gi
 
 ########### NSQ ###########
 nsq:
@@ -118,7 +130,7 @@ backend:
   replicaCount: 1
   containerPort: 8080
   image:
-    repository: saferwall/goavast
+    repository: saferwall/backend
     tag: latest
     pullPolicy: Always
   service:
