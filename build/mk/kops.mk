@@ -27,6 +27,7 @@ kops-create-bucket:		## create s3 bucket
 
 NODE_COUNT = 1
 NODE_SIZE = t2.xlarge
+FS_TOKEN = saferwall-efs
 kops-create-cluster:	## create k8s cluster
 	kubectl config get-contexts
 	aws ec2 describe-availability-zones --region us-east-1
@@ -39,13 +40,14 @@ kops-create-cluster:	## create k8s cluster
 	kops update cluster ${NAME} --yes
 	sleep 8m
 	kops validate cluster
-	kubectl get nodes
 	kubectl config current-context
-
+	kubectl get nodes
+	make kops-create-efs
+	make kops-create-mount-targers
 
 kops-create-efs:		## create AWS EFS file system
 	aws efs create-file-system \
-		--creation-token saferwall-efs \
+		--creation-token $(FS_TOKEN) \
 		--performance-mode maxIO \
 		--region us-east-1
 
@@ -63,28 +65,37 @@ kops-create-mount-targers:	## Create mount targets
 kops-delete-mount-targets:		## Delete mount targets
 		$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 		$(eval MOUNT_TARGET_ID = $(shell aws efs describe-mount-targets --file-system-id $(FS_ID) --query 'MountTargets[0].MountTargetId'))
-		aws efs delete-mount-target --mount-target-id $(MOUNT_TARGET_ID)
+		aws efs delete-mount-target --mount-target-id $(MOUNT_TARGET_ID) ; exit 0
 
 kops-delete-file-system:		## Delete file system
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
-	aws efs delete-file-system --file-system-id $(FS_ID)
+	aws efs delete-file-system --file-system-id $(FS_ID) ; exit 0
 
-kops-create-efs-provisioner:	## Create efs provisioner
-	cd ~ \
-		&& git clone https://github.com/kubernetes-incubator/external-storage || true \
-		&& cd external-storage/aws/efs/deploy/ \
-		&& kubectl apply -f rbac.yaml \
-		&& kubectl apply -f manifest.yaml
-		# Modify manifest.yaml. In the configmap section change the
-		# file.system.id: and aws.region: to match the details of the
-		#  EFS you created. Change dns.name if you want to mount by your
-		# own DNS name and not by AWS's *file-system-id*.efs.*aws-region*.amazonaws.com.
-		# In the deployment section change the server: to the DNS endpoint of the EFS you created.
-
-kops-delete-cluster:	kops-delete-mount-targets kops-delete-file-system 	## Delete k8s cluster
+kops-delete-cluster:	## Delete k8s cluster
+	make kops-delete-mount-targets
+	sleep 1m
+	make kops-delete-file-system 
 	kops delete cluster --name ${NAME} --yes
 
 kops-update-cluster:		## Update k8s cluster
 	kops edit ig --name= nodes
 	kops update cluster --yes
 	kops rolling-update cluster --yes
+
+kops-tips:		## Some kops commands
+	# list clusters with
+	kops get cluster
+ 	# edit this cluster with:
+	kops edit cluster ${NAME} 
+	# edit your node instance group
+	kops edit ig --name=${NAME}  nodes
+ 	# edit your master instance group:
+	kops edit ig --name=${NAME} master-us-east-1a
+	# Finally configure your cluster with:
+	kops update cluster --name saferwall.k8s.local --yes
+
+kops-init-cert-manager: # Init cert-manager
+	helm repo add jetstack https://charts.jetstack.io
+	kubectl create namespace cert-manager
+	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml

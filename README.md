@@ -4,8 +4,23 @@ Saferwall is an open source hackable malware sandbox.
 
 ## Features
 
-- Basic static analysis (calculate common crypto hashes, identify packer, extract strings, get exiftool, magic, and TriD metadata).
-- Multiple AV scanner which includes major antivirus vendors.
+- Static analysis:
+    - calculate common crypto hashes, identify packer, extract strings, get exiftool, magic, and TriD metadata).
+- Multiple AV scanner which includes major antivirus vendors:
+    Vendors | status 
+    --- | ---
+    Avast | :heavy_check_mark: 
+    Avira | :heavy_check_mark: 
+    Bitdefender | :heavy_check_mark: 
+    ClamAV | :heavy_check_mark: 
+    Comodo | :heavy_check_mark: 
+    ESET | :heavy_check_mark: 
+    FSecure | :heavy_check_mark: 
+    Kaspersky | :heavy_check_mark: 
+    MCAfee | :heavy_check_mark: 
+    Sophos | :heavy_check_mark: 
+    Symantec | :heavy_check_mark: 
+    Windows Defender | :heavy_check_mark: 
 
 ## Contributing
 

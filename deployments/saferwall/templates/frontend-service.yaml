@@ -12,7 +12,7 @@ spec:
     - port: {{ .Values.frontend.service.port }}
       targetPort: {{ .Values.frontend.service.targetPort }}
     {{- if .Values.frontend.service.nodePort }}
-      nodePort: {{ .Values.bafrontendckend.service.nodePort }}
+      nodePort: {{ .Values.frontend.service.nodePort }}
     {{- end }}
   type: {{ .Values.frontend.service.type }}
 {{- end }}

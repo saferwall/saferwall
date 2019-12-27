@@ -119,7 +119,7 @@ nsq:
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
   efsProvisioner:
-    efsFileSystemId: "fs-e9a29668"
+    efsFileSystemId: "fs-0ecffe8f"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
@@ -137,24 +137,40 @@ backend:
     tag: latest
     pullPolicy: Always
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
     targetPort: 8080
 
 ########### FRONTEND ###########
 frontend:
-  enabled: false
+  enabled: true
   name: frontend
   replicaCount: 1
-  containerPort: 8080
+  containerPort: 80
   image:
     repository: saferwall/ui
     tag: latest
     pullPolicy: Always
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
-    targetPort: 8080
+    targetPort: 80
+
+########## CERT-MANAGER ############
+cert-manager:
+  enabled: true
+  ingressShim:
+    defaultIssuerName: letsencrypt-prod
+    defaultIssuerKind: ClusterIssuer
+
+########## CERTIFICATE ############
+backendDomainName: api.saferwall.com
+frontendDomainName: saferwall.com
+ingressClass: nginx
+certEmail: admin@saferwall.com
+certIssuer: letsencrypt-prod
+certSecret: <certSecretHere>
+# server: https://acme-staging.api.letsencrypt.org/directory
 
 ########### CONSUMER ###########
 consumer:
