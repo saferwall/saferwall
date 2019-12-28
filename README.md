@@ -7,6 +7,7 @@ Saferwall is an open source hackable malware sandbox.
 - Static analysis:
     - calculate common crypto hashes, identify packer, extract strings, get exiftool, magic, and TriD metadata).
 - Multiple AV scanner which includes major antivirus vendors:
+
     Vendors | status 
     --- | ---
     Avast | :heavy_check_mark: 

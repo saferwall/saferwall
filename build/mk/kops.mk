@@ -99,3 +99,9 @@ kops-init-cert-manager: # Init cert-manager
 	kubectl create namespace cert-manager
 	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+
+KEY_FILE =  tls.key
+CERT_FILE =  tls.crt
+kops-create-tls-secrets:
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${KEY_FILE} -out ${CERT_FILE} -subj "/CN=${HOST}/O=${HOST}"
+	kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}

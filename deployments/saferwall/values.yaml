@@ -119,7 +119,7 @@ nsq:
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
   efsProvisioner:
-    efsFileSystemId: "fs-0ecffe8f"
+    efsFileSystemId: "fs-d9f9ca58"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
@@ -170,7 +170,8 @@ ingressClass: nginx
 certEmail: admin@saferwall.com
 certIssuer: letsencrypt-prod
 certSecret: <certSecretHere>
-# server: https://acme-staging.api.letsencrypt.org/directory
+letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
+# letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
 
 ########### CONSUMER ###########
 consumer:

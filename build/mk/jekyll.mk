@@ -7,7 +7,8 @@ jekyll-install:		## Install Jekyll
 	gem install jekyll bundler
 
 jekyll-serve:		## Serve the jekyll app
-	export LC_ALL=en_US.UTF-8
-	export LANG=en_US.UTF-8
-	bundle install
-	bundle exec jekyll serve
+	cd website \ 
+		&& export LC_ALL=en_US.UTF-8 \
+		&& export LANG=en_US.UTF-8 \
+		&& bundle install \
+		&& bundle exec jekyll serve

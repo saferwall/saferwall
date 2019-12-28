@@ -1,0 +1,16 @@
+{{- if index .Values "cert-manager" "enabled" -}}
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: "{{ .Values.certIssuer }}"
+spec:
+  acme:
+    server: "{{ .Values.letsencryptServer }}"
+    email: "{{ .Values.certEmail }}"
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+{{- end }}
