@@ -61,7 +61,7 @@ module.exports = {
       },
     },
     FORGOT_PWD: {
-      path: "/forgot_password/",
+      path: "/forgot-password/",
       name: "forgotPassword",
       meta: {
         title: "Forgot Password?",
@@ -70,7 +70,7 @@ module.exports = {
       },
     },
     RESET_PWD: {
-      path: "/reset_password/",
+      path: "/reset-password/",
       name: "resetPassword",
       meta: {
         title: "Reset Password",
