@@ -51,8 +51,14 @@ func Connect() {
 	FilesBucket = bucketFiles
 
 	/* Create primary indexs */
-	UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
-	FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	err = UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	if err != nil {
+		log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
+	}
+	err = FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
+	if err != nil {
+		log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
+	}
 
 	log.Infoln("Connected to couchbase")
 }

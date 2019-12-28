@@ -43,8 +43,8 @@ require (
 	github.com/xeipuuv/gojsonschema v1.1.0
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/couchbase/gocb.v1 v1.6.3
-	gopkg.in/couchbase/gocbcore.v7 v7.1.14 // indirect
+	gopkg.in/couchbase/gocb.v1 v1.6.4
+	gopkg.in/couchbase/gocbcore.v7 v7.1.15 // indirect
 	gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4 // indirect
 	gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3 // indirect
 	gopkg.in/couchbaselabs/jsonx.v1 v1.0.0 // indirect

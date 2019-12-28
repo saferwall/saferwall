@@ -291,10 +291,10 @@ gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc/go.mod
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 h1:qIbj1fsPNlZgppZ+VLlY7N33q108Sa+fhmuc+sWQYwY=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
-gopkg.in/couchbase/gocb.v1 v1.6.3 h1:JpIh6ZZiiawnoASCuv5/0N+DAWXvEKyENFpUfNMyb7M=
-gopkg.in/couchbase/gocb.v1 v1.6.3/go.mod h1:Ri5Qok4ZKiwmPr75YxZ0uELQy45XJgUSzeUnK806gTY=
-gopkg.in/couchbase/gocbcore.v7 v7.1.14 h1:VXkza2TE3N8BD5V6jMaQdWEwlmpLQtKLRq0F4Xo7p44=
-gopkg.in/couchbase/gocbcore.v7 v7.1.14/go.mod h1:48d2Be0MxRtsyuvn+mWzqmoGUG9uA00ghopzOs148/E=
+gopkg.in/couchbase/gocb.v1 v1.6.4 h1:vAworfH5ZKDbonmayrwbGiD9jkAMroWmHXDf1GAIqMM=
+gopkg.in/couchbase/gocb.v1 v1.6.4/go.mod h1:Ri5Qok4ZKiwmPr75YxZ0uELQy45XJgUSzeUnK806gTY=
+gopkg.in/couchbase/gocbcore.v7 v7.1.15 h1:2nhfrqKz6TBex0Vcc+iq9UnAZltfCGklnM4mgdf2I3o=
+gopkg.in/couchbase/gocbcore.v7 v7.1.15/go.mod h1:48d2Be0MxRtsyuvn+mWzqmoGUG9uA00ghopzOs148/E=
 gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4 h1:VVVoIV/nSw1w9ZnTEOjmkeJVcAzaCyxEujKglarxz7U=
 gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4/go.mod h1:ZjII0iKx4Veo6N6da+pEZu/ptNyKLg9QTVt7fFmR6sw=
 gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3 h1:7n5tht07rEuogME6fmi6FVglIAUFD8m4t8ZQbnUq0sA=
