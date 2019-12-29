@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/couchbase/gocb/v2"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"gopkg.in/couchbase/gocb.v1"
 
 	"time"
 )
@@ -33,7 +33,7 @@ type User struct {
 
 // Save adds user to a database.
 func (u *User) Save() {
-	db.UsersBucket.Upsert(u.Username, u, 0)
+	db.UsersCollection.Upsert(u.Username, u, &gocb.UpsertOptions{})
 	log.Infof("User %s was created successefuly", u.Username)
 }
 
@@ -70,8 +70,11 @@ func Confirm(username string) error {
 
 // CheckEmailExist returns true if emails exists
 func CheckEmailExist(email string) (bool, error) {
-	myQuery := "SELECT COUNT(*) as count FROM `users` WHERE email=$1"
-	rows, err := db.UsersBucket.ExecuteN1qlQuery(gocb.NewN1qlQuery(myQuery), []interface{}{email})
+
+	query := "SELECT COUNT(*) as count FROM `users` WHERE email=$1;"
+	params := make(map[string]interface{}, 1)
+	params["email"] = email
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		return false, err
 	}
@@ -92,7 +95,7 @@ func CheckEmailExist(email string) (bool, error) {
 func GetUserByUsernameFields(fields []string, username string) (User, error) {
 
 	// Select only demanded fields
-	var statement string
+	var query string
 	if len(fields) > 0 {
 		var buffer bytes.Buffer
 		buffer.WriteString("SELECT ")
@@ -104,23 +107,18 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 			}
 		}
 		buffer.WriteString(" FROM `users` WHERE username=$1")
-		statement = buffer.String()
+		query = buffer.String()
 	} else {
-		statement = "SELECT users.* FROM `users` WHERE username=$1"
+		query = "SELECT users.* FROM `users` WHERE username=$1"
 	}
-
-	// Setup a new query with a placeholder
-	query := gocb.NewN1qlQuery(statement)
-
-	// Setup an array for parameters
-	var myParams []interface{}
-	myParams = append(myParams, username)
 
 	// Interfaces for handling streaming return values
 	var row User
 
 	// Execute Query
-	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, myParams)
+	params := make(map[string]interface{}, 1)
+	params["username"] = username
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err
@@ -139,11 +137,13 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 // DeleteAllUsers will empty users bucket
 func DeleteAllUsers() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	username := viper.GetString("db.username")
-	password := viper.GetString("db.password")
-	err := db.UsersBucket.Manager(username, password).Flush()
+	mgr, err := db.Cluster.Buckets()
 	if err != nil {
-		log.Print(err)
+		log.Errorf("Failed to create bucket manager %v", err)
+	}
+	err = mgr.FlushBucket("users", nil)
+	if err != nil {
+		log.Errorf("Failed to flush bucket manager %v", err)
 	}
 }
 
@@ -151,7 +151,7 @@ func DeleteAllUsers() {
 func GetAllUsers(fields []string) ([]User, error) {
 
 	// Select only demanded fields
-	var statement string
+	var query string
 	if len(fields) > 0 {
 		var buffer bytes.Buffer
 		buffer.WriteString("SELECT ")
@@ -163,14 +163,13 @@ func GetAllUsers(fields []string) ([]User, error) {
 			}
 		}
 		buffer.WriteString(" FROM `users`")
-		statement = buffer.String()
+		query = buffer.String()
 	} else {
-		statement = "SELECT users.* FROM `users`"
+		query = "SELECT users.* FROM `users`"
 	}
 
-	// Execute our query
-	query := gocb.NewN1qlQuery(statement)
-	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, nil)
+	// Execute Query
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 	}
@@ -192,9 +191,16 @@ func GetByUsername(username string) (User, error) {
 
 	// get our user
 	user := User{}
-	cas, err := db.UsersBucket.Get(username, &user)
+
+	getResult, err := db.UsersCollection.Get(username, &gocb.GetOptions{})
 	if err != nil {
-		fmt.Println(err, cas)
+		log.Errorln(err)
+		return user, err
+	}
+
+	err = getResult.Content(&user)
+	if err != nil {
+		log.Errorln(err)
 		return user, err
 	}
 
@@ -204,20 +210,17 @@ func GetByUsername(username string) (User, error) {
 // GetUserByEmail return a user document from email
 func GetUserByEmail(email string) (User, error) {
 
-	statement := "SELECT users.* FROM `users` WHERE email=$1"
+	query := "SELECT users.* FROM `users` WHERE email=$1"
 
-	// Setup a new query with a placeholder
-	query := gocb.NewN1qlQuery(statement)
-
-	// Setup an array for parameters
-	var myParams []interface{}
-	myParams = append(myParams, email)
+	// Execute Query
+	params := make(map[string]interface{}, 1)
+	params["email"] = email
 
 	// Interfaces for handling streaming return values
 	var row User
 
 	// Execute Query
-	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, myParams)
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err
@@ -246,7 +249,7 @@ func CreateAdminUser() {
 
 	newUser := User{
 		Username: username,
-		Email: email,
+		Email:    email,
 	}
 
 	t := time.Now().UTC()

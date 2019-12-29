@@ -32,6 +32,8 @@ github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
+github.com/couchbase/gocb v1.6.4 h1:ZtlHvz+rwldWXeUWXS96GcGR3tedAZ+2zTCBHzzjAis=
+github.com/couchbase/gocb v1.6.4/go.mod h1:AtRhXLpjgHmkRgG3e0K9t41qnWFonb8iohS/u/TZzxM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -313,6 +315,7 @@ gopkg.in/couchbase/gocbcore.v7 v7.1.14 h1:VXkza2TE3N8BD5V6jMaQdWEwlmpLQtKLRq0F4X
 gopkg.in/couchbase/gocbcore.v7 v7.1.14/go.mod h1:48d2Be0MxRtsyuvn+mWzqmoGUG9uA00ghopzOs148/E=
 gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4 h1:VVVoIV/nSw1w9ZnTEOjmkeJVcAzaCyxEujKglarxz7U=
 gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4/go.mod h1:ZjII0iKx4Veo6N6da+pEZu/ptNyKLg9QTVt7fFmR6sw=
+gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3 h1:7n5tht07rEuogME6fmi6FVglIAUFD8m4t8ZQbnUq0sA=
 gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3/go.mod h1:jl/gd/aQ2S8whKVSTnsPs6n7BPeaAuw9UglBD/OF7eo=
 gopkg.in/couchbaselabs/jsonx.v1 v1.0.0 h1:SJGarb8dXAsVZWizC26rxBkBYEKhSUxVh5wAnyzBVaI=
 gopkg.in/couchbaselabs/jsonx.v1 v1.0.0/go.mod h1:oR201IRovxvLW/eISevH12/+MiKHtNQAKfcX8iWZvJY=

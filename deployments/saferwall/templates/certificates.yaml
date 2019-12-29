@@ -8,7 +8,7 @@ spec:
     server: "{{ .Values.letsencryptServer }}"
     email: "{{ .Values.certEmail }}"
     privateKeySecretRef:
-      name: letsencrypt-prod
+      name: letsencrypt-staging
     solvers:
     - http01:
         ingress:

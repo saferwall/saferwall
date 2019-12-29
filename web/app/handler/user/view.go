@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/couchbase/gocb/v2"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
@@ -20,12 +21,14 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-
 // deleteUser will delete a user
 func deleteUser(username string) error {
 
 	// delete document
-	cas, err := db.UsersBucket.Remove(username, 0)
+	cas, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{
+		Timeout:         100 * time.Millisecond,
+		DurabilityLevel: gocb.DurabilityLevelMajority,
+	})
 	fmt.Println(cas, err)
 	return err
 }
@@ -47,7 +50,7 @@ func GetUser(c echo.Context) error {
 	username := c.Param("username")
 	user, err := GetUserByUsernameFields(filters, username)
 	if err != nil {
-		return c.JSON(http.StatusNotFound,  map[string]string{
+		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "User not found"})
 	}
 	return c.JSON(http.StatusOK, user)

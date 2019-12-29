@@ -39,13 +39,15 @@ couchbase-cluster:
     exposeAdminConsole: true
     adminConsoleServices:
       - data
+      # - query
+      # - index
     exposedFeatures:
       - xdcr
     adminConsoleServiceType: NodePort
     exposedFeatureServiceType: NodePort
     # dns:
     #   domain:
-    platform:
+    platform: aws
     cluster:
       dataServiceMemoryQuota: 512
       indexServiceMemoryQuota: 512
@@ -119,7 +121,7 @@ nsq:
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
   efsProvisioner:
-    efsFileSystemId: "fs-d9f9ca58"
+    efsFileSystemId: "fs-08aa9789"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
@@ -160,7 +162,7 @@ frontend:
 cert-manager:
   enabled: true
   ingressShim:
-    defaultIssuerName: letsencrypt-prod
+    defaultIssuerName: letsencrypt-staging
     defaultIssuerKind: ClusterIssuer
 
 ########## CERTIFICATE ############
@@ -168,10 +170,10 @@ backendDomainName: api.saferwall.com
 frontendDomainName: saferwall.com
 ingressClass: nginx
 certEmail: admin@saferwall.com
-certIssuer: letsencrypt-prod
+certIssuer: letsencrypt-staging
 certSecret: <certSecretHere>
-letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
-# letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
+# letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
+letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
 
 ########### CONSUMER ###########
 consumer:

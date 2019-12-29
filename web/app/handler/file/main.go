@@ -14,10 +14,11 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"time"
-	"strings"
 	"regexp"
+	"strings"
+	"time"
 
+	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v6"
@@ -27,10 +28,8 @@ import (
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/tomasen/realip"
 	"github.com/xeipuuv/gojsonschema"
-	"gopkg.in/couchbase/gocb.v1"
 )
 
 type stringStruct struct {
@@ -87,7 +86,7 @@ const (
 
 // Create creates a new file
 func (file *File) Create() error {
-	_, error := db.FilesBucket.Upsert(file.Sha256, file, 0)
+	_, error := db.FilesCollection.Upsert(file.Sha256, file, &gocb.UpsertOptions{})
 	if error != nil {
 		log.Fatal(error)
 		return error
@@ -101,11 +100,17 @@ func GetFileBySHA256(sha256 string) (File, error) {
 
 	// get our file
 	file := File{}
-	cas, err := db.FilesBucket.Get(sha256, &file)
+	getResult, err := db.FilesCollection.Get(sha256, &gocb.GetOptions{})
 	if err != nil {
-		log.Errorln(err, cas)
+		log.Errorln(err)
+		return file, err
 	}
 
+	err = getResult.Content(&file)
+	if err != nil {
+		log.Errorln(err)
+		return file, err
+	}
 	return file, err
 }
 
@@ -113,7 +118,7 @@ func GetFileBySHA256(sha256 string) (File, error) {
 func GetAllFiles(fields []string) ([]File, error) {
 
 	// Select only demanded fields
-	var statement string
+	var query string
 	if len(fields) > 0 {
 		var buffer bytes.Buffer
 		buffer.WriteString("SELECT ")
@@ -125,14 +130,13 @@ func GetAllFiles(fields []string) ([]File, error) {
 			}
 		}
 		buffer.WriteString(" FROM `files`")
-		statement = buffer.String()
+		query = buffer.String()
 	} else {
-		statement = "SELECT files.* FROM `files`"
+		query = "SELECT files.* FROM `files`"
 	}
 
 	// Execute our query
-	query := gocb.NewN1qlQuery(statement)
-	rows, err := db.UsersBucket.ExecuteN1qlQuery(query, nil)
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 	}
@@ -174,12 +178,11 @@ func GetFile(c echo.Context) error {
 	log.Infoln(clientIP2)
 	log.Infoln(clientIP3)
 
-
 	// get path param
 	sha256 := c.Param("sha256")
 
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
-	if (!matched) {
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
 			Description: "Invalid hash submitted: " + sha256,
@@ -187,7 +190,7 @@ func GetFile(c echo.Context) error {
 	}
 
 	file, err := GetFileBySHA256(sha256)
-	if err != nil && err == gocb.ErrKeyNotFound {
+	if err != nil && gocb.IsKeyNotFoundError(err) {
 		return c.JSON(http.StatusNotFound, Response{
 			Message:     err.Error(),
 			Description: "File was not found in our database",
@@ -223,8 +226,8 @@ func PutFile(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, errors.New("json validation failed"))
 	}
 
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
-	if (!matched) {
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
 			Description: "File hash is not a sha256 hash" + sha256,
@@ -242,7 +245,7 @@ func PutFile(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	db.FilesBucket.Upsert(sha256, file, 0)
+	db.FilesCollection.Upsert(sha256, file, &gocb.UpsertOptions{})
 	return c.JSON(http.StatusOK, sha256)
 }
 
@@ -257,11 +260,14 @@ func DeleteFile(c echo.Context) error {
 // deleteAllFiles will empty files bucket
 func deleteAllFiles() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-
-	username := viper.GetString("db.username")
-	password := viper.GetString("db.password")
-
-	db.FilesBucket.Manager(username, password).Flush()
+	mgr, err := db.Cluster.Buckets()
+	if err != nil {
+		log.Errorf("Failed to create bucket manager %v", err)
+	}
+	err = mgr.FlushBucket("files", nil)
+	if err != nil {
+		log.Errorf("Failed to flush bucket manager %v", err)
+	}
 }
 
 // GetFiles returns list of files.
@@ -342,7 +348,7 @@ func PostFiles(c echo.Context) error {
 
 	// Have we seen this file before
 	fileDocument, err := GetFileBySHA256(sha256)
-	if err != nil && err != gocb.ErrKeyNotFound {
+	if err != nil && !gocb.IsKeyNotFoundError(err) {
 		return c.JSON(http.StatusInternalServerError, Response{
 			Message:     "Something unexpected happened",
 			Description: err.Error(),
@@ -350,7 +356,7 @@ func PostFiles(c echo.Context) error {
 		})
 	}
 
-	if err == gocb.ErrKeyNotFound {
+	if gocb.IsKeyNotFoundError(err) {
 		// Upload the sample to DO object storage.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -504,8 +510,8 @@ func Actions(c echo.Context) error {
 
 	// get path param
 	sha256 := c.Param("sha256")
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$",sha256)
-	if (!matched) {
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
 			Description: "File hash is not a sha256 hash" + sha256,
@@ -515,7 +521,7 @@ func Actions(c echo.Context) error {
 
 	log.Print(sha256)
 	_, err = GetFileBySHA256(sha256)
-	if err != nil && err == gocb.ErrKeyNotFound {
+	if err != nil && gocb.IsKeyNotFoundError(err) {
 		return c.JSON(http.StatusNotFound, Response{
 			Message:     err.Error(),
 			Description: "File was not found in our database",
@@ -540,19 +546,19 @@ func Actions(c echo.Context) error {
 			Description: "Type of action: " + actionType,
 			Sha256:      sha256,
 		})
-	} else if (actionType == "download") {
+	} else if actionType == "download" {
 		reader, err := app.MinioClient.GetObject(
 			app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		defer reader.Close()
-	
+
 		_, err = reader.Stat()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, err.Error())
 		}
-	
+
 		filepath, err := u.ZipEncrypt(sha256, "infected", reader)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())

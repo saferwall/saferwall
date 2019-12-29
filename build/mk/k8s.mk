@@ -114,3 +114,13 @@ k8s-delete:			## delete all
 
 	kubectl delete cbc cb-saferwall ; kubectl create -f couchbase-cluster.yaml
 	kubectl delete deployments backend ; kubectl apply -f backend.yaml
+
+KEY_FILE =  tls.key
+CERT_FILE =  tls.crt
+k8s-create-tls-secrets:
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${KEY_FILE} -out ${CERT_FILE} -subj "/CN=${HOST}/O=${HOST}"
+	kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}
+
+
+k8s-pf:
+	kubectl port-forward --namespace default v1-couchbase-cluster-0000 8091:8091

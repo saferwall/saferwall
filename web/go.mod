@@ -8,10 +8,9 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/bitly/go-nsq v1.0.7
+	github.com/couchbase/gocb/v2 v2.0.0-beta.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
-	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20190408195923-01ec452cbe43 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
@@ -25,7 +24,6 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/nsqio/go-nsq v1.0.7 // indirect
-	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/oschwald/geoip2-golang v1.3.0
 	github.com/oschwald/maxminddb-golang v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.5.0 // indirect
@@ -43,10 +41,5 @@ require (
 	github.com/xeipuuv/gojsonschema v1.1.0
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/couchbase/gocb.v1 v1.6.4
-	gopkg.in/couchbase/gocbcore.v7 v7.1.15 // indirect
-	gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.4 // indirect
-	gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3 // indirect
-	gopkg.in/couchbaselabs/jsonx.v1 v1.0.0 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 )

@@ -5,60 +5,70 @@
 package db
 
 import (
+	gocb "github.com/couchbase/gocb/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 var (
-	// UsersBucket controlls users models
+	// UsersCollection reference the users collection
+	UsersCollection *gocb.Collection
+
+	// FilesCollection reference the files collection
+	FilesCollection *gocb.Collection
+
+	// UsersBucket represents the users bucket.
 	UsersBucket *gocb.Bucket
 
-	// FilesBucket controlls files models
+	// FilesBucket represents the files bucket.
 	FilesBucket *gocb.Bucket
+
+	// Cluster is our cluster
+	Cluster *gocb.Cluster
 )
 
 // Connect to couchbase server
 func Connect() {
 
-	/* Init our cluster */
-	connectStr := viper.GetString("db.server")
-	cluster, err := gocb.Connect(connectStr)
-	if err != nil {
-		log.Error(err)
-	}
+	/* setup logger */
+	// gocb.SetLogger(gocb.DefaultStdioLogger())
 
 	/* Authenticate cluster */
 	username := viper.GetString("db.username")
 	password := viper.GetString("db.password")
-	cluster.Authenticate(gocb.PasswordAuthenticator{
-		Username: username,
-		Password: password,
-	})
-
-	/* Open the `users` bucket */
-	bucketUsers, err := cluster.OpenBucket("users", "")
-	if err != nil {
-		log.Fatal(err)
+	opts := gocb.ClusterOptions{
+		Authenticator: gocb.PasswordAuthenticator{
+			username,
+			password,
+		},
 	}
-	UsersBucket = bucketUsers
 
-	/* Open the `files` bucket */
-	bucketFiles, err := cluster.OpenBucket("files", "")
+	/* Init our cluster */
+	server := viper.GetString("db.server")
+	cluster, err := gocb.Connect(server, opts)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	FilesBucket = bucketFiles
+
+	// get a bucket reference over users
+	UsersBucket = cluster.Bucket("users", &gocb.BucketOptions{})
+	FilesBucket = cluster.Bucket("files", &gocb.BucketOptions{})
+
+	// get a collection reference
+	UsersCollection = UsersBucket.DefaultCollection()
+	FilesCollection = FilesBucket.DefaultCollection()
+
+	Cluster = cluster
 
 	/* Create primary indexs */
-	err = UsersBucket.Manager("", "").CreatePrimaryIndex("", true, false)
-	if err != nil {
-		log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
-	}
-	err = FilesBucket.Manager("", "").CreatePrimaryIndex("", true, false)
-	if err != nil {
-		log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
-	}
+	// err = UsersCollection.Manager("", "").CreatePrimaryIndex("", true, false)
+	// if err != nil {
+	// 	log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
+	// }
+	// err = FilesCollection.Manager("", "").CreatePrimaryIndex("", true, false)
+	// if err != nil {
+	// 	log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
+	// }
 
 	log.Infoln("Connected to couchbase")
 }
