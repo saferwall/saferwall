@@ -30,6 +30,8 @@ var (
 // Connect to couchbase server
 func Connect() {
 
+	log.Infoln("v0.0.2")
+
 	/* setup logger */
 	// gocb.SetLogger(gocb.DefaultStdioLogger())
 
@@ -63,12 +65,16 @@ func Connect() {
 	/* Create primary indexs */
 	qm, err := cluster.QueryIndexes()
 
-	err = qm.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{})
+	err = qm.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{
+		IgnoreIfExists: true,
+	})
 	if err != nil {
 		log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
 	}
 
-	err = qm.CreatePrimaryIndex("files", &gocb.CreatePrimaryQueryIndexOptions{})
+	err = qm.CreatePrimaryIndex("files", &gocb.CreatePrimaryQueryIndexOptions{
+		IgnoreIfExists: true,
+	})
 	if err != nil {
 		log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
 	}

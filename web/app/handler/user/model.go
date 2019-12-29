@@ -71,7 +71,7 @@ func Confirm(username string) error {
 // CheckEmailExist returns true if emails exists
 func CheckEmailExist(email string) (bool, error) {
 
-	query := "SELECT COUNT(*) as count FROM `users` WHERE email=$1;"
+	query := "SELECT COUNT(*) as count FROM `users` WHERE `email`=$email;"
 	params := make(map[string]interface{}, 1)
 	params["email"] = email
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
@@ -106,10 +106,10 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 				buffer.WriteString(",")
 			}
 		}
-		buffer.WriteString(" FROM `users` WHERE username=$1")
+		buffer.WriteString(" FROM `users` WHERE `username`=$username")
 		query = buffer.String()
 	} else {
-		query = "SELECT users.* FROM `users` WHERE username=$1"
+		query = "SELECT users.* FROM `users` WHERE `username`=$username"
 	}
 
 	// Interfaces for handling streaming return values
@@ -118,7 +118,8 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 	// Execute Query
 	params := make(map[string]interface{}, 1)
 	params["username"] = username
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	rows, err := db.Cluster.Query(query,
+		&gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err
@@ -127,7 +128,7 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 	// Stream the first result only into the interface
 	err = rows.One(&row)
 	if err != nil {
-		fmt.Println("ERROR ITERATING QUERY RESULTS:", err)
+		fmt.Println("Error iterating query result, reason: ", err)
 		return row, err
 	}
 
@@ -210,7 +211,7 @@ func GetByUsername(username string) (User, error) {
 // GetUserByEmail return a user document from email
 func GetUserByEmail(email string) (User, error) {
 
-	query := "SELECT users.* FROM `users` WHERE email=$1"
+	query := "SELECT users.* FROM `users` WHERE `email`=$email"
 
 	// Execute Query
 	params := make(map[string]interface{}, 1)

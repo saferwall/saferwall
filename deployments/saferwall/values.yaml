@@ -27,7 +27,7 @@ minio:
 
 ####### COUCHBASE #########
 couchbase-cluster:
-  enabled: true
+  enabled: false
   couchbaseCluster:
     create: true
     name: ""
@@ -39,8 +39,6 @@ couchbase-cluster:
     exposeAdminConsole: true
     adminConsoleServices:
       - data
-      # - query
-      # - index
     exposedFeatures:
       - xdcr
     adminConsoleServiceType: NodePort
@@ -104,10 +102,10 @@ couchbase-cluster:
       - metadata:
           name: couchbase
         spec:
-          storageClassName: "default"
+          storageClassName: default
           resources:
             requests:
-              storage: 1Gi
+              storage: 2Gi
 
 ########### NSQ ###########
 nsq:
@@ -162,7 +160,7 @@ frontend:
 cert-manager:
   enabled: true
   ingressShim:
-    defaultIssuerName: letsencrypt-staging
+    defaultIssuerName: letsencrypt-prod
     defaultIssuerKind: ClusterIssuer
 
 ########## CERTIFICATE ############
@@ -170,10 +168,10 @@ backendDomainName: api.saferwall.com
 frontendDomainName: saferwall.com
 ingressClass: nginx
 certEmail: admin@saferwall.com
-certIssuer: letsencrypt-staging
+certIssuer: letsencrypt-prod
 certSecret: <certSecretHere>
-# letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
-letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
+letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
+# letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
 
 ########### CONSUMER ###########
 consumer:
