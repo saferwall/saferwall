@@ -11,6 +11,7 @@ require (
 	github.com/bitly/go-nsq v1.0.7
 	github.com/bnagy/gapstone v0.0.0-20190828052830-ede92aaeaba7
 	github.com/couchbase/gocb v1.6.4 // indirect
+	github.com/couchbase/gocb/v2 v2.0.0-beta.1 // indirect
 	github.com/fatih/color v1.7.0
 	github.com/golang/protobuf v1.3.2
 	github.com/hillu/go-yara v1.1.0

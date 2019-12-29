@@ -61,14 +61,17 @@ func Connect() {
 	Cluster = cluster
 
 	/* Create primary indexs */
-	// err = UsersCollection.Manager("", "").CreatePrimaryIndex("", true, false)
-	// if err != nil {
-	// 	log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
-	// }
-	// err = FilesCollection.Manager("", "").CreatePrimaryIndex("", true, false)
-	// if err != nil {
-	// 	log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
-	// }
+	qm, err := cluster.QueryIndexes()
+
+	err = qm.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{})
+	if err != nil {
+		log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
+	}
+
+	err = qm.CreatePrimaryIndex("files", &gocb.CreatePrimaryQueryIndexOptions{})
+	if err != nil {
+		log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
+	}
 
 	log.Infoln("Connected to couchbase")
 }

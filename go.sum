@@ -34,6 +34,16 @@ github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
 github.com/couchbase/gocb v1.6.4 h1:ZtlHvz+rwldWXeUWXS96GcGR3tedAZ+2zTCBHzzjAis=
 github.com/couchbase/gocb v1.6.4/go.mod h1:AtRhXLpjgHmkRgG3e0K9t41qnWFonb8iohS/u/TZzxM=
+github.com/couchbase/gocb/v2 v2.0.0-beta.1 h1:KoIMD8Vks538Aw7Gr9k2n22cmHQGdqu7Q8CH1RoPARk=
+github.com/couchbase/gocb/v2 v2.0.0-beta.1/go.mod h1:Zk58CGL719isq9IhtbB4S8WYgmTuAgk3h1BL4hAzvBI=
+github.com/couchbase/gocbcore/v8 v8.0.0-beta.1 h1:LjAYD4af7mFaiVtg5cJ18g2NvM5BF3zz4sJ8F/zahc4=
+github.com/couchbase/gocbcore/v8 v8.0.0-beta.1/go.mod h1:ffhLs3F/rbsp3S5L4C8vOGixYWbDYivgokZ+vTZivOo=
+github.com/couchbaselabs/gocbconnstr v1.0.3 h1:rkHC5N0ecbZ1NU7671ubApRdhSVc4rsulTEQ0W8O1uw=
+github.com/couchbaselabs/gocbconnstr v1.0.3/go.mod h1:Mg0VKc6azyPXhSq4b/xwsrW30ORe+H5L5hucCweYhj8=
+github.com/couchbaselabs/gojcbmock v1.0.3 h1:Ueenew8eiSM50pgHWV9+LThTB/aG29M2+LrxdjKasyU=
+github.com/couchbaselabs/gojcbmock v1.0.3/go.mod h1:Nc79KNEoRYsg4JELLhXzs89rTlEKO8lFrwOWxP31xKc=
+github.com/couchbaselabs/jsonx v1.0.0 h1:HARrAleRQAR/8AUkgR+oU9/u2DcomPlzxVxwukvph9s=
+github.com/couchbaselabs/jsonx v1.0.0/go.mod h1:lasGokRBGY0JX9hxzUH0F2C1HZ1B+aNQZnx5+sME0do=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -159,6 +169,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml v1.5.0 h1:5BakdOZdtKJ1FFk6QdL8iSGrMWsXgchNJcrnarjbmJQ=
 github.com/pelletier/go-toml v1.5.0/go.mod h1:5N711Q9dKgbdkxHL+MEfF31hpT7l0S0s/t2kKREewys=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
