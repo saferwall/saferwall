@@ -24,8 +24,6 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/nsqio/go-nsq v1.0.7 // indirect
-	github.com/oschwald/geoip2-golang v1.3.0
-	github.com/oschwald/maxminddb-golang v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.5.0 // indirect
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
 	github.com/saferwall/saferwall/pkg/utils v0.0.2
@@ -34,7 +32,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.4.0
-	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
