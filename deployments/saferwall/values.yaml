@@ -36,6 +36,7 @@ couchbase-cluster:
     exposeAdminConsole: true
     adminConsoleServices:
       - data
+    exposedFeatures: []
     cluster:
       dataServiceMemoryQuota: 512
       indexServiceMemoryQuota: 512
@@ -121,8 +122,6 @@ nginx-ingress:
   controller:
     config:
       use-proxy-protocol: "true"
-      # use-geoip2: "true"
-      # use-geoip: "false"
       use-forwarded-headers: "true"
       compute-full-forwarded-for: "true"
     headers:
