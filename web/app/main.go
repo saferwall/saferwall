@@ -17,7 +17,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
-	"github.com/oschwald/geoip2-golang"
 )
 
 type SMTPAuthentication struct {
@@ -75,9 +74,6 @@ var (
 
 	// SMTPConfig holds smtp config.
 	SMTPConfig SMTPAuthentication
-
-	// GeoIPDB represents MaxMind geo ip db
-	GeoIPDB *geoip2.Reader
 )
 
 // loadConfig loads our configration.
@@ -253,24 +249,6 @@ func initHermes() {
 
 }
 
-// initGeoIP open the max mind db
-func initGeoIP(){
-
-	dir, err := utils.Getwd()
-	if err != nil {
-		log.Fatalln("Failed to GetWd, err: ", err)
-	}
-
-	dbPath := path.Join(dir, "files", "GeoLite2-City.mmdb")
-
-	GeoIPDB, err = geoip2.Open(dbPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Successfully created maxmind getip instance")
-
-}
-
 // Init will initiate required objects
 func Init() {
 
@@ -294,9 +272,6 @@ func Init() {
 
 	// Get an Object Storage client instance
 	MinioClient = initOSClient()
-
-	// Init MaxMind get ip
-	initGeoIP()
 
 	Debug = viper.GetBool("app.debug")
 	StoragePath = viper.GetString("app.tmp_samples")

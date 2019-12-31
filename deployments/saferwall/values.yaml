@@ -27,25 +27,15 @@ minio:
 
 ####### COUCHBASE #########
 couchbase-cluster:
-  enabled: false
+  enabled: true
   couchbaseCluster:
     create: true
-    name: ""
-    username: "Administrator"
-    password: "password"
-    authSecretOverride: ""
+    authSecretOverride: "cb-admin-secret"
     baseImage: "couchbase/server"
     version: "enterprise-6.0.1"
     exposeAdminConsole: true
     adminConsoleServices:
       - data
-    exposedFeatures:
-      - xdcr
-    adminConsoleServiceType: NodePort
-    exposedFeatureServiceType: NodePort
-    # dns:
-    #   domain:
-    platform: aws
     cluster:
       dataServiceMemoryQuota: 512
       indexServiceMemoryQuota: 512
@@ -119,13 +109,31 @@ nsq:
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
   efsProvisioner:
-    efsFileSystemId: "fs-08aa9789"
+    efsFileSystemId: "fs-6ce2daed"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
     # storageClass:
     #   name:  {{ include "saferwall.fullname" . }}-efs
-
+########### NGINX INGRESS  #############
+nginx-ingress:
+  enabled: true
+  controller:
+    config:
+      use-proxy-protocol: "true"
+      # use-geoip2: "true"
+      # use-geoip: "false"
+      use-forwarded-headers: "true"
+      compute-full-forwarded-for: "true"
+    headers:
+      X-GeoIP-Country: "$geoip_country_code"
+      X-GeoIP-Region-Name: "$geoip_region_name"
+      X-GeoIP-City: "$geoip_city"
+      X-GeoIP-Postal-Code: "$geoip_postal_code"
+    service:
+      externalTrafficPolicy: "Local"
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
 ########### BACKEND ###########
 backend:
   enabled: true
@@ -160,7 +168,7 @@ frontend:
 cert-manager:
   enabled: true
   ingressShim:
-    defaultIssuerName: letsencrypt-prod
+    defaultIssuerName: letsencrypt-staging
     defaultIssuerKind: ClusterIssuer
 
 ########## CERTIFICATE ############
@@ -168,10 +176,9 @@ backendDomainName: api.saferwall.com
 frontendDomainName: saferwall.com
 ingressClass: nginx
 certEmail: admin@saferwall.com
-certIssuer: letsencrypt-prod
-certSecret: <certSecretHere>
-letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
-# letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
+certIssuer: letsencrypt-staging
+# letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
+letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
 
 ########### CONSUMER ###########
 consumer:

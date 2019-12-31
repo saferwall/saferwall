@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
@@ -28,7 +27,6 @@ import (
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/tomasen/realip"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -153,7 +151,7 @@ func GetAllFiles(fields []string) ([]File, error) {
 	return retValues, nil
 }
 
-// DumpRequest sdsds sd fd
+// DumpRequest dumps the headers.
 func DumpRequest(req *http.Request) {
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
@@ -170,13 +168,6 @@ func DumpRequest(req *http.Request) {
 func GetFile(c echo.Context) error {
 
 	DumpRequest(c.Request())
-	// Get user IP
-	clientIP := realip.FromRequest(c.Request())
-	clientIP2 := utils.GetIPAdress(c.Request())
-	clientIP3 := c.RealIP()
-	log.Infoln(clientIP)
-	log.Infoln(clientIP2)
-	log.Infoln(clientIP3)
 
 	// get path param
 	sha256 := c.Param("sha256")
@@ -384,23 +375,12 @@ func PostFiles(c echo.Context) error {
 			Status:          queued,
 		}
 
-		// Get user IP
-		clientIP := realip.FromRequest(c.Request())
-		clientIP2 := utils.GetIPAdress(c.Request())
-		log.Infoln(clientIP)
-		log.Infoln(clientIP2)
-		ip := net.ParseIP(clientIP)
-		country, err := app.GeoIPDB.Country(ip)
-		if err != nil {
-			log.Error(err)
-		}
-
 		// Create new submission
 		s := submission{
 			Date:     now,
 			Filename: fileHeader.Filename,
 			Source:   "api",
-			Country:  country.Country.IsoCode,
+			Country:  c.Request().Header.Get("X-Geoip-Country"),
 		}
 		newFile.Submissions = append(newFile.Submissions, s)
 		newFile.Create()

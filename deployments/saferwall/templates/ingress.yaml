@@ -29,4 +29,5 @@ spec:
         backend:
           serviceName: {{ include "saferwall.backend.fullname" . }}
           servicePort: {{ .Values.backend.service.port }}
+
 {{- end }}
