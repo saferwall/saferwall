@@ -133,6 +133,7 @@ nginx-ingress:
       externalTrafficPolicy: "Local"
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
 ########### BACKEND ###########
 backend:
   enabled: true

@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"errors"
 )
 
 func loadConfig() {
@@ -69,6 +70,10 @@ func login() string {
 		log.Fatalf("client.Do() failed with '%s'\n", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -77,10 +82,10 @@ func login() string {
 
 	var res map[string]string
 	json.Unmarshal(d, &res)
-	return res["token"]
+	return res["token"]	
 }
 
-func updateDocument(sha256 string, buff []byte) {
+func updateDocument(sha256 string, buff []byte) error {
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
 	url := backendEndpoint + sha256
@@ -99,6 +104,21 @@ func updateDocument(sha256 string, buff []byte) {
 		log.Errorf("client.Do() failed with '%s'\n", err)
 	}
 
+	// check if token is not expired
+	if resp.StatusCode == http.StatusUnauthorized {
+		backendToken = login()
+		req.Header.Set("Cookie", "JWTCookie="+backendToken)
+		resp, err = client.Do(req)
+		if err != nil {
+			log.Errorf("retry: client.Do() failed with '%s'", err)
+			return err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return errors.New("Failed to get a new login token")
+		}
+	}
+
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -106,4 +126,5 @@ func updateDocument(sha256 string, buff []byte) {
 	}
 
 	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
+	return nil
 }

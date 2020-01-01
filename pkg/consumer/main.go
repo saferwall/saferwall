@@ -38,6 +38,7 @@ type result struct {
 	Ssdeep  string                 `json:"ssdeep,omitempty"`
 	Exif    map[string]string      `json:"exif,omitempty"`
 	TriD    []string               `json:"trid,omitempty"`
+	Tags    []string               `json:"tags,omitempty"`
 	Packer  []string               `json:"packer,omitempty"`
 	Magic   string                 `json:"magic,omitempty"`
 	Strings []stringStruct         `json:"strings,omitempty"`
@@ -97,7 +98,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Update document
-	updateDocument(sha256, buff)
+	err = updateDocument(sha256, buff)
+	if err != nil {
+		log.Errorf("Failed to update document for file %s, reason: %s",
+		 sha256, err.Error())
+		 return err
+	}
 
 	// Download the sample
 	bucketName := viper.GetString("minio.spacename")
@@ -128,7 +134,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Update document
-	updateDocument(sha256, buff)
+	err = updateDocument(sha256, buff)
+	if err != nil {
+		log.Errorf("Failed to update document for file %s, reason: %s",
+		 sha256, err.Error())
+		 return err
+	}
+
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd
@@ -149,7 +161,6 @@ func main() {
 
 	// Login to backend
 	backendToken = login()
-	log.Printf("Token is: %s", backendToken)
 
 	// Get an minio client instance
 	accessKey := viper.GetString("minio.accesskey")

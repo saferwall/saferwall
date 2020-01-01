@@ -35,6 +35,10 @@
       "description": "The file type",
       "type": "string"
     },
+    "tags": {
+      "description": "Tags",
+      "type": "array"
+    },
     "submissions" : {
       "description": "File upload history",
       "type": "object",

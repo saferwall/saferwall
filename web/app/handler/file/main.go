@@ -54,6 +54,7 @@ type File struct {
 	Size            int64                  `json:"size,omitempty"`
 	Exif            map[string]string      `json:"exif"`
 	TriD            []string               `json:"trid"`
+	Tags            []string               `json:"tags"`
 	Packer          []string               `json:"packer"`
 	FirstSubmission time.Time              `json:"first_submission,omitempty"`
 	LastSUbmission  time.Time              `json:"last_submission,omitempty"`
