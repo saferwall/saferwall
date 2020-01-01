@@ -232,6 +232,7 @@ func PutFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
+
 	err = json.Unmarshal(b, &file)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())

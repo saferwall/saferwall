@@ -117,14 +117,13 @@ func Login(c echo.Context) error {
 			"verbose_msg": msg})
 	}
 
-	// Bind it to our User instance.
-	loginUser := user.User{}
-	err = json.Unmarshal(b, &loginUser)
+	var loginCred map[string]interface{}
+	err = json.Unmarshal(b, &loginCred)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	loginUsername := loginUser.Username
-	loginPassword := loginUser.Password
+	loginUsername := loginCred["username"].(string)
+	loginPassword := loginCred["password"].(string)
 	u, err := user.GetByUsername(loginUsername)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{

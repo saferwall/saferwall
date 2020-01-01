@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/couchbase/gocb/v2"
 	"github.com/saferwall/saferwall/web/app"
@@ -46,13 +47,24 @@ func GetUser(c echo.Context) error {
 		}
 	}
 
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
 	// get path param
 	username := c.Param("username")
+
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to fetch other users' data"})
+	}	
+
 	user, err := GetUserByUsernameFields(filters, username)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "User not found"})
 	}
+	user.Password = ""
 	return c.JSON(http.StatusOK, user)
 }
 
