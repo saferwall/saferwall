@@ -25,7 +25,7 @@ func parse(filename string) {
 		return
 	}
 
-    log.Println(debugutil.PrettySprint(pe.TLS))
+    log.Println(debugutil.PrettySprint(pe.LoadConfig))
 
 
 	// for _, imp := range pe.Imports {
