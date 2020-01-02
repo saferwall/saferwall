@@ -181,6 +181,7 @@ func GetAllUsers(fields []string) ([]User, error) {
 
 	// Stream the values returned from the query into a typed array of structs
 	for rows.Next(&row) {
+		row.Password = ""
 		retValues = append(retValues, row)
 	}
 
