@@ -10,7 +10,7 @@ import (
 	mmap "github.com/edsrzf/mmap-go"
 )
 
-// A File represents an open PE file.pcmd
+// A File represents an open PE file.
 type File struct {
 	DosHeader        ImageDosHeader
 	NtHeader         ImageNtHeader
@@ -23,6 +23,7 @@ type File struct {
 	Debugs           []DebugEntry
 	Relocations      []Relocation
 	Resources        ResourceDirectory
+	TLS              TLSDirectory
 
 	Header    []byte
 	data      mmap.MMap
@@ -301,6 +302,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if relocDirectoryEntry.VirtualAddress != 0 {
 			pe.Resources, err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size, 0, 0)
 		}
+
+		tlsDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryTLS]
+		if tlsDirectoryEntry.VirtualAddress != 0 {
+			pe.TLS, err = pe.parseTLSDirectory(tlsDirectoryEntry.VirtualAddress, tlsDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -327,6 +333,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		rsrcDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryResource]
 		if relocDirectoryEntry.VirtualAddress != 0 {
 			pe.Resources, err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size, 0, 0)
+		}
+
+		tlsDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryTLS]
+		if tlsDirectoryEntry.VirtualAddress != 0 {
+			pe.TLS, err = pe.parseTLSDirectory(tlsDirectoryEntry.VirtualAddress, tlsDirectoryEntry.Size)
 		}
 	}
 

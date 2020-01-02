@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
@@ -24,19 +25,22 @@ func parse(filename string) {
 		return
 	}
 
-	for _, imp := range pe.Imports {
-		log.Println(imp.Name)
-		log.Println("=============================================")
-		for _, function := range imp.Functions {
-			hint := fmt.Sprintf("%X", function.Hint)
-			offset := fmt.Sprintf("%X", function.Offset)
+    log.Println(debugutil.PrettySprint(pe.TLS))
 
-			log.Printf("%s, hint: 0x%s, thunk: 0x%s", function.Name, hint, offset)
-		}
-		log.Println("=============================================")
 
-	}
-	log.Println("==========================================================================================")
+	// for _, imp := range pe.Imports {
+	// 	log.Println(imp.Name)
+	// 	log.Println("=============================================")
+	// 	for _, function := range imp.Functions {
+	// 		hint := fmt.Sprintf("%X", function.Hint)
+	// 		offset := fmt.Sprintf("%X", function.Offset)
+
+	// 		log.Printf("%s, hint: 0x%s, thunk: 0x%s", function.Name, hint, offset)
+	// 	}
+	// 	log.Println("=============================================")
+
+	// }
+	fmt.Println("==========================================================================================")
 
 }
 

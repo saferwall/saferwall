@@ -222,7 +222,6 @@ func (pe *File) getStringFromData(offset uint32, data []byte) ([]byte) {
 // getData returns the data given an RVA regardless of the section where it lies on.
 func (pe *File) getData(rva, length uint32) ([]byte, error) {
 
-
 	// Given a RVA and the size of the chunk to retrieve, this method
 	// will find the section where the data lies and return the data.
 	section := pe.getSectionByRva(rva)

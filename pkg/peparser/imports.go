@@ -13,7 +13,7 @@ const (
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
 	maxRepeatedAddresses = uint32(16)
 	maxAddressSpread     = uint32(0x8000000) // 64 MB
-	maxAddressSpread64     = uint64(0x8000000) // 64 MB
+	maxAddressSpread64   = uint64(0x8000000) // 64 MB
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
 )
@@ -93,13 +93,13 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		maxLen := uint32(len(pe.data)) - fileOffset
 		if rva > importDesc.OriginalFirstThunk ||
 			rva > importDesc.FirstThunk {
-				if rva < importDesc.OriginalFirstThunk {
-					maxLen = rva-importDesc.FirstThunk
-				} else if rva < importDesc.FirstThunk{
-					maxLen = rva-importDesc.OriginalFirstThunk
-				} else {
-					maxLen = Max(rva-importDesc.OriginalFirstThunk,rva-importDesc.FirstThunk)
-				}
+			if rva < importDesc.OriginalFirstThunk {
+				maxLen = rva - importDesc.FirstThunk
+			} else if rva < importDesc.FirstThunk {
+				maxLen = rva - importDesc.OriginalFirstThunk
+			} else {
+				maxLen = Max(rva-importDesc.OriginalFirstThunk, rva-importDesc.FirstThunk)
+			}
 		}
 
 		var importedFunctions []*ImportFunction
@@ -372,7 +372,7 @@ func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32)
 					return []*ImportFunction{}, err
 				}
 				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData + 2, 0x200)
+				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2, 0x200)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}
@@ -466,7 +466,7 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 					return []*ImportFunction{}, err
 				}
 				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData + 2), maxLen)
+				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData+2), maxLen)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}

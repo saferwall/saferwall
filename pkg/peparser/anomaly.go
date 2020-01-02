@@ -58,7 +58,7 @@ func (pe *File) GetAnomalies() error {
 		pe.Anomalies = append(pe.Anomalies, AnoNumberOfSectionsNull)
 	}
 
-	// SizeOfOptionalHeader is not the size of the optional header, but the delta between 
+	// SizeOfOptionalHeader is not the size of the optional header, but the delta between
 	// the top of the Optional header and the start of the section table.
 	// Thus, it can be null (the section table will overlap the Optional Header,
 	// or can be null when no sections are present)
@@ -81,9 +81,9 @@ func (pe *File) GetAnomalies() error {
 	}
 
 	// **************************** Anomalies in Optional header ****************************
-	// Under Windows 8, AddressOfEntryPoint is not allowed to be smaller than SizeOfHeaders, 
+	// Under Windows 8, AddressOfEntryPoint is not allowed to be smaller than SizeOfHeaders,
 	// except if it's null.
-	if pe.OptionalHeader.AddressOfEntryPoint != 0 && 
+	if pe.OptionalHeader.AddressOfEntryPoint != 0 &&
 		pe.OptionalHeader.AddressOfEntryPoint < pe.OptionalHeader.SizeOfHeaders {
 		pe.Anomalies = append(pe.Anomalies, AnoAddressOfEPLessSizeOfHeaders)
 	}
@@ -95,13 +95,12 @@ func (pe *File) GetAnomalies() error {
 	}
 
 	// ImageBase can be null, under XP. In this case, the binary will be relocated to 10000h
-	if (pe.Is64 && pe.OptionalHeader64.ImageBase == 0) ||  (!pe.Is64 && pe.OptionalHeader.ImageBase == 0) {
+	if (pe.Is64 && pe.OptionalHeader64.ImageBase == 0) || (!pe.Is64 && pe.OptionalHeader.ImageBase == 0) {
 		pe.Anomalies = append(pe.Anomalies, AnoImageBaseNull)
 	}
 
 	// MajorSubsystemVersion/MinorSubsystemVersion
 	// Todo :MajorSubsystemVersion.MinorSubsystemVersion has to be at least 3.10
-
 
 	// (Win32VersionValue)
 	// officially defined as ''reserved'' and should be null
@@ -122,7 +121,7 @@ func (pe *File) GetAnomalies() error {
 	// CheckSum
 	// simple algorithm
 	// required for drivers only
-	
+
 	return nil
 
 }

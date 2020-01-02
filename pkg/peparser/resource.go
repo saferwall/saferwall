@@ -57,7 +57,7 @@ type ImageResourceDirectoryEntry struct {
 	OffsetToData uint32 // is always used to point to a sibling in the tree, either a directory node or a leaf node.
 }
 
-// ImageResourceDataEntry: Each Resource Data entry describes an actual unit of raw data in the Resource Data area.
+// ImageResourceDataEntry Each Resource Data entry describes an actual unit of raw data in the Resource Data area.
 type ImageResourceDataEntry struct {
 	OffsetToData uint32 // The address of a unit of resource data in the Resource Data area.
 	Size         uint32 // The size, in bytes, of the resource data that is pointed to by the Data RVA field.
@@ -65,12 +65,13 @@ type ImageResourceDataEntry struct {
 	Reserved     uint32 // Reserved, must be 0.
 }
 
-// ResourceDir represents resource directory information.
+// ResourceDirectory represents resource directory information.
 type ResourceDirectory struct {
 	Struct  ImageResourceDirectory   // IMAGE_RESOURCE_DIRECTORY structure
 	Entries []ResourceDirectoryEntry // list of entries
 }
 
+// ResourceDirectoryEntry represents a resource directory entry.
 type ResourceDirectoryEntry struct {
 	Struct    ImageResourceDirectoryEntry // IMAGE_RESOURCE_DIRECTORY_ENTRY structure.
 	Name      string                      // If the resource is identified by name this attribute will contain the name string. Empty string otherwise. If identified by id, the id is available at .Id field.
@@ -79,6 +80,7 @@ type ResourceDirectoryEntry struct {
 	Data      ResourceDataEntry           // If this entry has no further lower directories and points to the actual resource data, this attribute will reference the corresponding  ResourceDataEntry instance.
 }
 
+// ResourceDataEntry represents a resource data entry.
 type ResourceDataEntry struct {
 	Struct  ImageResourceDataEntry // IMAGE_RESOURCE_DATA_ENTRY structure.
 	Lang    uint32                 // Primary language ID
