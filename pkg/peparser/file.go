@@ -25,6 +25,7 @@ type File struct {
 	Resources        ResourceDirectory
 	TLS              TLSDirectory
 	LoadConfig       interface{}
+	Exceptions       []Exception
 
 	Header    []byte
 	data      mmap.MMap
@@ -313,6 +314,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if tlsDirectoryEntry.VirtualAddress != 0 {
 			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirectoryEntry.VirtualAddress, loadConfigDirectoryEntry.Size)
 		}
+
+		exceptionDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryException]
+		if exceptionDirectoryEntry.VirtualAddress != 0 {
+			pe.Exceptions, err = pe.parseExceptionDirectory(exceptionDirectoryEntry.VirtualAddress, exceptionDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -345,7 +351,7 @@ func (pe *File) parseDataDirectories() (err error) {
 		if tlsDirectoryEntry.VirtualAddress != 0 {
 			pe.TLS, err = pe.parseTLSDirectory(tlsDirectoryEntry.VirtualAddress, tlsDirectoryEntry.Size)
 		}
-		
+
 		loadConfigDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryLoadConfig]
 		if tlsDirectoryEntry.VirtualAddress != 0 {
 			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirectoryEntry.VirtualAddress, loadConfigDirectoryEntry.Size)

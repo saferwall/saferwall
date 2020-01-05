@@ -12,7 +12,7 @@ import (
 )
 
 func parse(filename string) {
-	log.Printf("Processing filename %s", filename)
+	fmt.Printf("Processing filename %s", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -25,7 +25,7 @@ func parse(filename string) {
 		return
 	}
 
-    log.Println(debugutil.PrettySprint(pe.LoadConfig))
+    fmt.Println(debugutil.PrettySprint(pe.Exceptions))
 
 
 	// for _, imp := range pe.Imports {
@@ -64,7 +64,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		searchDir = currentDir + string(os.PathSeparator) + "bin"
+		searchDir = currentDir + string(os.PathSeparator) + "one"
 	}
 
 	log.Printf("Processing directory %s", searchDir)
