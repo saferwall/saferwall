@@ -75,19 +75,24 @@ func (pe *File) parseTLSDirectory(rva, size uint32) (TLSDirectory, error) {
 		if err != nil {
 			return tls, err
 		}
-
-		rvaAddressOfCallBacks := tlsDir.AddressOfCallBacks - pe.OptionalHeader.ImageBase
-		offset := pe.getOffsetFromRva(rvaAddressOfCallBacks)
-		tls.Struct = tlsDir
-
+		
+		// 94a9dc17d47b03f6fb01cb639e25503b37761b452e7c07ec6b6c2280635f1df9
+		// Callbacks may be empty
 		var callbacks []uint32
-		for i :=0 ; ; i++ {
-			c := binary.LittleEndian.Uint32(pe.data[offset+(uint32(i)*4):])
-			if c == 0 {
-				break
+		if tlsDir.AddressOfCallBacks != 0 {
+			rvaAddressOfCallBacks := tlsDir.AddressOfCallBacks - pe.OptionalHeader.ImageBase
+			offset := pe.getOffsetFromRva(rvaAddressOfCallBacks)
+			tls.Struct = tlsDir
+	
+			for i :=0 ; ; i++ {
+				c := binary.LittleEndian.Uint32(pe.data[offset+(uint32(i)*4):])
+				if c == 0 {
+					break
+				}
+				callbacks = append(callbacks, c)
 			}
-			callbacks = append(callbacks, c)
 		}
+
 		tls.Callbacks = callbacks
 	}
 

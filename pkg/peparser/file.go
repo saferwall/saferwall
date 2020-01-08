@@ -26,6 +26,7 @@ type File struct {
 	TLS              TLSDirectory
 	LoadConfig       interface{}
 	Exceptions       []Exception
+	Certificates     Certificate
 
 	Header    []byte
 	data      mmap.MMap
@@ -319,6 +320,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if exceptionDirectoryEntry.VirtualAddress != 0 {
 			pe.Exceptions, err = pe.parseExceptionDirectory(exceptionDirectoryEntry.VirtualAddress, exceptionDirectoryEntry.Size)
 		}
+
+		certificateDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryCertificate]
+		if certificateDirectoryEntry.VirtualAddress != 0 {
+			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -343,7 +349,7 @@ func (pe *File) parseDataDirectories() (err error) {
 		}
 
 		rsrcDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryResource]
-		if relocDirectoryEntry.VirtualAddress != 0 {
+		if rsrcDirectoryEntry.VirtualAddress != 0 {
 			pe.Resources, err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size, 0, 0)
 		}
 
@@ -355,6 +361,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		loadConfigDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryLoadConfig]
 		if tlsDirectoryEntry.VirtualAddress != 0 {
 			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirectoryEntry.VirtualAddress, loadConfigDirectoryEntry.Size)
+		}
+
+		certificateDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCertificate]
+		if certificateDirectoryEntry.VirtualAddress != 0 {
+			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
 		}
 	}
 

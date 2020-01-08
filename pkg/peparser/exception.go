@@ -79,13 +79,13 @@ const (
 	UwOpSaveNonVol    = uint8(4) // info == register number, offset in next slot
 	UwOpSaveNonVolFar = uint8(5) // info == register number, offset in next 2 slots
 	UwOpEpilog        = uint8(6) // changes the structure of unwind codes to `struct Epilogue`.
-								 // (was UWOP_SAVE_XMM in version 1, but deprecated and removed)
-	UwOpSpareCode     = uint8(7) // reserved
-								 // (was UWOP_SAVE_XMM_FAR in version 1, but deprecated and removed) 
+	// (was UWOP_SAVE_XMM in version 1, but deprecated and removed)
+	UwOpSpareCode = uint8(7) // reserved
+	// (was UWOP_SAVE_XMM_FAR in version 1, but deprecated and removed)
 	UwOpSaveXmm128    = uint8(8)  // info == XMM reg number, offset in next lot
 	UwOpSaveXmm128Far = uint8(9)  // info == XMM reg number, offset in next 2 slots
 	UwOpPushMachFrame = uint8(10) // info == 0: no error-code, 1: error-code
-	UwOpSetFpRegLarge = uint8(11) // 
+	UwOpSetFpRegLarge = uint8(11) //
 )
 
 // UnOpToString maps unwind opcodes o strings.
@@ -136,15 +136,15 @@ type UnwindCode struct {
 
 // UnwindInfo represents the _UNWIND_INFO structure.
 type UnwindInfo struct {
-	Version          uint8        // (3 bits) Version number of the unwind da, currently 1.
-	Flags            uint8        // (5 bits) Three flags are currently defined above.
-	SizeOfProlog     uint8        // Length of the function prolog in bytes.
-	CountOfCodes     uint8        // The number of slots in the unwind codes array. Some unwind codes, for example, UWOP_SAVE_NONVOL, require more than one slot in the array.
-	FrameRegister    uint8        // If nonzero, then the function uses a frame pointer (FP), and this field is the number of the nonvolatile register used as the frame pointer, using the same encoding for the operation info field of UNWIND_CODE nodes.
-	FrameOffset      uint8        // If the frame register field  nonzero, this field is the scaled offset from RSP that is applied to the FP register when it's established. The actual FP register is set to RSP + 16 * this number, allowing offsets from 0 to 240. This offset permits pointing the FP register into the middle of the local stack allocation for dynamic stack frames, allowing better code density through shorter instructions. (That is, more instructions can use the 8-bit signed offset form.)
-	UnwindCodes      []UnwindCode // An array of items that explains the effect of the prolog on the nonvolatile registers and RSP. See the section on UNWIND_CODE for the meanings of individual items. For alignment purposes, this array always has an even number of entries, and the final entry is potentially unused. In that case, the array is one longer than indicated by the count of unwind codes field.
-	ExceptionHandler uint32       // Address of exception handler
-	FunctionEntry	ImageRuntimeFunctionEntry // If flag UNW_FLAG_CHAININFO is set, then the UNWIND_INFO structure ends with three UWORDs. These UWORDs represent the RUNTIME_FUNCTION information for the function of the chained unwind.
+	Version          uint8                     // (3 bits) Version number of the unwind da, currently 1.
+	Flags            uint8                     // (5 bits) Three flags are currently defined above.
+	SizeOfProlog     uint8                     // Length of the function prolog in bytes.
+	CountOfCodes     uint8                     // The number of slots in the unwind codes array. Some unwind codes, for example, UWOP_SAVE_NONVOL, require more than one slot in the array.
+	FrameRegister    uint8                     // If nonzero, then the function uses a frame pointer (FP), and this field is the number of the nonvolatile register used as the frame pointer, using the same encoding for the operation info field of UNWIND_CODE nodes.
+	FrameOffset      uint8                     // If the frame register field  nonzero, this field is the scaled offset from RSP that is applied to the FP register when it's established. The actual FP register is set to RSP + 16 * this number, allowing offsets from 0 to 240. This offset permits pointing the FP register into the middle of the local stack allocation for dynamic stack frames, allowing better code density through shorter instructions. (That is, more instructions can use the 8-bit signed offset form.)
+	UnwindCodes      []UnwindCode              // An array of items that explains the effect of the prolog on the nonvolatile registers and RSP. See the section on UNWIND_CODE for the meanings of individual items. For alignment purposes, this array always has an even number of entries, and the final entry is potentially unused. In that case, the array is one longer than indicated by the count of unwind codes field.
+	ExceptionHandler uint32                    // Address of exception handler
+	FunctionEntry    ImageRuntimeFunctionEntry // If flag UNW_FLAG_CHAININFO is set, then the UNWIND_INFO structure ends with three UWORDs. These UWORDs represent the RUNTIME_FUNCTION information for the function of the chained unwind.
 }
 
 //
@@ -190,12 +190,13 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 			size := int(binary.LittleEndian.Uint16(pe.data[offset+2:]) * 8)
 			unwindCode.Operand = "Size=" + strconv.Itoa(size)
 			advanceBy += 2
-		} else if unwindCode.OpInfo == 1 {
-			size := int(binary.LittleEndian.Uint32(pe.data[offset+2:]))
+		} else {
+			size := int(binary.LittleEndian.Uint32(pe.data[offset+2:]) << 16)
 			unwindCode.Operand = "Size=" + strconv.Itoa(size)
 			advanceBy += 3
 		}
 	case UwOpSetFpReg:
+		unwindCode.Operand = "Register=" + OpInfoRegisters[unwindCode.OpInfo]
 		advanceBy++
 	case UwOpPushNonVol:
 		unwindCode.Operand = "Register=" + OpInfoRegisters[unwindCode.OpInfo]
@@ -220,10 +221,15 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 		unwindCode.FrameOffset = uint16(fo)
 		unwindCode.Operand = "Register=XMM" + strconv.Itoa(int(unwindCode.OpInfo)) + ", Offset=" + strconv.Itoa(int(unwindCode.FrameOffset))
 		advanceBy += 3
+	case UwOpSetFpRegLarge:
+		unwindCode.Operand = "Register=" + OpInfoRegisters[unwindCode.OpInfo] 
+		advanceBy += 2
+
 	case UwOpEpilog, UwOpSpareCode, UwOpPushMachFrame:
 		advanceBy++
 
 	default:
+		advanceBy++ // so we can get out of the loop
 		log.Print("Wrong unwind opcode")
 	}
 
@@ -231,7 +237,7 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 }
 
 func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
-	log.Printf("Parsing RVA: 0x%x", unwindInfo)
+
 	offset := pe.getOffsetFromRva(unwindInfo)
 	v := binary.LittleEndian.Uint32(pe.data[offset:])
 
@@ -280,7 +286,7 @@ func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
 	}
 
 	// If the UNW_FLAG_CHAININFO flag is set, then an unwind info structure
-	// is a secondary one, and the shared exception-handler/chained-info 
+	// is a secondary one, and the shared exception-handler/chained-info
 	// address field contains the primary unwind information.
 	// This sample code retrieves the primary unwind information,
 	// assuming that unwindInfo is the structure that has the
@@ -289,7 +295,7 @@ func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
 		chainOffset := offset + 2*uint32(i)
 		rf := ImageRuntimeFunctionEntry{}
 		size := uint32(binary.Size(ImageRuntimeFunctionEntry{}))
-		buf := bytes.NewReader(pe.data[chainOffset:chainOffset+size])
+		buf := bytes.NewReader(pe.data[chainOffset : chainOffset+size])
 		err := binary.Read(buf, binary.LittleEndian, &rf)
 		if err != nil {
 			return ui
@@ -307,7 +313,6 @@ func (pe *File) parseExceptionDirectory(rva, size uint32) ([]Exception, error) {
 
 	entrySize := uint32(binary.Size(ImageRuntimeFunctionEntry{}))
 	entriesCount := size / entrySize
-	log.Print(entriesCount)
 
 	for i := uint32(0); i < entriesCount; i++ {
 		functionEntry := ImageRuntimeFunctionEntry{}
@@ -321,7 +326,6 @@ func (pe *File) parseExceptionDirectory(rva, size uint32) ([]Exception, error) {
 			RuntimeFunction: functionEntry,
 			UnwinInfo:       pe.parseUnwinInfo(functionEntry.UnwindInfoAddress),
 		}
-		log.Print(exception)
 		exceptions = append(exceptions, exception)
 	}
 
