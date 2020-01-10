@@ -2,7 +2,6 @@ package pe
 
 import (
 	"bytes"
-	"encoding/asn1"
 	"encoding/binary"
 	"errors"
 	"log"
@@ -36,7 +35,7 @@ const (
 // Certificate directory.
 type Certificate struct {
 	Header WinCertificate
-	Info   *pkcs7.PKCS7
+	Content   *pkcs7.PKCS7
 }
 
 // WinCertificate encapsulates a signature used in verifying executable files.
@@ -96,5 +95,5 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 		fileOffset = nextOffset
 	}
 
-	return Certificate{Header: certHeader, Info: pkcs}, nil
+	return Certificate{Header: certHeader, Content: pkcs}, nil
 }

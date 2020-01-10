@@ -91,8 +91,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		// descriptor we can set a maximum length for the array. Otherwise
 		// just set a maximum length of the size of the file
 		maxLen := uint32(len(pe.data)) - fileOffset
-		if rva > importDesc.OriginalFirstThunk ||
-			rva > importDesc.FirstThunk {
+		if rva > importDesc.OriginalFirstThunk || rva > importDesc.FirstThunk {
 			if rva < importDesc.OriginalFirstThunk {
 				maxLen = rva - importDesc.FirstThunk
 			} else if rva < importDesc.FirstThunk {
@@ -135,7 +134,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData32)
 	retVal := make([]*ImageThunkData32, 0)
-	minAddressOfData := uint32(0)
+	minAddressOfData := ^uint32(0)
 	maxAddressOfData := uint32(0)
 	repeatedAddress := uint32(0)
 	var size uint32 = 4
@@ -211,11 +210,11 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 				addressesOfData[thunk.AddressOfData] = true
 			}
 
-			if thunk.AddressOfData >= maxAddressOfData {
+			if thunk.AddressOfData > maxAddressOfData {
 				maxAddressOfData = thunk.AddressOfData
 			}
 
-			if thunk.AddressOfData <= minAddressOfData {
+			if thunk.AddressOfData < minAddressOfData {
 				minAddressOfData = thunk.AddressOfData
 			}
 
@@ -233,7 +232,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData64)
 	retVal := make([]*ImageThunkData64, 0)
-	minAddressOfData := uint64(0)
+	minAddressOfData := ^uint64(0)
 	maxAddressOfData := uint64(0)
 	repeatedAddress := uint64(0)
 	var size uint32 = 8
@@ -293,8 +292,8 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
 				return []*ImageThunkData64{}, errors.New("beyond")
 			}
+		// and if it looks like it should be an RVA
 		} else {
-			// and if it looks like it should be an RVA
 			// keep track of the RVAs seen and store them to study their
 			// properties. When certain non-standard features are detected
 			// the parsing will be aborted
@@ -305,11 +304,11 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 				addressesOfData[thunk.AddressOfData] = true
 			}
 
-			if thunk.AddressOfData >= maxAddressOfData {
+			if thunk.AddressOfData > maxAddressOfData {
 				maxAddressOfData = thunk.AddressOfData
 			}
 
-			if thunk.AddressOfData <= minAddressOfData {
+			if thunk.AddressOfData < minAddressOfData {
 				minAddressOfData = thunk.AddressOfData
 			}
 		}
@@ -321,10 +320,22 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 	return retVal, nil
 }
 
-func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32) ([]*ImportFunction, error) {
+func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*ImportFunction, error) {
+
+	var OriginalFirstThunk uint32
+	var FirstThunk uint32
+
+	switch desc := importDesc.(type) {
+	case *ImageImportDescriptor:
+	  OriginalFirstThunk = desc.OriginalFirstThunk
+	  FirstThunk = desc.FirstThunk
+	case *ImageDelayImportDescriptor:
+	  OriginalFirstThunk = desc.ImportNameTableRVA
+	  FirstThunk = desc.ImportAddressTableRVA
+	}
 
 	// Import Lookup Table. Contains ordinals or pointers to strings.
-	ilt, err := pe.getImportTable32(importDesc.OriginalFirstThunk, maxLen)
+	ilt, err := pe.getImportTable32(OriginalFirstThunk, maxLen)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
@@ -332,7 +343,7 @@ func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32)
 	// Import Address Table. May have identical content to ILT if PE file is
 	// not bound. It will contain the address of the imported symbols once
 	// the binary is loaded or if it is already bound.
-	iat, err := pe.getImportTable32(importDesc.FirstThunk, maxLen)
+	iat, err := pe.getImportTable32(FirstThunk, maxLen)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
@@ -380,7 +391,7 @@ func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32)
 			}
 		}
 
-		imp.Address = importDesc.FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
+		imp.Address = FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
 
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = iat[idx].AddressOfData
@@ -415,10 +426,22 @@ func (pe *File) parseImports32(importDesc *ImageImportDescriptor, maxLen uint32)
 	return importedFunctions, nil
 }
 
-func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32) ([]*ImportFunction, error) {
+func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*ImportFunction, error) {
+
+	var OriginalFirstThunk uint32
+	var FirstThunk uint32
+
+	switch desc := importDesc.(type) {
+	case *ImageImportDescriptor:
+	  OriginalFirstThunk = desc.OriginalFirstThunk
+	  FirstThunk = desc.FirstThunk
+	case *ImageDelayImportDescriptor:
+	  OriginalFirstThunk = desc.ImportNameTableRVA
+	  FirstThunk = desc.ImportAddressTableRVA
+	}
 
 	// Import Lookup Table. Contains ordinals or pointers to strings.
-	ilt, err := pe.getImportTable64(importDesc.OriginalFirstThunk, maxLen)
+	ilt, err := pe.getImportTable64(OriginalFirstThunk, maxLen)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
@@ -426,7 +449,7 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 	// Import Address Table. May have identical content to ILT if PE file is
 	// not bound. It will contain the address of the imported symbols once
 	// the binary is loaded or if it is already bound.
-	iat, err := pe.getImportTable64(importDesc.FirstThunk, maxLen)
+	iat, err := pe.getImportTable64(FirstThunk, maxLen)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
@@ -474,7 +497,9 @@ func (pe *File) parseImports64(importDesc *ImageImportDescriptor, maxLen uint32)
 			}
 		}
 
-		imp.Address = importDesc.FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
+		// Todo: uint64/uin32 mismatch
+		// Shoud be: FirstThunk + pe.OptionalHeader64.ImageBase + (idx * importOffset)
+		imp.Address = FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
 
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = uint32(iat[idx].AddressOfData)

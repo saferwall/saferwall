@@ -27,6 +27,8 @@ type File struct {
 	LoadConfig       interface{}
 	Exceptions       []Exception
 	Certificates     Certificate
+	DelayImports	 []DelayImport
+
 
 	Header    []byte
 	data      mmap.MMap
@@ -325,6 +327,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if certificateDirectoryEntry.VirtualAddress != 0 {
 			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
 		}
+
+		delayImportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryDelayImport]
+		if delayImportDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseDelayImportDirectory(delayImportDirectoryEntry.VirtualAddress, delayImportDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -366,6 +373,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		certificateDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCertificate]
 		if certificateDirectoryEntry.VirtualAddress != 0 {
 			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
+		}
+
+		delayImportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryDelayImport]
+		if delayImportDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseDelayImportDirectory(delayImportDirectoryEntry.VirtualAddress, delayImportDirectoryEntry.Size)
 		}
 	}
 

@@ -25,7 +25,7 @@ func parse(filename string) {
 		return
 	}
 	// fmt.Print()
-	fmt.Println(debugutil.PrettySprint(pe.Certificates))
+	fmt.Println(debugutil.PrettySprint(pe.DelayImports))
 
 	// for _, imp := range pe.Imports {
 	// 	log.Println(imp.Name)
