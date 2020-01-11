@@ -12,13 +12,6 @@ const (
 )
 
 
-func min(a, b uint32) uint32 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // ImageExportDirectory represents the IMAGE_EXPORT_DIRECTORY structure.
 // The export directory table contains address information that is used
 // to resolve imports to the entry points within this image.

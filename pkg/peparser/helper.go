@@ -69,6 +69,14 @@ func Max(x, y uint32) uint32 {
     return x
 }
 
+
+func min(a, b uint32) uint32 {
+    if a < b {
+        return a
+    }
+    return b
+}
+
 // Min returns the min number in a slice.
 func Min(values []uint32) uint32 {
 	min := values[0]
@@ -106,6 +114,22 @@ func IsValidFunctionName (functionName string) bool {
 	numerals := "0123456789"
 	special := "_?@$()<>"
 	charset := alphabet + numerals + special
+	for _, c := range charset {
+		if !strings.Contains(charset, string(c)) {
+			return false
+		}
+	}
+	return true	
+}
+
+
+// IsPrintable checks weather a string is printable.
+func IsPrintable (s string) bool {
+	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	numerals := "0123456789"
+	whitespace := " \t\n\r\v\f"
+	special := "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+	charset := alphabet + numerals + special + whitespace
 	for _, c := range charset {
 		if !strings.Contains(charset, string(c)) {
 			return false
