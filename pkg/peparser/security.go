@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"log"
-	"encoding/hex"
+	// "encoding/hex"
 	"go.mozilla.org/pkcs7"
 )
 
@@ -79,7 +79,7 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 		// Verify the signature
 		pkcs.Verify()
 
-		log.Printf("%s", hex.Dump(pkcs.Content))
+		// 	log.Printf("%s", hex.Dump(pkcs.Content))
 
 		// Subsequent entries are accessed by advancing that entry's dwLength bytes,
 		// rounded up to an 8-byte multiple, from the start of the current attribute

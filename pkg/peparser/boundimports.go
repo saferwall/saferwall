@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	/* This will set a maximum length of a string to be retrieved from the file.
-	It's there to prevent loading massive amounts of data from memory mapped
-	files. Strings longer than 0x100B should be rather rare. */
+	// MaxStringLength represents the maximum length of a string to be retrieved
+	// from the file. It's there to prevent loading massive amounts of data from
+	// memory mapped files. Strings longer than 0x100B should be rather rare.
 	MaxStringLength = uint32(0x100)
 
 )
@@ -28,14 +28,14 @@ type ImageBoundForwardedRef struct {
 	Reserved uint16
 }
 
-// BoundImportDescriptorData
+// BoundImportDescriptorData represents the descripts in addition to forwarded refs.
 type BoundImportDescriptorData struct {
 	Struct ImageBoundImportDescriptor
 	Name string
 	ForwardedRefs []BoundForwardedRefData
 }
 
-// BoundForwardedRefData
+// BoundForwardedRefData reprents the struct in addition to the dll name.
 type BoundForwardedRefData struct {
 	Struct ImageBoundForwardedRef
 	Name string

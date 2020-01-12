@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/donutloop/toolkit/debugutil"
+	// "github.com/donutloop/toolkit/debugutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -25,7 +25,7 @@ func parse(filename string) {
 		return
 	}
 	// fmt.Print()
-	fmt.Println(debugutil.PrettySprint(pe.BoundImports))
+	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
 
 	// for _, imp := range pe.Imports {
 	// 	log.Println(imp.Name)

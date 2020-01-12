@@ -29,6 +29,7 @@ type File struct {
 	Certificates     Certificate
 	DelayImports	 []DelayImport
 	BoundImports	 []BoundImportDescriptorData
+	GlobalPtr		 uint32
 
 
 	Header    []byte
@@ -338,6 +339,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if boundImportDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseBoundImportDirectory(boundImportDirectoryEntry.VirtualAddress, boundImportDirectoryEntry.Size)
 		}
+
+		globalPtrDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryGlobalPtr]
+		if globalPtrDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -389,6 +395,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		boundImportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryBoundImport]
 		if boundImportDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseBoundImportDirectory(boundImportDirectoryEntry.VirtualAddress, boundImportDirectoryEntry.Size)
+		}
+
+		globalPtrDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryGlobalPtr]
+		if globalPtrDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
 		}
 	}
 

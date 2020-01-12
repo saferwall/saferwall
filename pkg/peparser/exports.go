@@ -157,11 +157,11 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
 		if symbolCounts[symbolAddress] > 10 {
-			fmt.Printf("Export directory contains more than 10 repeated entries: Name:%s, Address:%s", symbolName, symbolAddress)
+			fmt.Printf("Export directory contains more than 10 repeated entries: Name:%s, Address:0x%x", string(symbolName), symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			fmt.Printf("Export directory contains more than %d symbol entries:%d. Assuming corrupt.", maxExportedSymbols)
+			fmt.Printf("Export directory contains more than %d symbol entries. Assuming corrupt.", maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{
@@ -178,9 +178,8 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 	}
 
 	if parsingFailed {
-		fmt.Sprintf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
+		fmt.Printf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
 	}
-
 
 	maxFailedEntries = 10
 	section = pe.getSectionByRva(exportDir.AddressOfFunctions)
@@ -221,11 +220,11 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
 		if symbolCounts[symbolAddress] > 10 {
-			fmt.Printf("Export directory contains more than 10 repeated ordinal entries: Address:%s", symbolAddress)
+			fmt.Printf("Export directory contains more than 10 repeated ordinal entries: Address:0x%x", symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			fmt.Printf("Export directory contains more than %d ordinal entries:%d. Assuming corrupt.", maxExportedSymbols)
+			fmt.Printf("Export directory contains more than %d ordinal entries. Assuming corrupt.", maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{
