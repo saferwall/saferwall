@@ -318,3 +318,14 @@ func (pe *File) adjustSectionAlignment(va uint32) uint32 {
 	}
 	return va
 }
+
+
+// stringInSlice checks weather a string exists in a slice of strings.
+func stringInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
+}

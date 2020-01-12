@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
+	"crypto/md5"
+	"encoding/hex"
 )
 
 const (
@@ -532,4 +535,58 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 	}
 
 	return importedFunctions, nil
+}
+
+
+// md5hash hashes using md5 algorithm.
+func md5hash(text string) string {
+    h := md5.New()
+    h.Write([]byte(text))
+    return hex.EncodeToString(h.Sum(nil))
+}
+
+// ImpHash calculates the import hash.
+// Algorithm:
+// ==========
+// Resolving ordinals to function names when they appear
+// Converting both DLL names and function names to all lowercase
+// Removing the file extensions from imported module names
+// Building and storing the lowercased string . in an ordered list
+// Generating the MD5 hash of the ordered list
+func (pe* File) ImpHash() (string, error){
+	if len(pe.Imports) == 0 {
+		return "", errors.New("No imports found")
+	}
+
+	extensions := []string{"ocx", "sys", "dll"}
+	var impStrs []string
+
+	for _, imp := range pe.Imports {
+		var libname string
+		parts := strings.Split(imp.Name, ".")
+		if len(parts) > 0 && stringInSlice(parts[1], extensions) {
+			libname = parts[0]
+		}
+
+		libname = strings.ToLower(libname)
+
+		for _, function := range imp.Functions {
+			var funcname string
+			if function.ByOrdinal  {
+				funcname = OrdLookup(libname, uint64(function.Ordinal), true)
+			} else {
+				funcname = function.Name
+			}
+
+			if funcname == "" {
+				continue
+			}
+
+			impStr := fmt.Sprintf("%s.%s", libname, strings.ToLower(funcname))
+			impStrs = append(impStrs, impStr)
+		}
+	}
+
+	hash := md5hash(strings.Join(impStrs, ","))
+	return hash, nil
 }

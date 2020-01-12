@@ -24,6 +24,8 @@ func parse(filename string) {
 		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
 		return
 	}
+
+	fmt.Print(pe.ImpHash())
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
 
