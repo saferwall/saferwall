@@ -30,6 +30,9 @@ var (
 	// AnoImageBaseNull is reported when the image base is null
 	AnoImageBaseNull = "Image base is 0"
 
+	// AnoDanSMagicOffset is reported when the `DanS` magic offset is different than 0x80.
+	AnoDanSMagicOffset = "`DanS` magic offset is different than 0x80."
+
 	// ErrInvalidFileAlignment is reported when file alignment is larger than 0x200 and not a power of 2.
 	ErrInvalidFileAlignment = "FileAlignment larger than 0x200 and not a power of 2"
 
@@ -121,6 +124,7 @@ func (pe *File) GetAnomalies() error {
 	// CheckSum
 	// simple algorithm
 	// required for drivers only
+
 
 	return nil
 

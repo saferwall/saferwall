@@ -30,7 +30,7 @@ type File struct {
 	DelayImports	 []DelayImport
 	BoundImports	 []BoundImportDescriptorData
 	GlobalPtr		 uint32
-
+	RichHeader		 RichHeader
 
 	Header    []byte
 	data      mmap.MMap
