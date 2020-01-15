@@ -344,6 +344,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if globalPtrDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
 		}
+
+		iatDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryIAT]
+		if iatDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -400,6 +405,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		globalPtrDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryGlobalPtr]
 		if globalPtrDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
+		}
+
+		iatDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryIAT]
+		if iatDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
 		}
 	}
 
