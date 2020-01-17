@@ -27,10 +27,11 @@ type File struct {
 	LoadConfig       interface{}
 	Exceptions       []Exception
 	Certificates     Certificate
-	DelayImports	 []DelayImport
-	BoundImports	 []BoundImportDescriptorData
-	GlobalPtr		 uint32
-	RichHeader		 RichHeader
+	DelayImports     []DelayImport
+	BoundImports     []BoundImportDescriptorData
+	GlobalPtr        uint32
+	RichHeader       RichHeader
+	CLRHeader        ImageCOR20Header
 
 	Header    []byte
 	data      mmap.MMap
@@ -349,6 +350,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		if iatDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
 		}
+
+		clrHeaderDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryCLR]
+		if clrHeaderDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseCLRHeaderDirectory(clrHeaderDirectoryEntry.VirtualAddress, clrHeaderDirectoryEntry.Size)
+		}
 	}
 
 	if !pe.Is64 {
@@ -410,6 +416,11 @@ func (pe *File) parseDataDirectories() (err error) {
 		iatDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryIAT]
 		if iatDirectoryEntry.VirtualAddress != 0 {
 			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
+		}
+
+		clrHeaderDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCLR]
+		if clrHeaderDirectoryEntry.VirtualAddress != 0 {
+			err = pe.parseCLRHeaderDirectory(clrHeaderDirectoryEntry.VirtualAddress, clrHeaderDirectoryEntry.Size)
 		}
 	}
 

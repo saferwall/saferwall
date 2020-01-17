@@ -2,13 +2,13 @@ package pe
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
 	"strings"
-	"crypto/md5"
-	"encoding/hex"
 )
 
 const (
@@ -295,7 +295,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
 				return []*ImageThunkData64{}, errors.New("beyond")
 			}
-		// and if it looks like it should be an RVA
+			// and if it looks like it should be an RVA
 		} else {
 			// keep track of the RVAs seen and store them to study their
 			// properties. When certain non-standard features are detected
@@ -330,11 +330,11 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 
 	switch desc := importDesc.(type) {
 	case *ImageImportDescriptor:
-	  OriginalFirstThunk = desc.OriginalFirstThunk
-	  FirstThunk = desc.FirstThunk
+		OriginalFirstThunk = desc.OriginalFirstThunk
+		FirstThunk = desc.FirstThunk
 	case *ImageDelayImportDescriptor:
-	  OriginalFirstThunk = desc.ImportNameTableRVA
-	  FirstThunk = desc.ImportAddressTableRVA
+		OriginalFirstThunk = desc.ImportNameTableRVA
+		FirstThunk = desc.ImportAddressTableRVA
 	}
 
 	// Import Lookup Table. Contains ordinals or pointers to strings.
@@ -436,11 +436,11 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 
 	switch desc := importDesc.(type) {
 	case *ImageImportDescriptor:
-	  OriginalFirstThunk = desc.OriginalFirstThunk
-	  FirstThunk = desc.FirstThunk
+		OriginalFirstThunk = desc.OriginalFirstThunk
+		FirstThunk = desc.FirstThunk
 	case *ImageDelayImportDescriptor:
-	  OriginalFirstThunk = desc.ImportNameTableRVA
-	  FirstThunk = desc.ImportAddressTableRVA
+		OriginalFirstThunk = desc.ImportNameTableRVA
+		FirstThunk = desc.ImportAddressTableRVA
 	}
 
 	// Import Lookup Table. Contains ordinals or pointers to strings.
@@ -537,12 +537,11 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 	return importedFunctions, nil
 }
 
-
 // md5hash hashes using md5 algorithm.
 func md5hash(text string) string {
-    h := md5.New()
-    h.Write([]byte(text))
-    return hex.EncodeToString(h.Sum(nil))
+	h := md5.New()
+	h.Write([]byte(text))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // ImpHash calculates the import hash.
@@ -553,7 +552,7 @@ func md5hash(text string) string {
 // Removing the file extensions from imported module names
 // Building and storing the lowercased string . in an ordered list
 // Generating the MD5 hash of the ordered list
-func (pe* File) ImpHash() (string, error){
+func (pe *File) ImpHash() (string, error) {
 	if len(pe.Imports) == 0 {
 		return "", errors.New("No imports found")
 	}
@@ -572,7 +571,7 @@ func (pe* File) ImpHash() (string, error){
 
 		for _, function := range imp.Functions {
 			var funcname string
-			if function.ByOrdinal  {
+			if function.ByOrdinal {
 				funcname = OrdLookup(libname, uint64(function.Ordinal), true)
 			} else {
 				funcname = function.Name

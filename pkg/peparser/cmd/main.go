@@ -25,7 +25,7 @@ func parse(filename string) {
 		return
 	}
 
-	fmt.Print(pe.ParseRichHeader())
+	fmt.Print(pe.CLRHeader)
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
 
