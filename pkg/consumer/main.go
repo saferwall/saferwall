@@ -120,7 +120,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// multiav scanning
 	multiavScanResults := multiAvScan(filePath)
 	res.MultiAV = map[string]interface{}{}
-	res.MultiAV["first_scan"] = multiavScanResults
 	res.MultiAV["last_scan"] = multiavScanResults
 
 	// analysis finished

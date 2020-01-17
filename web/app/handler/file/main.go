@@ -227,15 +227,23 @@ func PutFile(c echo.Context) error {
 		})
 	}
 
-	// Updates the document.
+	// Get the document.
 	file, err := GetFileBySHA256(sha256)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// merge it
 	err = json.Unmarshal(b, &file)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Specific checks
+	_, alreadyScanned := file.MultiAV["last_scan"]; if alreadyScanned {
+		_, ok := file.MultiAV["first_scan"]; if !ok {
+			file.MultiAV["first_scan"] = file.MultiAV["last_scan"]
+		}
 	}
 
 	db.FilesCollection.Upsert(sha256, file, &gocb.UpsertOptions{})
