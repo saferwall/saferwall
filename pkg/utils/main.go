@@ -288,6 +288,14 @@ func CreateFile(path string) error {
 	return nil
 }
 
+// DeleteFile delete a file.
+func DeleteFile(path string) error {
+	if err := os.Remove(path) ; err != nil  {
+		 return err
+	}
+	return nil
+}
+
 // Download downloads an object from a bucket.
 func Download(client *minio.Client, bucketName, filePath, objectName string) ([]byte, error) {
 	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
