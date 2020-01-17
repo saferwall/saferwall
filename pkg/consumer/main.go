@@ -140,6 +140,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		 return err
 	}
 
+	// Delete the file from nfs share.
+	if err = utils.DeleteFile(filePath) ; err != nil {
+		log.Errorf("Failed to delete file path %s.", filePath)
+	}
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd

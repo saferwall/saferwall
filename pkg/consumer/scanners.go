@@ -210,6 +210,10 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		check(engine, err)
 		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 	}
+
+	if err = utils.DeleteFile(filecopyPath) ; err != nil {
+		log.Errorf("Failed to delete file path %s.", filecopyPath)
+	}
 }
 
 func multiAvScan(filePath string) map[string]interface{} {
