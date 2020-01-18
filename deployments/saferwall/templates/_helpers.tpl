@@ -102,6 +102,25 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 
+
+{{/*
+Create a fully qualified website name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+
+{{- define "saferwall.website.fullname" -}}
+{{- if .Values.website.fullnameOverride -}}
+{{- .Values.website.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" .Release.Name .Values.website.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s-%s" .Release.Name $name .Values.website.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create a fully qualified consumer name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).

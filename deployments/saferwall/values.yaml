@@ -116,6 +116,7 @@ efs-provisioner:
     # dnsName: "fs-36d586b7.efs.us-east-1.amazonaws.com"
     # storageClass:
     #   name:  {{ include "saferwall.fullname" . }}-efs
+
 ########### NGINX INGRESS  #############
 nginx-ingress:
   enabled: true
@@ -164,6 +165,21 @@ frontend:
     port: 80
     targetPort: 80
 
+########### WEBSITE ###########
+website:
+  enabled: true
+  name: website
+  replicaCount: 1
+  containerPort: 4000
+  image:
+    repository: saferwall/website
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 4000
+
 ########## CERT-MANAGER ############
 cert-manager:
   enabled: true
@@ -172,13 +188,14 @@ cert-manager:
     defaultIssuerKind: ClusterIssuer
 
 ########## CERTIFICATE ############
-backendDomainName: api.saferwall.com
-frontendDomainName: saferwall.com
 ingressClass: nginx
 certEmail: admin@saferwall.com
 certIssuer: letsencrypt-staging
 # letsencryptServer: https://acme-v02.api.letsencrypt.org/directory
 letsencryptServer: https://acme-staging-v02.api.letsencrypt.org/directory
+backendDomainName: api.saferwall.com
+frontendDomainName: saferwall.com
+websiteDomainName: about.saferwall.com
 
 ########### CONSUMER ###########
 consumer:

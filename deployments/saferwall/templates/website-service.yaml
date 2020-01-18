@@ -1,0 +1,18 @@
+{{- if .Values.website.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "saferwall.website.fullname" . }}
+  labels:
+    app: {{ include "saferwall.website.fullname" . }}
+spec:
+  selector:
+    app: {{ include "saferwall.website.fullname" . }}
+  ports:
+    - port: {{ .Values.website.service.port }}
+      targetPort: {{ .Values.website.service.targetPort }}
+    {{- if .Values.website.service.nodePort }}
+      nodePort: {{ .Values.website.service.nodePort }}
+    {{- end }}
+  type: {{ .Values.website.service.type }}
+{{- end }}

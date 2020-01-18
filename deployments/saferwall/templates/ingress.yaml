@@ -13,6 +13,7 @@ spec:
   - hosts:
     - dev.saferwall.com
     - dev.api.saferwall.com
+    - about.saferwall.com
     secretName: {{ include "saferwall.fullname" . }}-tls
   rules:
   - host: dev.saferwall.com
@@ -29,4 +30,11 @@ spec:
         backend:
           serviceName: {{ include "saferwall.backend.fullname" . }}
           servicePort: {{ .Values.backend.service.port }}
+  - host: about.saferwall.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ include "saferwall.website.fullname" . }}
+          servicePort: {{ .Values.website.service.port }}
 {{- end }}

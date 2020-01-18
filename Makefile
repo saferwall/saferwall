@@ -40,6 +40,7 @@ include build/mk/kops.mk
 include build/mk/consumer.mk
 include build/mk/backend.mk
 include build/mk/frontend.mk
+include build/mk/website.mk
 include build/mk/protobuf.mk
 include build/mk/yara.mk
 include build/mk/certbot.mk

@@ -1,0 +1,24 @@
+{{- if .Values.website.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "saferwall.website.fullname" . }}
+  labels:
+    app: {{ include "saferwall.website.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "saferwall.website.fullname" . }}
+  replicas:  {{ .Values.website.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "saferwall.website.fullname" . }}
+    spec:
+      containers:
+        - name: "{{ .Values.website.name }}"
+          image: "{{ .Values.website.image.repository }}:{{ .Values.website.image.tag }}"
+          imagePullPolicy: "{{ .Values.website.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.website.containerPort }}
+{{- end }}
