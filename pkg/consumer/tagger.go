@@ -5,8 +5,8 @@
 package main
 
 import (
-	"strings"
 	"log"
+	"strings"
 )
 
 // Compilers, Installers, Packers names as seen by DiE (Detect It Easy)
@@ -18,10 +18,11 @@ const (
 	SigASProtect = "ASProtect"
 	SigPECompact = "PECompact"
 	SigEnigma    = "ENIGMA"
-	SigGCC      = "gcc"
+	SigGCC       = "gcc"
 	SigMSVC      = "Microsoft Visual C/C++"
 	SigMSVB      = "Microsoft Visual Basic"
 	SigDotNet    = ".NET"
+	SigMFC       = "MFC"
 	SigDelphi    = "Delphi"
 	SigAutoIT    = "AutoIt"
 	SigSFXCab    = "sfx: Microsoft Cabinet"
@@ -55,6 +56,8 @@ func (f *result) GetTags() error {
 		tags = append(tags, "vb")
 	} else if strings.Contains(packer, SigDotNet) {
 		tags = append(tags, "dotnet")
+	} else if strings.Contains(packer, SigMFC) {
+		tags = append(tags, "mfc")
 	} else if strings.Contains(packer, SigDelphi) {
 		tags = append(tags, "delphi")
 	} else if strings.Contains(packer, SigAutoIT) {

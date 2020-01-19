@@ -19,7 +19,7 @@ minio:
     enabled: true
 
     # Size of persistent volume claim
-    size: 1Gi
+    size: 5Gi
 
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"
@@ -184,7 +184,7 @@ website:
 cert-manager:
   enabled: true
   ingressShim:
-    defaultIssuerName: letsencrypt-staging
+    defaultIssuerName: letsencrypt-prod
     defaultIssuerKind: ClusterIssuer
 certEmail: admin@saferwall.com
 backendDomainName: dev.api.saferwall.com

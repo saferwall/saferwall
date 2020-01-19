@@ -16,8 +16,7 @@ require (
 	github.com/hillu/go-yara v1.1.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-isatty v0.0.11 // indirect
+	github.com/labstack/echo/v4 v4.1.13 // indirect
 	github.com/minio/minio-go/v6 v6.0.44
 	github.com/nsqio/go-nsq v1.0.7 // indirect
 	github.com/pelletier/go-toml v1.5.0 // indirect
