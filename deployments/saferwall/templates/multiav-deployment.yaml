@@ -23,6 +23,9 @@ spec:
           imagePullPolicy: "{{ $value.image.pullPolicy }}"
           ports:
             - containerPort: {{ $value.containerPort }}
+          resources:
+            requests:
+              cpu: "{{ $root.Values.multiav.resources.requests.cpu }}"
           volumeMounts:
             - name: samples
               mountPath: /samples

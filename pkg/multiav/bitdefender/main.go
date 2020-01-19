@@ -53,6 +53,8 @@ func ScanFile(filePath string) (Result, error) {
 	// --action=[disinfect|quarantine|delete|ignore]
 
 	res := Result{}
+	// Exit status codes:
+	// 254: Your license has expired.
 	if err != nil && err.Error() != "exit status 1" {
 		return res, err
 	}

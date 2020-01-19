@@ -6,6 +6,7 @@ package main
 
 import (
 	"strings"
+	"log"
 )
 
 // Compilers, Installers, Packers names as seen by DiE (Detect It Easy)
@@ -64,6 +65,7 @@ func (f *result) GetTags() error {
 		tags = append(tags, "gcc")
 	}
 
+	log.Println(tags)
 	f.Tags = tags
 	return nil
 }
