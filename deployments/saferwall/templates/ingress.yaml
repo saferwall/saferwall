@@ -5,32 +5,32 @@ metadata:
   name: {{ include "saferwall.fullname" . }}
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "{{ .Values.certIssuer }}"
+    cert-manager.io/cluster-issuer: letsencrypt-staging
     nginx.ingress.kubernetes.io/client-body-buffer-size: "64M"
     nginx.ingress.kubernetes.io/proxy-body-size: "64M"
 spec:
   tls:
   - hosts:
-    - dev.saferwall.com
-    - dev.api.saferwall.com
-    - about.saferwall.com
+    - {{ .Values.frontendDomainName }}
+    - {{ .Values.backendDomainName }}
+    - {{ .Values.websiteDomainName }}
     secretName: {{ include "saferwall.fullname" . }}-tls
   rules:
-  - host: dev.saferwall.com
+  - host: {{ .Values.frontendDomainName }}
     http:
       paths:
       - path: /
         backend:
           serviceName: {{ include "saferwall.frontend.fullname" . }}
           servicePort: {{ .Values.frontend.service.port }}
-  - host: dev.api.saferwall.com
+  - host: {{ .Values.backendDomainName }}
     http:
       paths:
       - path: /
         backend:
           serviceName: {{ include "saferwall.backend.fullname" . }}
           servicePort: {{ .Values.backend.service.port }}
-  - host: about.saferwall.com
+  - host: {{ .Values.websiteDomainName }}
     http:
       paths:
       - path: /
