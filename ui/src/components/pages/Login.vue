@@ -125,6 +125,8 @@ export default {
             this.updateLoggedIn(response.data.token.split(".")[1])
             this.updateUsername(response.data.token.split(".")[1])
 
+            this.track()
+
             if (this.$route.params.nextUrl != null) {
               this.$router.push(this.$route.params.nextUrl)
             } else {
@@ -144,6 +146,11 @@ export default {
     },
     emailSent() {
       this.emailConfirmed = true
+    },
+    track() {
+      this.$gtag.event("login", {
+        method: "email",
+      })
     },
   },
   validations: {
@@ -292,6 +299,6 @@ export default {
   font-size: 0.8em;
   cursor: pointer;
   font-weight: 400;
-  color:#3273dc;
+  color: #3273dc;
 }
 </style>

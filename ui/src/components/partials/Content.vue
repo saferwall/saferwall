@@ -2,7 +2,9 @@
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
       <div class="columns">
-        <div class="column is-four-fifths-fullhd is-three-quarters-desktop is-three-fifths-tablet is-half-mobile">
+        <div
+          class="column is-four-fifths-fullhd is-three-quarters-desktop is-three-fifths-tablet is-half-mobile"
+        >
           <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
             <ul>
               <li>
@@ -19,10 +21,10 @@
         <div class="column">
           <div class="columns">
             <div class="column is-half">
-              <Download v-if="showDownload" />
+              <Download v-if="showDownload" :hash="hash"/>
             </div>
             <div class="column is-half">
-              <Rescan v-if="showRescan" :route="route" />
+              <Rescan v-if="showRescan" :route="route" :hash="hash" />
             </div>
           </div>
         </div>
@@ -35,6 +37,8 @@
 <script>
 import Download from "../elements/Download"
 import Rescan from "../elements/Rescan"
+
+import { mapGetters } from "vuex"
 
 export default {
   props: ["fullwidth"],
@@ -65,6 +69,9 @@ export default {
         this.$store.getters.getHashContext !== "" || this.route === "upload"
       )
     },
+    ...mapGetters({
+      hash: 'getHashContext'
+    }),
   },
   methods: {
     getData: function() {
@@ -82,8 +89,8 @@ export default {
             this.$store.dispatch(
               "updateHash",
               this.$router.currentRoute.params.hash,
-              this.$store.dispatch("updateFileData", data),
             )
+            this.$store.dispatch("updateFileData", data)
           })
           .catch(() => {
             this.$awn.alert(

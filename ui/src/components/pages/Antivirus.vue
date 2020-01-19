@@ -12,7 +12,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(value, vendor) in firstScan" :key="vendor">
+            <tr v-for="(value, vendor) in Scans.firstScan" :key="vendor">
               <td>{{ vendor }}</td>
               <td>
                 <span
@@ -69,7 +69,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(value, vendor) in lastScan" :key="vendor">
+            <tr v-for="(value, vendor) in Scans.lastScan" :key="vendor">
               <td>{{ vendor }}</td>
               <td>
                 <span
@@ -117,9 +117,11 @@
     </div>
   </div>
 </template>
+
 <script>
 import Loader from "@/components/elements/Loader"
 import Copy from "@/components/elements/Copy"
+import { mapGetters } from "vuex"
 
 export default {
   components: {
@@ -128,11 +130,27 @@ export default {
   },
   data() {
     return {
-      showLoader: true,
-      lastScan: {},
-      firstScan: {},
+      showLoader: false,
       show: { type: "", vendor: "" },
     }
+  },
+  computed: {
+    ...mapGetters({ fileData: "getFileData" }),
+    Scans: function() {
+      if (this.fileData === {} || !this.fileData) return {}
+
+      var _firstScan = this.fileData.data.multiav.first_scan
+      var _lastScan = this.fileData.data.multiav.last_scan
+
+      Object.keys(_firstScan).forEach((key) => {
+        _firstScan[key].showCopy = false
+        _lastScan[key].showCopy = false
+      })
+      return {
+        firstScan : _firstScan,
+        lastScan : _lastScan
+      }
+    },
   },
   methods: {
     mouseOver(type, vendor) {
@@ -141,34 +159,13 @@ export default {
     mouseLeave(type, index) {
       this.show = {}
     },
-    showData() {
-      // replace route params with props
-      var fileData = this.$store.getters.getFileData
-
-      if (fileData === {} || !fileData) return
-      this.showLoader = false
-
-      this.showLoader = false
-      if (!fileData.data.multiav) {
-        return
-      }
-
-      this.firstScan = fileData.data.multiav.first_scan
-      this.lastScan = fileData.data.multiav.last_scan
-
-      Object.keys(this.firstScan).forEach((key) => {
-        const first = this.firstScan[key]
-        first.showCopy = false
-        const last = this.lastScan[key]
-        last.showCopy = false
-      })
-    },
   },
   mounted() {
-    if (this.$store.getters.getHashContext) this.showData()
+    this.showLoader = false
   },
 }
 </script>
+
 <style lang="scss" scoped>
 .fade-enter-active,
 .fade-leave-active {

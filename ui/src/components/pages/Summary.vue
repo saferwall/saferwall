@@ -5,6 +5,7 @@
       <div class="tile is-parent is-vertical">
         <div class="tile is-child box">
           <h4 class="title">Basic Properties</h4>
+          <!--Basic Properties-->
           <div
             v-for="(i, index) in basicProperties"
             class="data-data"
@@ -13,6 +14,7 @@
             <strong class="data-label">
               {{ getLabelForGivenKey(index) }}
             </strong>
+            <!-- TRiD -->
             <span
               class="data-value"
               :class="{ 'trid-container': index === 'trid' }"
@@ -26,6 +28,7 @@
                 </span>
               </p>
             </span>
+            <!-- Packer -->
             <span
               class="data-value"
               :class="{ 'packer-container': index === 'packer' }"
@@ -39,16 +42,28 @@
                 </span>
               </p>
             </span>
+            <!-- Tags -->
+            <span class="tags" v-else-if="index === 'tags'">
+              <span
+                v-for="(item, index) in summaryData.tags"
+                :key="index"
+                class="tag is-link is-normal"
+              >
+                <span>{{ item }}</span>
+                <copy :content="item"></copy>
+              </span>
+            </span>
+            <!-- Default -->
             <span class="data-value" v-else>
               <span class="value-text">{{
                 index !== "sha512" ? i : i.substring(0, 70) + "..."
               }}</span>
-
               <copy :content="i"></copy>
             </span>
           </div>
         </div>
 
+        <!--ExifTool File Metadata-->
         <div class="tile is-child box">
           <h4 class="title">ExifTool File Metadata</h4>
           <div
@@ -70,9 +85,12 @@
     </div>
   </div>
 </template>
+
 <script>
 import Loader from "@/components/elements/Loader"
 import Copy from "@/components/elements/Copy"
+
+import { mapGetters } from "vuex"
 
 export default {
   components: {
@@ -82,17 +100,35 @@ export default {
   data() {
     return {
       showLoader: true,
-      summaryData: {},
       uppercaseFields: ["md5", "sha-1", "sha-256", "sha-512", "crc32"],
     }
   },
   computed: {
+    ...mapGetters({ fileData: "getFileData" }),
     basicProperties: function() {
       const allPropsEntries = Object.entries(this.summaryData)
       const basicPropsEntries = allPropsEntries.filter(
         (entry) => !["av", "exif"].includes(entry[0]),
       )
       return Object.fromEntries(basicPropsEntries)
+    },
+
+    summaryData: function() {
+      if (this.fileData === {} || !this.fileData) return {}
+      return {
+        filesize: this.bytesToSize(this.fileData.data.size),
+        magic: this.fileData.data.magic,
+        crc32: this.fileData.data.crc32,
+        md5: this.fileData.data.md5,
+        "sha-1": this.fileData.data.sha1,
+        "sha-256": this.fileData.data.sha256,
+        "sha-512": this.fileData.data.sha512,
+        ssdeep: this.fileData.data.ssdeep,
+        trid: this.fileData.data.trid,
+        packer: this.fileData.data.packer,
+        tags: this.fileData.data.tags,
+        exif: this.fileData.data.exif,
+      }
     },
   },
   methods: {
@@ -113,32 +149,13 @@ export default {
         ? "SSDeep"
         : key
     },
-    showData() {
-      var fileData = this.$store.getters.getFileData
-      if(fileData === {} || !fileData) return
-      this.showLoader = false
-
-      this.summaryData.filesize = this.bytesToSize(fileData.data.size)
-      this.summaryData.magic = fileData.data.magic
-      this.summaryData.crc32 = fileData.data.crc32
-      this.summaryData.md5 = fileData.data.md5
-      this.summaryData["sha-1"] = fileData.data.sha1
-      this.$set(this.summaryData, "sha-256", fileData.data.sha256) // Setting a reactive property (Object entries are not reactive), this is used to update BasicProperties
-      this.summaryData["sha-512"] = fileData.data.sha512
-      this.summaryData.ssdeep = fileData.data.ssdeep
-      this.summaryData.trid = fileData.data.trid
-      this.summaryData.exif = fileData.data.exif
-      this.summaryData.packer = fileData.data.packer
-    },
   },
   mounted() {
-    if (this.$store.getters.getHashContext) this.showData()
-  },
-  beforeRouteUpdate(to, from, next) {
-    this.showData()
+    this.showLoader = false
   },
 }
 </script>
+
 <style lang="scss" scoped>
 .data-data {
   float: left;
@@ -196,6 +213,23 @@ export default {
     &:hover {
       .value-text {
         opacity: 0.35;
+      }
+      & > .copy {
+        opacity: 1;
+      }
+    }
+  }
+
+  .tag {
+    position: relative;
+
+    & > .copy {
+      opacity: 0;
+    }
+
+    &:hover {
+      span{
+      opacity: 0.35;
       }
       & > .copy {
         opacity: 1;

@@ -17,6 +17,9 @@ import axios from "axios"
 import VueCookies from "vue-cookies"
 import VueAWN from "vue-awesome-notifications"
 
+// Google Analytics
+import VueGtag from "vue-gtag";
+
 require('../node_modules/vue-awesome-notifications/dist/styles/style.css')
 
 const options = {
@@ -40,6 +43,11 @@ const options = {
 }
 
 Vue.use(VueAWN, options)
+
+Vue.use(VueGtag, {
+  config: { id: "UA-111524273-1" },
+  appName: 'SaferWall',
+}, router);
 
 
 Vue.use(Vuelidate)

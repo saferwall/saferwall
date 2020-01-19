@@ -28,6 +28,11 @@
             <i class="icon fas fa-upload fa-2x"></i>
           </router-link>
         </li>
+        <li>
+          <a href="https://about.saferwall.com/">
+            About
+          </a>
+        </li>
         <!-- <li><router-link to="/">Statistics</router-link></li> -->
         <li>
           <div class="profile">
@@ -103,6 +108,10 @@ export default {
       return payload
     },
     searchByHash() {
+      if (!this.hash.trim()) {
+        this.$awn.warning("Empty Field!")
+        return
+      }
       this.$http
         .get(`${this.$api_endpoints.FILES}${this.hash}/`, {
           validateStatus: (status) => status === 200,
@@ -110,7 +119,7 @@ export default {
         .then((data) => {
           this.updateHash(this.hash)
           this.updateFileData(data)
-
+          this.track()
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
         .catch(() => {
@@ -119,6 +128,11 @@ export default {
           )
         })
     },
+    track(){
+      this.$gtag.event('search', {
+        search_term:this.hash
+      })
+    }
   },
 
   mounted() {
@@ -237,6 +251,7 @@ header.dashboard-header {
       li {
         display: inline-block;
         line-height: $header-height;
+        border-left: solid 1px rgba(10, 10, 10, 0.1);
 
         a {
           display: inline-block;
