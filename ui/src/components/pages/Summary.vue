@@ -115,7 +115,7 @@ export default {
     summaryData: function() {
       if (this.fileData === {} || !this.fileData) return {}
       return {
-        filesize: this.fileData.data.size?this.bytesToSize(this.fileData.data.size):0,
+        filesize: this.fileData.data?this.bytesToSize(this.fileData.data.size):0,
         magic: this.fileData.data.magic,
         crc32: this.fileData.data.crc32,
         md5: this.fileData.data.md5,
