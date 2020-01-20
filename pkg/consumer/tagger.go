@@ -21,6 +21,8 @@ const (
 	SigGCC       = "gcc"
 	SigMSVC      = "Microsoft Visual C/C++"
 	SigMSVB      = "Microsoft Visual Basic"
+	SigMASM      = "MASM"
+	SigFASM      = "FASM"
 	SigDotNet    = ".NET"
 	SigMFC       = "MFC"
 	SigDelphi    = "Delphi"
@@ -54,6 +56,10 @@ func (f *result) GetTags() error {
 		tags = append(tags, "vc")
 	} else if strings.Contains(packer, SigMSVB) {
 		tags = append(tags, "vb")
+	} else if strings.Contains(packer, SigMASM) {
+		tags = append(tags, "masm")
+	} else if strings.Contains(packer, SigFASM) {
+		tags = append(tags, "fasm")
 	} else if strings.Contains(packer, SigDotNet) {
 		tags = append(tags, "dotnet")
 	} else if strings.Contains(packer, SigMFC) {

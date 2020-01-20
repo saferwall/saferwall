@@ -33,7 +33,7 @@ type Version struct {
 func GetProgramVersion() (string, error) {
 
 	// Run kesl to grab the version
-	out, err := utils.ExecCommand(kesl, "-S", "--app-info")
+	out, err := utils.ExecCommand("sudo", kesl, "-S", "--app-info")
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +54,7 @@ func GetProgramVersion() (string, error) {
 func GetDatabaseVersion() (Version, error) {
 
 	// Run kav4s to grab the database update version
-	databaseOut, err := utils.ExecCommand(kesl, "--get-stat", "Update")
+	databaseOut, err := utils.ExecCommand("sudo", kesl, "--get-stat", "Update")
 
 	ver := Version{}
 	if err != nil {
@@ -87,6 +87,7 @@ func ScanFile(filePath string) (Result, error) {
 	// 1 – general error in command arguments.
 	// 2 – error in passed application settings.
 	// 64 – Kaspersky Endpoint Security is not running.
+	// 65 - Protection is disabled.
 	// 66 – anti-virus databases have not been downloaded (used only for the command kesl-control --app-info).
 	// 67 – activation 2.0 ended with an error due to network problems.
 	// 68 – the command cannot be executed because the application is running under a policy.

@@ -116,7 +116,6 @@ func staticScan(sha256, filePath string, b []byte) result {
 	// Extract tags
 	res.GetTags()
 
-
 	return res
 }
 

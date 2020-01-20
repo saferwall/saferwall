@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+	"time"
 
 	nsq "github.com/bitly/go-nsq"
 	"github.com/minio/minio-go/v6"
@@ -177,6 +178,12 @@ func main() {
 	// The default config settings provide a pretty good starting point for
 	// our new consumer.
 	config := nsq.NewConfig()
+
+	// We had messages still in flight when the RDY count was getting redistributed,
+	// which caused the connection with the in-flight messages to close prematurely.
+	// We fixed this by upping low_rdy_idle_timeout to 2 minutes in our NSQ client
+	// configuration: https://github.com/nsqio/go-nsq/issues/199
+	config.LowRdyIdleTimeout = time.Duration(2 * time.Minute)
 
 	// Create a NewConsumer with the name of our topic, the channel, and our config
 	consumer, err := nsq.NewConsumer("scan", "file", config)
