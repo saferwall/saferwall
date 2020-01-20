@@ -112,9 +112,9 @@ export default {
       return Object.fromEntries(basicPropsEntries)
     },
     summaryData: function() {
-      if (this.fileData === {} || !this.fileData) return {}
+      if (!this.fileData || Object.entries(this.fileData).length === 0 && this.fileData.constructor === Object) return {}
       return {
-        filesize: this.fileData.data?this.bytesToSize(this.fileData.data.size):0,
+        filesize: this.bytesToSize(this.fileData.data.size),
         magic: this.fileData.data.magic,
         crc32: this.fileData.data.crc32,
         md5: this.fileData.data.md5,
@@ -128,9 +128,9 @@ export default {
         exif: this.fileData.data.exif,
       }
     },
-    showLoader: function(){
-      return (this.summaryData === {} || !this.summaryData)
-    }
+    showLoader: function() {
+      return this.summaryData === {} || !this.summaryData
+    },
   },
   methods: {
     bytesToSize(bytes) {
@@ -226,8 +226,8 @@ export default {
     }
 
     &:hover {
-      span{
-      opacity: 0.35;
+      span {
+        opacity: 0.35;
       }
       & > .copy {
         opacity: 1;
