@@ -185,6 +185,11 @@ func main() {
 	// configuration: https://github.com/nsqio/go-nsq/issues/199
 	config.LowRdyIdleTimeout = time.Duration(2 * time.Minute)
 
+	// Fix: What's causing this are those "timed out" messages - NSQ isn't hearing 
+	// back from your consumer and it's delivering the message to another consumer.
+	// failed ID not in flight (https://github.com/nsqio/nsq/issues/729)
+	config.MsgTimeout = time.Duration(2 * time.Minute)
+
 	// Create a NewConsumer with the name of our topic, the channel, and our config
 	consumer, err := nsq.NewConsumer("scan", "file", config)
 	if err != nil {
