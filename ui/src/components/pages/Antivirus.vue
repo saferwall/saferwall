@@ -130,7 +130,6 @@ export default {
   },
   data() {
     return {
-      showLoader: false,
       show: { type: "", vendor: "" },
     }
   },
@@ -147,9 +146,12 @@ export default {
         _lastScan[key].showCopy = false
       })
       return {
-        firstScan : _firstScan,
-        lastScan : _lastScan
+        firstScan: _firstScan,
+        lastScan: _lastScan,
       }
+    },
+    showLoader: function() {
+      return (Array.isArray(this.Scans.firstScan) && this.Scans.firstScan.length === 0) || (Array.isArray(this.Scans.lastScan) && this.Scans.lastScan.length === 0)
     },
   },
   methods: {
@@ -159,9 +161,6 @@ export default {
     mouseLeave(type, index) {
       this.show = {}
     },
-  },
-  mounted() {
-    this.showLoader = false
   },
 }
 </script>

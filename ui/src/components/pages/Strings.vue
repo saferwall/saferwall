@@ -96,7 +96,6 @@ export default {
   },
   data() {
     return {
-      showLoader: false,
       start: 0,
       limit: 10,
       encodingSorted: "",
@@ -115,10 +114,13 @@ export default {
       this.fileData.data.strings.forEach((s) => (s.show = true))
       return this.fileData.data.strings
     },
-    filteredStrings: function(){
+    filteredStrings: function() {
       if (this.fileData === {} || !this.fileData) return {}
-      return this.strings.slice(this.start, this.limit);
-    }
+      return this.strings.slice(this.start, this.limit)
+    },
+    showLoader: function() {
+      return Array.isArray(this.strings) && this.strings.length === 0
+    },
   },
 
   methods: {
@@ -191,9 +193,6 @@ export default {
       }
     },
   },
-    mounted(){
-    this.showLoader = false
-  }
 }
 </script>
 <style lang="scss" scoped>

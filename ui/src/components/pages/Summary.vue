@@ -99,7 +99,6 @@ export default {
   },
   data() {
     return {
-      showLoader: true,
       uppercaseFields: ["md5", "sha-1", "sha-256", "sha-512", "crc32"],
     }
   },
@@ -129,6 +128,9 @@ export default {
         exif: this.fileData.data.exif,
       }
     },
+    showLoader: function(){
+      return (this.summaryData === {} || !this.summaryData)
+    }
   },
   methods: {
     bytesToSize(bytes) {
@@ -148,9 +150,6 @@ export default {
         ? "SSDeep"
         : key
     },
-  },
-  mounted() {
-    this.showLoader = false
   },
 }
 </script>
