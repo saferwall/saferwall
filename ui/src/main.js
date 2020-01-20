@@ -49,7 +49,6 @@ Vue.use(VueGtag, {
   appName: 'SaferWall',
 }, router);
 
-
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
 

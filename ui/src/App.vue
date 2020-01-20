@@ -9,6 +9,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
+
 export default {
   name: "App",
   computed: {
@@ -16,8 +18,18 @@ export default {
       return (this.$route.meta.layout || "default") + "-layout"
     },
   },
+  methods: {
+    ...mapActions(["updateUsername", "updateLoggedIn"]),
+    getJWTPayload() {
+      const payload = this.$cookies.get("JWTPayload")
+      return payload
+    },
+  },
   created() {
     document.title = this.$route.meta.title || "SaferWall"
+    const payload = this.getJWTPayload()
+    this.updateUsername(payload)
+    this.updateLoggedIn(payload)
   },
   updated() {
     document.title = this.$route.meta.title || "SaferWall"

@@ -87,8 +87,6 @@ export default {
   },
   methods: {
     ...mapActions([
-      "updateUsername",
-      "updateLoggedIn",
       "logOut",
       "updateHash",
       "updateFileData",
@@ -101,11 +99,6 @@ export default {
       } else {
         this.$router.push(this.$routes.LOGIN.path)
       }
-    },
-
-    getJWTPayload() {
-      const payload = this.$cookies.get("JWTPayload")
-      return payload
     },
     searchByHash() {
       if (!this.hash.trim()) {
@@ -133,12 +126,6 @@ export default {
         search_term:this.hash
       })
     }
-  },
-
-  mounted() {
-    const payload = this.getJWTPayload()
-    this.updateLoggedIn(payload)
-    this.updateUsername(payload)
   },
 }
 </script>

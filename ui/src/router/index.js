@@ -132,8 +132,8 @@ router.beforeEach(function (to, from, next) {
         nextUrl: to.fullPath
       },
     })
-  } else if (to.matched.some((record) => record.meta.guest)) {
-    next()
+  } else if (to.matched.some((record) => record.meta.guest) && isLogged()) {
+    next('/')
   } else next()
 })
 

@@ -72,6 +72,7 @@ export default {
     },
     onFileAdded(file) {
       if (!file) {
+        this.$awn.alert("File cannot be read!")
         return
       }
 
@@ -162,13 +163,13 @@ export default {
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: this.$router.SUMMARY.name,
+                  name: this.$routes.SUMMARY.name,
                   params: { hash: hashHex },
                 })
               }, 4000)
               this.trackSuccess()
               this.$store.dispatch("updateHash", hashHex)
-              this.$router.push({ name: "summary" })
+              this.$router.push(this.$routes.SUMMARY.path)
               break
           }
         })
