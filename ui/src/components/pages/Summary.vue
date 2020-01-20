@@ -99,7 +99,6 @@ export default {
   },
   data() {
     return {
-      showLoader: true,
       uppercaseFields: ["md5", "sha-1", "sha-256", "sha-512", "crc32"],
     }
   },
@@ -113,9 +112,9 @@ export default {
       return Object.fromEntries(basicPropsEntries)
     },
     summaryData: function() {
-      if (this.fileData === {} || !this.fileData) return {}
+      if (!this.fileData || Object.entries(this.fileData).length === 0 && this.fileData.constructor === Object) return {}
       return {
-        filesize: this.fileData.data.size?this.bytesToSize(this.fileData.data.size):0,
+        filesize: this.bytesToSize(this.fileData.data.size),
         magic: this.fileData.data.magic,
         crc32: this.fileData.data.crc32,
         md5: this.fileData.data.md5,
@@ -128,6 +127,9 @@ export default {
         tags: this.fileData.data.tags,
         exif: this.fileData.data.exif,
       }
+    },
+    showLoader: function() {
+      return this.summaryData === {} || !this.summaryData
     },
   },
   methods: {
@@ -148,9 +150,6 @@ export default {
         ? "SSDeep"
         : key
     },
-  },
-  mounted() {
-    this.showLoader = false
   },
 }
 </script>
@@ -227,8 +226,8 @@ export default {
     }
 
     &:hover {
-      span{
-      opacity: 0.35;
+      span {
+        opacity: 0.35;
       }
       & > .copy {
         opacity: 1;
