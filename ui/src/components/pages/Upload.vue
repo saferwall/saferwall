@@ -5,7 +5,7 @@
         <tab name="File" icon="ion-android-folder-open" :selected="true">
           <DropZone @fileAdded="onFileAdded" :enabled="ongoingStep === 0" />
         </tab>
-        <tab name="Url" icon="ion-ios-world-outline">
+        <!--<tab name="Url" icon="ion-ios-world-outline" >
           <form class="tile is-child box">
             <h1>This part is about our culture</h1>
 
@@ -21,7 +21,7 @@
               </small>
             </p>
           </form>
-        </tab>
+        </tab>-->
       </tabs>
       <progress-tracker alignment="center" v-if="selectedTab != 'Url'">
         <!-- prettier-ignore -->
@@ -72,6 +72,7 @@ export default {
     },
     onFileAdded(file) {
       if (!file) {
+        this.$awn.alert("File cannot be read!")
         return
       }
 
@@ -123,13 +124,17 @@ export default {
                     )
                     setTimeout(() => {
                       clearInterval(this.pollInterval)
+                      this.trackException()
                     }, 36000000) // stop polling after an hour
                   })
                   .catch(console.log)
               })
           })
           .catch(() => {
-          this.$awn.alert("Sorry, we couldn't upload the file. Please, try again!")
+            this.$awn.alert(
+              "Sorry, we couldn't upload the file. Please, try again!",
+            )
+            this.trackException()
           })
       }
       reader.readAsArrayBuffer(file)
@@ -158,18 +163,33 @@ export default {
               setTimeout(() => {
                 this.ongoingStep = step.READY
                 this.$router.push({
-                  name: this.$router.SUMMARY.name,
+                  name: this.$routes.SUMMARY.name,
                   params: { hash: hashHex },
                 })
               }, 4000)
+              this.trackSuccess()
               this.$store.dispatch("updateHash", hashHex)
-              this.$router.push({ name: "summary" })
+              this.$router.push(this.$routes.SUMMARY.path)
               break
           }
         })
         .catch(() => {
           this.$awn.alert("Problem occured while uploading, try again")
+          this.trackException()
         })
+    },
+    trackSuccess() {
+      this.$gtag.event("Upload_Success", {
+        event_category: "Upload",
+        event_label: "Success Upload",
+        value: 1,
+      })
+    },
+    trackException() {
+      this.$gtag.exception({
+        description: "Failed Upload ",
+        fatal: false,
+      })
     },
   },
 }

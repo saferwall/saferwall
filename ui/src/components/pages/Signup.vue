@@ -188,6 +188,7 @@ export default {
           })
           .then((response) => {
             this.errored = false
+            this.track()
             this.$router.push({
               path: this.$routes.LOGIN.path,
               query: {
@@ -202,6 +203,11 @@ export default {
             },
           )
       }
+    },
+    track() {
+      this.$gtag.event("sign_up", {
+        method: "email",
+      })
     },
   },
   validations: {

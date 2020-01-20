@@ -1,5 +1,4 @@
 <!-- refactor (filtering, sorting…) -->
-
 <template>
   <div>
     <loader v-if="showLoader"></loader>
@@ -89,6 +88,7 @@
 </template>
 <script>
 import Loader from "@/components/elements/Loader"
+import { mapGetters } from "vuex"
 
 export default {
   components: {
@@ -96,9 +96,7 @@ export default {
   },
   data() {
     return {
-      showLoader: true,
-      strings: [],
-      filteredStrings: [],
+      showLoader: false,
       start: 0,
       limit: 10,
       encodingSorted: "",
@@ -108,12 +106,19 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({ fileData: "getFileData" }),
     filteredStringsToShow: function() {
       return this.filteredStrings.filter((string) => string.show)
     },
-  },
-  mounted() {
-    if (this.$store.getters.getHashContext) this.showData()
+    strings: function() {
+      if (this.fileData === {} || !this.fileData) return {}
+      this.fileData.data.strings.forEach((s) => (s.show = true))
+      return this.fileData.data.strings
+    },
+    filteredStrings: function(){
+      if (this.fileData === {} || !this.fileData) return {}
+      return this.strings.slice(this.start, this.limit);
+    }
   },
 
   methods: {
@@ -185,18 +190,10 @@ export default {
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
     },
-    showData() {
-      var fileData = this.$store.getters.getFileData
-
-      if (fileData === {} || !fileData) return
-      this.showLoader = false
-
-      this.showLoader = false
-      this.strings = fileData.data.strings
-      this.strings.forEach((s) => (s.show = true))
-      this.filteredStrings = this.strings.slice(this.start, this.limit)
-    },
   },
+    mounted(){
+    this.showLoader = false
+  }
 }
 </script>
 <style lang="scss" scoped>

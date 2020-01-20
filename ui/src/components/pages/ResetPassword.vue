@@ -145,6 +145,7 @@ export default {
           .post(this.$api_endpoints.AUTH_CHANGE_PWD, postData, axiosConfig)
           .then((response) => {
             this.$awn.success(this.successMessage)
+            this.$router.push(this.$routes.HOME.path)
           })
           .catch((error) => {
             this.$awn.alert(

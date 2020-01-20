@@ -31,10 +31,9 @@ const step = {
 }
 
 export default {
-  props: ["route"],
+  props: ["route", "hash"],
   data() {
     return {
-      hash: "",
       ongoingStep: 0,
       Rescanning: false,
       pollInterval: null,
@@ -71,6 +70,7 @@ export default {
       return new Promise((resolve) => {
         setTimeout(() => {
           this.$awn.alert("Something went wrong, try again")
+          this.trackException()
           clearInterval(this.pollInterval)
         }, 36000000) // stop polling after an hour
       })
@@ -98,18 +98,13 @@ export default {
               clearInterval(this.pollInterval)
               setTimeout(() => {
                 this.ongoingStep = step.READY
-                this.$router.push({
-                  name: this.$router.SUMMARY.name,
-                  params: { hash: this.hash },
-                })
-              }, 4000)
-              this.$store.dispatch("updateHash", this.hash)
-              this.$store.dispatch("updateFileData", response)
+              })
               this.Rescanning = false
               this.ongoingStep = 0
+              this.trackSuccess()
               this.$awn.closeToasts()
               this.$awn.success("successfully rescaned the file")
-              this.UpdateData()
+              this.$store.dispatch("updateFileData", response)
               break
           }
         })
@@ -117,28 +112,22 @@ export default {
           this.$awn.alert(
             "Problem occured while rescanning the file, try again",
           )
+          this.trackException()
         })
     },
-    UpdateData: function() {
-      this.$http
-        .get(this.$api_endpoints.FILES + this.hash)
-        .then((data) => {
-          this.$store.dispatch(
-            "updateHash",
-            this.$router.currentRoute.params.hash,
-            this.$store.dispatch("updateFileData", data),
-          )
-          this.$awn.success("successfully updated the data")
-        })
-        .catch(() => {
-          this.$awn.alert(
-            "Error occured while updating file info, try refreshing the page",
-          )
-        })
+    trackSuccess() {
+      this.$gtag.event("Rescan_Success", {
+        event_category: "Rescan",
+        event_label: "Success Rescan",
+        value: 1,
+      })
     },
-  },
-  created() {
-    this.hash = this.$store.getters.getHashContext
+    trackException() {
+      this.$gtag.exception({
+        'description': 'Rescan Failed, Hash:'+this.hash,
+        'fatal': false
+      })
+    },
   },
 }
 </script>
