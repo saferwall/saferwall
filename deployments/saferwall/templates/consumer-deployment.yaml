@@ -16,6 +16,8 @@ spec:
         app: {{ include "saferwall.consumer.fullname" . }}
     spec:
       containers:
+        imagePullSecrets:
+          - name: regcred
         - name: "{{ .Values.consumer.name }}"
           image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
           imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"

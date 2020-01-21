@@ -415,7 +415,6 @@ func PostFiles(c echo.Context) error {
 	}
 
 	// We have already seen this file
-
 	// Create new submission
 	now := time.Now().UTC()
 	s := submission{

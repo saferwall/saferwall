@@ -15,6 +15,8 @@ spec:
       labels:
         app: {{ include "saferwall.frontend.fullname" . }}
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: "{{ .Values.frontend.name }}"
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"

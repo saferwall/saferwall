@@ -17,6 +17,8 @@ spec:
       labels:
         app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: "{{ $av }}"
           image: "{{ $value.image.repository }}:{{ $value.image.tag }}"
