@@ -67,42 +67,42 @@ func Open(name string) (File, error) {
 // Parse performs the file parsing for a PE binary.
 func (pe *File) Parse() error {
 
-	// Probes for the smallest PE size
+	// check for the smallest PE size.
 	if len(pe.data) < TinyPESize {
 		return ErrInvalidPESize
 	}
 
-	// Parse the DOS header
+	// Parse the DOS header.
 	err := pe.parseDosHeader()
 	if err != nil {
 		return err
 	}
 
-	// Parse the NT header
+	// Parse the NT header.
 	err = pe.parseNtHeader()
 	if err != nil {
 		return err
 	}
 
-	// Parse the File Header
+	// Parse the File Header.
 	err = pe.parseFileHeader()
 	if err != nil {
 		return err
 	}
 
-	// Parse the Optional Header
+	// Parse the Optional Header.
 	err = pe.parseOptionalHeader()
 	if err != nil {
 		return err
 	}
 
-	// Parse the Section Header
+	// Parse the Section Header.
 	err = pe.parseSectionHeader()
 	if err != nil {
 		return err
 	}
 
-	// Parse the Data Directory entries
+	// Parse the Data Directory entries.
 	err = pe.parseDataDirectories()
 	if err != nil {
 		return err
@@ -111,6 +111,10 @@ func (pe *File) Parse() error {
 	return nil
 }
 
+// Every PE file begins with a small MS-DOS stud. The need for this arose in the
+// early days of Windows, before a significant number of consumers were running
+// it. When executed on a machine without Windows, the program could at least
+// print out amessage saying that Windows was required to run the executable.
 func (pe *File) parseDosHeader() (err error) {
 	offset := 0
 	size := binary.Size(pe.DosHeader)
@@ -122,21 +126,26 @@ func (pe *File) parseDosHeader() (err error) {
 
 	// it can be ZM on an (non-PE) EXE.
 	// These executables still work under XP via ntvdm.
-	if pe.DosHeader.Emagic != ImageDOSSignature && pe.DosHeader.Emagic != ImageDOSZMSignature {
+	if pe.DosHeader.Emagic != ImageDOSSignature &&
+		pe.DosHeader.Emagic != ImageDOSZMSignature {
 		return ErrDOSMagicNotFound
 	}
 
-	// e_lfanew  is the only required element (besides the signature) of the DOS HEADER to turn the EXE into a PE.
-	// is a relative offset to the NT Headers.
-	// can't be null (signatures would overlap)
-	// can be 4 at minimum
-	if pe.DosHeader.Elfanew < 4 || pe.DosHeader.Elfanew > uint32(len(pe.data)) {
+	// `e_lfanew` is the only required element (besides the signature) of the
+	// DOS header to turn the EXE into a PE. It is is a relative offset to the
+	// NT Headers. It can't be null (signatures would overlap).
+	// Can be 4 at minimum.
+	if pe.DosHeader.Elfanew < 4 ||
+		pe.DosHeader.Elfanew > uint32(len(pe.data)) {
 		return ErrInvalidElfanewValue
 	}
 
 	return nil
 }
 
+// The IMAGE_NT_HEADERS structure is the primary location where specifics of
+// the PE file are stored. Its offset is given by the e_lfanew field in the
+// IMAGE_DOS_HEADER at the beginning of the file.
 func (pe *File) parseNtHeader() (err error) {
 	ntHeaderOffset := pe.DosHeader.Elfanew
 	size := uint32(binary.Size(pe.NtHeader))
@@ -160,7 +169,7 @@ func (pe *File) parseNtHeader() (err error) {
 		return ErrImageTESignatureFound
 	}
 
-	// this is the smallest requirement for a valid PE
+	// This is the smallest requirement for a valid PE.
 	if pe.NtHeader.Signature != ImageNTSignature {
 		return ErrImageNtSignatureNotFound
 	}
@@ -168,6 +177,10 @@ func (pe *File) parseNtHeader() (err error) {
 	return nil
 }
 
+// The file header structure contains some basic information about the file;
+// most importantly, a field describing the size of the optional data that
+// follows it. In PE files, this optional data is very much required, but is
+// still called the IMAGE_OPTIONAL_HEADER.
 func (pe *File) parseFileHeader() (err error) {
 	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 	size := uint32(binary.Size(pe.FileHeader))
@@ -181,27 +194,27 @@ func (pe *File) parseFileHeader() (err error) {
 }
 
 func (pe *File) parseOptionalHeader() (err error) {
-
 	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+	optHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
 
 	// We read it as OptionHeader32 then we fix up later.
 	size := uint32(binary.Size(pe.OptionalHeader))
-	buf := bytes.NewReader(pe.data[optionalHeaderOffset : optionalHeaderOffset+size])
+	buf := bytes.NewReader(pe.data[optHeaderOffset : optHeaderOffset+size])
 	err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader)
 	if err != nil {
 		return err
 	}
 
 	// Probes for PE32/PE32+ optional header magic.
-	if pe.OptionalHeader.Magic != ImageNtOptionalHeader32Magic && pe.OptionalHeader.Magic != ImageNtOptionalHeader64Magic {
+	if pe.OptionalHeader.Magic != ImageNtOptionalHeader32Magic &&
+		pe.OptionalHeader.Magic != ImageNtOptionalHeader64Magic {
 		return ErrImageNtOptionalHeaderMagicNotFound
 	}
 
 	// Are we dealing with a PE64 optional header.
 	if pe.OptionalHeader.Magic == ImageNtOptionalHeader64Magic {
 		size = uint32(binary.Size(pe.OptionalHeader64))
-		buf = bytes.NewReader(pe.data[optionalHeaderOffset : optionalHeaderOffset+size])
+		buf = bytes.NewReader(pe.data[optHeaderOffset : optHeaderOffset+size])
 		err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader64)
 		if err != nil {
 			return err
@@ -218,7 +231,8 @@ func (pe *File) parseOptionalHeader() (err error) {
 	}
 
 	// ImageBase can be any value as long as ImageBase + 'SizeOfImage' < 80000000h for PE32
-	if !pe.Is64 && pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
+	if !pe.Is64 &&
+		pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
 		return ErrImageBaseOverflow
 	}
 

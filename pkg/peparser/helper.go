@@ -60,30 +60,28 @@ var (
 	ErrInvalidSectionFileAlignment = errors.New("Corrupt PE file. Ssection alignment is less than a PAGE_SIZE and section alignement != file alignment")
 )
 
-
 // Max returns the larger of x or y.
 func Max(x, y uint32) uint32 {
-    if x < y {
-        return y
-    }
-    return x
+	if x < y {
+		return y
+	}
+	return x
 }
 
-
 func min(a, b uint32) uint32 {
-    if a < b {
-        return a
-    }
-    return b
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // Min returns the min number in a slice.
 func Min(values []uint32) uint32 {
 	min := values[0]
 	for _, v := range values {
-			if (v < min) {
-				min = v
-			}
+		if v < min {
+			min = v
+		}
 	}
 	return min
 }
@@ -93,7 +91,7 @@ func Min(values []uint32) uint32 {
 // http://en.wikipedia.org/wiki/8.3_filename
 // The filename length is not checked because the DLLs filename
 // can be longer that the 8.3
-func IsValidDosFilename (filename string) bool {
+func IsValidDosFilename(filename string) bool {
 	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	numerals := "0123456789"
 	special := "!#$%&'()-@^_`{}~+,.;=[]\\/"
@@ -109,7 +107,7 @@ func IsValidDosFilename (filename string) bool {
 // IsValidFunctionName checks if an imported name uses the valid accepted
 // characters expected in mangled function names. If the symbol's characters
 // don't fall within this charset we will assume the name is invalid.
-func IsValidFunctionName (functionName string) bool {
+func IsValidFunctionName(functionName string) bool {
 	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	numerals := "0123456789"
 	special := "_?@$()<>"
@@ -119,12 +117,11 @@ func IsValidFunctionName (functionName string) bool {
 			return false
 		}
 	}
-	return true	
+	return true
 }
 
-
 // IsPrintable checks weather a string is printable.
-func IsPrintable (s string) bool {
+func IsPrintable(s string) bool {
 	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	numerals := "0123456789"
 	whitespace := " \t\n\r\v\f"
@@ -135,7 +132,7 @@ func IsPrintable (s string) bool {
 			return false
 		}
 	}
-	return true	
+	return true
 }
 
 // getSectionByRva returns the section containing the given address.
@@ -150,12 +147,12 @@ func (pe *File) getSectionByRva(rva uint32) *ImageSectionHeader {
 
 func (pe *File) getSectionByOffset(offset uint32) *ImageSectionHeader {
 	for _, section := range pe.Sections {
-		if section.PointerToRawData == 0 { 
-			continue 
+		if section.PointerToRawData == 0 {
+			continue
 		}
-		
+
 		adjustedPointer := pe.adjustFileAlignment(section.PointerToRawData)
-		if adjustedPointer <= offset && offset < (adjustedPointer + section.SizeOfRawData) {
+		if adjustedPointer <= offset && offset < (adjustedPointer+section.SizeOfRawData) {
 			return &section
 		}
 	}
@@ -186,7 +183,7 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 	if section == nil {
 
 		if len(pe.Sections) == 0 {
-			 return offset 
+			return offset
 		}
 
 		for _, section := range pe.Sections {
@@ -200,7 +197,9 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 		// http://corkami.blogspot.com/2010/01/hey-hey-hey-whats-in-your-head.html
 		// where the import table is not contained by any section
 		// hence the RVA needs to be resolved to a raw offset
-		if offset < minAddr { return offset }
+		if offset < minAddr {
+			return offset
+		}
 
 		log.Println("data at Offset can't be fetched. Corrupt header?")
 		return ^uint32(0)
@@ -210,7 +209,6 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 	return offset - fileAlignment + sectionAlignment
 }
 
-
 // getStringAtRVA returns an ASCII string located at the given address.
 func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 	if rva == 0 {
@@ -219,16 +217,15 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 
 	section := pe.getSectionByRva(rva)
 	if section == nil {
-		s :=  pe.getStringFromData(0, []byte(pe.data[rva:rva+maxLen]))
+		s := pe.getStringFromData(0, []byte(pe.data[rva:rva+maxLen]))
 		return string(s)
 	}
-	s :=  pe.getStringFromData(0, section.Data(rva, maxLen, pe))
+	s := pe.getStringFromData(0, section.Data(rva, maxLen, pe))
 	return string(s)
 }
 
-
 // getStringFromData returns ASCII string from within the data.
-func (pe *File) getStringFromData(offset uint32, data []byte) ([]byte) {
+func (pe *File) getStringFromData(offset uint32, data []byte) []byte {
 	if offset > uint32(len(data)) {
 		return nil
 	}
@@ -280,14 +277,14 @@ func (pe *File) getData(rva, length uint32) ([]byte, error) {
 }
 
 // The alignment factor (in bytes) that is used to align the raw data of sections
-// in the image file. The value should be a power of 2 between 512 and 64 K, 
+// in the image file. The value should be a power of 2 between 512 and 64 K,
 // inclusive. The default is 512. If the SectionAlignment is less than the
-// architecture's page size, then FileAlignment must match SectionAlignment. 
+// architecture's page size, then FileAlignment must match SectionAlignment.
 func (pe *File) adjustFileAlignment(va uint32) uint32 {
 
 	fileAlignment := pe.OptionalHeader.FileAlignment
-	if fileAlignment > FileAlignmentHardcodedValue && fileAlignment % 2 != 0 {
-		pe.Anomalies = append(pe.Anomalies, ErrInvalidFileAlignment) 
+	if fileAlignment > FileAlignmentHardcodedValue && fileAlignment%2 != 0 {
+		pe.Anomalies = append(pe.Anomalies, ErrInvalidFileAlignment)
 	}
 
 	if fileAlignment < FileAlignmentHardcodedValue {
@@ -301,31 +298,97 @@ func (pe *File) adjustFileAlignment(va uint32) uint32 {
 
 // The alignment (in bytes) of sections when they are loaded into memory
 // It must be greater than or equal to FileAlignment. The default is the
-// page size for the architecture. 
+// page size for the architecture.
 func (pe *File) adjustSectionAlignment(va uint32) uint32 {
 	sectionAlignment := pe.OptionalHeader.SectionAlignment
 	fileAlignment := pe.OptionalHeader.FileAlignment
 	if fileAlignment < FileAlignmentHardcodedValue &&
 		fileAlignment != sectionAlignment {
-			pe.Anomalies = append(pe.Anomalies, ErrInvalidSectionAlignment) 
+		pe.Anomalies = append(pe.Anomalies, ErrInvalidSectionAlignment)
 	}
-	
+
 	// 0x200 is the minimum valid FileAlignment according to the documentation
 	// although ntoskrnl.exe has an alignment of 0x80 in some Windows versions
 
-	if sectionAlignment != 0 && va % sectionAlignment != 0 {
-		return sectionAlignment * ( va / sectionAlignment )
+	if sectionAlignment != 0 && va%sectionAlignment != 0 {
+		return sectionAlignment * (va / sectionAlignment)
 	}
 	return va
 }
 
-
 // stringInSlice checks weather a string exists in a slice of strings.
 func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+// PrettyImageFileCharacteristics returns the string representations
+// of the `Characteristics` field of  the IMAGE_FILE_HEADER.
+func (pe *File) PrettyImageFileCharacteristics() []string {
+	var values []string
+	if pe.FileHeader.Characteristics&ImageFileRelocsStripped != 0 {
+		values = append(values, "RelocsStripped")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileExecutableImage != 0 {
+		values = append(values, "ExecutableImage")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileLineNumsStripped != 0 {
+		values = append(values, "LineNumsStripped")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileLocalSymsStripped != 0 {
+		values = append(values, "LocalSymsStripped")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileAgressibeWsTrim != 0 {
+		values = append(values, "AgressibeWsTrim")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileLargeAddressAware != 0 {
+		values = append(values, "LargeAddressAware")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileBytesReservedLow != 0 {
+		values = append(values, "BytesReservedLow")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFile32BitMachine != 0 {
+		values = append(values, "32BitMachine")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileDebugStripped != 0 {
+		values = append(values, "DebugStripped")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileRemovableRunFromSwap != 0 {
+		values = append(values, "RemovableRunFromSwap")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileNetRunFromSwap != 0 {
+		values = append(values, "NetRunFromSwap")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileSystem != 0 {
+		values = append(values, "DebugStripped")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileDLL != 0 {
+		values = append(values, "DLL")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileUpSystemOnly != 0 {
+		values = append(values, "UpSystemOnly")
+	}
+
+	if pe.FileHeader.Characteristics&ImageFileBytesReservedHigh != 0 {
+		values = append(values, "BytesReservedHigh")
+	}
+
+	return values
 }

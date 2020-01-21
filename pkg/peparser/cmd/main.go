@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	// "github.com/donutloop/toolkit/debugutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
@@ -25,7 +26,11 @@ func parse(filename string) {
 		return
 	}
 
-	fmt.Print(pe.CLRHeader)
+	fmt.Println(debugutil.PrettySprint(pe.DosHeader))
+	fmt.Println(debugutil.PrettySprint(pe.NtHeader))
+	fmt.Println(debugutil.PrettySprint(pe.FileHeader))
+	fmt.Println(pe.PrettyImageFileCharacteristics())
+
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
 
