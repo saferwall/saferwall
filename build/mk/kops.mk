@@ -9,7 +9,7 @@ aws-cli-install:		## Install aws cli tool
 	sudo apt-get install awscli -y
 	aws configure
 
-kops-create-user:		## Create user to provision the cluster
+aws-create-user:		## Create user to provision the cluster
 	aws iam create-group --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonRoute53FullAccess --group-name kops
@@ -21,7 +21,11 @@ kops-create-user:		## Create user to provision the cluster
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
 
-kops-create-bucket:		## create s3 bucket
+aws-create-samples-bucket:		## create s3 bucket for samples
+	aws s3api create-bucket --bucket samples --region us-east-1
+	aws s3api put-bucket-versioning --bucket samples --versioning-configuration Status=Enabled
+
+kops-create-kops-bucket:		## create s3 bucket for kops
 	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region us-east-1
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
