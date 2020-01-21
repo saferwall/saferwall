@@ -30,6 +30,7 @@ func parse(filename string) {
 	fmt.Println(debugutil.PrettySprint(pe.NtHeader))
 	fmt.Println(debugutil.PrettySprint(pe.FileHeader))
 	fmt.Println(pe.PrettyImageFileCharacteristics())
+	fmt.Println(pe.PrettyDllCharacteristics())
 
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))

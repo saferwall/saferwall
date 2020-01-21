@@ -90,16 +90,16 @@ const (
 	ImageDllCharacteristicsReserved2            = 0x0002 // Reserved, must be zero.
 	ImageDllCharacteristicsReserved4            = 0x0004 // Reserved, must be zero.
 	ImageDllCharacteristicsReserved8            = 0x0008 // Reserved, must be zero.
-	ImageDllCharacteristicsHighEntropyVa        = 0x0020 // Image can handle a high entropy 64-bit virtual address space
+	ImageDllCharacteristicsHighEntropyVA        = 0x0020 // Image can handle a high entropy 64-bit virtual address space
 	ImageDllCharacteristicsDynamicBase          = 0x0040 // DLL can be relocated at load time.
 	ImageDllCharacteristicsForceIntegrity       = 0x0080 // Code Integrity checks are enforced.
 	ImageDllCharacteristicsNXCompact            = 0x0100 // Image is NX compatible.
-	ImageDllCharacteristicsoIsolation           = 0x0200 // Isolation aware, but do not isolate the image.
+	ImageDllCharacteristicsNoIsolation          = 0x0200 // Isolation aware, but do not isolate the image.
 	ImageDllCharacteristicsNoSEH                = 0x0400 // Does not use structured exception (SE) handling. No SE handler may be called in this image.
 	ImageDllCharacteristicsNoBind               = 0x0800 // Do not bind the image.
 	ImageDllCharacteristicsAppContainer         = 0x1000 // Image must execute in an AppContainer
 	ImageDllCharacteristicsWdmDriver            = 0x2000 // A WDM driver.
-	ImageDllCharacteristicsGuardCf              = 0x4000 // Image supports Control Flow Guard.
+	ImageDllCharacteristicsGuardCF              = 0x4000 // Image supports Control Flow Guard.
 	ImageDllCharacteristicsTerminalServiceAware = 0x8000 // Terminal Server aware.
 
 )

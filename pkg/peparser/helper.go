@@ -330,64 +330,61 @@ func stringInSlice(a string, list []string) bool {
 // of the `Characteristics` field of  the IMAGE_FILE_HEADER.
 func (pe *File) PrettyImageFileCharacteristics() []string {
 	var values []string
-	if pe.FileHeader.Characteristics&ImageFileRelocsStripped != 0 {
-		values = append(values, "RelocsStripped")
+	fileHeaderCharacteristics := map[uint16]string{
+		ImageFileRelocsStripped:       "RelocsStripped",
+		ImageFileExecutableImage:      "ExecutableImage",
+		ImageFileLineNumsStripped:     "LineNumsStripped",
+		ImageFileLocalSymsStripped:    "LocalSymsStripped",
+		ImageFileAgressibeWsTrim:      "AgressibeWsTrim",
+		ImageFileLargeAddressAware:    "LargeAddressAware",
+		ImageFileBytesReservedLow:     "BytesReservedLow",
+		ImageFile32BitMachine:         "32BitMachine",
+		ImageFileDebugStripped:        "DebugStripped",
+		ImageFileRemovableRunFromSwap: "RemovableRunFromSwap",
+		ImageFileSystem:               "FileSystem",
+		ImageFileDLL:                  "DLL",
+		ImageFileUpSystemOnly:         "UpSystemOnly",
+		ImageFileBytesReservedHigh:    "BytesReservedHigh",
 	}
 
-	if pe.FileHeader.Characteristics&ImageFileExecutableImage != 0 {
-		values = append(values, "ExecutableImage")
+	for k, s := range fileHeaderCharacteristics {
+		if k&pe.FileHeader.Characteristics != 0 {
+			values = append(values, s)
+		}
+	}
+	return values
+}
+
+// PrettyDllCharacteristics returns the string representations
+// of the `DllCharacteristics` field of ImageOptionalHeader.
+func (pe *File) PrettyDllCharacteristics() []string {
+	var values []string
+	var characteristics uint16
+
+	if pe.Is64 {
+		characteristics = pe.OptionalHeader64.DllCharacteristics
+	} else {
+		characteristics = pe.OptionalHeader.DllCharacteristics
 	}
 
-	if pe.FileHeader.Characteristics&ImageFileLineNumsStripped != 0 {
-		values = append(values, "LineNumsStripped")
+	imgDllCharacteristics := map[uint16]string{
+		ImageDllCharacteristicsHighEntropyVA:        "HighEntropyVA",
+		ImageDllCharacteristicsDynamicBase:          "DynamicBase",
+		ImageDllCharacteristicsForceIntegrity:       "ForceIntegrity",
+		ImageDllCharacteristicsNXCompact:            "NXCompact",
+		ImageDllCharacteristicsNoIsolation:          "NoIsolation",
+		ImageDllCharacteristicsNoSEH:                "NoSEH",
+		ImageDllCharacteristicsNoBind:               "NoBind",
+		ImageDllCharacteristicsAppContainer:         "AppContainer",
+		ImageDllCharacteristicsWdmDriver:            "WdmDriver",
+		ImageDllCharacteristicsGuardCF:              "GuardCF",
+		ImageDllCharacteristicsTerminalServiceAware: "TerminalServiceAware",
 	}
 
-	if pe.FileHeader.Characteristics&ImageFileLocalSymsStripped != 0 {
-		values = append(values, "LocalSymsStripped")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileAgressibeWsTrim != 0 {
-		values = append(values, "AgressibeWsTrim")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileLargeAddressAware != 0 {
-		values = append(values, "LargeAddressAware")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileBytesReservedLow != 0 {
-		values = append(values, "BytesReservedLow")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFile32BitMachine != 0 {
-		values = append(values, "32BitMachine")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileDebugStripped != 0 {
-		values = append(values, "DebugStripped")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileRemovableRunFromSwap != 0 {
-		values = append(values, "RemovableRunFromSwap")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileNetRunFromSwap != 0 {
-		values = append(values, "NetRunFromSwap")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileSystem != 0 {
-		values = append(values, "DebugStripped")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileDLL != 0 {
-		values = append(values, "DLL")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileUpSystemOnly != 0 {
-		values = append(values, "UpSystemOnly")
-	}
-
-	if pe.FileHeader.Characteristics&ImageFileBytesReservedHigh != 0 {
-		values = append(values, "BytesReservedHigh")
+	for k, s := range imgDllCharacteristics {
+		if k&characteristics != 0 {
+			values = append(values, s)
+		}
 	}
 
 	return values
