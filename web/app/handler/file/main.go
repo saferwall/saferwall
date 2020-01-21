@@ -57,7 +57,7 @@ type File struct {
 	Tags            []string               `json:"tags"`
 	Packer          []string               `json:"packer"`
 	FirstSubmission time.Time              `json:"first_submission,omitempty"`
-	LastSUbmission  time.Time              `json:"last_submission,omitempty"`
+	LastSubmission  time.Time              `json:"last_submission,omitempty"`
 	Submissions     []submission           `json:"submissions,omitempty"`
 	Strings         []stringStruct         `json:"strings"`
 	MultiAV         map[string]interface{} `json:"multiav"`
@@ -83,8 +83,8 @@ const (
 	finished   = iota
 )
 
-// Create creates a new file
-func (file *File) Create() error {
+// Save creates a new file
+func (file *File) Save() error {
 	_, error := db.FilesCollection.Upsert(file.Sha256, file, &gocb.UpsertOptions{})
 	if error != nil {
 		log.Fatal(error)
@@ -167,8 +167,6 @@ func DumpRequest(req *http.Request) {
 
 // GetFile returns file informations.
 func GetFile(c echo.Context) error {
-
-	DumpRequest(c.Request())
 
 	// get path param
 	sha256 := c.Param("sha256")
@@ -380,7 +378,7 @@ func PostFiles(c echo.Context) error {
 		newFile := File{
 			Sha256:          sha256,
 			FirstSubmission: now,
-			LastSUbmission:  now,
+			LastSubmission:  now,
 			Size:            fileHeader.Size,
 			Status:          queued,
 		}
@@ -393,7 +391,7 @@ func PostFiles(c echo.Context) error {
 			Country:  c.Request().Header.Get("X-Geoip-Country"),
 		}
 		newFile.Submissions = append(newFile.Submissions, s)
-		newFile.Create()
+		newFile.Save()
 
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
@@ -417,6 +415,19 @@ func PostFiles(c echo.Context) error {
 	}
 
 	// We have already seen this file
+
+	// Create new submission
+	now := time.Now().UTC()
+	s := submission{
+		Date: now,
+		Filename: fileHeader.Filename,
+		Source:   "api",
+		Country:  c.Request().Header.Get("X-Geoip-Country"),
+	}
+	fileDocument.Submissions = append(fileDocument.Submissions, s)
+	fileDocument.LastSubmission = now
+	fileDocument.Save()
+
 	return c.JSON(http.StatusOK, fileDocument)
 
 }
@@ -509,7 +520,6 @@ func Actions(c echo.Context) error {
 		})
 	}
 
-	log.Print(sha256)
 	_, err = GetFileBySHA256(sha256)
 	if err != nil && gocb.IsKeyNotFoundError(err) {
 		return c.JSON(http.StatusNotFound, Response{
