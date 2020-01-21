@@ -3,83 +3,12 @@
     <loader v-if="showLoader"></loader>
     <div class="tile is-ancestor" v-if="!showLoader">
       <div class="tile is-parent is-vertical">
-        <div class="tile is-child box">
-          <h4 class="title">Basic Properties</h4>
-          <!--Basic Properties-->
-          <div
-            v-for="(i, index) in basicProperties"
-            class="data-data"
-            :key="index"
-          >
-            <strong class="data-label">
-              {{ getLabelForGivenKey(index) }}
-            </strong>
-            <!-- TRiD -->
-            <span
-              class="data-value"
-              :class="{ 'trid-container': index === 'trid' }"
-              v-if="index === 'trid'"
-            >
-              <p v-for="(t, index) in summaryData.trid" :key="index">
-                <span class="trid">
-                  <span class="value-text">{{ t }}</span>
-
-                  <copy :content="t"></copy>
-                </span>
-              </p>
-            </span>
-            <!-- Packer -->
-            <span
-              class="data-value"
-              :class="{ 'packer-container': index === 'packer' }"
-              v-else-if="index === 'packer'"
-            >
-              <p v-for="(t, index) in summaryData.packer" :key="index">
-                <span class="packer">
-                  <span class="value-text">{{ t }}</span>
-
-                  <copy :content="t"></copy>
-                </span>
-              </p>
-            </span>
-            <!-- Tags -->
-            <span class="tags" v-else-if="index === 'tags'">
-              <span
-                v-for="(item, index) in summaryData.tags"
-                :key="index"
-                class="tag is-link is-normal"
-              >
-                <span>{{ item }}</span>
-                <copy :content="item"></copy>
-              </span>
-            </span>
-            <!-- Default -->
-            <span class="data-value" v-else>
-              <span class="value-text">{{
-                index !== "sha512" ? i : i.substring(0, 70) + "..."
-              }}</span>
-              <copy :content="i"></copy>
-            </span>
-          </div>
-        </div>
-
+        <!-- Basic Properties -->
+        <basicProperties :summaryData="summaryData" />
         <!--ExifTool File Metadata-->
-        <div class="tile is-child box">
-          <h4 class="title">ExifTool File Metadata</h4>
-          <div
-            v-for="(i, index) in summaryData.exif"
-            :key="index"
-            class="data-data"
-          >
-            <strong class="data-label">
-              {{ index.replace(/[A-Z]/g, (match) => ` ${match}`) }}
-            </strong>
-            <span class="data-value">
-              <span class="value-text">{{ i }}</span>
-
-              <copy :content="i"></copy>
-            </span>
-          </div>
+        <div class="tile is-parent">
+          <exifTool :summaryData="summaryData" />
+          <submissions :summaryData="summaryData" />
         </div>
       </div>
     </div>
@@ -88,45 +17,31 @@
 
 <script>
 import Loader from "@/components/elements/Loader"
-import Copy from "@/components/elements/Copy"
+
+import BasicProperties from "../elements/summary/BasicProperties"
+import ExifTool from "../elements/summary/ExifTool"
+import Submissions from "../elements/summary/Submissions"
 
 import { mapGetters } from "vuex"
 
 export default {
   components: {
     loader: Loader,
-    copy: Copy,
-  },
-  data() {
-    return {
-      uppercaseFields: ["md5", "sha-1", "sha-256", "sha-512", "crc32"],
-    }
+    basicProperties: BasicProperties,
+    exifTool: ExifTool,
+    submissions: Submissions,
   },
   computed: {
     ...mapGetters({ fileData: "getFileData" }),
-    basicProperties: function() {
-      const allPropsEntries = Object.entries(this.summaryData)
-      const basicPropsEntries = allPropsEntries.filter(
-        (entry) => !["av", "exif"].includes(entry[0]),
-      )
-      return Object.fromEntries(basicPropsEntries)
-    },
     summaryData: function() {
-      if (!this.fileData || Object.entries(this.fileData).length === 0 && this.fileData.constructor === Object) return {}
-      return {
-        filesize: this.bytesToSize(this.fileData.data.size),
-        magic: this.fileData.data.magic,
-        crc32: this.fileData.data.crc32,
-        md5: this.fileData.data.md5,
-        "sha-1": this.fileData.data.sha1,
-        "sha-256": this.fileData.data.sha256,
-        "sha-512": this.fileData.data.sha512,
-        ssdeep: this.fileData.data.ssdeep,
-        trid: this.fileData.data.trid,
-        packer: this.fileData.data.packer,
-        tags: this.fileData.data.tags,
-        exif: this.fileData.data.exif,
-      }
+      if (
+        !this.fileData ||
+        (Object.entries(this.fileData).length === 0 &&
+          this.fileData.constructor === Object)
+      )
+        return {}
+        
+      return this._.omit(this.fileData.data, ["multiav", "strings", "status"])
     },
     showLoader: function() {
       return this.summaryData === {} || !this.summaryData
@@ -139,22 +54,11 @@ export default {
       var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
       return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i]
     },
-    getLabelForGivenKey(key) {
-      return this.uppercaseFields.includes(key)
-        ? key.toUpperCase()
-        : key === "filesize"
-        ? "File Size"
-        : key === "trid"
-        ? "TRiD"
-        : key === "ssdeep"
-        ? "SSDeep"
-        : key
-    },
   },
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .data-data {
   float: left;
   width: 100%;
@@ -174,6 +78,12 @@ export default {
     width: 10.5%;
     text-transform: capitalize;
     margin-right: 1.4em;
+    &.exif {
+      width: 30%;
+    }
+    &.subs {
+      width: 20%;
+    }
   }
 
   .data-value {
@@ -234,5 +144,12 @@ export default {
       }
     }
   }
+}
+.tile.is-parent{
+  padding: 0;
+  margin-bottom: 10px;
+}
+.tile.is-child {
+    margin-right: 18px !important;
 }
 </style>

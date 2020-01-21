@@ -16,11 +16,14 @@ import Vuelidate from "vuelidate"
 import axios from "axios"
 import VueCookies from "vue-cookies"
 import VueAWN from "vue-awesome-notifications"
-
+import VueLodash from 'vue-lodash'
 // Google Analytics
 import VueGtag from "vue-gtag";
 
+
 require('../node_modules/vue-awesome-notifications/dist/styles/style.css')
+
+
 
 const options = {
   position: "bottom-right",
@@ -42,7 +45,10 @@ const options = {
   }
 }
 
+
 Vue.use(VueAWN, options)
+
+Vue.use(VueLodash)
 
 Vue.use(VueGtag, {
   config: { id: "UA-111524273-1" },
