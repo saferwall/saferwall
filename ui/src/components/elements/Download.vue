@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <button class="button is-outlined" @click="downloadFile">
+    <button class="button is-info" @click="downloadFile">
       <span class="icon">
         <i class="fas fa-file-download"></i>
       </span>
@@ -8,7 +7,6 @@
         Download File
       </span>
     </button>
-  </div>
 </template>
 
 <script>
