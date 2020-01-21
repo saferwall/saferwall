@@ -1,7 +1,7 @@
 <template>
   <button
     v-if="this.route !== 'upload'"
-    class="button is-success"
+    class="button is-primary"
     @click="rescanFile"
     :disabled="Rescanning"
     is-loading
