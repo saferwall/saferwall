@@ -26,7 +26,7 @@
           </td>
           <td>
             <div class="data-value">
-              <span><i :class="'icon fas fa-lg fa-'+source_icons[i.source]"></i></span>
+              <span><i :class="'icon mdi mdi-24px mdi-'+source_icons[i.source]"></i></span>
               <span class="value-text">&nbsp;{{ i.source }}</span>
               <copy :content="i.source"></copy>
             </div>
@@ -57,7 +57,7 @@ export default {
     return {
       source_icons:{
         api : "server",
-        web : "globe",
+        web : "earth",
       }
     }
   },
@@ -71,8 +71,12 @@ export default {
 
 <style lang="scss" scoped>
 @import 'flag-icon-css/css/flag-icon.min.css';
+@import url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
 
 .data-data.table{
   background: white;
+  .value-text{
+    vertical-align: top;
+  }
 }
 </style>
