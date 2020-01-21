@@ -19,14 +19,10 @@
           </nav>
         </div>
         <div class="column">
-          <div class="columns">
-            <div class="column is-half">
+            <div class="buttons">
               <Download v-if="showDownload" :hash="hash"/>
-            </div>
-            <div class="column is-half">
               <Rescan v-if="showRescan" :route="route" :hash="hash" />
             </div>
-          </div>
         </div>
       </div>
       <p class="no_file" v-if="!showContent">No file Specified</p>

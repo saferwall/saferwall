@@ -1,26 +1,25 @@
 <template>
-  <div v-if="this.route !== 'upload'">
-    <button
-      class="button is-outlined"
-      @click="rescanFile"
-      :disabled="Rescanning"
-      is-loading
-    >
-      <div v-if="!Rescanning">
-        <span class="icon">
-          <i class="fas fa-redo-alt"></i>
-        </span>
-        <span>
-          Rescan File
-        </span>
-      </div>
-      <div v-if="Rescanning">
-        <span>
-          {{ this.stepText }}
-        </span>
-      </div>
-    </button>
-  </div>
+  <button
+    v-if="this.route !== 'upload'"
+    class="button is-success"
+    @click="rescanFile"
+    :disabled="Rescanning"
+    is-loading
+  >
+    <div v-if="!Rescanning">
+      <span class="icon">
+        <i class="fas fa-redo-alt"></i>
+      </span>
+      <span>
+        Rescan File
+      </span>
+    </div>
+    <div v-if="Rescanning">
+      <span>
+        {{ this.stepText }}
+      </span>
+    </div>
+  </button>
 </template>
 
 <script>
@@ -124,8 +123,8 @@ export default {
     },
     trackException() {
       this.$gtag.exception({
-        'description': 'Rescan Failed, Hash:'+this.hash,
-        'fatal': false
+        description: "Rescan Failed, Hash:" + this.hash,
+        fatal: false,
       })
     },
   },
