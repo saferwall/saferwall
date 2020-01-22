@@ -31,6 +31,7 @@ func parse(filename string) {
 	fmt.Println(debugutil.PrettySprint(pe.FileHeader))
 	fmt.Println(pe.PrettyImageFileCharacteristics())
 	fmt.Println(pe.PrettyDllCharacteristics())
+	fmt.Println(pe.Checksum())
 
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
@@ -71,7 +72,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		searchDir = currentDir + string(os.PathSeparator) + "one"
+		searchDir = currentDir + string(os.PathSeparator) + "bin"
 	}
 
 	log.Printf("Processing directory %s", searchDir)
