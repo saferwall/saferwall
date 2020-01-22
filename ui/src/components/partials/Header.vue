@@ -33,7 +33,22 @@
             About
           </a>
         </li>
-        <!-- <li><router-link to="/">Statistics</router-link></li> -->
+        <li>
+          <div class="buttons">
+            <button class="social" @click="openSocial('github')">
+              <i
+                class="icon mdi mdi-24px mdi-github-face"
+                style="color:black;"
+              ></i>
+            </button>
+            <button class="social" @click="openSocial('twitter')">
+              <i
+                class="icon mdi mdi-24px mdi-twitter"
+                style="color:#1DA1F2;"
+              ></i>
+            </button>
+          </div>
+        </li>
         <li>
           <div class="profile">
             <div class="dropdown is-hoverable is-right">
@@ -44,7 +59,7 @@
                   aria-controls="dropdown-menu4"
                   @click="loginOrLogout"
                 >
-                  <span>{{ getLoggedIn ? getUsername : "Sign In" }}</span>
+                  <span>{{ getLoggedIn ? getUsername : "Login" }}</span>
                 </button>
               </div>
               <div
@@ -86,11 +101,7 @@ export default {
     ...mapGetters(["getLoggedIn", "getUsername"]),
   },
   methods: {
-    ...mapActions([
-      "logOut",
-      "updateHash",
-      "updateFileData",
-    ]),
+    ...mapActions(["logOut", "updateHash", "updateFileData"]),
     showMobileSearch() {},
     loginOrLogout() {
       if (this.getLoggedIn) {
@@ -121,17 +132,29 @@ export default {
           )
         })
     },
-    track(){
-      this.$gtag.event('search', {
-        search_term:this.hash
+    track() {
+      this.$gtag.event("search", {
+        search_term: this.hash,
       })
-    }
+    },
+    openSocial(social) {
+      switch (social) {
+        case "github":
+          window.open("https://github.com/saferwall/saferwall", "_bank")
+          break
+        case "twitter":
+          window.open("https://twitter.com/saferwall", "_bank")
+          break
+      }
+    },
   },
 }
 </script>
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
+@import url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
+
 $header-height: 50px;
 
 header.dashboard-header {
@@ -182,7 +205,6 @@ header.dashboard-header {
     height: $header-height;
     position: relative;
     border-left: solid 1px rgba(black, 0.1);
-    border-right: solid 1px rgba(black, 0.1);
     flex: 1;
 
     @media screen and (max-width: 1086px) {
@@ -255,7 +277,6 @@ header.dashboard-header {
 
         & > .profile {
           cursor: pointer;
-          border-left: solid 1px rgba(10, 10, 10, 0.1);
           padding-left: 10px;
           padding-right: 10px;
 
@@ -280,19 +301,28 @@ header.dashboard-header {
           color: rgba(black, 0.6);
           font-weight: 600;
           font-size: 14px;
-
-          &:hover {
-            color: $primary-color !important;
-          }
-        }
-
-        button {
           text-align: left;
           padding: 0 5px 0 5px;
           transition: all 0.2s;
           background: none;
           border: none;
           cursor: pointer;
+          &:hover {
+            color: $primary-color !important;
+          }
+        }
+        .social {
+          width: auto;
+          padding-left: 0.5em;
+          padding-right: 0.5em;
+          vertical-align: sub;
+          cursor: pointer;
+          & > i:hover {
+            color: $primary-color !important;
+          }
+        }
+        & > .buttons {
+          display: inline;
         }
       }
     }

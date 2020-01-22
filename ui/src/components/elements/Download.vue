@@ -1,5 +1,5 @@
 <template>
-    <button class="button is-outlined is-primary" @click="downloadFile">
+    <button class="button is-info" @click="downloadFile">
       <span class="icon">
         <i class="fas fa-file-download"></i>
       </span>
