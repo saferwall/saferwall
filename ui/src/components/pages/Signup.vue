@@ -144,6 +144,7 @@
         Create Account
       </button>
     </form>
+    <hr />
     <h3 class="already-member">
       Already have an account?
       <router-link :to="this.$routes.LOGIN.path" class="has-text-link"
@@ -240,6 +241,10 @@ export default {
 }
 .container {
   margin-bottom: 4em;
+  background-color: white;
+  border: 1px solid #33333330;
+  border-radius: 0.25rem;
+  padding-bottom: 2em;
 }
 .form {
   display: grid;
@@ -248,12 +253,15 @@ export default {
   width: 100%;
   padding: 2em;
   color: #333333;
-  background-color: white;
   font-size: 16px;
-  border-radius: 0.25rem;
-  border: 1px solid #33333330;
 }
-
+hr {
+  display: block;
+  border: inherit;
+  width: 22em;
+  margin-top: 0.2em;
+  margin-bottom: 1em;
+}
 .signup {
   font-size: 1em;
   font-weight: 600;
@@ -262,7 +270,7 @@ export default {
 }
 
 .already-member {
-  font-size: 16px;
+  font-size: 0.9em;
   text-align: center;
 }
 

@@ -86,7 +86,6 @@ export default {
   }
 }
 .tile {
-  overflow-y: auto;
-  height: 45em;
+  height: max-content;
 }
 </style>

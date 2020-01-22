@@ -44,6 +44,11 @@
           <copy :content="item"></copy>
         </span>
       </span>
+      <!-- Size -->
+      <span class="data-value" v-else-if="index === 'size'">
+          <span class="value-text">{{bytesToSize(i)}} ({{i}})</span>
+          <copy :content="i"></copy>
+      </span>
       <!-- Default -->
       <span class="data-value" v-else>
         <span class="value-text">{{
@@ -70,7 +75,19 @@ export default {
   },
   computed: {
     Properties: function() {
-      return this._.pick(this.summaryData, ["crc32", "magic", "md5", "packer", "sha1", "sha256", "sha512", "size", "ssdeep", "trid", "tags"])
+      return this._.pick(this.summaryData, [
+        "crc32",
+        "magic",
+        "md5",
+        "packer",
+        "sha1",
+        "sha256",
+        "sha512",
+        "size",
+        "ssdeep",
+        "trid",
+        "tags",
+      ])
     },
   },
   methods: {
@@ -84,6 +101,12 @@ export default {
         : key === "ssdeep"
         ? "SSDeep"
         : key
+    },
+    bytesToSize(bytes) {
+      var sizes = ["Bytes", "KB", "MB", "GB", "TB"]
+      if (bytes === 0) return "0 Byte"
+      var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+      return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i]
     },
   },
 }

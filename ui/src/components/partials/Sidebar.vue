@@ -3,7 +3,7 @@
     <ul class="menu-list">
       <li
         v-for="(item, index) in menuItems"
-        :class="{ current: $route.name == item.title }"
+        :class="{ current: route.toLowerCase() === item.title.toLowerCase() }"
         :key="index"
       >
         <router-link
@@ -30,7 +30,7 @@
         >
           <li
             v-for="(child, index) in item.children"
-            :class="{ current: $route.name == child.title }"
+            :class="{ current: route.toLowerCase() === child.title.toLowerCase() }"
             :key="index"
           >
             <router-link :to="child.path">
@@ -104,6 +104,9 @@ export default {
           : {}),
       }))
     },
+    route: function(){
+      return this.$route.path.replace(/[/]/g, '')
+    }
   },
 
   mounted() {

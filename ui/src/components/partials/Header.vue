@@ -28,26 +28,26 @@
             <i class="icon fas fa-upload fa-2x"></i>
           </router-link>
         </li>
-        <li>
-          <a href="https://about.saferwall.com/">
-            About
-          </a>
-        </li>
-        <li>
+        <li class="SocialButtons">
           <div class="buttons">
-            <button class="social" @click="openSocial('github')">
+            <button @click="openSocial('github')">
               <i
                 class="icon mdi mdi-24px mdi-github-face"
                 style="color:black;"
               ></i>
             </button>
-            <button class="social" @click="openSocial('twitter')">
+            <button @click="openSocial('twitter')">
               <i
                 class="icon mdi mdi-24px mdi-twitter"
                 style="color:#1DA1F2;"
               ></i>
             </button>
           </div>
+        </li>
+        <li>
+          <a href="https://about.saferwall.com/">
+            About
+          </a>
         </li>
         <li>
           <div class="profile">
@@ -205,6 +205,8 @@ header.dashboard-header {
     height: $header-height;
     position: relative;
     border-left: solid 1px rgba(black, 0.1);
+    border-right: solid 1px rgba(black, 0.1);
+
     flex: 1;
 
     @media screen and (max-width: 1086px) {
@@ -260,7 +262,6 @@ header.dashboard-header {
       li {
         display: inline-block;
         line-height: $header-height;
-        border-left: solid 1px rgba(10, 10, 10, 0.1);
 
         a {
           display: inline-block;
@@ -279,11 +280,11 @@ header.dashboard-header {
           cursor: pointer;
           padding-left: 10px;
           padding-right: 10px;
+          font-weight: 500;
 
           .has-text-danger {
-            font-weight: 400;
-            font-size: 14px;
             display: inline-block;
+            font-size: small;
 
             &:hover {
               font-weight: 600;
@@ -292,6 +293,16 @@ header.dashboard-header {
 
           .dropdown-menu {
             min-width: 10rem;
+          }
+
+          .dropdown_text,
+          .has-text-link {
+            color: black !important;
+            font-weight: 500;
+            font-size: 14px;
+            & > span:hover {
+              color: $primary-color;
+            }
           }
         }
 
@@ -311,18 +322,31 @@ header.dashboard-header {
             color: $primary-color !important;
           }
         }
-        .social {
+
+        .buttons button:first-child {
+          margin-right: 1em;
+        }
+
+        .buttons button {
           width: auto;
-          padding-left: 0.5em;
-          padding-right: 0.5em;
           vertical-align: sub;
           cursor: pointer;
           & > i:hover {
             color: $primary-color !important;
           }
         }
-        & > .buttons {
+
+        .buttons {
           display: inline;
+          margin-left: 2em;
+          margin-right: 2em;
+        }
+
+        .fa-upload {
+          color: $primary-color !important;
+          &:hover {
+            color: #2c3e50 !important;
+          }
         }
       }
     }
