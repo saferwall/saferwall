@@ -21,12 +21,13 @@ aws-create-user:		## Create user to provision the cluster
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
 
+ZONE = us-east-1
 aws-create-samples-bucket:		## create s3 bucket for samples
-	aws s3api create-bucket --bucket samples --region us-east-1
+	aws s3api create-bucket --bucket saferwall-com-samples --region $(ZONE)
 	aws s3api put-bucket-versioning --bucket samples --versioning-configuration Status=Enabled
 
 kops-create-kops-bucket:		## create s3 bucket for kops
-	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region us-east-1
+	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region $(ZONE)
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
 NODE_COUNT = 1
@@ -34,7 +35,7 @@ NODE_SIZE = t2.xlarge
 FS_TOKEN = saferwall-efs
 kops-create-cluster:	## create k8s cluster
 	kubectl config get-contexts
-	aws ec2 describe-availability-zones --region us-east-1
+	aws ec2 describe-availability-zones --region $(ZONE)
 	kops create cluster \
 		--zones us-east-1a \
 		--node-count $(NODE_COUNT) \
