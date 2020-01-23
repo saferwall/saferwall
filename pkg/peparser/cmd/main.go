@@ -26,6 +26,7 @@ func parse(filename string) {
 		return
 	}
 
+	pe.GetAnomalies()
 	fmt.Println(debugutil.PrettySprint(pe.DosHeader))
 	fmt.Println(debugutil.PrettySprint(pe.NtHeader))
 	fmt.Println(debugutil.PrettySprint(pe.FileHeader))

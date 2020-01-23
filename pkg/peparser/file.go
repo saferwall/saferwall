@@ -222,7 +222,7 @@ func (pe *File) parseOptionalHeader() (err error) {
 		pe.Is64 = true
 	}
 
-	// ImageBase should be multiple of 10000h
+	// ImageBase should be multiple of 10000h.
 	if pe.Is64 && pe.OptionalHeader64.ImageBase%0x10000 != 0 {
 		return ErrImageBaseNotAligned
 	}
@@ -230,10 +230,16 @@ func (pe *File) parseOptionalHeader() (err error) {
 		return ErrImageBaseNotAligned
 	}
 
-	// ImageBase can be any value as long as ImageBase + 'SizeOfImage' < 80000000h for PE32
+	// ImageBase can be any value as long as ImageBase + SizeOfImage < 
+	// 80000000h for PE32.
 	if !pe.Is64 &&
 		pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
 		return ErrImageBaseOverflow
+	}
+
+	// SizeOfImage must be a multiple of the section alignment.
+	if pe.OptionalHeader.SizeOfImage % pe.OptionalHeader.SectionAlignment != 0 {
+		return ErrInvalidSizeOfImage
 	}
 
 	return nil
