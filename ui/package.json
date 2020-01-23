@@ -9,7 +9,7 @@
     "serve_win_powerShell": "npx vue-cli-service serve --mode $Env:ENVIRONMENT --port 8081",
     "serve_win_cmd": "npx vue-cli-service serve --mode %ENVIRONMENT% --port 8081",
     "serve_lin": "npx vue-cli-service serve --mode $ENVIRONMENT --port 8081 --open",
-    "build_prod": "vue-cli-service build",
+    "build_prod": "vue-cli-service --mode $ENVIRONMENT build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

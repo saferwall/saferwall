@@ -6,7 +6,7 @@
     :disabled="Rescanning"
     is-loading
   >
-    <div v-if="!Rescanning">
+    <div class="rescan-button-text" v-if="!Rescanning">
       <span class="icon">
         <i class="fas fa-redo-alt"></i>
       </span>
@@ -131,4 +131,8 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped lang="scss">
+.rescan-button-text span:last-child{
+  vertical-align: text-bottom;
+}
+</style>

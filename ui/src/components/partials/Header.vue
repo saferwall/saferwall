@@ -28,25 +28,11 @@
             <i class="icon fas fa-upload fa-2x"></i>
           </router-link>
         </li>
-        <li class="SocialButtons">
-          <div class="buttons">
-            <button @click="openSocial('github')">
-              <i
-                class="icon mdi mdi-24px mdi-github-face"
-                style="color:black;"
-              ></i>
-            </button>
-            <button @click="openSocial('twitter')">
-              <i
-                class="icon mdi mdi-24px mdi-twitter"
-                style="color:#1DA1F2;"
-              ></i>
-            </button>
-          </div>
-        </li>
         <li>
           <a href="https://about.saferwall.com/">
-            About
+            <span>
+              About
+            </span>
           </a>
         </li>
         <li>
@@ -137,16 +123,6 @@ export default {
         search_term: this.hash,
       })
     },
-    openSocial(social) {
-      switch (social) {
-        case "github":
-          window.open("https://github.com/saferwall/saferwall", "_bank")
-          break
-        case "twitter":
-          window.open("https://twitter.com/saferwall", "_bank")
-          break
-      }
-    },
   },
 }
 </script>
@@ -205,8 +181,6 @@ header.dashboard-header {
     height: $header-height;
     position: relative;
     border-left: solid 1px rgba(black, 0.1);
-    border-right: solid 1px rgba(black, 0.1);
-
     flex: 1;
 
     @media screen and (max-width: 1086px) {
@@ -262,13 +236,14 @@ header.dashboard-header {
       li {
         display: inline-block;
         line-height: $header-height;
+        border-left: solid 1px rgba(black, 0.1);
 
         a {
           display: inline-block;
           margin: 0 15px 0 15px;
           font-size: 14px;
           color: #2c3e50;
-          font-weight: 500;
+          font-weight: 400;
           transition: all 0.2s;
 
           &:hover {
@@ -297,9 +272,10 @@ header.dashboard-header {
 
           .dropdown_text,
           .has-text-link {
-            color: black !important;
-            font-weight: 500;
+            color: #2c3e50 !important;
+            font-weight: 400 !important;
             font-size: 14px;
+
             & > span:hover {
               color: $primary-color;
             }
@@ -321,25 +297,6 @@ header.dashboard-header {
           &:hover {
             color: $primary-color !important;
           }
-        }
-
-        .buttons button:first-child {
-          margin-right: 1em;
-        }
-
-        .buttons button {
-          width: auto;
-          vertical-align: sub;
-          cursor: pointer;
-          & > i:hover {
-            color: $primary-color !important;
-          }
-        }
-
-        .buttons {
-          display: inline;
-          margin-left: 2em;
-          margin-right: 2em;
         }
 
         .fa-upload {

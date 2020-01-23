@@ -76,15 +76,15 @@ export default {
   computed: {
     Properties: function() {
       return this._.pick(this.summaryData, [
+        "size",
         "crc32",
-        "magic",
         "md5",
-        "packer",
         "sha1",
         "sha256",
         "sha512",
-        "size",
         "ssdeep",
+        "magic",
+        "packer",
         "trid",
         "tags",
       ])
