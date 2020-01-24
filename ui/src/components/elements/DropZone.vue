@@ -24,6 +24,15 @@
     <button class="btn" @click="openFileDialog" type="submit">
       Browse files
     </button>
+    <p class="is-centered" style="margin-top:1.5em;">
+      <small>
+        By using Saferwall you consent to our
+        <a href="https://about.saferwall.com/tos" target="_blank">Terms of Service</a>
+        and <router-link to="">Privacy Policy</router-link> and allow us to
+        share your submission with the security community.
+        <router-link to="">Learn more.</router-link>
+      </small>
+    </p>
   </form>
 </template>
 

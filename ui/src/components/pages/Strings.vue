@@ -5,7 +5,7 @@
     <div class="columns">
       <div class="column is-6 is-offset-6" style="text-align:right">
         <label for="" class="label">Limit:</label>
-        <div class="select is-medium">
+        <div class="select">
           <select id="select-limit" v-model="limit" @change="limitChanged()">
             <option value="10">10</option>
             <option value="100">100</option>

@@ -190,6 +190,7 @@ certEmail: admin@saferwall.com
 backendDomainName: dev.api.saferwall.com
 frontendDomainName: dev.saferwall.com
 websiteDomainName: about.saferwall.com
+backendHostname: https://dev.api.saferwall.com
 
 ########### CONSUMER ###########
 consumer:
