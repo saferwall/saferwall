@@ -23,4 +23,7 @@ spec:
           imagePullPolicy: "{{ .Values.frontend.image.pullPolicy }}"
           ports:
             - containerPort: {{ .Values.frontend.containerPort }}
+          env:
+            - name: VUE_APP_BACKEND_HOST
+              value: "{{ .Values.backendHostname }}"
 {{- end }}
