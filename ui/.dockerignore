@@ -4,6 +4,7 @@
 .git
 .dockerignore
 .gitignore
+.github/*
 README.md
 Dockerfile
 LICENSE
@@ -12,6 +13,7 @@ LICENSE
 # This should contain all files created during `yarn build`.
 dist
 node_modules
+.env*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

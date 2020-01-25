@@ -9,6 +9,7 @@ import Default from "./layouts/Default.vue"
 import Unauthenticated from "./layouts/Unauthenticated.vue"
 
 import endpoints from '../config/endpoints'
+import Configuration from './helpers/config'
 
 import store from './store/index'
 
@@ -17,12 +18,12 @@ import axios from "axios"
 import VueCookies from "vue-cookies"
 import VueAWN from "vue-awesome-notifications"
 import VueLodash from 'vue-lodash'
+
 // Google Analytics
 import VueGtag from "vue-gtag";
 
 
 require('../node_modules/vue-awesome-notifications/dist/styles/style.css')
-
 
 
 const options = {
@@ -121,7 +122,7 @@ Vue.config.productionTip = false
 
 
 Vue.prototype.$http = axios.create({
-  baseURL: process.env.VUE_APP_ROOT_API,
+  baseURL: Configuration.value('backendHost'),
   withCredentials: true,
 })
 

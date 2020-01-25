@@ -19,20 +19,24 @@
           </nav>
         </div>
         <div class="column">
-            <div class="buttons">
-              <Download v-if="showDownload" :hash="hash"/>
-              <Rescan v-if="showRescan" :route="route" :hash="hash" />
-            </div>
+          <div class="buttons">
+            <Download v-if="showDownload" :hash="hash" />
+            <Rescan v-if="showRescan" :route="route" :hash="hash" />
+          </div>
         </div>
       </div>
       <p class="no_file" v-if="!showContent">No file Specified</p>
       <slot v-if="showContent"></slot>
+      <div class="column">
+        <Social />
+      </div>
     </div>
   </section>
 </template>
 <script>
 import Download from "../elements/Download"
 import Rescan from "../elements/Rescan"
+import Social from "../elements/Social"
 
 import { mapGetters } from "vuex"
 
@@ -46,6 +50,7 @@ export default {
   components: {
     Download,
     Rescan,
+    Social,
   },
   computed: {
     showDownload: function() {
@@ -66,7 +71,7 @@ export default {
       )
     },
     ...mapGetters({
-      hash: 'getHashContext'
+      hash: "getHashContext",
     }),
   },
   methods: {

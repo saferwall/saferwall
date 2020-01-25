@@ -74,6 +74,7 @@
       </h3>
     </form>
     <confirm v-if="!emailConfirmed" @sent="emailSent" />
+    <hr />
     <h3 class="not-member" v-if="emailConfirmed">
       Not a member?
       <router-link :to="this.$routes.SIGNUP.path">Sign up</router-link>
@@ -181,6 +182,10 @@ export default {
 
 .container {
   margin-bottom: 4em;
+  background-color: white;
+  border-radius: 0.25rem;
+  border: 1px solid #33333330;
+  padding-bottom: 2em;
 }
 .form {
   display: grid;
@@ -191,10 +196,15 @@ export default {
   grid-row-gap: 0.1em;
   padding: 1em 2em;
   color: #333333;
-  background-color: white;
   font-size: 16px;
-  border-radius: 0.25rem;
-  border: 1px solid #33333330;
+  
+}
+hr{
+display: block;
+    border: inherit;
+    width: 22em;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
 }
 
 .input-container {
