@@ -98,6 +98,8 @@ export default {
     return {
       start: 0,
       limit: 10,
+      strings: [],
+      filteredStrings: [],
       encodingSorted: "",
       valueSorted: "",
       valueSearched: "",
@@ -108,15 +110,6 @@ export default {
     ...mapGetters({ fileData: "getFileData" }),
     filteredStringsToShow: function() {
       return this.filteredStrings.filter((string) => string.show)
-    },
-    strings: function() {
-      if (this.fileData === {} || !this.fileData) return {}
-      this.fileData.data.strings.forEach((s) => (s.show = true))
-      return this.fileData.data.strings
-    },
-    filteredStrings: function() {
-      if (this.fileData === {} || !this.fileData) return {}
-      return this.strings.slice(this.start, this.limit)
     },
     showLoader: function() {
       return Array.isArray(this.strings) && this.strings.length === 0
@@ -192,6 +185,11 @@ export default {
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
     },
+  },
+  mounted() {
+    this.strings = this.fileData.data.strings
+    this.strings.forEach((s) => (s.show = true))
+    this.filteredStrings = this.strings.slice(this.start, this.limit)
   },
 }
 </script>
