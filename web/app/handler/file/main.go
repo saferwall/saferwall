@@ -387,7 +387,7 @@ func PostFiles(c echo.Context) error {
 		s := submission{
 			Date:     now,
 			Filename: fileHeader.Filename,
-			Source:   "api",
+			Source:   "web",
 			Country:  c.Request().Header.Get("X-Geoip-Country"),
 		}
 		newFile.Submissions = append(newFile.Submissions, s)

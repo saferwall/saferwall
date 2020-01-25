@@ -19,6 +19,6 @@ helm-create:		## create a helm release
 		&& helm create saferwall \ 
 		&& helm ls
 
-helm-update:		## upgrade a given release
+helm-upgrade:		## upgrade a given release
 	helm upgrade $(RELEASE_NAME) saferwall
 	

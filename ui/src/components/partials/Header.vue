@@ -12,7 +12,7 @@
     <div class="header-search" :class="{ active: showinmobile }">
       <input
         type="search"
-        placeholder="Quick lookup file hash, URL or IP."
+        placeholder="Quick file hash (sha256) lookup"
         v-model="hash"
         @keyup.enter="searchByHash"
       />

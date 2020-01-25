@@ -1,12 +1,6 @@
-kops-install:			## Install Kubernetes Kops
-	curl -Lo kops https://github.com/kubernetes/kops/releases/download/$$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-	chmod +x ./kops
-	sudo mv ./kops /usr/local/bin/
-	kops version
-
-aws-cli-install:		## Install aws cli tool
-	sudo apt-get update
-	sudo apt-get install awscli -y
+awscli-install:		## Install aws cli tool
+	sudo apt install python-pip -y
+	pip install awscli
 	aws configure
 
 aws-create-user:		## Create user to provision the cluster
@@ -21,11 +15,13 @@ aws-create-user:		## Create user to provision the cluster
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
 
-ZONE = us-east-1
-aws-create-samples-bucket:		## create s3 bucket for samples
-	aws s3api create-bucket --bucket saferwall-com-samples --region $(ZONE)
-	aws s3api put-bucket-versioning --bucket samples --versioning-configuration Status=Enabled
+kops-install:		## Install Kubernetes Kops
+	curl -Lo kops https://github.com/kubernetes/kops/releases/download/$$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+	chmod +x ./kops
+	sudo mv ./kops /usr/local/bin/
+	kops version
 
+ZONE = us-east-1
 kops-create-kops-bucket:		## create s3 bucket for kops
 	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region $(ZONE)
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
@@ -47,9 +43,6 @@ kops-create-cluster:	## create k8s cluster
 	kops validate cluster
 	kubectl config current-context
 	kubectl get nodes
-	make kops-create-efs
-	make kops-create-mount-targers
-	make kops-init-cert-manager
 
 kops-create-efs:		## create AWS EFS file system
 	aws efs create-file-system \
@@ -106,5 +99,14 @@ kops-init-cert-manager: # Init cert-manager
 	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 	kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
 
-# edit gp2 to: allowVolumeExpansion: true
+saferwall: ## Deploy the cluster
+	make awscli-install
+	make aws-create-user
+	make kops-install
+	make kops-create-kops-bucket
+	make kops-create-efs
+	make kops-create-mount-targers
+	make kops-init-cert-manager
+	make helm-install
 
+# edit gp2 to: allowVolumeExpansion: true

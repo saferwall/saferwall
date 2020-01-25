@@ -5,7 +5,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 )
 
@@ -28,6 +27,7 @@ const (
 	SigDelphi    = "Delphi"
 	SigAutoIT    = "AutoIt"
 	SigSFXCab    = "sfx: Microsoft Cabinet"
+	SigSmartAssembly = "Smart Assembly"
 )
 
 // GetTags get file tags.
@@ -52,6 +52,8 @@ func (f *result) GetTags() error {
 		tags = append(tags, "pecompact")
 	} else if strings.Contains(packer, SigPECompact) {
 		tags = append(tags, "enigma")
+	} else if strings.Contains(packer, SigSmartAssembly) {
+		tags = append(tags, "smart-assembly")
 	} else if strings.Contains(packer, SigMSVC) {
 		tags = append(tags, "vc")
 	} else if strings.Contains(packer, SigMSVB) {
@@ -74,7 +76,6 @@ func (f *result) GetTags() error {
 		tags = append(tags, "gcc")
 	}
 
-	log.Println(tags)
 	f.Tags = tags
 	return nil
 }

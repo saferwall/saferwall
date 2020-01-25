@@ -1,3 +1,13 @@
+#
+# Default values for Saferwall malware sandbox.
+# https://github.com/saferwall/saferwall
+#
+
+## Deploy environment label, e.g. baremetal, aws
+##
+global:
+  deployEnv: aws
+
 ########### MINIO ###########
 minio:
   enabled: true
