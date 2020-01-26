@@ -8,8 +8,6 @@ import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
-	"google.golang.org/grpc"
-	"log"
 )
 
 // ScanFile scans file
@@ -25,21 +23,4 @@ func ScanFile(client pb.FSecureScannerClient, path string) (multiav.ScanResult, 
 		Infected: res.Infected,
 		Update:   res.Update,
 	}, nil
-}
-
-func main() {
-	serverAddr, opts, filePath := multiav.ParseFlags()
-	conn, err := grpc.Dial(serverAddr, opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewFSecureScannerClient(conn)
-
-	// ScanFile
-	res, err := ScanFile(client, filePath)
-	if err != nil {
-		log.Fatalf("fail to scanfile: %v", err)
-	}
-	log.Println(res)
 }

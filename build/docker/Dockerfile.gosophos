@@ -7,7 +7,8 @@ FROM golang:1.13-alpine AS builder
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+RUN apk update && apk add --no-cache git ca-certificates tzdata \
+    && update-ca-certificates 2>/dev/null || true
 
 WORKDIR $GOPATH/src/saferwall/sophos/
 COPY . .

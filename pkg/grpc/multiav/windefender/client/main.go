@@ -8,8 +8,6 @@ import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
-	"google.golang.org/grpc"
-	"log"
 )
 
 // GetVerion returns version
@@ -30,21 +28,4 @@ func ScanFile(client pb.WinDefenderScannerClient, path string) (multiav.ScanResu
 		Infected: res.Infected,
 		Update:   res.Update,
 	}, nil
-}
-
-func main() {
-	serverAddr, opts, filePath := multiav.ParseFlags()
-	conn, err := grpc.Dial(serverAddr, opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewWinDefenderScannerClient(conn)
-
-	// ScanFile
-	res, err := ScanFile(client, filePath)
-	if err != nil {
-		log.Fatalf("fail to scanfile: %v", err)
-	}
-	log.Println(res)
 }

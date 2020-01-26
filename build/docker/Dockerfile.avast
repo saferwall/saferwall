@@ -4,7 +4,8 @@ LABEL version="0.0.1"
 LABEL description="Avast for Linux in a docker container"
 
 # Required for apt-key
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg2
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gnupg2
 
 # Install Avast
 RUN echo 'deb http://deb.avast.com/lin/repo ubuntu release' | tee --append /etc/apt/sources.list \
@@ -30,4 +31,3 @@ RUN service avast start && scan eicar ; exit 0
 # Cleanup
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
-

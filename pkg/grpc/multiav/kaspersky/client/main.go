@@ -8,8 +8,6 @@ import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
-	"google.golang.org/grpc"
-	"log"
 )
 
 // ScanFile scans file
@@ -25,21 +23,4 @@ func ScanFile(client pb.KasperskyScannerClient, path string) (multiav.ScanResult
 		Infected: res.Infected,
 		Update:   res.Update,
 	}, nil
-}
-
-func main() {
-	serverAddr, opts, filePath := multiav.ParseFlags()
-	conn, err := grpc.Dial(serverAddr, opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewKasperskyScannerClient(conn)
-
-	// ScanFile
-	res, err := ScanFile(client, filePath)
-	if err != nil {
-		log.Fatalf("fail to scanfile: %v", err)
-	}
-	log.Println(res)
 }

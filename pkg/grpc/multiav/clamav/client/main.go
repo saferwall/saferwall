@@ -8,8 +8,6 @@ import (
 	"context"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
-	"google.golang.org/grpc"
-	"log"
 )
 
 // GetVerion returns version
@@ -31,21 +29,4 @@ func ScanFile(client pb.ClamAVScannerClient, path string) (multiav.ScanResult, e
 		Infected: res.Infected,
 		Update:   res.Update,
 	}, nil
-}
-
-func main() {
-	serverAddr, opts, filePath := multiav.ParseFlags()
-	conn, err := grpc.Dial(serverAddr, opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewClamAVScannerClient(conn)
-
-	// ScanFile
-	res, err := ScanFile(client, filePath)
-	if err != nil {
-		log.Fatalf("fail to scanfile: %v", err)
-	}
-	log.Println(res)
 }

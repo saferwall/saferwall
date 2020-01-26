@@ -196,6 +196,6 @@ func RestartService() error {
 // StartDaemon starts the Avast daemon.
 func StartDaemon() error {
 
-	err := utils.StartCommand(avastDaemon, "-n", "-D")
+	err := utils.StartCommand("sudo", avastDaemon, "-n", "-D")
 	return err
 }

@@ -5,8 +5,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
@@ -40,7 +38,6 @@ import (
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"github.com/spf13/viper"
 
 )
@@ -119,35 +116,16 @@ func staticScan(sha256, filePath string, b []byte) result {
 	return res
 }
 
-// Pretty print error.
-func check(engine string, err error) {
-	if err != nil {
-		log.Errorf("[%s]: %v", engine, err)
-	}
-}
-
-// Return a gRPC client connextion for a given engine.
-func avgRPCConn(engine string) (*grpc.ClientConn, error) {
+func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 
 	// Get the address of AV gRPC server
 	key := "multiav." + engine + "_addr"
 	address := viper.GetString(key)
 
-	// Dial creates a client connection to the given target.
-	conn, err := grpc.Dial(
-		address, []grpc.DialOption{grpc.WithInsecure()}...)
-	if err != nil {
-		msg := fmt.Sprintf("[%s]: %v", engine, err)
-		return nil, errors.New(msg)
-	}
-	return conn, nil
-}
-
-func avScan(engine string, filePath string, c chan multiav.ScanResult) {
-
 	// Get a gRPC client scanner instance for a given engine.
-	conn, err := avgRPCConn(engine)
+	conn, err := multiav.GetClientConn(address)
 	if err != nil {
+		log.Printf("Failed to get client conn for [%s]: %v", engine, err)
 		c <- multiav.ScanResult{}
 		return
 	}
@@ -166,57 +144,39 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	}
 
 	filePath = filecopyPath
+	res := multiav.ScanResult{}
 
 	switch engine {
 	case "avast":
-		res, err := avastclient.ScanFile(avast_api.NewAvastScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = avastclient.ScanFile(avast_api.NewAvastScannerClient(conn), filePath)
 	case "avira":
-		res, err := aviraclient.ScanFile(avira_api.NewAviraScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = aviraclient.ScanFile(avira_api.NewAviraScannerClient(conn), filePath)
 	case "bitdefender":
-		res, err := bitdefenderclient.ScanFile(bitdefender_api.NewBitdefenderScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = bitdefenderclient.ScanFile(bitdefender_api.NewBitdefenderScannerClient(conn), filePath)
 	case "clamav":
-		res, err := clamavclient.ScanFile(clamav_api.NewClamAVScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = clamavclient.ScanFile(clamav_api.NewClamAVScannerClient(conn), filePath)
 	case "comodo":
-		res, err := comodoclient.ScanFile(comodo_api.NewComodoScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = comodoclient.ScanFile(comodo_api.NewComodoScannerClient(conn), filePath)
 	case "eset":
-		res, err := esetclient.ScanFile(eset_api.NewEsetScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = esetclient.ScanFile(eset_api.NewEsetScannerClient(conn), filePath)
 	case "fsecure":
-		res, err := fsecureclient.ScanFile(fsecure_api.NewFSecureScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = fsecureclient.ScanFile(fsecure_api.NewFSecureScannerClient(conn), filePath)
 	case "kaspersky":
-		res, err := kasperskyclient.ScanFile(kaspersky_api.NewKasperskyScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = kasperskyclient.ScanFile(kaspersky_api.NewKasperskyScannerClient(conn), filePath)
 	case "mcafee":
-		res, err := mcafeeclient.ScanFile(mcafee_api.NewMcAfeeScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = mcafeeclient.ScanFile(mcafee_api.NewMcAfeeScannerClient(conn), filePath)
 	case "symantec":
-		res, err := symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
 	case "sophos":
-		res, err := sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
 	case "windefender":
-		res, err := windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
-		check(engine, err)
-		c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
+		res, err = windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
 	}
+
+	if err != nil {
+		log.Errorf("Failed to scan file [%s]: %v", engine, err)
+	}
+	c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 
 	if err = utils.DeleteFile(filecopyPath) ; err != nil {
 		log.Errorf("Failed to delete file path %s.", filecopyPath)
