@@ -9,7 +9,7 @@ import (
 	"io"
 	"os"
 	"strings"
-
+	"time"
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
@@ -195,7 +195,8 @@ func RestartService() error {
 
 // StartDaemon starts the Avast daemon.
 func StartDaemon() error {
-
 	err := utils.StartCommand("sudo", avastDaemon, "-n", "-D")
+	time.Sleep(5* time.Second)
+	err = utils.StartCommand("sudo", avastDaemon, "-n", "-D")
 	return err
 }
