@@ -32,7 +32,6 @@ build/data/windows-defender/
 build/helm/
 private/
 test/multiav
-cmd/multiav
 vmi/README.md
 web/config/dev-app.toml
 
