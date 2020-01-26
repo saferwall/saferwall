@@ -25,7 +25,7 @@ RUN chown avast:avast /etc/avast/license.avastlic
 ADD --chown=avast:avast http://www.eicar.org/download/eicar.com.txt eicar
 
 # Performs a simple test
-RUN service avast start && scan eicar
+RUN service avast start && scan eicar ; exit 0
 
 # Cleanup
 RUN rm -rf /tmp/* \

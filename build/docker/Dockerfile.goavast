@@ -34,7 +34,7 @@ ENV AVAST_DB_UPDATE_DATE        /av_db_update_date.txt
 
 # Update VPS
 RUN /var/lib/avast/Setup/avast.vpsupdate \
-	&& date +%s >> $AVAST_DB_UPDATE_DATE
+	&&  echo -n "$(date +%s)" >> $AVAST_DB_UPDATE_DATE
 
 # Copy our static executable.
 COPY --from=builder /go/bin/avastscanner /bin/avastscanner
