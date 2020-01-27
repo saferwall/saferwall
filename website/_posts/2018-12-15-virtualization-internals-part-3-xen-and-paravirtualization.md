@@ -13,8 +13,8 @@ Welcome to chapter 3 of virtualization internals. We have seen previously how VM
 
 <!--more-->
 
-- [Virtualization Internals Part 1 - Intro to Virtualization](https://saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
-- [Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation](https://saferwall.com/blog/virtualization-internals-part-2-vmware-and-virtualization-using-binary-translation)
+- [Virtualization Internals Part 1 - Intro to Virtualization](https://about.saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
+- [Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation](https://about.saferwall.com/blog/virtualization-internals-part-2-vmware-and-virtualization-using-binary-translation)
 - Virtualization Internals Part 3 - Xen and Paravirtualization (current)
 
 As with VMWare binary translation VMM, I would like to highlight that, what we will be discussing in this chapter was specifically designed to virtualize x86 architecture before the introduction of hardware support for virtualization [(VT-x and AMD-v)](<https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x)>) [2006]. Xen's currently shipping VMMs are noticeably different from its original design. Nevertheless, the knowledge you will learn will extend your understading on virtualization and low level concepts.

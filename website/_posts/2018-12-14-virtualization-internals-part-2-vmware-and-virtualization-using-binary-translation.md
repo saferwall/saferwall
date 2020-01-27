@@ -13,9 +13,9 @@ In the previous chapter, we have introduced some basic concepts about hypervisor
 
 <!--more-->
 
-- [Virtualization Internals Part 1 - Intro to Virtualization](https://saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
+- [Virtualization Internals Part 1 - Intro to Virtualization](https://about.saferwall.com/blog/virtualization-internals-part-1-intro-to-virtualization)
 - Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation (current)
-- [Virtualization Internals Part 3 - Xen and Paravirtualization](https://saferwall.com/blog/virtualization-internals-part-3-xen-and-paravirtualization)
+- [Virtualization Internals Part 3 - Xen and Paravirtualization](https://about.saferwall.com/blog/virtualization-internals-part-3-xen-and-paravirtualization)
 
 Before we proceed further, I would like to stress that what we will be discussing in this chapter was specifically designed to virtualize x86 architecture before the introduction of 64-bit extensions or hardware support for virtualization [(VT-x and AMD-v)](<https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x)>) [2006]. VMware’s currently shipping VMMs are noticeably different from its original design. Nevertheless, the knowledge you will learn will extend your understading on virtualization and low level concepts.
 

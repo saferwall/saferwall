@@ -14,8 +14,8 @@ The purpose of this series of articles is to explain how x86 virtualization inte
 <!--more-->
 
 - Virtualization Internals Part 1 - Intro to Virtualization (current)
-- [Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation](https://saferwall.com/blog/virtualization-internals-part-2-vmware-and-virtualization-using-binary-translation)
-- [Virtualization Internals Part 3 - Xen and Paravirtualization](https://saferwall.com/blog/virtualization-internals-part-3-xen-and-paravirtualization)
+- [Virtualization Internals Part 2 - VMWare and Full Virtualization using Binary Translation](https://about.saferwall.com/blog/virtualization-internals-part-2-vmware-and-virtualization-using-binary-translation)
+- [Virtualization Internals Part 3 - Xen and Paravirtualization](https://about.saferwall.com/blog/virtualization-internals-part-3-xen-and-paravirtualization)
 
 ## What is Virtualization ?
 
