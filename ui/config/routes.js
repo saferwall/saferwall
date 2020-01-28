@@ -77,5 +77,13 @@ module.exports = {
         guest: true,
         layout: "unauthenticated",
       },
-    }
+    },
+    PROFILE: {
+      path: "/profile/",
+      name: "profile",
+      meta: {
+        title: "Profile",
+        requiresAuth: true,
+      },
+    },
   }

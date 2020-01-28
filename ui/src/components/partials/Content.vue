@@ -67,7 +67,7 @@ export default {
     },
     showContent: function() {
       return (
-        this.$store.getters.getHashContext !== "" || this.route === "upload"
+        this.$store.getters.getHashContext !== "" || this.route === "upload" || this.route === "profile"
       )
     },
     ...mapGetters({
