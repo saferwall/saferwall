@@ -50,7 +50,7 @@ export default {
     email: {
       required,
       email,
-      notSame : not(sameAs('oldEmail')),
+      notSame: not(sameAs("oldEmail")),
     },
   },
 }
