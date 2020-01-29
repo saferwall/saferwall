@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"encoding/hex"
 
 	"github.com/donutloop/toolkit/debugutil"
 
@@ -25,7 +26,8 @@ func parse(filename string) {
 		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
 		return
 	}
-
+	fmt.Println()
+	fmt.Println(hex.EncodeToString(pe.Authentihash()))
 	pe.GetAnomalies()
 	fmt.Println(debugutil.PrettySprint(pe.DosHeader))
 	fmt.Println(debugutil.PrettySprint(pe.NtHeader))

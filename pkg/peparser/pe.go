@@ -250,7 +250,7 @@ type OptionalHeader64 struct {
 	SizeOfHeapCommit            uint64 // In PE+, this field is 8 bytes size.
 	LoaderFlags                 uint32 // Reserved, must be zero.
 	NumberOfRvaAndSizes         uint32 // The number of data-directory entries in the remainder of the optional header. Each describes a location and size.
-	DataDirectory               [16]DataDirectory
+	DataDirectory               [16]DataDirectory // An array of 16 IMAGE_DATA_DIRECTORY structures.
 }
 
 // DataDirectory represents an array of 16 IMAGE_DATA_DIRECTORY structures, 8 bytes apiece, each relating to an important data structure in the PE file.

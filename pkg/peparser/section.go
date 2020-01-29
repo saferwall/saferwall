@@ -302,3 +302,11 @@ type byVirtualAddress []ImageSectionHeader
 func (s byVirtualAddress) Len() int           { return len(s) }
 func (s byVirtualAddress) Less(i, j int) bool { return s[i].VirtualAddress < s[j].VirtualAddress }
 func (s byVirtualAddress) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+
+// byPointerToRawData sorts all sections by PointerToRawData.
+type byPointerToRawData []ImageSectionHeader
+
+func (s byPointerToRawData) Len() int           { return len(s) }
+func (s byPointerToRawData) Less(i, j int) bool { return s[i].PointerToRawData < s[j].PointerToRawData }
+func (s byPointerToRawData) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }

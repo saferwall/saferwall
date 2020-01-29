@@ -7,6 +7,9 @@ import (
 	"log"
 	// "encoding/hex"
 	"go.mozilla.org/pkcs7"
+	"crypto/sha256"
+	"unsafe"
+	"sort"
 )
 
 // The options for the WIN_CERTIFICATE Revision member include
@@ -45,6 +48,89 @@ type WinCertificate struct {
 	CertificateType uint16 // Specifies the type of certificate.
 }
 
+// Authentihash generates the pe image file hash.
+// The relevant sections to exclude during hashing are:
+// 	[x] The location of the checksum
+//  [x] The location of the entry of the Certificate Table in the Data Directory
+//	[x] The location of the Certificate Table.
+func (pe *File) Authentihash() []byte {
+
+	// Initialize a hash algorithm context.
+	h := sha256.New()
+
+	// Hash the image header from its base to immediately before the start of
+	// the checksum address, as specified in Optional Header Windows-Specific Fields.
+	start := uint32(0)
+	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+	checksumOffset := optionalHeaderOffset + 64
+	h.Write(pe.data[start:checksumOffset])
+
+	// Skip over the checksum, which is a 4-byte field.
+	start += checksumOffset + uint32(4)
+
+	// Hash everything from the end of the checksum field to immediately before 
+	// the start of the Certificate Table entry, as specified in Optional Header
+	// Data Directories.
+	securityDirOffset := optionalHeaderOffset 
+	securityDirOffset += uint32(unsafe.Offsetof(pe.OptionalHeader.DataDirectory)) 
+	securityDirOffset += uint32(binary.Size(DataDirectory{})*ImageDirectoryEntryCertificate)
+	h.Write(pe.data[start:securityDirOffset])
+
+	// Skip over the Certificate Table entry, which is 8 bytes long.
+	start = securityDirOffset + uint32(8)
+
+	// Hash everything from the end of the Certificate Table entry to the end of
+	// image header, including Section Table (headers).
+	endPeHeader := uint32(len(pe.Header))
+	h.Write(pe.data[start:endPeHeader])
+
+	// Create a counter called SUM_OF_BYTES_HASHED, which is not part of the 
+	// signature. Set this counter to the SizeOfHeaders field, as specified in
+	// Optional Header Windows-Specific Field.
+	SumOfBytesHashes := pe.OptionalHeader.SizeOfHeaders
+
+	// Build a temporary table of pointers to all of the section headers in the
+	// image. The NumberOfSections field of COFF File Header indicates how big
+	// the table should be. Do not include any section headers in the table 
+	// whose SizeOfRawData field is zero.
+	sections := []ImageSectionHeader{}
+	for _, section := range pe.Sections {
+		if section.SizeOfRawData != 0 {
+			sections = append(sections, section)
+		}
+	}
+
+	// Using the PointerToRawData field (offset 20) in the referenced
+	// SectionHeader structure as a key, arrange the table's elements in
+	// ascending order. In other words, sort the section headers in ascending
+	// order according to the disk-file offset of the sections.
+	sort.Sort(byPointerToRawData(sections))
+
+	// Walk through the sorted table, load the corresponding section into
+	// memory, and hash the entire section. Use the SizeOfRawData field in the 
+	// SectionHeader structure to determine the amount of data to hash.
+	// Add the section’s SizeOfRawData value to SUM_OF_BYTES_HASHED.
+	for _, s := range sections {
+		sectionData := pe.data[s.PointerToRawData:s.PointerToRawData+s.SizeOfRawData]
+		SumOfBytesHashes += s.SizeOfRawData
+		h.Write(sectionData)
+	}
+
+	// Create a value called FILE_SIZE, which is not part of the signature.
+	// Set this value to the image’s file size, acquired from the underlying
+	// file system. If FILE_SIZE is greater than SUM_OF_BYTES_HASHED, the file 
+	// contains extra data that must be added to the hash. This data begins at 
+	// the SUM_OF_BYTES_HASHED file offset, and its length is:
+	// (File Size) – ((Size of AttributeCertificateTable) + SUM_OF_BYTES_HASHED)
+	if pe.size > SumOfBytesHashes {
+		length := pe.size - ((pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCertificate].Size + SumOfBytesHashes))
+		extraData := pe.data[SumOfBytesHashes:SumOfBytesHashes+length]
+		h.Write(extraData)
+	}
+
+	return h.Sum(nil)
+}
 
 func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 

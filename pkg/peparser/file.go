@@ -284,7 +284,8 @@ func (pe *File) parseSectionHeader() (err error) {
 	var rawDataPointers []uint32
 	for _, s := range pe.Sections {
 		if s.PointerToRawData > 0 {
-			rawDataPointers = append(rawDataPointers, pe.adjustFileAlignment(s.PointerToRawData))
+			rawDataPointers = append(rawDataPointers,
+				pe.adjustFileAlignment(s.PointerToRawData))
 		}
 	}
 
