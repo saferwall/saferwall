@@ -5,6 +5,153 @@ import (
 	"reflect"
 )
 
+const (
+	// Reserved1 for future use.
+	Reserved1 = 0x00000000
+
+	// Reserved2 for future use.
+	Reserved2 = 0x00000001
+
+	// Reserved3 for future use.
+	Reserved3 = 0x00000002
+
+	// Reserved4 for future use.
+	Reserved4 = 0x00000004
+
+	// ImageScnTypeNoPad indicates the section should not be padded to the next 
+	// boundary. This flag is obsolete and is replaced by ImageScnALIGN_1BYTES.
+	// This is valid only for object files.
+	ImageScnTypeNoPad = 0x00000008
+
+	// Reserved5 for future use.
+	Reserved5 = 0x00000010
+
+	// ImageScnCntCode indicates the section contains executable code.
+	ImageScnCntCode = 0x00000020
+
+	// ImageScnCntInitializedData indicates the section contains initialized data.
+	ImageScnCntInitializedData = 0x00000040
+
+	// ImageScnCntUninitializedData indicates the section contains uninitialized data.
+	ImageScnCntUninitializedData = 0x00000080
+
+	// ImageScnLnkOther is reserved for future use.
+	ImageScnLnkOther = 0x00000100
+
+	// ImageScnLnkInfo indicates the section contains comments or other
+	// information. The .drectve section has this type. This is valid for 
+	// object files only.
+	ImageScnLnkInfo = 0x00000200
+
+	// Reserved6 for future use.
+	Reserved6 = 0x00000400
+
+	// ImageScnLnkRemove indicates the section will not become part of the image
+	// This is valid only for object files.
+	ImageScnLnkRemove = 0x00000800
+
+	// ImageScnLinkComdat indicates the section contains COMDAT data. For more 
+	// information, see COMDAT Sections (Object Only). This is valid only for 
+	// object files.
+	ImageScnLinkComdat = 0x00001000
+
+	// ImageScnGpRel indicates the section contains data referenced through the
+	// global pointer (GP).
+	ImageScnGpRel = 0x00008000
+
+	// ImageScnMemPurgeable is reserved for future use.
+	ImageScnMemPurgeable = 0x00020000
+
+	// ImageScnMem16Bit is reserved for future use.
+	ImageScnMem16Bit = 0x00020000
+
+	// ImageScnMemLocked is reserved for future use.
+	ImageScnMemLocked = 0x00040000
+
+	// ImageScnMemPreload is reserved for future use.
+	ImageScnMemPreload = 0x00080000
+
+	// ImageScnAlign1Bytes indicates to align data on a 1-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign1Bytes = 0x00100000
+
+	// ImageScnAlign2Bytes indicates to align data on a 2-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign2Bytes = 0x00200000
+
+	// ImageScnAlign4Bytes indicates to align data on a 4-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign4Bytes = 0x00300000
+
+	// ImageScnAlign8Bytes indicates to align data on a 8-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign8Bytes = 0x00400000
+
+	// ImageScnAlign16Bytes indicates to align data on a 16-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign16Bytes = 0x00500000
+
+	// ImageScnAlign32Bytes indicates to align data on a 32-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign32Bytes = 0x00600000
+
+	// ImageScnAlign64Bytes indicates to align data on a 64-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign64Bytes = 0x00700000
+
+	// ImageScnAlign128Bytes indicates to align data on a 128-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign128Bytes = 0x00800000
+
+	// ImageScnAlign256Bytes indicates to align data on a 256-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign256Bytes = 0x00900000
+
+	// ImageScnAlign512Bytes indicates to align data on a 512-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign512Bytes = 0x00A00000
+
+	// ImageScnAlign1024Bytes indicates to align data on a 1024-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign1024Bytes = 0x00B00000
+
+	// ImageScnAlign2048Bytes indicates to align data on a 2048-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign2048Bytes = 0x00C00000
+
+	// ImageScnAlign4096Bytes indicates to align data on a 4096-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign4096Bytes = 0x00D00000
+
+	// ImageScnAlign8192Bytes indicates to align data on a 8192-byte boundary.
+	// Valid only for object files.
+	ImageScnAlign8192Bytes = 0x00E00000
+
+	// ImageScnLnkMRelocOvfl indicates the section contains extended relocations.
+	ImageScnLnkMRelocOvfl = 0x01000000
+
+	// ImageScnMemDiscardable indicates the section can be discarded as needed.
+	ImageScnMemDiscardable = 0x02000000
+
+	//ImageScnMemNotCached indicates the  section cannot be cached.
+	ImageScnMemNotCached = 0x04000000
+
+	// ImageScnMemNotPaged indicates the section is not pageable.
+	ImageScnMemNotPaged = 0x08000000
+
+	// ImageScnMemShared indicates the section can be shared in memory.
+	ImageScnMemShared = 0x10000000
+
+	// ImageScnMemExecute indicates the section can be executed as code.
+	ImageScnMemExecute = 0x20000000
+
+	// ImageScnMemRead indicates the section can be read.
+	ImageScnMemRead = 0x40000000
+
+	// ImageScnMemWrite indicates the section can be written to.
+	ImageScnMemWrite = 0x80000000
+)
+
 // ImageSectionHeader is part of the section table , in fact section table is an array of Image Section Header
 // each contains information about one section of the whole file such as attribute,virtual offset.
 // the array size is the number of sections in the file .
