@@ -6,25 +6,25 @@ import (
 )
 
 const (
-	// Reserved1 for future use.
-	Reserved1 = 0x00000000
+	// ImageScnReserved1 for future use.
+	ImageScnReserved1 = 0x00000000
 
-	// Reserved2 for future use.
-	Reserved2 = 0x00000001
+	// ImageScnReserved2 for future use.
+	ImageScnReserved2 = 0x00000001
 
-	// Reserved3 for future use.
-	Reserved3 = 0x00000002
+	// ImageScnReserved3 for future use.
+	ImageScnReserved3 = 0x00000002
 
-	// Reserved4 for future use.
-	Reserved4 = 0x00000004
+	// ImageScnReserved4 for future use.
+	ImageScnReserved4 = 0x00000004
 
 	// ImageScnTypeNoPad indicates the section should not be padded to the next 
-	// boundary. This flag is obsolete and is replaced by ImageScnALIGN_1BYTES.
+	// boundary. This flag is obsolete and is replaced by ImageScnAlign1Bytes.
 	// This is valid only for object files.
 	ImageScnTypeNoPad = 0x00000008
 
-	// Reserved5 for future use.
-	Reserved5 = 0x00000010
+	// ImageScnReserved5 for future use.
+	ImageScnReserved5 = 0x00000010
 
 	// ImageScnCntCode indicates the section contains executable code.
 	ImageScnCntCode = 0x00000020
@@ -43,17 +43,17 @@ const (
 	// object files only.
 	ImageScnLnkInfo = 0x00000200
 
-	// Reserved6 for future use.
-	Reserved6 = 0x00000400
+	// ImageScnReserved6 for future use.
+	ImageScnReserved6 = 0x00000400
 
 	// ImageScnLnkRemove indicates the section will not become part of the image
 	// This is valid only for object files.
 	ImageScnLnkRemove = 0x00000800
 
-	// ImageScnLinkComdat indicates the section contains COMDAT data. For more 
+	// ImageScnLnkComdat indicates the section contains COMDAT data. For more 
 	// information, see COMDAT Sections (Object Only). This is valid only for 
 	// object files.
-	ImageScnLinkComdat = 0x00001000
+	ImageScnLnkComdat = 0x00001000
 
 	// ImageScnGpRel indicates the section contains data referenced through the
 	// global pointer (GP).

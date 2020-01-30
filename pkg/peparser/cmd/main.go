@@ -26,15 +26,19 @@ func parse(filename string) {
 		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
 		return
 	}
-	fmt.Println()
+	for _, s := range pe.Sections {
+		fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
+	}
+
+	// fmt.Println()
 	fmt.Println(hex.EncodeToString(pe.Authentihash()))
-	pe.GetAnomalies()
+	// pe.GetAnomalies()
 	fmt.Println(debugutil.PrettySprint(pe.DosHeader))
-	fmt.Println(debugutil.PrettySprint(pe.NtHeader))
-	fmt.Println(debugutil.PrettySprint(pe.FileHeader))
-	fmt.Println(pe.PrettyImageFileCharacteristics())
-	fmt.Println(pe.PrettyDllCharacteristics())
-	fmt.Println(pe.Checksum())
+	// fmt.Println(debugutil.PrettySprint(pe.NtHeader))
+	// fmt.Println(debugutil.PrettySprint(pe.FileHeader))
+	// fmt.Println(pe.PrettyImageFileCharacteristics())
+	// fmt.Println(pe.PrettyDllCharacteristics())
+	// fmt.Println(pe.Checksum())
 
 	// fmt.Print()
 	// fmt.Println(debugutil.PrettySprint(pe.BoundImports))
