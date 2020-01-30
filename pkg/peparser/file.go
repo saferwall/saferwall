@@ -18,7 +18,6 @@ import (
 type File struct {
 	DosHeader        ImageDosHeader
 	NtHeader         ImageNtHeader
-	FileHeader       ImageFileHeader
 	OptionalHeader   OptionalHeader32
 	OptionalHeader64 OptionalHeader64
 	Sections         []ImageSectionHeader
@@ -88,12 +87,6 @@ func (pe *File) Parse() error {
 		return err
 	}
 
-	// Parse the File Header.
-	err = pe.parseFileHeader()
-	if err != nil {
-		return err
-	}
-
 	// Parse the Optional Header.
 	err = pe.parseOptionalHeader()
 	if err != nil {
@@ -115,59 +108,8 @@ func (pe *File) Parse() error {
 	return nil
 }
 
-// The IMAGE_NT_HEADERS structure is the primary location where specifics of
-// the PE file are stored. Its offset is given by the e_lfanew field in the
-// IMAGE_DOS_HEADER at the beginning of the file.
-func (pe *File) parseNtHeader() (err error) {
-	ntHeaderOffset := pe.DosHeader.Elfanew
-	size := uint32(binary.Size(pe.NtHeader))
-	buf := bytes.NewReader(pe.data[ntHeaderOffset : ntHeaderOffset+size])
-	err = binary.Read(buf, binary.LittleEndian, &pe.NtHeader)
-	if err != nil {
-		return err
-	}
-
-	// Probe for PE signature.
-	if pe.NtHeader.Signature == ImageOS2Signature {
-		return ErrImageOS2SignatureFound
-	}
-	if pe.NtHeader.Signature == ImageOS2LESignature {
-		return ErrImageOS2LESignatureFound
-	}
-	if pe.NtHeader.Signature == ImageVXDignature {
-		return ErrImageVXDSignatureFound
-	}
-	if pe.NtHeader.Signature == ImageTESignature {
-		return ErrImageTESignatureFound
-	}
-
-	// This is the smallest requirement for a valid PE.
-	if pe.NtHeader.Signature != ImageNTSignature {
-		return ErrImageNtSignatureNotFound
-	}
-
-	return nil
-}
-
-// The file header structure contains some basic information about the file;
-// most importantly, a field describing the size of the optional data that
-// follows it. In PE files, this optional data is very much required, but is
-// still called the IMAGE_OPTIONAL_HEADER.
-func (pe *File) parseFileHeader() (err error) {
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	size := uint32(binary.Size(pe.FileHeader))
-	buf := bytes.NewReader(pe.data[fileHeaderOffset : fileHeaderOffset+size])
-	err = binary.Read(buf, binary.LittleEndian, &pe.FileHeader)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (pe *File) parseOptionalHeader() (err error) {
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	optHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+	optHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 
 	// We read it as OptionHeader32 then we fix up later.
 	size := uint32(binary.Size(pe.OptionalHeader))
@@ -219,14 +161,12 @@ func (pe *File) parseOptionalHeader() (err error) {
 
 func (pe *File) parseSectionHeader() (err error) {
 
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
-
 	// get the first section offset.
-	offset := optionalHeaderOffset + uint32(pe.FileHeader.SizeOfOptionalHeader)
+	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	offset := optionalHeaderOffset + uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
 
 	sectionHeader := ImageSectionHeader{}
-	sectionCount := pe.FileHeader.NumberOfSections
+	sectionCount := pe.NtHeader.FileHeader.NumberOfSections
 	sectionSize := uint32(binary.Size(sectionHeader))
 	for i := uint16(0); i < sectionCount; i++ {
 		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
@@ -249,8 +189,8 @@ func (pe *File) parseSectionHeader() (err error) {
 	// Should this throw an exception in the minimum header offset
 	// can't be found?
 
-	if pe.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
-		offset = offset + (sectionSize * uint32(pe.FileHeader.NumberOfSections))
+	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
+		offset = offset + (sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections))
 	}
 
 	var rawDataPointers []uint32

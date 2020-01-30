@@ -67,9 +67,9 @@ func parsePE(filename string, cmd *cobra.Command) {
 		fmt.Println(prettyPrint(dosHeader))
 	}
 
-	wantNtHeader, _ := cmd.Flags().GetBool("fileheader")
+	wantNtHeader, _ := cmd.Flags().GetBool("ntheader")
 	if wantNtHeader {
-		fileHeader, _ := json.Marshal(pe.FileHeader)
+		fileHeader, _ := json.Marshal(pe.NtHeader)
 		fmt.Println(prettyPrint(fileHeader))
 	}
 

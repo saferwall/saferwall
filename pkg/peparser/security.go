@@ -67,8 +67,7 @@ func (pe *File) Authentihash() []byte {
 	// Hash the image header from its base to immediately before the start of
 	// the checksum address, as specified in Optional Header Windows-Specific Fields.
 	start := uint32(0)
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 	checksumOffset := optionalHeaderOffset + 64
 	h.Write(pe.data[start:checksumOffset])
 

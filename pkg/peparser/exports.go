@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -8,9 +12,8 @@ import (
 )
 
 const (
-	maxExportedSymbols	= 0x2000
+	maxExportedSymbols = 0x2000
 )
-
 
 // ImageExportDirectory represents the IMAGE_EXPORT_DIRECTORY structure.
 // The export directory table contains address information that is used
@@ -31,16 +34,16 @@ type ImageExportDirectory struct {
 
 // ExportFunction represents an imported function in the export table.
 type ExportFunction struct {
-	Ordinal     uint32
-	FunctionRVA uint32
-	NameOrdinal uint32
-	NameRVA     uint32
-	Name        string
-	Forwarder	string
-	ForwarderRVA	uint32
+	Ordinal      uint32
+	FunctionRVA  uint32
+	NameOrdinal  uint32
+	NameRVA      uint32
+	Name         string
+	Forwarder    string
+	ForwarderRVA uint32
 }
 
-func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
+func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	// Define some vars.
 	exportDir := ImageExportDirectory{}
@@ -60,7 +63,7 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 	var addressOfNames []byte
 
 	if exportDir.NumberOfFunctions == 0 {
-		 return errors.New("Export Directory counts zero number of functions")
+		return errors.New("Export Directory counts zero number of functions")
 	}
 
 	length = min(lengthUntilEOF(exportDir.AddressOfNames), exportDir.NumberOfNames*4)
@@ -101,12 +104,11 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 
 		defer func() {
 			// recover from panic if one occured. Set err to nil otherwise.
-			if (recover() != nil) {
+			if recover() != nil {
 				err = errors.New("array index out of bounds")
 			}
 		}()
 
-		
 		symbolOrdinal := binary.LittleEndian.Uint16(addressOfNameOrdinals[i*2:])
 		if symbolOrdinal*4 < uint16(len(addressOfFunctions)) {
 			symbolAddress = binary.LittleEndian.Uint32(addressOfFunctions[symbolOrdinal*4:])
@@ -165,12 +167,12 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 			break
 		}
 		newExport := ExportFunction{
-			Name:    symbolName,
-			NameRVA: symbolNameAddress,
+			Name:         symbolName,
+			NameRVA:      symbolNameAddress,
 			NameOrdinal:  uint32(symbolOrdinal),
-			Ordinal: exportDir.Base + uint32(symbolOrdinal),
-			FunctionRVA: symbolAddress,
-			Forwarder: forwarderStr,
+			Ordinal:      exportDir.Base + uint32(symbolOrdinal),
+			FunctionRVA:  symbolAddress,
+			Forwarder:    forwarderStr,
 			ForwarderRVA: forwarderOffset,
 		}
 
@@ -195,8 +197,8 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 		ordinals[exp.Ordinal] = true
 	}
 	numNames = min(exportDir.NumberOfFunctions, safetyBoundary/4)
-	for i:=uint32(0); i < numNames; i++ {
-		value := i+exportDir.Base
+	for i := uint32(0); i < numNames; i++ {
+		value := i + exportDir.Base
 		if ordinals[value] {
 			continue
 		}
@@ -228,14 +230,13 @@ func (pe *File) parseExportDirectory(rva, size uint32)  (error) {
 			break
 		}
 		newExport := ExportFunction{
-			Ordinal: exportDir.Base + i,
-			FunctionRVA: symbolAddress,
-			Forwarder: forwarderStr,
+			Ordinal:      exportDir.Base + i,
+			FunctionRVA:  symbolAddress,
+			Forwarder:    forwarderStr,
 			ForwarderRVA: forwarderOffset,
 		}
 
 		pe.Exports = append(pe.Exports, newExport)
-
 
 	}
 

@@ -129,44 +129,6 @@ const (
 	ImageNumberOfDirectoryEntries   = 16 // Tables count.
 )
 
-// ImageNtHeader represents the PE header and is the general term for a structure named IMAGE_NT_HEADERS.
-type ImageNtHeader struct {
-	// Signature is a DWORD containing the value 50h, 45h, 00h, 00h.
-	Signature uint32
-}
-
-// ImageFileHeader contains info about the physical layout and properties of the file.
-type ImageFileHeader struct {
-	// The number that identifies the type of target machine.
-	Machine uint16
-
-	// The number of sections. This indicates the size of the section table,
-	// which immediately follows the headers.
-	NumberOfSections uint16
-
-	// // The low 32 bits of the number of seconds since 00:00 January 1, 1970
-	// (a C run-time time_t value), that indicates when the file was created.
-	TimeDateStamp uint32
-
-	// // The file offset of the COFF symbol table, or zero if no COFF symbol
-	// table is present. This value should be zero for an image because COFF
-	// debugging information is deprecated.
-	PointerToSymbolTable uint32
-
-	// The number of entries in the symbol table. This data can be used to
-	// locate the string table, which immediately follows the symbol table.
-	// This value should be zero for an image because COFF debugging information
-	// is deprecated.
-	NumberOfSymbols uint32
-
-	// The size of the optional header, which is required for executable files
-	// but not for object files. This value should be zero for an object file.
-	SizeOfOptionalHeader uint16
-
-	// The flags that indicate the attributes of the file.
-	Characteristics uint16
-}
-
 // OptionalHeader32 represents the PE32 format structure of the optional header.
 // PE32 contains this additional field, which is absent in PE32+.
 type OptionalHeader32 struct {

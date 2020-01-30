@@ -361,7 +361,7 @@ func (pe *File) PrettyImageFileCharacteristics() []string {
 	}
 
 	for k, s := range fileHeaderCharacteristics {
-		if k&pe.FileHeader.Characteristics != 0 {
+		if k&pe.NtHeader.FileHeader.Characteristics != 0 {
 			values = append(values, s)
 		}
 	}
@@ -482,8 +482,7 @@ func (pe *File) Checksum() uint32 {
 	currentDword := uint32(0)
 
 	// Get the Checksum offset.
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	optionalHeaderOffset := fileHeaderOffset + uint32(binary.Size(pe.FileHeader))
+	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 
 	// `CheckSum` field position in optional PE headers is always 64 for PE and PE+.
 	checksumOffset := optionalHeaderOffset + 64

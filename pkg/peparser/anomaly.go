@@ -89,25 +89,25 @@ func (pe *File) GetAnomalies() error {
 	// others may define still more sections to suit their specific needs.
 	// NumberOfSections can be up to 96 under XP.
 	// NumberOfSections can be up to 65535 under Vista and later.
-	if pe.FileHeader.NumberOfSections >= 10 {
+	if pe.NtHeader.FileHeader.NumberOfSections >= 10 {
 		pe.Anomalies = append(pe.Anomalies, AnoNumberOfSections10Plus)
 	}
 
 	// File header timestamp set to 0.
-	if pe.FileHeader.TimeDateStamp == 0 {
+	if pe.NtHeader.FileHeader.TimeDateStamp == 0 {
 		pe.Anomalies = append(pe.Anomalies, AnoPETimeStampNull)
 	}
 
 	// File header timestamp set to the future.
 	now := time.Now()
 	future := uint32(now.Add(24 * time.Hour).Unix())
-	if pe.FileHeader.TimeDateStamp > future {
+	if pe.NtHeader.FileHeader.TimeDateStamp > future {
 		pe.Anomalies = append(pe.Anomalies, AnoPETimeStampFuture)
 	}
 
 	// NumberOfSections can be null with low alignment PEs
 	// and in this case, the values are just checked but not really used (under XP)
-	if pe.FileHeader.NumberOfSections == 0 {
+	if pe.NtHeader.FileHeader.NumberOfSections == 0 {
 		pe.Anomalies = append(pe.Anomalies, AnoNumberOfSectionsNull)
 	}
 
@@ -115,7 +115,7 @@ func (pe *File) GetAnomalies() error {
 	// between the top of the Optional header and the start of the section table.
 	// Thus, it can be null (the section table will overlap the Optional Header,
 	// or can be null when no sections are present)
-	if pe.FileHeader.SizeOfOptionalHeader == 0 {
+	if pe.NtHeader.FileHeader.SizeOfOptionalHeader == 0 {
 		pe.Anomalies = append(pe.Anomalies, AnoSizeOfOptionalHeaderNull)
 	}
 
@@ -125,13 +125,13 @@ func (pe *File) GetAnomalies() error {
 
 	// SizeOfOptionalHeader standard value is 0xE0 for PE32.
 	if !pe.Is64 &&
-		pe.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader)) {
+		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader)) {
 		pe.Anomalies = append(pe.Anomalies, AnoUncommonSizeOfOptionalHeader32)
 	}
 
 	// SizeOfOptionalHeader standard value is 0xF0 for PE32+.
 	if pe.Is64 &&
-		pe.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader64)) {
+		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader64)) {
 		pe.Anomalies = append(pe.Anomalies, AnoUncommonSizeOfOptionalHeader64)
 	}
 
