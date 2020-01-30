@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -140,7 +144,6 @@ func (pe *File) parseResourceDirectoryEntry(rva uint32) *ImageResourceDirectoryE
 
 	return &resource
 }
-
 
 func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (ResourceDirectory, error) {
 	// Get the resource directory structure, that is, the header

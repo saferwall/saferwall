@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -18,7 +22,7 @@ const (
 	// ImageScnReserved4 for future use.
 	ImageScnReserved4 = 0x00000004
 
-	// ImageScnTypeNoPad indicates the section should not be padded to the next 
+	// ImageScnTypeNoPad indicates the section should not be padded to the next
 	// boundary. This flag is obsolete and is replaced by ImageScnAlign1Bytes.
 	// This is valid only for object files.
 	ImageScnTypeNoPad = 0x00000008
@@ -39,7 +43,7 @@ const (
 	ImageScnLnkOther = 0x00000100
 
 	// ImageScnLnkInfo indicates the section contains comments or other
-	// information. The .drectve section has this type. This is valid for 
+	// information. The .drectve section has this type. This is valid for
 	// object files only.
 	ImageScnLnkInfo = 0x00000200
 
@@ -50,8 +54,8 @@ const (
 	// This is valid only for object files.
 	ImageScnLnkRemove = 0x00000800
 
-	// ImageScnLnkComdat indicates the section contains COMDAT data. For more 
-	// information, see COMDAT Sections (Object Only). This is valid only for 
+	// ImageScnLnkComdat indicates the section contains COMDAT data. For more
+	// information, see COMDAT Sections (Object Only). This is valid only for
 	// object files.
 	ImageScnLnkComdat = 0x00001000
 
@@ -302,7 +306,6 @@ type byVirtualAddress []ImageSectionHeader
 func (s byVirtualAddress) Len() int           { return len(s) }
 func (s byVirtualAddress) Less(i, j int) bool { return s[i].VirtualAddress < s[j].VirtualAddress }
 func (s byVirtualAddress) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-
 
 // byPointerToRawData sorts all sections by PointerToRawData.
 type byPointerToRawData []ImageSectionHeader

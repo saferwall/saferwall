@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -11,40 +15,40 @@ const (
 	// from the file. It's there to prevent loading massive amounts of data from
 	// memory mapped files. Strings longer than 0x100B should be rather rare.
 	MaxStringLength = uint32(0x100)
-
 )
+
 // ImageBoundImportDescriptor represents the IMAGE_BOUND_IMPORT_DESCRIPTOR.
 type ImageBoundImportDescriptor struct {
-	TimeDateStamp uint32 // is just the value from the Exports information of the DLL which is being imported from.
-	OffsetModuleName uint16 //  offset of the DLL name counted from the beginning of the BOUND_IMPORT table
-	NumberOfModuleForwarderRefs uint16  // number of forwards
+	TimeDateStamp               uint32 // is just the value from the Exports information of the DLL which is being imported from.
+	OffsetModuleName            uint16 //  offset of the DLL name counted from the beginning of the BOUND_IMPORT table
+	NumberOfModuleForwarderRefs uint16 // number of forwards
 	// Array of zero or more IMAGE_BOUND_FORWARDER_REF follows
 }
 
 // ImageBoundForwardedRef represents the IMAGE_BOUND_FORWARDER_REF.
 type ImageBoundForwardedRef struct {
-	TimeDateStamp uint32
+	TimeDateStamp    uint32
 	OffsetModuleName uint16
-	Reserved uint16
+	Reserved         uint16
 }
 
 // BoundImportDescriptorData represents the descripts in addition to forwarded refs.
 type BoundImportDescriptorData struct {
-	Struct ImageBoundImportDescriptor
-	Name string
+	Struct        ImageBoundImportDescriptor
+	Name          string
 	ForwardedRefs []BoundForwardedRefData
 }
 
 // BoundForwardedRefData reprents the struct in addition to the dll name.
 type BoundForwardedRefData struct {
 	Struct ImageBoundForwardedRef
-	Name string
+	Name   string
 }
 
 func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 	var sectionsAfterOffset []uint32
 	var safetyBoundary uint32
-	var start = rva;
+	var start = rva
 
 	for {
 		bndDesc := ImageBoundImportDescriptor{}
@@ -97,8 +101,8 @@ func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 		bndFrwdRefSize := uint32(binary.Size(bndFrwdRef))
 		count := min(uint32(bndDesc.NumberOfModuleForwarderRefs), safetyBoundary/bndFrwdRefSize)
 
-		var forwarderRefs[]BoundForwardedRefData
-		for i := uint32(0) ; i < count ;i++ {
+		var forwarderRefs []BoundForwardedRefData
+		for i := uint32(0); i < count; i++ {
 			buf := bytes.NewReader(pe.data[rva : rva+bndFrwdRefSize])
 			err := binary.Read(buf, binary.LittleEndian, &bndFrwdRef)
 			if err != nil {
@@ -107,7 +111,7 @@ func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 
 			rva += bndFrwdRefSize
 
-			offset := start+uint32(bndFrwdRef.OffsetModuleName)
+			offset := start + uint32(bndFrwdRef.OffsetModuleName)
 			DllNameBuff := string(pe.getStringFromData(0, pe.data[offset:offset+MaxStringLength]))
 			DllName := string(DllNameBuff)
 
@@ -115,25 +119,25 @@ func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 			// Anything longer than a safety length of 128 will be taken to indicate
 			// a corrupt entry and abort the processing of these entries.
 			// Names shorter than 4 characters will be taken as invalid as well.
-			if DllName != "" &&  (len(DllName) > 256 || !IsPrintable(DllName)) {
+			if DllName != "" && (len(DllName) > 256 || !IsPrintable(DllName)) {
 				break
 			}
 
-			forwarderRefs = append(forwarderRefs, BoundForwardedRefData {
-				Struct: bndFrwdRef, Name:DllName})
+			forwarderRefs = append(forwarderRefs, BoundForwardedRefData{
+				Struct: bndFrwdRef, Name: DllName})
 		}
 
-		offset := start+uint32(bndDesc.OffsetModuleName)
+		offset := start + uint32(bndDesc.OffsetModuleName)
 		DllNameBuff := pe.getStringFromData(0, pe.data[offset:offset+MaxStringLength])
 		DllName := string(DllNameBuff)
-		if DllName != "" &&  (len(DllName) > 256 || !IsPrintable(DllName)) {
+		if DllName != "" && (len(DllName) > 256 || !IsPrintable(DllName)) {
 			break
 		}
 
-		pe.BoundImports = append(pe.BoundImports, BoundImportDescriptorData {
-				Struct: bndDesc,
-				Name: DllName,
-				ForwardedRefs: forwarderRefs})
+		pe.BoundImports = append(pe.BoundImports, BoundImportDescriptorData{
+			Struct:        bndDesc,
+			Name:          DllName,
+			ForwardedRefs: forwarderRefs})
 	}
 
 	return nil

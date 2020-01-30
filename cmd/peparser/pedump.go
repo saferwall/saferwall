@@ -80,6 +80,30 @@ func parsePE(filename string, cmd *cobra.Command) {
 	}
 }
 
+func parse(cmd *cobra.Command, args []string) {
+	filePath := args[0]
+
+	// filePath points to a file.
+	if !isDirectory(filePath) {
+		parsePE(filePath, cmd)
+
+	} else {
+	// filePath points to a directory,
+	// walk recursively through all files.
+		fileList := []string{}
+		filepath.Walk(filePath, func(path string, f os.FileInfo, err error) error {
+			if !isDirectory(path) {
+				fileList = append(fileList, path)
+			}
+			return nil
+		})
+	
+		for _, file := range fileList {
+			parsePE(file, cmd)
+		}
+	}
+}
+
 
 func main() {
 
@@ -105,30 +129,7 @@ func main() {
 		Short: "Parses the file",
 		Long:  "Parses the Portable Executable file",
 		Args:  cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-
-			filePath := args[0]
-
-			// filePath points to a file.
-			if !isDirectory(filePath) {
-				parsePE(filePath, cmd)
-
-			} else {
-			// filePath points to a directory,
-			// walk recursively through all files.
-				fileList := []string{}
-				filepath.Walk(filePath, func(path string, f os.FileInfo, err error) error {
-					if !isDirectory(path) {
-						fileList = append(fileList, path)
-					}
-					return nil
-				})
-			
-				for _, file := range fileList {
-					parsePE(file, cmd)
-				}
-			}
-		},
+		Run: parse,
 	}
 
 	// Init root command.
@@ -139,7 +140,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	parseCmd.Flags().BoolVarP(&dosHeader, "dosheader", "", false, "Dump DOS header")
 	parseCmd.Flags().BoolVarP(&richHeader, "rich", "", false, "Dump Rich header")
-	parseCmd.Flags().BoolVarP(&ntheader, "fileheader", "", false, "Dump NT header")
+	parseCmd.Flags().BoolVarP(&ntHeader, "ntheader", "", false, "Dump NT header")
 	parseCmd.Flags().BoolVarP(&optionalHeader, "optionalheader", "", false, "Dump optional header")
 	parseCmd.Flags().BoolVarP(&directories, "directories", "", false, "Dump data directories")
 	parseCmd.Flags().BoolVarP(&sections, "sections", "", false, "Dump section headers")

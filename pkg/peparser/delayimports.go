@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -7,16 +11,15 @@ import (
 
 // ImageDelayImportDescriptor represents the _IMAGE_DELAYLOAD_DESCRIPTOR structure.
 type ImageDelayImportDescriptor struct {
-	Attributes uint32						// Must be zero.
-    Name uint32                       		// RVA to the name of the target library (NULL-terminate ASCII string)
-    ModuleHandleRVA uint32                  // RVA to the HMODULE caching location (PHMODULE)
-    ImportAddressTableRVA uint32           	// RVA to the start of the IAT (PIMAGE_THUNK_DATA)
-    ImportNameTableRVA uint32               // RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData)
-    BoundImportAddressTableRVA uint32       // RVA to an optional bound IAT
-    UnloadInformationTableRVA uint32        // RVA to an optional unload info table
-    TimeDateStamp uint32                    // 0 if not bound, oherwise, date/time of the target DLL
+	Attributes                 uint32 // Must be zero.
+	Name                       uint32 // RVA to the name of the target library (NULL-terminate ASCII string)
+	ModuleHandleRVA            uint32 // RVA to the HMODULE caching location (PHMODULE)
+	ImportAddressTableRVA      uint32 // RVA to the start of the IAT (PIMAGE_THUNK_DATA)
+	ImportNameTableRVA         uint32 // RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData)
+	BoundImportAddressTableRVA uint32 // RVA to an optional bound IAT
+	UnloadInformationTableRVA  uint32 // RVA to an optional unload info table
+	TimeDateStamp              uint32 // 0 if not bound, oherwise, date/time of the target DLL
 }
-
 
 // DelayImport represents an entry in the delay import table.
 type DelayImport struct {

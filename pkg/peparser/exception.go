@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -222,7 +226,7 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 		unwindCode.Operand = "Register=XMM" + strconv.Itoa(int(unwindCode.OpInfo)) + ", Offset=" + strconv.Itoa(int(unwindCode.FrameOffset))
 		advanceBy += 3
 	case UwOpSetFpRegLarge:
-		unwindCode.Operand = "Register=" + OpInfoRegisters[unwindCode.OpInfo] 
+		unwindCode.Operand = "Register=" + OpInfoRegisters[unwindCode.OpInfo]
 		advanceBy += 2
 
 	case UwOpEpilog, UwOpSpareCode, UwOpPushMachFrame:

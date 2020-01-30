@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package pe
 
 import (
@@ -96,7 +100,7 @@ func (pe *File) GetAnomalies() error {
 
 	// File header timestamp set to the future.
 	now := time.Now()
-	future := uint32(now.Add(24*time.Hour).Unix())
+	future := uint32(now.Add(24 * time.Hour).Unix())
 	if pe.FileHeader.TimeDateStamp > future {
 		pe.Anomalies = append(pe.Anomalies, AnoPETimeStampFuture)
 	}
