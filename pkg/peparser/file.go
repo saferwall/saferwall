@@ -111,38 +111,6 @@ func (pe *File) Parse() error {
 	return nil
 }
 
-// Every PE file begins with a small MS-DOS stud. The need for this arose in the
-// early days of Windows, before a significant number of consumers were running
-// it. When executed on a machine without Windows, the program could at least
-// print out amessage saying that Windows was required to run the executable.
-func (pe *File) parseDosHeader() (err error) {
-	offset := 0
-	size := binary.Size(pe.DosHeader)
-	buf := bytes.NewReader(pe.data[offset : offset+size])
-	err = binary.Read(buf, binary.LittleEndian, &pe.DosHeader)
-	if err != nil {
-		return err
-	}
-
-	// it can be ZM on an (non-PE) EXE.
-	// These executables still work under XP via ntvdm.
-	if pe.DosHeader.Emagic != ImageDOSSignature &&
-		pe.DosHeader.Emagic != ImageDOSZMSignature {
-		return ErrDOSMagicNotFound
-	}
-
-	// `e_lfanew` is the only required element (besides the signature) of the
-	// DOS header to turn the EXE into a PE. It is is a relative offset to the
-	// NT Headers. It can't be null (signatures would overlap).
-	// Can be 4 at minimum.
-	if pe.DosHeader.Elfanew < 4 ||
-		pe.DosHeader.Elfanew > uint32(len(pe.data)) {
-		return ErrInvalidElfanewValue
-	}
-
-	return nil
-}
-
 // The IMAGE_NT_HEADERS structure is the primary location where specifics of
 // the PE file are stored. Its offset is given by the e_lfanew field in the
 // IMAGE_DOS_HEADER at the beginning of the file.
@@ -230,7 +198,7 @@ func (pe *File) parseOptionalHeader() (err error) {
 		return ErrImageBaseNotAligned
 	}
 
-	// ImageBase can be any value as long as ImageBase + SizeOfImage < 
+	// ImageBase can be any value as long as ImageBase + SizeOfImage <
 	// 80000000h for PE32.
 	if !pe.Is64 &&
 		pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
@@ -238,7 +206,7 @@ func (pe *File) parseOptionalHeader() (err error) {
 	}
 
 	// SizeOfImage must be a multiple of the section alignment.
-	if pe.OptionalHeader.SizeOfImage % pe.OptionalHeader.SectionAlignment != 0 {
+	if pe.OptionalHeader.SizeOfImage%pe.OptionalHeader.SectionAlignment != 0 {
 		return ErrInvalidSizeOfImage
 	}
 
