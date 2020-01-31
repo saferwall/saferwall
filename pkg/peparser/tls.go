@@ -37,7 +37,7 @@ type ImageTLSDirectory64 struct {
 	Characteristics       uint32 // The four bits [23:20] describe alignment info. Possible values are those defined as IMAGE_SCN_ALIGN_*, which are also used to describe alignment of section in object files. The other 28 bits are reserved for future use.
 }
 
-func (pe *File) parseTLSDirectory(rva, size uint32) (TLSDirectory, error) {
+func (pe *File) parseTLSDirectory(rva, size uint32) (error) {
 
 	tls := TLSDirectory{}
 
@@ -49,7 +49,7 @@ func (pe *File) parseTLSDirectory(rva, size uint32) (TLSDirectory, error) {
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+tlsSize])
 		err := binary.Read(buf, binary.LittleEndian, &tlsDir)
 		if err != nil {
-			return tls, err
+			return err
 		}
 
 		rvaAddressOfCallBacks := uint32(tlsDir.AddressOfCallBacks -
@@ -75,7 +75,7 @@ func (pe *File) parseTLSDirectory(rva, size uint32) (TLSDirectory, error) {
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+tlsSize])
 		err := binary.Read(buf, binary.LittleEndian, &tlsDir)
 		if err != nil {
-			return tls, err
+			return err
 		}
 
 		// 94a9dc17d47b03f6fb01cb639e25503b37761b452e7c07ec6b6c2280635f1df9
@@ -99,5 +99,6 @@ func (pe *File) parseTLSDirectory(rva, size uint32) (TLSDirectory, error) {
 		tls.Callbacks = callbacks
 	}
 
-	return tls, nil
+	pe.TLS = tls
+	return nil
 }

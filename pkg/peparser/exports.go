@@ -114,7 +114,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		if symbolOrdinal*4 < uint16(len(addressOfFunctions)) {
 			symbolAddress = binary.LittleEndian.Uint32(addressOfFunctions[symbolOrdinal*4:])
 		} else {
-			return errors.New("Corrupt? a bad pointer... we assume it's all useless, no exports")
+			return errors.New(`Corrupt? a bad pointer... we assume it's
+			 all useless, no exports`)
 		}
 
 		if symbolAddress == 0 {
@@ -159,12 +160,15 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 0x100 {
-			log.Printf("Export directory contains more than 0x100 repeated entries: %d, Name:%s, Address:0x%x", symbolCounts[symbolAddress], string(symbolName), symbolAddress)
+		if symbolCounts[symbolAddress] > 0x200 {
+			log.Printf(`Export directory contains more than 0x200 repeated
+			 entries: %d, Name:%s, Address:0x%x`, symbolCounts[symbolAddress],
+			 string(symbolName), symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf("Export directory contains more than %d symbol entries. Assuming corrupt.", maxExportedSymbols)
+			log.Printf(`Export directory contains more than %d symbol entries.
+			 Assuming corrupt.`, maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{
@@ -181,7 +185,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 
 	if parsingFailed {
-		log.Printf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
+		log.Printf(`RVA AddressOfNames in the export directory points to an
+		 invalid address: 0x%x`, exportDir.AddressOfNames)
 	}
 
 	maxFailedEntries = 10
@@ -190,7 +195,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	// Overly generous upper bound
 	safetyBoundary = pe.size
 	if section != nil {
-		safetyBoundary = (section.VirtualAddress + uint32(len(section.Data(0, 0, pe)))) - exportDir.AddressOfNames
+		safetyBoundary = section.VirtualAddress + 
+		uint32(len(section.Data(0, 0, pe))) - exportDir.AddressOfNames
 	}
 	parsingFailed = false
 	ordinals := make(map[uint32]bool)
@@ -222,12 +228,15 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 10 {
-			log.Printf("Export directory contains more than 10 repeated ordinal entries: Address:0x%x", symbolAddress)
+		if symbolCounts[symbolAddress] > 0x200 {
+			log.Printf(`Export directory contains more than 0x200 repeated
+			 entries: %d, Address:0x%x`, symbolCounts[symbolAddress],
+			 symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf("Export directory contains more than %d ordinal entries. Assuming corrupt.", maxExportedSymbols)
+			log.Printf(`Export directory contains more than %d ordinal entries.
+			 Assuming corrupt.`, maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{
