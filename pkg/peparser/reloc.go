@@ -65,6 +65,13 @@ func (pe *File) parseRelocations(dataRVA, rva, size uint32) ([]ImageBaseRelocati
 }
 
 func (pe *File) parseRelocDirectory(rva, size uint32) error {
+	var sizeOfImage uint32
+	switch pe.Is64 {
+	case true:
+		sizeOfImage = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).SizeOfImage
+	case false:
+		sizeOfImage = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SizeOfImage	
+	}
 
 	relocSize := uint32(binary.Size(ImageBaseRelocation{}))
 	end := rva + size
@@ -78,13 +85,13 @@ func (pe *File) parseRelocDirectory(rva, size uint32) error {
 		}
 
 		// VirtualAddress must lie within the Image
-		if baseReloc.VirtualAddress > pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SizeOfImage {
+		if baseReloc.VirtualAddress > sizeOfImage {
 			return errors.New("Invalid relocation information. VirtualAddress outside of Image")
 		}
 
 		// SizeOfBlock must be less or equal than the size of the image
 		// (It's a rather loose sanity test)
-		if baseReloc.SizeOfBlock > pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SizeOfImage {
+		if baseReloc.SizeOfBlock > sizeOfImage {
 			return errors.New("Invalid relocation information. SizeOfBlock too large")
 		}
 

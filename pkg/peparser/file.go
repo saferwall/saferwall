@@ -131,7 +131,7 @@ func (pe *File) parseDataDirectories() (err error) {
 		}
 
 		rsrcDirEntry := oh64.DataDirectory[ImageDirectoryEntryResource]
-		if relocDirEntry.VirtualAddress != 0 {
+		if rsrcDirEntry.VirtualAddress != 0 {
 			pe.Resources, err = pe.parseResourceDirectory(rsrcDirEntry.VirtualAddress, rsrcDirEntry.Size, 0, 0)
 		}
 

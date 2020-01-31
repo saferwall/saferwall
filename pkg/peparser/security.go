@@ -56,10 +56,15 @@ type WinCertificate struct {
 
 // Authentihash generates the pe image file hash.
 // The relevant sections to exclude during hashing are:
-// 	[x] The location of the checksum
-//  [x] The location of the entry of the Certificate Table in the Data Directory
-//	[x] The location of the Certificate Table.
+// 	- The location of the checksum
+//  - The location of the entry of the Certificate Table in the Data Directory
+//	- The location of the Certificate Table.
 func (pe *File) Authentihash() []byte {
+
+	// Declare some vars.
+	var certDirSize uint32
+	var sizeOfHeaders uint32
+	var dataDirOffset uint32
 
 	// Initialize a hash algorithm context.
 	h := sha256.New()
@@ -77,8 +82,21 @@ func (pe *File) Authentihash() []byte {
 	// Hash everything from the end of the checksum field to immediately before
 	// the start of the Certificate Table entry, as specified in Optional Header
 	// Data Directories.
-	securityDirOffset := optionalHeaderOffset
-	securityDirOffset += uint32(unsafe.Offsetof(pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DataDirectory))
+	oh32 := ImageOptionalHeader32{}
+	oh64 := ImageOptionalHeader64{}
+	switch pe.Is64 {
+	case true:
+		oh64 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64)
+		certDirSize = oh64.DataDirectory[ImageDirectoryEntryCertificate].Size
+		sizeOfHeaders = oh64.SizeOfHeaders
+		dataDirOffset = uint32(unsafe.Offsetof(oh64.DataDirectory))
+	case false:
+		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)
+		certDirSize = oh32.DataDirectory[ImageDirectoryEntryCertificate].Size
+		sizeOfHeaders = oh32.SizeOfHeaders
+		dataDirOffset = uint32(unsafe.Offsetof(oh32.DataDirectory))
+	}
+	securityDirOffset := optionalHeaderOffset + dataDirOffset
 	securityDirOffset += uint32(binary.Size(DataDirectory{}) * ImageDirectoryEntryCertificate)
 	h.Write(pe.data[start:securityDirOffset])
 
@@ -93,7 +111,7 @@ func (pe *File) Authentihash() []byte {
 	// Create a counter called SUM_OF_BYTES_HASHED, which is not part of the
 	// signature. Set this counter to the SizeOfHeaders field, as specified in
 	// Optional Header Windows-Specific Field.
-	SumOfBytesHashes := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SizeOfHeaders
+	SumOfBytesHashes := sizeOfHeaders
 
 	// Build a temporary table of pointers to all of the section headers in the
 	// image. The NumberOfSections field of COFF File Header indicates how big
@@ -129,8 +147,7 @@ func (pe *File) Authentihash() []byte {
 	// the SUM_OF_BYTES_HASHED file offset, and its length is:
 	// (File Size) – ((Size of AttributeCertificateTable) + SUM_OF_BYTES_HASHED)
 	if pe.size > SumOfBytesHashes {
-		length := pe.size - 
-		 (pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DataDirectory[ImageDirectoryEntryCertificate].Size + SumOfBytesHashes)
+		length := pe.size - (certDirSize + SumOfBytesHashes)
 		extraData := pe.data[SumOfBytesHashes : SumOfBytesHashes+length]
 		h.Write(extraData)
 	}

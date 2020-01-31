@@ -505,17 +505,15 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 			}
 		}
 
-		// Todo: uint64/uin32 mismatch
-		// Shoud be: FirstThunk + pe.OptionalHeader64.ImageBase + (idx * importOffset)
-		imp.Address = FirstThunk +
-		 pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase +
-		 (idx * importOffset)
+		// Tofix oh64
+		imageBase := uint32(pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase)
+		imp.Address = FirstThunk + imageBase + (idx * importOffset)
 
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = uint32(iat[idx].AddressOfData)
 		}
 
-		// The file with hashe:
+		// The file with hash:
 		// SHA256: 3d22f8b001423cb460811ab4f4789f277b35838d45c62ec0454c877e7c82c7f5
 		// has an invalid table built in a way that it's parseable but contains
 		// invalid entries that lead pefile to take extremely long amounts of time to

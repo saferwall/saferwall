@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	all        bool
 	verbose        bool
 	dosHeader      bool
 	richHeader      bool
@@ -70,6 +71,16 @@ func parsePE(filename string, cmd *cobra.Command) {
 	if wantNtHeader {
 		ntHeader, _ := json.Marshal(pe.NtHeader)
 		fmt.Println(prettyPrint(ntHeader))
+	}
+
+	wantAll, _ := cmd.Flags().GetBool("all")
+	if wantAll {
+		dosHeader, _ := json.Marshal(pe.DosHeader)
+		ntHeader, _ := json.Marshal(pe.NtHeader)
+		sections, _ := json.Marshal(pe.Sections)
+		fmt.Println(prettyPrint(dosHeader))
+		fmt.Println(prettyPrint(ntHeader))
+		fmt.Println(prettyPrint(sections))
 	}
 
 }
@@ -137,6 +148,7 @@ func main() {
 	parseCmd.Flags().BoolVarP(&ntHeader, "ntheader", "", false, "Dump NT header")
 	parseCmd.Flags().BoolVarP(&directories, "directories", "", false, "Dump data directories")
 	parseCmd.Flags().BoolVarP(&sections, "sections", "", false, "Dump section headers")
+	parseCmd.Flags().BoolVarP(&all, "all", "", false, "Dump everything")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

@@ -6,15 +6,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"encoding/hex"
+	// "encoding/hex"
 
-	"github.com/donutloop/toolkit/debugutil"
+	// "github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 func parse(filename string) {
-	fmt.Printf("Processing filename %s", filename)
+	fmt.Printf("\nProcessing filename %s", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -26,14 +26,14 @@ func parse(filename string) {
 		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
 		return
 	}
-	for _, s := range pe.Sections {
-		fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
-	}
+	// for _, s := range pe.Sections {
+	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
+	// }
 
 	// fmt.Println()
-	fmt.Println(hex.EncodeToString(pe.Authentihash()))
+	// fmt.Println(hex.EncodeToString(pe.Authentihash()))
 	// pe.GetAnomalies()
-	fmt.Println(debugutil.PrettySprint(pe.DosHeader))
+	// fmt.Println(debugutil.PrettySprint(pe.DosHeader))
 	// fmt.Println(debugutil.PrettySprint(pe.NtHeader))
 	// fmt.Println(debugutil.PrettySprint(pe.FileHeader))
 	// fmt.Println(pe.PrettyImageFileCharacteristics())
@@ -55,7 +55,6 @@ func parse(filename string) {
 	// 	log.Println("=============================================")
 
 	// }
-	fmt.Println("==========================================================================================")
 
 }
 

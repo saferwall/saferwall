@@ -358,8 +358,6 @@ func (pe *File) parseNtHeader() (err error) {
 		return ErrImageNtOptionalHeaderMagicNotFound
 	}
 
-
-
 	// Are we dealing with a PE64 optional header.
 	switch magic {
 	case ImageNtOptionalHeader64Magic:
@@ -369,7 +367,7 @@ func (pe *File) parseNtHeader() (err error) {
 		if err != nil {
 			return err
 		}
-		pe.Is32 = true
+		pe.Is64 = true
 		pe.NtHeader.OptionalHeader = oh64
 	case ImageNtOptionalHeader32Magic:
 		size := uint32(binary.Size(oh32))
@@ -378,7 +376,7 @@ func (pe *File) parseNtHeader() (err error) {
 		if err != nil {
 			return err
 		}
-		pe.Is64 = false
+		pe.Is32 = true
 		pe.NtHeader.OptionalHeader = oh32
 	}
 
@@ -399,7 +397,8 @@ func (pe *File) parseNtHeader() (err error) {
 	}
 
 	// SizeOfImage must be a multiple of the section alignment.
-	if oh32.SizeOfImage%oh32.SectionAlignment != 0 {
+	if (pe.Is32 && oh32.SizeOfImage%oh32.SectionAlignment != 0) || 
+		(pe.Is64 && oh64.SizeOfImage%oh64.SectionAlignment != 0){
 		return ErrInvalidSizeOfImage
 	}
 

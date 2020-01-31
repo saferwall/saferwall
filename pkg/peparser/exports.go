@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"log"
 	"fmt"
 )
 
@@ -158,12 +159,12 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 10 {
-			fmt.Printf("Export directory contains more than 10 repeated entries: Name:%s, Address:0x%x", string(symbolName), symbolAddress)
+		if symbolCounts[symbolAddress] > 0x100 {
+			log.Printf("Export directory contains more than 0x100 repeated entries: %d, Name:%s, Address:0x%x", symbolCounts[symbolAddress], string(symbolName), symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			fmt.Printf("Export directory contains more than %d symbol entries. Assuming corrupt.", maxExportedSymbols)
+			log.Printf("Export directory contains more than %d symbol entries. Assuming corrupt.", maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{
@@ -180,7 +181,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 
 	if parsingFailed {
-		fmt.Printf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
+		log.Printf("RVA AddressOfNames in the export directory points to an invalid address: 0x%x", exportDir.AddressOfNames)
 	}
 
 	maxFailedEntries = 10
@@ -222,11 +223,11 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
 		if symbolCounts[symbolAddress] > 10 {
-			fmt.Printf("Export directory contains more than 10 repeated ordinal entries: Address:0x%x", symbolAddress)
+			log.Printf("Export directory contains more than 10 repeated ordinal entries: Address:0x%x", symbolAddress)
 			break
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			fmt.Printf("Export directory contains more than %d ordinal entries. Assuming corrupt.", maxExportedSymbols)
+			log.Printf("Export directory contains more than %d ordinal entries. Assuming corrupt.", maxExportedSymbols)
 			break
 		}
 		newExport := ExportFunction{

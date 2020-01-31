@@ -295,7 +295,14 @@ func (pe *File) getData(rva, length uint32) ([]byte, error) {
 // architecture's page size, then FileAlignment must match SectionAlignment.
 func (pe *File) adjustFileAlignment(va uint32) uint32 {
 
-	fileAlignment := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
+	var fileAlignment uint32
+	switch pe.Is64 {
+	case true:
+		fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).FileAlignment
+	case false:
+		fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
+	}
+
 	if fileAlignment > FileAlignmentHardcodedValue && fileAlignment%2 != 0 {
 		pe.Anomalies = append(pe.Anomalies, ErrInvalidFileAlignment)
 	}
@@ -313,8 +320,17 @@ func (pe *File) adjustFileAlignment(va uint32) uint32 {
 // It must be greater than or equal to FileAlignment. The default is the
 // page size for the architecture.
 func (pe *File) adjustSectionAlignment(va uint32) uint32 {
-	sectionAlignment := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
-	fileAlignment :=  pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
+	var fileAlignment, sectionAlignment uint32
+
+	switch pe.Is64 {
+	case true:
+		fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).FileAlignment
+		sectionAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).FileAlignment
+	case false:
+		fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
+		sectionAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
+	}
+
 	if fileAlignment < FileAlignmentHardcodedValue &&
 		fileAlignment != sectionAlignment {
 		pe.Anomalies = append(pe.Anomalies, ErrInvalidSectionAlignment)
