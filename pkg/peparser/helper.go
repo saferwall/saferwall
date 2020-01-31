@@ -295,7 +295,7 @@ func (pe *File) getData(rva, length uint32) ([]byte, error) {
 // architecture's page size, then FileAlignment must match SectionAlignment.
 func (pe *File) adjustFileAlignment(va uint32) uint32 {
 
-	fileAlignment := pe.OptionalHeader.FileAlignment
+	fileAlignment := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
 	if fileAlignment > FileAlignmentHardcodedValue && fileAlignment%2 != 0 {
 		pe.Anomalies = append(pe.Anomalies, ErrInvalidFileAlignment)
 	}
@@ -313,8 +313,8 @@ func (pe *File) adjustFileAlignment(va uint32) uint32 {
 // It must be greater than or equal to FileAlignment. The default is the
 // page size for the architecture.
 func (pe *File) adjustSectionAlignment(va uint32) uint32 {
-	sectionAlignment := pe.OptionalHeader.SectionAlignment
-	fileAlignment := pe.OptionalHeader.FileAlignment
+	sectionAlignment := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
+	fileAlignment :=  pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
 	if fileAlignment < FileAlignmentHardcodedValue &&
 		fileAlignment != sectionAlignment {
 		pe.Anomalies = append(pe.Anomalies, ErrInvalidSectionAlignment)
@@ -375,9 +375,9 @@ func (pe *File) PrettyDllCharacteristics() []string {
 	var characteristics uint16
 
 	if pe.Is64 {
-		characteristics = pe.OptionalHeader64.DllCharacteristics
+		characteristics =  pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).DllCharacteristics
 	} else {
-		characteristics = pe.OptionalHeader.DllCharacteristics
+		characteristics =  pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DllCharacteristics
 	}
 
 	imgDllCharacteristics := map[uint16]string{

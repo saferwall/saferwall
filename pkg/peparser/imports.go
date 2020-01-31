@@ -398,8 +398,9 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 			}
 		}
 
-		imp.Address = FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
-
+		imp.Address = FirstThunk +
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase + 
+			(idx * importOffset)
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = iat[idx].AddressOfData
 		}
@@ -506,7 +507,9 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 
 		// Todo: uint64/uin32 mismatch
 		// Shoud be: FirstThunk + pe.OptionalHeader64.ImageBase + (idx * importOffset)
-		imp.Address = FirstThunk + pe.OptionalHeader.ImageBase + (idx * importOffset)
+		imp.Address = FirstThunk +
+		 pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase +
+		 (idx * importOffset)
 
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = uint32(iat[idx].AddressOfData)

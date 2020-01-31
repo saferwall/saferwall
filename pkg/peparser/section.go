@@ -5,8 +5,11 @@
 package pe
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 const (
@@ -220,6 +223,64 @@ type ImageSectionHeader struct {
 
 	// The flags that describe the characteristics of the section.
 	Characteristics uint32
+}
+
+func (pe *File) parseSectionHeader() (err error) {
+
+	// get the first section offset.
+	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	offset := optionalHeaderOffset + uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
+
+	sectionHeader := ImageSectionHeader{}
+	sectionCount := pe.NtHeader.FileHeader.NumberOfSections
+	sectionSize := uint32(binary.Size(sectionHeader))
+	for i := uint16(0); i < sectionCount; i++ {
+		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
+		err = binary.Read(buf, binary.LittleEndian, &sectionHeader)
+		if err != nil {
+			return err
+		}
+
+		pe.Sections = append(pe.Sections, sectionHeader)
+		offset += sectionSize
+	}
+
+	// Sort the sections by their VirtualAddress. This will allow to check
+	// for potentially overlapping sections in badly constructed PEs.
+	sort.Sort(byVirtualAddress(pe.Sections))
+
+	// There could be a problem if there are no raw data sections
+	// greater than 0
+	// fc91013eb72529da005110a3403541b6 example
+	// Should this throw an exception in the minimum header offset
+	// can't be found?
+
+	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
+		offset = offset + (sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections))
+	}
+
+	var rawDataPointers []uint32
+	for _, s := range pe.Sections {
+		if s.PointerToRawData > 0 {
+			rawDataPointers = append(rawDataPointers,
+				pe.adjustFileAlignment(s.PointerToRawData))
+		}
+	}
+
+	var lowestSectionOffset uint32
+	if len(rawDataPointers) > 0 {
+		lowestSectionOffset = Min(rawDataPointers)
+	} else {
+		lowestSectionOffset = 0
+	}
+
+	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
+		pe.Header = pe.data[:offset]
+	} else {
+		pe.Header = pe.data[:lowestSectionOffset]
+	}
+
+	return nil
 }
 
 // NameString returns string represntation of a ImageSectionHeader.Name field.

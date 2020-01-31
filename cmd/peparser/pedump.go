@@ -21,7 +21,6 @@ var (
 	dosHeader      bool
 	richHeader      bool
 	ntHeader     bool
-	optionalHeader bool
 	directories    bool
 	sections       bool
 )
@@ -69,15 +68,10 @@ func parsePE(filename string, cmd *cobra.Command) {
 
 	wantNtHeader, _ := cmd.Flags().GetBool("ntheader")
 	if wantNtHeader {
-		fileHeader, _ := json.Marshal(pe.NtHeader)
-		fmt.Println(prettyPrint(fileHeader))
+		ntHeader, _ := json.Marshal(pe.NtHeader)
+		fmt.Println(prettyPrint(ntHeader))
 	}
 
-	wantOptionalHeader, _ := cmd.Flags().GetBool("optionalheader")
-	if wantOptionalHeader {
-		optionalHeader, _ := json.Marshal(pe.OptionalHeader)
-		fmt.Println(prettyPrint(optionalHeader))
-	}
 }
 
 func parse(cmd *cobra.Command, args []string) {
@@ -141,7 +135,6 @@ func main() {
 	parseCmd.Flags().BoolVarP(&dosHeader, "dosheader", "", false, "Dump DOS header")
 	parseCmd.Flags().BoolVarP(&richHeader, "rich", "", false, "Dump Rich header")
 	parseCmd.Flags().BoolVarP(&ntHeader, "ntheader", "", false, "Dump NT header")
-	parseCmd.Flags().BoolVarP(&optionalHeader, "optionalheader", "", false, "Dump optional header")
 	parseCmd.Flags().BoolVarP(&directories, "directories", "", false, "Dump data directories")
 	parseCmd.Flags().BoolVarP(&sections, "sections", "", false, "Dump section headers")
 

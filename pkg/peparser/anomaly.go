@@ -122,65 +122,74 @@ func (pe *File) GetAnomalies() error {
 	// SizeOfOptionalHeader can be bigger than the file
 	// (the section table will be in virtual space, full of zeroes), but can't be negative.
 	// Do some check here.
+	oh32 := ImageOptionalHeader32{}
+	oh64 := ImageOptionalHeader64{}
 
 	// SizeOfOptionalHeader standard value is 0xE0 for PE32.
-	if !pe.Is64 &&
-		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader)) {
+	if pe.Is32 &&
+		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(oh32)) {
 		pe.Anomalies = append(pe.Anomalies, AnoUncommonSizeOfOptionalHeader32)
 	}
 
 	// SizeOfOptionalHeader standard value is 0xF0 for PE32+.
 	if pe.Is64 &&
-		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(pe.OptionalHeader64)) {
+		pe.NtHeader.FileHeader.SizeOfOptionalHeader > uint16(binary.Size(oh64)) {
 		pe.Anomalies = append(pe.Anomalies, AnoUncommonSizeOfOptionalHeader64)
 	}
 
 	// ***************** Anomalies in Optional header *********************
 	// Under Windows 8, AddressOfEntryPoint is not allowed to be smaller than
 	// SizeOfHeaders, except if it's null.
-	if pe.OptionalHeader.AddressOfEntryPoint != 0 &&
-		pe.OptionalHeader.AddressOfEntryPoint < pe.OptionalHeader.SizeOfHeaders {
+	switch pe.Is64 {
+	case true:
+		oh64 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64)
+	case false:
+		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)		
+	}
+
+	// Use oh for fields which are common for both structures.
+	oh := oh32
+	
+	if oh.AddressOfEntryPoint != 0 && oh.AddressOfEntryPoint < oh.SizeOfHeaders {
 		pe.Anomalies = append(pe.Anomalies, AnoAddressOfEPLessSizeOfHeaders)
 	}
 
 	// AddressOfEntryPoint can be null in DLLs: in this case,
 	// DllMain is just not called. can be null
-	if pe.OptionalHeader.AddressOfEntryPoint == 0 {
+	if oh.AddressOfEntryPoint == 0 {
 		pe.Anomalies = append(pe.Anomalies, AnoAddressOfEntryPointNull)
 	}
 
 	// ImageBase can be null, under XP.
 	// In this case, the binary will be relocated to 10000h
-	if (pe.Is64 && pe.OptionalHeader64.ImageBase == 0) ||
-		(!pe.Is64 && pe.OptionalHeader.ImageBase == 0) {
+	if (pe.Is64 && oh64.ImageBase == 0) ||
+		(pe.Is32 && oh32.ImageBase == 0) {
 		pe.Anomalies = append(pe.Anomalies, AnoImageBaseNull)
 	}
 
 	// For DLLs, MajorSubsystemVersion is ignored until Windows 8. It can have
 	// any value. Under Windows 8, it needs a standard value (3.10 < 6.30).
-	if pe.OptionalHeader.MajorSubsystemVersion < 3 ||
-		pe.OptionalHeader.MajorSubsystemVersion > 6 {
+	if oh.MajorSubsystemVersion < 3 || oh.MajorSubsystemVersion > 6 {
 		pe.Anomalies = append(pe.Anomalies, AnoMajorSubsystemVersion)
 	}
 
 	// Win32VersionValue officially defined as `reserved` and should be null
 	// if non null, it overrides MajorVersion/MinorVersion/BuildNumber/PlatformId
 	// OperatingSystem Versions values located in the PEB, after loading.
-	if pe.OptionalHeader.Win32VersionValue != 0 {
+	if oh.Win32VersionValue != 0 {
 		pe.Anomalies = append(pe.Anomalies, AnonWin32VersionValue)
 	}
 
 	// Checksums are required for kernel-mode drivers and some system DLLs.
 	// Otherwise, this field can be 0.
-	if pe.Checksum() != pe.OptionalHeader.CheckSum &&
-		pe.OptionalHeader.CheckSum != 0 {
+	if pe.Checksum() != oh.CheckSum && oh.CheckSum != 0 {
 		pe.Anomalies = append(pe.Anomalies, AnoInvalidPEChecksum)
 	}
 
 	// This field contains the number of IMAGE_DATA_DIRECTORY entries.
 	//  This field has been 16 since the earliest releases of Windows NT.
-	if (pe.Is64 && pe.OptionalHeader64.NumberOfRvaAndSizes == 0xA) ||
-		(!pe.Is64 && pe.OptionalHeader.NumberOfRvaAndSizes == 0xA) {
+	if (pe.Is64 && oh64.NumberOfRvaAndSizes == 0xA) ||
+		(pe.Is32 && oh32.NumberOfRvaAndSizes == 0xA) {
 		pe.Anomalies = append(pe.Anomalies, AnoNumberOfRvaAndSizes)
 	}
 

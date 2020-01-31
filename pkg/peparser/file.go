@@ -5,11 +5,8 @@
 package pe
 
 import (
-	"bytes"
-	"encoding/binary"
 	"io"
 	"os"
-	"sort"
 
 	mmap "github.com/edsrzf/mmap-go"
 )
@@ -18,8 +15,6 @@ import (
 type File struct {
 	DosHeader        ImageDosHeader
 	NtHeader         ImageNtHeader
-	OptionalHeader   OptionalHeader32
-	OptionalHeader64 OptionalHeader64
 	Sections         []ImageSectionHeader
 	Imports          []Import
 	Exports          []ExportFunction
@@ -40,6 +35,7 @@ type File struct {
 	data      mmap.MMap
 	closer    io.Closer
 	Is64      bool
+	Is32      bool
 	Anomalies []string
 	size      uint32
 }
@@ -87,11 +83,6 @@ func (pe *File) Parse() error {
 		return err
 	}
 
-	// Parse the Optional Header.
-	err = pe.parseOptionalHeader()
-	if err != nil {
-		return err
-	}
 
 	// Parse the Section Header.
 	err = pe.parseSectionHeader()
@@ -108,252 +99,152 @@ func (pe *File) Parse() error {
 	return nil
 }
 
-func (pe *File) parseOptionalHeader() (err error) {
-	optHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-
-	// We read it as OptionHeader32 then we fix up later.
-	size := uint32(binary.Size(pe.OptionalHeader))
-	buf := bytes.NewReader(pe.data[optHeaderOffset : optHeaderOffset+size])
-	err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader)
-	if err != nil {
-		return err
-	}
-
-	// Probes for PE32/PE32+ optional header magic.
-	if pe.OptionalHeader.Magic != ImageNtOptionalHeader32Magic &&
-		pe.OptionalHeader.Magic != ImageNtOptionalHeader64Magic {
-		return ErrImageNtOptionalHeaderMagicNotFound
-	}
-
-	// Are we dealing with a PE64 optional header.
-	if pe.OptionalHeader.Magic == ImageNtOptionalHeader64Magic {
-		size = uint32(binary.Size(pe.OptionalHeader64))
-		buf = bytes.NewReader(pe.data[optHeaderOffset : optHeaderOffset+size])
-		err = binary.Read(buf, binary.LittleEndian, &pe.OptionalHeader64)
-		if err != nil {
-			return err
-		}
-		pe.Is64 = true
-	}
-
-	// ImageBase should be multiple of 10000h.
-	if pe.Is64 && pe.OptionalHeader64.ImageBase%0x10000 != 0 {
-		return ErrImageBaseNotAligned
-	}
-	if !pe.Is64 && pe.OptionalHeader.ImageBase%0x10000 != 0 {
-		return ErrImageBaseNotAligned
-	}
-
-	// ImageBase can be any value as long as ImageBase + SizeOfImage <
-	// 80000000h for PE32.
-	if !pe.Is64 &&
-		pe.OptionalHeader.ImageBase+pe.OptionalHeader.SizeOfImage >= 0x80000000 {
-		return ErrImageBaseOverflow
-	}
-
-	// SizeOfImage must be a multiple of the section alignment.
-	if pe.OptionalHeader.SizeOfImage%pe.OptionalHeader.SectionAlignment != 0 {
-		return ErrInvalidSizeOfImage
-	}
-
-	return nil
-}
-
-func (pe *File) parseSectionHeader() (err error) {
-
-	// get the first section offset.
-	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
-	offset := optionalHeaderOffset + uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
-
-	sectionHeader := ImageSectionHeader{}
-	sectionCount := pe.NtHeader.FileHeader.NumberOfSections
-	sectionSize := uint32(binary.Size(sectionHeader))
-	for i := uint16(0); i < sectionCount; i++ {
-		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
-		err = binary.Read(buf, binary.LittleEndian, &sectionHeader)
-		if err != nil {
-			return err
-		}
-
-		pe.Sections = append(pe.Sections, sectionHeader)
-		offset += sectionSize
-	}
-
-	// Sort the sections by their VirtualAddress. This will allow to check
-	// for potentially overlapping sections in badly constructed PEs.
-	sort.Sort(byVirtualAddress(pe.Sections))
-
-	// There could be a problem if there are no raw data sections
-	// greater than 0
-	// fc91013eb72529da005110a3403541b6 example
-	// Should this throw an exception in the minimum header offset
-	// can't be found?
-
-	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
-		offset = offset + (sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections))
-	}
-
-	var rawDataPointers []uint32
-	for _, s := range pe.Sections {
-		if s.PointerToRawData > 0 {
-			rawDataPointers = append(rawDataPointers,
-				pe.adjustFileAlignment(s.PointerToRawData))
-		}
-	}
-
-	var lowestSectionOffset uint32
-	if len(rawDataPointers) > 0 {
-		lowestSectionOffset = Min(rawDataPointers)
-	} else {
-		lowestSectionOffset = 0
-	}
-
-	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
-		pe.Header = pe.data[:offset]
-	} else {
-		pe.Header = pe.data[:lowestSectionOffset]
-	}
-
-	return nil
-}
-
 func (pe *File) parseDataDirectories() (err error) {
+	oh32 := ImageOptionalHeader32{}
+	oh64 := ImageOptionalHeader64{}
+	switch pe.Is64 {
+	case true:
+		oh64 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64)
+	case false:
+		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)		
+	}
+
 	if pe.Is64 {
-		importDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryImport]
-		if importDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+		importDirEntry := oh64.DataDirectory[ImageDirectoryEntryImport]
+		if importDirEntry.VirtualAddress != 0 {
+			err = pe.parseImportDirectory(importDirEntry.VirtualAddress, importDirEntry.Size)
 		}
 
-		exportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryExport]
-		if exportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		exportDirEntry := oh64.DataDirectory[ImageDirectoryEntryExport]
+		if exportDirEntry.VirtualAddress != 0 {
+			err = pe.parseExportDirectory(exportDirEntry.VirtualAddress, exportDirEntry.Size)
 		}
 
-		debugDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryDebug]
-		if debugDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
+		debugDirEntry := oh64.DataDirectory[ImageDirectoryEntryDebug]
+		if debugDirEntry.VirtualAddress != 0 {
+			err = pe.parseDebugDirectory(debugDirEntry.VirtualAddress, debugDirEntry.Size)
 		}
 
-		relocDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryBaseReloc]
-		if relocDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
+		relocDirEntry := oh64.DataDirectory[ImageDirectoryEntryBaseReloc]
+		if relocDirEntry.VirtualAddress != 0 {
+			err = pe.parseRelocDirectory(relocDirEntry.VirtualAddress, relocDirEntry.Size)
 		}
 
-		rsrcDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryResource]
-		if relocDirectoryEntry.VirtualAddress != 0 {
-			pe.Resources, err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size, 0, 0)
+		rsrcDirEntry := oh64.DataDirectory[ImageDirectoryEntryResource]
+		if relocDirEntry.VirtualAddress != 0 {
+			pe.Resources, err = pe.parseResourceDirectory(rsrcDirEntry.VirtualAddress, rsrcDirEntry.Size, 0, 0)
 		}
 
-		tlsDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryTLS]
-		if tlsDirectoryEntry.VirtualAddress != 0 {
-			pe.TLS, err = pe.parseTLSDirectory(tlsDirectoryEntry.VirtualAddress, tlsDirectoryEntry.Size)
+		tlsDirEntry := oh64.DataDirectory[ImageDirectoryEntryTLS]
+		if tlsDirEntry.VirtualAddress != 0 {
+			pe.TLS, err = pe.parseTLSDirectory(tlsDirEntry.VirtualAddress, tlsDirEntry.Size)
 		}
 
-		loadConfigDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryLoadConfig]
-		if tlsDirectoryEntry.VirtualAddress != 0 {
-			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirectoryEntry.VirtualAddress, loadConfigDirectoryEntry.Size)
+		loadConfigDirEntry := oh64.DataDirectory[ImageDirectoryEntryLoadConfig]
+		if tlsDirEntry.VirtualAddress != 0 {
+			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirEntry.VirtualAddress, loadConfigDirEntry.Size)
 		}
 
-		exceptionDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryException]
-		if exceptionDirectoryEntry.VirtualAddress != 0 {
-			pe.Exceptions, err = pe.parseExceptionDirectory(exceptionDirectoryEntry.VirtualAddress, exceptionDirectoryEntry.Size)
+		exceptionDirEntry := oh64.DataDirectory[ImageDirectoryEntryException]
+		if exceptionDirEntry.VirtualAddress != 0 {
+			pe.Exceptions, err = pe.parseExceptionDirectory(exceptionDirEntry.VirtualAddress, exceptionDirEntry.Size)
 		}
 
-		certificateDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryCertificate]
-		if certificateDirectoryEntry.VirtualAddress != 0 {
-			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
+		certificateDirEntry := oh64.DataDirectory[ImageDirectoryEntryCertificate]
+		if certificateDirEntry.VirtualAddress != 0 {
+			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirEntry.VirtualAddress, certificateDirEntry.Size)
 		}
 
-		delayImportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryDelayImport]
-		if delayImportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseDelayImportDirectory(delayImportDirectoryEntry.VirtualAddress, delayImportDirectoryEntry.Size)
+		delayImportDirEntry := oh64.DataDirectory[ImageDirectoryEntryDelayImport]
+		if delayImportDirEntry.VirtualAddress != 0 {
+			err = pe.parseDelayImportDirectory(delayImportDirEntry.VirtualAddress, delayImportDirEntry.Size)
 		}
 
-		boundImportDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryBoundImport]
-		if boundImportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseBoundImportDirectory(boundImportDirectoryEntry.VirtualAddress, boundImportDirectoryEntry.Size)
+		boundImportDirEntry := oh64.DataDirectory[ImageDirectoryEntryBoundImport]
+		if boundImportDirEntry.VirtualAddress != 0 {
+			err = pe.parseBoundImportDirectory(boundImportDirEntry.VirtualAddress, boundImportDirEntry.Size)
 		}
 
-		globalPtrDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryGlobalPtr]
-		if globalPtrDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
+		globalPtrDirEntry := oh64.DataDirectory[ImageDirectoryEntryGlobalPtr]
+		if globalPtrDirEntry.VirtualAddress != 0 {
+			err = pe.parseGlobalPtrDirectory(globalPtrDirEntry.VirtualAddress, globalPtrDirEntry.Size)
 		}
 
-		iatDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryIAT]
-		if iatDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
+		iatDirEntry := oh64.DataDirectory[ImageDirectoryEntryIAT]
+		if iatDirEntry.VirtualAddress != 0 {
+			err = pe.parseIATDirectory(iatDirEntry.VirtualAddress, iatDirEntry.Size)
 		}
 
-		clrHeaderDirectoryEntry := pe.OptionalHeader64.DataDirectory[ImageDirectoryEntryCLR]
-		if clrHeaderDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseCLRHeaderDirectory(clrHeaderDirectoryEntry.VirtualAddress, clrHeaderDirectoryEntry.Size)
+		clrHeaderDirEntry := oh64.DataDirectory[ImageDirectoryEntryCLR]
+		if clrHeaderDirEntry.VirtualAddress != 0 {
+			err = pe.parseCLRHeaderDirectory(clrHeaderDirEntry.VirtualAddress, clrHeaderDirEntry.Size)
 		}
 	}
 
-	if !pe.Is64 {
-		importDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryImport]
-		if importDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseImportDirectory(importDirectoryEntry.VirtualAddress, importDirectoryEntry.Size)
+	if pe.Is32 {
+		importDirEntry := oh32.DataDirectory[ImageDirectoryEntryImport]
+		if importDirEntry.VirtualAddress != 0 {
+			err = pe.parseImportDirectory(importDirEntry.VirtualAddress, importDirEntry.Size)
 		}
 
-		exportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryExport]
-		if exportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseExportDirectory(exportDirectoryEntry.VirtualAddress, exportDirectoryEntry.Size)
+		exportDirEntry := oh32.DataDirectory[ImageDirectoryEntryExport]
+		if exportDirEntry.VirtualAddress != 0 {
+			err = pe.parseExportDirectory(exportDirEntry.VirtualAddress, exportDirEntry.Size)
 		}
 
-		debugDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryDebug]
-		if debugDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseDebugDirectory(debugDirectoryEntry.VirtualAddress, debugDirectoryEntry.Size)
+		debugDirEntry := oh32.DataDirectory[ImageDirectoryEntryDebug]
+		if debugDirEntry.VirtualAddress != 0 {
+			err = pe.parseDebugDirectory(debugDirEntry.VirtualAddress, debugDirEntry.Size)
 		}
 
-		relocDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryBaseReloc]
-		if relocDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseRelocDirectory(relocDirectoryEntry.VirtualAddress, relocDirectoryEntry.Size)
+		relocDirEntry := oh32.DataDirectory[ImageDirectoryEntryBaseReloc]
+		if relocDirEntry.VirtualAddress != 0 {
+			err = pe.parseRelocDirectory(relocDirEntry.VirtualAddress, relocDirEntry.Size)
 		}
 
-		rsrcDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryResource]
-		if rsrcDirectoryEntry.VirtualAddress != 0 {
-			pe.Resources, err = pe.parseResourceDirectory(rsrcDirectoryEntry.VirtualAddress, rsrcDirectoryEntry.Size, 0, 0)
+		rsrcDirEntry := oh32.DataDirectory[ImageDirectoryEntryResource]
+		if rsrcDirEntry.VirtualAddress != 0 {
+			pe.Resources, err = pe.parseResourceDirectory(rsrcDirEntry.VirtualAddress, rsrcDirEntry.Size, 0, 0)
 		}
 
-		tlsDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryTLS]
-		if tlsDirectoryEntry.VirtualAddress != 0 {
-			pe.TLS, err = pe.parseTLSDirectory(tlsDirectoryEntry.VirtualAddress, tlsDirectoryEntry.Size)
+		tlsDirEntry := oh32.DataDirectory[ImageDirectoryEntryTLS]
+		if tlsDirEntry.VirtualAddress != 0 {
+			pe.TLS, err = pe.parseTLSDirectory(tlsDirEntry.VirtualAddress, tlsDirEntry.Size)
 		}
 
-		loadConfigDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryLoadConfig]
-		if tlsDirectoryEntry.VirtualAddress != 0 {
-			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirectoryEntry.VirtualAddress, loadConfigDirectoryEntry.Size)
+		loadConfigDirEntry := oh32.DataDirectory[ImageDirectoryEntryLoadConfig]
+		if tlsDirEntry.VirtualAddress != 0 {
+			pe.LoadConfig, err = pe.parseLoadConfigDirectory(loadConfigDirEntry.VirtualAddress, loadConfigDirEntry.Size)
 		}
 
-		certificateDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCertificate]
-		if certificateDirectoryEntry.VirtualAddress != 0 {
-			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirectoryEntry.VirtualAddress, certificateDirectoryEntry.Size)
+		certificateDirEntry := oh32.DataDirectory[ImageDirectoryEntryCertificate]
+		if certificateDirEntry.VirtualAddress != 0 {
+			pe.Certificates, err = pe.parseSecurityDirectory(certificateDirEntry.VirtualAddress, certificateDirEntry.Size)
 		}
 
-		delayImportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryDelayImport]
-		if delayImportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseDelayImportDirectory(delayImportDirectoryEntry.VirtualAddress, delayImportDirectoryEntry.Size)
+		delayImportDirEntry := oh32.DataDirectory[ImageDirectoryEntryDelayImport]
+		if delayImportDirEntry.VirtualAddress != 0 {
+			err = pe.parseDelayImportDirectory(delayImportDirEntry.VirtualAddress, delayImportDirEntry.Size)
 		}
 
-		boundImportDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryBoundImport]
-		if boundImportDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseBoundImportDirectory(boundImportDirectoryEntry.VirtualAddress, boundImportDirectoryEntry.Size)
+		boundImportDirEntry := oh32.DataDirectory[ImageDirectoryEntryBoundImport]
+		if boundImportDirEntry.VirtualAddress != 0 {
+			err = pe.parseBoundImportDirectory(boundImportDirEntry.VirtualAddress, boundImportDirEntry.Size)
 		}
 
-		globalPtrDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryGlobalPtr]
-		if globalPtrDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseGlobalPtrDirectory(globalPtrDirectoryEntry.VirtualAddress, globalPtrDirectoryEntry.Size)
+		globalPtrDirEntry := oh32.DataDirectory[ImageDirectoryEntryGlobalPtr]
+		if globalPtrDirEntry.VirtualAddress != 0 {
+			err = pe.parseGlobalPtrDirectory(globalPtrDirEntry.VirtualAddress, globalPtrDirEntry.Size)
 		}
 
-		iatDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryIAT]
-		if iatDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseIATDirectory(iatDirectoryEntry.VirtualAddress, iatDirectoryEntry.Size)
+		iatDirEntry := oh32.DataDirectory[ImageDirectoryEntryIAT]
+		if iatDirEntry.VirtualAddress != 0 {
+			err = pe.parseIATDirectory(iatDirEntry.VirtualAddress, iatDirEntry.Size)
 		}
 
-		clrHeaderDirectoryEntry := pe.OptionalHeader.DataDirectory[ImageDirectoryEntryCLR]
-		if clrHeaderDirectoryEntry.VirtualAddress != 0 {
-			err = pe.parseCLRHeaderDirectory(clrHeaderDirectoryEntry.VirtualAddress, clrHeaderDirectoryEntry.Size)
+		clrHeaderDirEntry := oh32.DataDirectory[ImageDirectoryEntryCLR]
+		if clrHeaderDirEntry.VirtualAddress != 0 {
+			err = pe.parseCLRHeaderDirectory(clrHeaderDirEntry.VirtualAddress, clrHeaderDirEntry.Size)
 		}
 	}
 
