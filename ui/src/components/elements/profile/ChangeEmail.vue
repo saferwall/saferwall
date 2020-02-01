@@ -2,55 +2,107 @@
   <div class="page">
     <div
       class="form-group"
-      :class="{ 'form-group--error': $v.oldEmail.$error }"
+      :class="{ 'form-group--error': $v.email.$error }"
     >
-      <label class="form__label">Old Email</label>
-      <input class="input" v-model.trim="$v.oldEmail.$model" type="text" />
-      <div class="error" v-if="!$v.oldEmail.required && $v.oldEmail.$dirty">
-        Field required.
-      </div>
-      <div class="error" v-if="!$v.oldEmail.email && $v.oldEmail.$dirty">
-        Invalid email format.
-      </div>
-    </div>
-    <div class="form-group" :class="{ 'form-group--error': $v.email.$error }">
-      <label class="form__label">New Email</label>
+      <label class="form__label">Email</label>
       <input class="input" v-model.trim="$v.email.$model" type="text" />
       <div class="error" v-if="!$v.email.required && $v.email.$dirty">
-        Field is required.
+        Field required.
       </div>
       <div class="error" v-if="!$v.email.email && $v.email.$dirty">
         Invalid email format.
       </div>
-      <div class="error" v-if="!$v.email.notSame && $v.email.$dirty">
-        Same Email!
+    </div>
+
+    <div
+      class="form-group"
+      :class="{ 'form-group--error': $v.password.$error }"
+    >
+      <label class="form__label">Password</label>
+      <input
+        class="input"
+        v-model.trim="$v.password.$model"
+        type="password"
+      />
+      <div
+        class="error"
+        v-if="!$v.password.required && $v.password.$dirty"
+      >
+        Old Password is required.
+      </div>
+      <div
+        class="error"
+        v-if="!$v.password.minLength && $v.password.$dirty"
+      >
+        Password must have at least
+        {{ $v.password.$params.minLength.min }} letters.
       </div>
     </div>
-    <button class="button is-primary is-outlined" :disabled="$v.$invalid">
+
+    <button
+      class="button is-primary is-outlined"
+      :disabled="$v.$invalid"
+      @click="submit"
+    >
       Submit
     </button>
   </div>
 </template>
 
 <script>
-import { required, email, sameAs, not } from "vuelidate/lib/validators"
+import { required, email, minLength } from "vuelidate/lib/validators"
 
 export default {
   data() {
     return {
-      oldEmail: "",
       email: "",
+      password: "",
     }
   },
-  validations: {
-    oldEmail: {
-      required,
-      email,
+  methods: {
+    submit: function() {
+      if (this.$v.$invalid) return
+
+      this.$http
+        .put(
+          this.$api_endpoints.USERS +
+            this.$store.getters.getUsername +
+            "/email",
+          {
+            email: this.email,
+            password: this.password,
+          },
+        )
+        .then(() => {
+          this.$awn.success("Email Changed Successfully")
+          this.trackSuccess()
+          this.clear()
+        })
+        .catch(() => {
+          this.$awn.alert("A problem occured, try again")
+        })
     },
+    trackSuccess() {
+      this.$gtag.event("Email_change", {
+        event_category: "Information_Change",
+        event_label: "Email Changed",
+        value: 1,
+      })
+    },
+    clear() {
+      this.email = ""
+      this.password = ""
+      this.$v.$reset()
+    },
+  },
+  validations: {
     email: {
       required,
       email,
-      notSame: not(sameAs("oldEmail")),
+    },
+    password: {
+      required,
+      minLength: minLength(8),
     },
   },
 }
