@@ -36,6 +36,9 @@ func New() *echo.Echo {
 	// To update the password (if user knows is old password and new password)
 	e.PUT("/v1/users/:username/password/", auth.UpdatePassword, m.RequireLogin, m.RequireJSON)
 
+	// To update the email (if user knows its password)
+	e.PUT("/v1/users/:username/email/", auth.UpdateEmail, m.RequireLogin, m.RequireJSON)
+
 	// handle /files endpoint.
 	e.GET("/v1/files/", file.GetFiles, m.RequireLogin, auth.IsAdmin)
 	e.POST("/v1/files/", file.PostFiles, m.RequireLogin)

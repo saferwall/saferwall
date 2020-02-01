@@ -465,3 +465,103 @@ func UpdatePassword(c echo.Context) error {
 		"verbose_msg": "ok",
 	})
 }
+
+
+
+// UpdateEmail handle email update.
+func UpdateEmail(c echo.Context) error {
+
+	// Check user
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
+	// get path param
+	username := c.Param("username")
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to update someone else's email"})
+	}
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.EmailUpdateSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	var body map[string]interface{}
+	err = json.Unmarshal(b, &body)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	password := body["password"].(string)
+	newEmail := body["email"].(string)
+	usr, err := user.GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Username does not exist"})
+	}
+
+	// Check password
+	if !comparePasswords(usr.Password, []byte(password)) {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"verbose_msg": "Password is incorrect"})
+	}
+
+	// Check new email != current email
+	if newEmail == usr.Email  {
+		return c.JSON(http.StatusOK, map[string]string{
+			"verbose_msg": "New email is the same as current email, nothing to change",
+		})
+	}
+
+	// check if email already exists in DB.
+	EmailExist, _ := user.CheckEmailExist(newEmail)
+	if EmailExist {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Email already exists"})
+	}
+
+	usr.Email = newEmail
+	usr.Confirmed = false
+	usr.Save()
+
+	// Send confirmation email
+	token, err := usr.GenerateEmailConfirmationToken()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": "Internal server error !"})
+	}
+
+	// Generate the email confirmation url
+	r := c.Request()
+	baseURL := c.Scheme() + "://" + r.Host
+	link := baseURL + "/v1/auth/confirm/" + "?token=" + token
+	go email.Send(usr.Username, link, usr.Email, "confirm")
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}

@@ -72,6 +72,9 @@ var (
 	// PasswordUpdateSchema represent an update password.
 	PasswordUpdateSchema *gojsonschema.Schema
 
+	// EmailUpdateSchema represent an update email.
+	EmailUpdateSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -211,6 +214,13 @@ func loadSchemas() {
 		log.Fatalln("Error while loading password update schema: ", err)
 	}
 
+	jsonPath = path.Join(dir, "app", "schema", "update-email.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	EmailUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading email update schema: ", err)
+	}
 
 	log.Infoln("Schemas were loaded")
 }
