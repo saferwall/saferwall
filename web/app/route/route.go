@@ -34,7 +34,7 @@ func New() *echo.Echo {
 	e.POST("/v1/users/password/", auth.NewPassword, m.RequireToken, m.RequireJSON)
 
 	// To update the password (if user knows is old password and new password)
-	// e.PUT("/v1/users/:username/password/", auth.UpdatePassword, m.RequireToken, m.RequireJSON)
+	e.PUT("/v1/users/:username/password/", auth.UpdatePassword, m.RequireToken, m.RequireJSON)
 
 	// handle /files endpoint.
 	e.GET("/v1/files/", file.GetFiles, m.RequireLogin, auth.IsAdmin)

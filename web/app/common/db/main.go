@@ -30,8 +30,6 @@ var (
 // Connect to couchbase server
 func Connect() {
 
-	log.Infoln("v0.0.2")
-
 	/* setup logger */
 	// gocb.SetLogger(gocb.DefaultStdioLogger())
 
@@ -49,7 +47,7 @@ func Connect() {
 	server := viper.GetString("db.server")
 	cluster, err := gocb.Connect(server, opts)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	// get a bucket reference over users

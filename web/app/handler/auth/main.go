@@ -332,12 +332,78 @@ func ReconfirmAccount(c echo.Context) error {
 	})
 }
 
-
 // NewPassword handle password reset.
 func NewPassword(c echo.Context) error {
 
 	// get path param
 	token := c.QueryParam("token")
+
+	if token == "" {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "You provided an empty token!"})
+	}
+
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(*middleware.CustomClaims)
+	tokenType := claims.Purpose
+	if tokenType != "reset-password" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You provided an invalid token type!"})
+	}
+
+	usr, err := user.GetByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Username does not exist !"})
+	}
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.ResetPasswordSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Bind it to our User instance.
+	var jsonPassword map[string]interface{}
+	err = json.Unmarshal(b, &jsonPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	newPassword := jsonPassword["password"].(string)
+	usr.UpdatePassword(newPassword)
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok",
+	})
+}
+
+// UpdatePassword handle password reset.
+func UpdatePassword(c echo.Context) error {
+
+	// get path param
+	token := c.QueryParam("username")
 
 	if token == "" {
 		return c.JSON(http.StatusNotFound, map[string]string{

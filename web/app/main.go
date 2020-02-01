@@ -66,6 +66,9 @@ var (
 	// FileActionSchema represent a change password.
 	FileActionSchema *gojsonschema.Schema
 
+	// UserUpdateSchema represent an update user.
+	UserUpdateSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -187,6 +190,14 @@ func loadSchemas() {
 	FileActionSchema, err = gojsonschema.NewSchema(jsonLoader)
 	if err != nil {
 		log.Fatalln("Error while loading file actions schema: ", err)
+	}
+
+	jsonPath = path.Join(dir, "app", "schema", "update-user.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	UserUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading user update schema: ", err)
 	}
 
 	log.Infoln("Schemas were loaded")

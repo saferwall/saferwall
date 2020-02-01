@@ -24,6 +24,8 @@ type User struct {
 	Username    string     `json:"username,omitempty"`
 	Password    string     `json:"password,omitempty"`
 	Name   		string     `json:"name,omitempty"`
+	Location   	string     `json:"location,omitempty"`
+	URL   		string     `json:"url,omitempty"`
 	Bio         string     `json:"bio,omitempty"`
 	Confirmed   bool       `json:"confirmed,omitempty"`
 	MemberSince *time.Time `json:"member_since,omitempty"`

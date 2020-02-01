@@ -68,9 +68,68 @@ func GetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-// PutUser handle /PUT request
+// PutUser updates a given user.
 func PutUser(c echo.Context) error {
-	return c.String(http.StatusOK, "PutUser")
+
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
+	// get path param
+	username := c.Param("username")
+
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to update other users' data"})
+	}
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.UserUpdateSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// Get user infos.
+	u, err := GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+
+	// merge it
+	err = json.Unmarshal(b, &u)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	db.UsersCollection.Upsert(username, u, &gocb.UpsertOptions{})
+
+	// Empty private fields to not be displayed in json
+	u.Password = ""
+	return c.JSON(http.StatusOK, u)
+
 }
 
 // DeleteUser handle /DELETE request
@@ -142,6 +201,7 @@ func PostUsers(c echo.Context) error {
 	t := time.Now().UTC()
 	newUser.MemberSince = &t
 	newUser.Admin = false
+	newUser.Confirmed = false
 	newUser.Password = hashAndSalt([]byte(newUser.Password))
 
 	// Creates the new user and save it to DB.
@@ -164,7 +224,7 @@ func PostUsers(c echo.Context) error {
 		"verbose_msg": "ok"})
 }
 
-// PutUsers handles /PUT
+// PutUsers bulk updates Users
 func PutUsers(c echo.Context) error {
 	return c.String(http.StatusOK, "PutUsers")
 }
