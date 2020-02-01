@@ -14,12 +14,8 @@
       "type": "string",
       "minLength": 8
     },
-    "first_name": {
-      "description": "The user first name",
-      "type": "string"
-    },
-    "last_name": {
-      "description": "The user last name",
+    "name": {
+      "description": "The real name of the user",
       "type": "string"
     },
     "username": {
@@ -37,6 +33,14 @@
     },
     "bio": {
       "description": "The user bio",
+      "type": "string"
+    },
+    "url": {
+      "description": "The user URL",
+      "type": "string"
+    },
+    "location": {
+      "description": "The user location",
       "type": "string"
     },
     "last_seen": {
