@@ -69,6 +69,9 @@ var (
 	// UserUpdateSchema represent an update user.
 	UserUpdateSchema *gojsonschema.Schema
 
+	// PasswordUpdateSchema represent an update password.
+	PasswordUpdateSchema *gojsonschema.Schema
+
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -199,6 +202,15 @@ func loadSchemas() {
 	if err != nil {
 		log.Fatalln("Error while loading user update schema: ", err)
 	}
+
+	jsonPath = path.Join(dir, "app", "schema", "update-password.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	PasswordUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading password update schema: ", err)
+	}
+
 
 	log.Infoln("Schemas were loaded")
 }

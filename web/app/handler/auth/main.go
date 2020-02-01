@@ -156,7 +156,6 @@ func Login(c echo.Context) error {
 	})
 }
 
-
 // ResetPassword handle password reset.
 func ResetPassword(c echo.Context) error {
 	// Read the json body
@@ -402,26 +401,16 @@ func NewPassword(c echo.Context) error {
 // UpdatePassword handle password reset.
 func UpdatePassword(c echo.Context) error {
 
+	// Check user
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
 	// get path param
-	token := c.QueryParam("username")
-
-	if token == "" {
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"verbose_msg": "You provided an empty token!"})
-	}
-
-	u := c.Get("user").(*jwt.Token)
-	claims := u.Claims.(*middleware.CustomClaims)
-	tokenType := claims.Purpose
-	if tokenType != "reset-password" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "You provided an invalid token type!"})
-	}
-
-	usr, err := user.GetByUsername(claims.Username)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"verbose_msg": "Username does not exist !"})
+	username := c.Param("username")
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to update someone else's password"})
 	}
 
 	// Read the json body
@@ -438,7 +427,7 @@ func UpdatePassword(c echo.Context) error {
 
 	// Validate JSON
 	l := gojsonschema.NewBytesLoader(b)
-	result, err := app.ResetPasswordSchema.Validate(l)
+	result, err := app.PasswordUpdateSchema.Validate(l)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -452,13 +441,24 @@ func UpdatePassword(c echo.Context) error {
 			"verbose_msg": msg})
 	}
 
-	// Bind it to our User instance.
-	var jsonPassword map[string]interface{}
-	err = json.Unmarshal(b, &jsonPassword)
+	var credentials map[string]interface{}
+	err = json.Unmarshal(b, &credentials)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	newPassword := jsonPassword["password"].(string)
+	oldPassword := credentials["oldpassword"].(string)
+	newPassword := credentials["newpassword"].(string)
+	usr, err := user.GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Username does not exist !"})
+	}
+
+	if !comparePasswords(usr.Password, []byte(oldPassword)) {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"verbose_msg": "Password is incorrect"})
+	}
+
 	usr.UpdatePassword(newPassword)
 
 	return c.JSON(http.StatusOK, map[string]string{
