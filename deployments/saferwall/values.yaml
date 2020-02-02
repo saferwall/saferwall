@@ -34,6 +34,7 @@ minio:
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"
   spacename: samples
+  avatarspace: images
 
 ####### COUCHBASE #########
 couchbase-cluster:

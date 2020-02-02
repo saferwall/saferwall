@@ -338,6 +338,7 @@ func CreateAdminUser() {
 
 	u, _ := GetByUsername(username)
 	if u.Username != "" {
+		log.Println("Admin user %s already exists, do not created it", username)
 		return
 	}
 
@@ -375,12 +376,11 @@ func CreateAdminUser() {
 // deleteUser will delete a user
 func deleteUser(username string) error {
 
-	// delete document
-	cas, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{
+	// delete user
+	_, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{
 		Timeout:         100 * time.Millisecond,
 		DurabilityLevel: gocb.DurabilityLevelMajority,
 	})
-	fmt.Println(cas, err)
 	return err
 }
 
@@ -484,14 +484,32 @@ func PutUser(c echo.Context) error {
 // DeleteUser handle /DELETE request
 func DeleteUser(c echo.Context) error {
 
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
 	// get path param
 	username := c.Param("username")
 
-	err := deleteUser(username)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, err)
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to delete another user account's"})
 	}
-	return c.String(http.StatusOK, username)
+
+	// Get user infos.
+	_, err := GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+
+	// Perform the deletion
+	err = deleteUser(username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "User has been deleted successefuly"})
 }
 
 // PostUsers adds a new user.

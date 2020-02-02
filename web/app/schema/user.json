@@ -50,6 +50,18 @@
     "quota": {
       "description": "The user quota",
       "type": "integer"
+    },
+    "following": {
+      "description": "Users you follow",
+      "type": "array"
+    },
+    "followers": {
+      "description": "Users who follows you",
+      "type": "array"
+    },
+    "submissions": {
+      "description": "The hashes of files a user submitted",
+      "type": "array"
     }
   },
   "required": ["username", "email", "password"],

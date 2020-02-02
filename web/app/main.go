@@ -322,6 +322,8 @@ func loadAvatars() {
 		log.Fatalf("Failed to open saferwall avatar from %s, reason: %s",
 		sfwAvatarPath, err.Error())
 	}
+
+	log.Println("Load Avatars success")
 }
 
 // Init will initiate required objects
