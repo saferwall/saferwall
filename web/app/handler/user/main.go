@@ -338,7 +338,7 @@ func CreateAdminUser() {
 
 	u, _ := GetByUsername(username)
 	if u.Username != "" {
-		log.Println("Admin user %s already exists, do not created it", username)
+		log.Printf("Admin user %s already exists, do not created it", username)
 		return
 	}
 
@@ -377,10 +377,7 @@ func CreateAdminUser() {
 func deleteUser(username string) error {
 
 	// delete user
-	_, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{
-		Timeout:         100 * time.Millisecond,
-		DurabilityLevel: gocb.DurabilityLevelMajority,
-	})
+	_, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{})
 	return err
 }
 
@@ -506,8 +503,10 @@ func DeleteUser(c echo.Context) error {
 	// Perform the deletion
 	err = deleteUser(username)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": err.Error()})
 	}
+
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "User has been deleted successefuly"})
 }
