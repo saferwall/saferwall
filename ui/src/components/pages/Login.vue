@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div :class="{container:emailConfirmed}">
     <form
       novalidate="true"
       class="form"
@@ -74,7 +74,7 @@
       </h3>
     </form>
     <confirm v-if="!emailConfirmed" @sent="emailSent" />
-    <hr />
+    <hr v-if="emailConfirmed"/>
     <h3 class="not-member" v-if="emailConfirmed">
       Not a member?
       <router-link :to="this.$routes.SIGNUP.path">Sign up</router-link>
@@ -179,7 +179,6 @@ export default {
     border-color: #bb0000 !important;
   }
 }
-
 .container {
   margin-bottom: 4em;
   background-color: white;
@@ -197,7 +196,6 @@ export default {
   padding: 1em 2em;
   color: #333333;
   font-size: 16px;
-  
 }
 hr{
 display: block;
@@ -205,8 +203,9 @@ display: block;
     width: 22em;
     margin-top: 0.5em;
     margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
 }
-
 .input-container {
   display: flex;
   height: 80px;

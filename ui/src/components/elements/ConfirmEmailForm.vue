@@ -84,6 +84,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.container{
+  padding-bottom: 0!important;
+}
 .form {
   display: grid;
   text-align: center;

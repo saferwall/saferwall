@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="parentContainer">
     <router-link to="/">
       <img
         sizes="(max-width: 150px) 100vw, 150px"
@@ -20,7 +20,7 @@ export default {}
 </script>
 
 <style scoped>
-.container {
+.parentContainer {
   display: grid;
   justify-content: center;
   justify-items: center;
