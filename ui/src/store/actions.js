@@ -36,7 +36,15 @@ export default {
   },
   updateUserData: (context, username) => {
     Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + username)
-      .then((res) => context.commit('setUserData', res.data))
+      .then((res) => {
+        Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + username + "/avatar", {
+            responseType: "arraybuffer",
+          }, )
+          .then((secRes) => {
+            res.data.avatarBase64 = Buffer.from(secRes.data, 'binary').toString('base64')
+            context.commit('setUserData', res.data)
+          })
+      })
       .catch(console.log)
   }
 }

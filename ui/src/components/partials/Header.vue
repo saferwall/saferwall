@@ -65,7 +65,7 @@
                     <div @click="loginOrLogout" class="has-text-danger">
                       <span>
                         <i class="icon fas fa-sign-out-alt fa-lg"></i
-                        >Logout</span
+                        > Logout</span
                       >
                     </div>
                   </div>
@@ -96,7 +96,7 @@ export default {
     ...mapActions(["logOut", "updateHash"]),
     showMobileSearch() {},
     loginOrLogout(e) {
-      if (this.getLoggedIn && e.target.textContent === "Logout") {
+      if (this.getLoggedIn && e.target.textContent.trim() === "Logout") {
         this.logOut()
         this.$router.go(this.$routes.HOME.path)
       } else if (!this.getLoggedIn) {
