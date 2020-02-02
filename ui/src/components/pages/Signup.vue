@@ -133,10 +133,11 @@
       <p :class="{ 'tos-required': $v.terms.$dirty && !$v.terms.sameAs }">
         <input v-model="$v.terms.$model" type="checkbox" id="tos" />
         <label for="tos"
-          >&nbsp;I agree to the&nbsp;<router-link
-            to="/tos"
+          >&nbsp;I agree to the&nbsp;<a
+            href="https://about.saferwall.com/tos"
             class="has-text-link"
-            >Terms of Service</router-link
+            target="_blank"
+            >Terms of Service</a
           ></label
         >
       </p>
