@@ -1,5 +1,5 @@
 import Vue from "vue"
-import isTokenExpired from "../helpers/token"
+import tokenManager from "../helpers/token"
 
 export default {
   updateHash: (context, hash) => {
@@ -10,7 +10,7 @@ export default {
     if (!payload) {
       return
     }
-    context.commit("setLoggedIn", Boolean(payload) && !isTokenExpired(payload))
+    context.commit("setLoggedIn", Boolean(payload) && !tokenManager.isTokenExpired(payload))
     context.dispatch("updateUsername", payload)
   },
   updateUsername: (context, payload) => {

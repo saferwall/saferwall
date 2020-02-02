@@ -86,6 +86,7 @@
 import { required, helpers } from "vuelidate/lib/validators"
 import ConfirmEmailForm from "../elements/ConfirmEmailForm"
 import { mapActions } from "vuex"
+import TokenManager from '../../helpers/token'
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
@@ -122,8 +123,9 @@ export default {
           .then((response) => {
             // We store a second cookie which contains the payload only.
             // The cookie which contains the auth token is stored on a httpOnly cookie.
-            this.$cookies.set("JWTPayload", response.data.token.split(".")[1])
-            this.updateLoggedIn(response.data.token.split(".")[1])
+            var payload = response.data.token.split(".")[1]
+            this.$cookies.set("JWTPayload", payload, TokenManager.getTokenExpirationDate(payload))
+            this.updateLoggedIn(payload)
             this.track()
 
             if (this.$route.params.nextUrl != null) {

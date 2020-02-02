@@ -59,9 +59,6 @@ Vue.use(VueGtag, {
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
 
-// set default config
-Vue.$cookies.config('7d')
-
 
 Vue.prototype.$clipboard = (function (window, document, navigator) {
   var textArea, copy

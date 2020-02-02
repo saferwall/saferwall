@@ -1,4 +1,5 @@
-const getTokenExpirationDate = (payload) => {
+const tokenManager = {
+  getTokenExpirationDate(payload){
     const jwtData = JSON.parse(atob(payload))
     if (!jwtData.exp) {
       return null
@@ -8,9 +9,10 @@ const getTokenExpirationDate = (payload) => {
     date.setUTCSeconds(jwtData.exp)
 
     return date
-  }
-const isTokenExpired = (payload) => {
-    const expirationDate = getTokenExpirationDate(payload)
+  },
+  isTokenExpired(payload){
+    const expirationDate = this.getTokenExpirationDate(payload)
     return expirationDate < new Date()
   }
-export default isTokenExpired;
+}
+export default tokenManager;
