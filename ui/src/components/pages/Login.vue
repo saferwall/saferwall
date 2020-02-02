@@ -108,7 +108,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["updateLoggedIn", "updateUsername"]),
+    ...mapActions(["updateLoggedIn"]),
     handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
@@ -124,8 +124,6 @@ export default {
             // The cookie which contains the auth token is stored on a httpOnly cookie.
             this.$cookies.set("JWTPayload", response.data.token.split(".")[1])
             this.updateLoggedIn(response.data.token.split(".")[1])
-            this.updateUsername(response.data.token.split(".")[1])
-
             this.track()
 
             if (this.$route.params.nextUrl != null) {

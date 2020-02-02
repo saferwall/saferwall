@@ -169,7 +169,6 @@ export default {
               }, 4000)
               this.trackSuccess()
               this.$store.dispatch("updateHash", hashHex)
-              this.$store.dispatch("updateFileData", response)
               this.$router.push(this.$routes.SUMMARY.path)
               break
           }

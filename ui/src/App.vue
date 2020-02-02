@@ -19,7 +19,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["updateUsername", "updateLoggedIn"]),
+    ...mapActions(["updateLoggedIn"]),
     getJWTPayload() {
       const payload = this.$cookies.get("JWTPayload")
       return payload
@@ -28,7 +28,6 @@ export default {
   created() {
     document.title = this.$route.meta.title || "SaferWall"
     const payload = this.getJWTPayload()
-    this.updateUsername(payload)
     this.updateLoggedIn(payload)
   },
   updated() {

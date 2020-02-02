@@ -2,7 +2,12 @@
   <div class="page">
     <div class="form-group" :class="{ 'form-group--error': $v.name.$error }">
       <label class="form__label">Name</label>
-      <input class="input" v-model.trim="$v.name.$model" type="text" placeholder="Real Name"/>
+      <input
+        class="input"
+        v-model.trim="$v.name.$model"
+        type="text"
+        placeholder="Real name"
+      />
       <div class="error" v-if="!$v.name.required && $v.name.$dirty">
         Field Required
       </div>
@@ -12,7 +17,7 @@
       <textarea
         class="textarea has-fixed-size"
         v-model.trim="$v.bio.$model"
-        placeholder="small Bio"
+        placeholder="Small Bio"
         rows="5"
       />
       <div class="error" v-if="!$v.bio.required && $v.bio.$dirty">
@@ -31,14 +36,24 @@
       :class="{ 'form-group--error': $v.location.$error }"
     >
       <label class="form__label">Location</label>
-      <input class="input" v-model.trim="$v.location.$model" type="text"  placeholder="location"/>
+      <input
+        class="input"
+        v-model.trim="$v.location.$model"
+        type="text"
+        placeholder="location"
+      />
       <div class="error" v-if="!$v.location.required && $v.location.$dirty">
         Field Required
       </div>
     </div>
     <div class="form-group" :class="{ 'form-group--error': $v.URL.$error }">
       <label class="form__label">URL</label>
-      <input class="input" v-model.trim="$v.URL.$model" type="text" placeholder="url"/>
+      <input
+        class="input"
+        v-model.trim="$v.URL.$model"
+        type="text"
+        placeholder="url"
+      />
       <div class="error" v-if="!$v.URL.required && $v.URL.$dirty">
         Field Required
       </div>
@@ -46,24 +61,34 @@
         Wrong Format
       </div>
     </div>
-    <button class="button is-primary is-outlined" :disabled="$v.$invalid" @click="submit">
+    <button
+      class="button is-primary is-outlined"
+      :disabled="$v.$invalid"
+      @click="submit"
+    >
       Submit
     </button>
   </div>
 </template>
 
 <script>
-import { required, maxLength, url} from "vuelidate/lib/validators"
+import { required, maxLength, url } from "vuelidate/lib/validators"
+import { mapGetters } from "vuex"
 
 export default {
   data() {
     return {
       name: "",
       bio: "",
-      member_since: "",
       location: "",
+      member_since: "",
       URL: "",
     }
+  },
+  computed: {
+    ...mapGetters({
+      userData: "getUserData",
+    }),
   },
   methods: {
     submit: function() {
@@ -99,6 +124,13 @@ export default {
       this.URL = ""
       this.$v.$reset()
     },
+  },
+  mounted() {
+    this.name = this.userData.username
+    this.bio = this.userData.bio
+    this.location = this.userData.location
+    this.URL = this.userData.url
+    this.member_since = this.userData.member_since
   },
   validations: {
     name: {

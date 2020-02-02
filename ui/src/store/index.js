@@ -12,7 +12,7 @@ export default new Vuex.Store({
     hashContext: "",
     fileData : {},
     loggedIn: false,
-    username: "",
+    userData: {}
   },
   getters: globalGetters,
   mutations: globalMutations,

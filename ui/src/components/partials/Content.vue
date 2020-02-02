@@ -67,7 +67,9 @@ export default {
     },
     showContent: function() {
       return (
-        this.$store.getters.getHashContext !== "" || this.route === "upload" || this.route === "profile"
+        this.$store.getters.getHashContext !== "" ||
+        this.route === "upload" ||
+        this.route === "profile"
       )
     },
     ...mapGetters({
@@ -82,22 +84,10 @@ export default {
         this.$router.currentRoute.params.hash !==
           this.$store.getters.getHashContext
       ) {
-        this.$http
-          .get(
-            this.$api_endpoints.FILES + this.$router.currentRoute.params.hash,
-          )
-          .then((data) => {
-            this.$store.dispatch(
-              "updateHash",
-              this.$router.currentRoute.params.hash,
-            )
-            this.$store.dispatch("updateFileData", data)
-          })
-          .catch(() => {
-            this.$awn.alert(
-              "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
-            )
-          })
+        this.$store.dispatch(
+          "updateHash",
+          this.$router.currentRoute.params.hash,
+        )
       }
     },
   },

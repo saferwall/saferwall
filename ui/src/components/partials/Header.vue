@@ -64,9 +64,9 @@
                   <div class="dropdown-item">
                     <div @click="loginOrLogout" class="has-text-danger">
                       <span>
-                        <i class="icon fas fa-sign-out-alt fa-lg"></i>
-                        Logout
-                      </span>
+                        <i class="icon fas fa-sign-out-alt fa-lg"></i
+                        >Logout</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -93,13 +93,13 @@ export default {
     ...mapGetters(["getLoggedIn", "getUsername"]),
   },
   methods: {
-    ...mapActions(["logOut", "updateHash", "updateFileData"]),
+    ...mapActions(["logOut", "updateHash"]),
     showMobileSearch() {},
-    loginOrLogout() {
-      if (this.getLoggedIn) {
+    loginOrLogout(e) {
+      if (this.getLoggedIn && e.target.textContent === "Logout") {
         this.logOut()
         this.$router.go(this.$routes.HOME.path)
-      } else {
+      } else if (!this.getLoggedIn) {
         this.$router.push(this.$routes.LOGIN.path)
       }
     },
@@ -114,7 +114,6 @@ export default {
         })
         .then((data) => {
           this.updateHash(this.hash)
-          this.updateFileData(data)
           this.track()
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
@@ -272,9 +271,9 @@ header.dashboard-header {
             }
           }
 
-          .dropdown-content{
+          .dropdown-content {
             text-align: left;
-            a{
+            a {
               margin: 0;
             }
           }

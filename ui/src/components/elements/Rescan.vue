@@ -103,7 +103,7 @@ export default {
               this.trackSuccess()
               this.$awn.closeToasts()
               this.$awn.success("successfully rescaned the file")
-              this.$store.dispatch("updateFileData", response)
+              this.$store.commit("setFileData", response)
               break
           }
         })
