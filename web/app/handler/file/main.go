@@ -356,7 +356,7 @@ func PostFiles(c echo.Context) error {
 	}
 
 	if gocb.IsKeyNotFoundError(err) {
-		// Upload the sample to DO object storage.
+		// Upload the sample to the object storage.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		n, err := app.MinioClient.PutObjectWithContext(ctx, app.SamplesSpaceBucket,

@@ -466,8 +466,6 @@ func UpdatePassword(c echo.Context) error {
 	})
 }
 
-
-
 // UpdateEmail handle email update.
 func UpdateEmail(c echo.Context) error {
 

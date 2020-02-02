@@ -24,7 +24,8 @@ addr = "localhost:4150"
 endpoint = "localhost:9000"
 seckey = "<seckey>"
 accesskey = "<accesskey>"
-spacename = "samples" 
+spacename = "samples"
+avatarspace = "images"
 ssl = false
 
 [auth]

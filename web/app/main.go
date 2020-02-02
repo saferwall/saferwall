@@ -78,11 +78,20 @@ var (
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
+	// AvatarSpaceBucket contains the space name of bucket to save user avatars.
+	AvatarSpaceBucket string
+
 	// Hermes represents an instance email generator.
 	Hermes hermes.Hermes
 
 	// SMTPConfig holds smtp config.
 	SMTPConfig SMTPAuthentication
+
+	// AvatarFileDesc holds a descriptor to the default image avatar file path.
+	AvatarFileDesc *os.File
+
+	// sfwAvatarFileDesc holds a descriptor to saferwall's image avatar file path.
+	SfwAvatarFileDesc *os.File
 )
 
 // loadConfig loads our configration.
@@ -147,7 +156,7 @@ func loadSchemas() {
 
 	dir, err := utils.Getwd()
 	if err != nil {
-		log.Fatalln("Failed to GetWd, err: ", err)
+		log.Fatalln("Failed to Get current directory, err: ", err)
 	}
 
 	jsonPath := path.Join(dir, "app", "schema", "user.json")
@@ -231,7 +240,9 @@ func initOSClient() *minio.Client {
 	secKey := viper.GetString("minio.seckey")
 	endpoint := viper.GetString("minio.endpoint")
 	SamplesSpaceBucket = viper.GetString("minio.spacename")
+	AvatarSpaceBucket = viper.GetString("minio.avatarspace")
 	ssl := viper.GetBool("minio.ssl")
+	location := "us-east-1"
 
 	// Initiate a client using DigitalOcean Spaces.
 	client, err := minio.New(endpoint, accessKey, secKey, ssl)
@@ -239,10 +250,7 @@ func initOSClient() *minio.Client {
 		log.Fatal(err)
 	}
 
-	// Make a new bucket called mymusic.
 	bucketName := SamplesSpaceBucket
-	location := "us-east-1"
-
 	err = client.MakeBucket(bucketName, location)
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if you run this twice)
@@ -255,7 +263,20 @@ func initOSClient() *minio.Client {
 	} else {
 		log.Printf("Successfully created %s", bucketName)
 	}
-
+	
+	bucketName = AvatarSpaceBucket
+	err = client.MakeBucket(bucketName, location)
+	if err != nil {
+		// Check to see if we already own this bucket (which happens if you run this twice)
+		exists, err := client.BucketExists(bucketName)
+		if err == nil && exists {
+			log.Printf("We already own %s", bucketName)
+		} else {
+			log.Fatalln(err)
+		}
+	} else {
+		log.Printf("Successfully created %s", bucketName)
+	}
 	log.Infoln("Got Object Storage client instance")
 	return client
 }
@@ -279,7 +300,28 @@ func initHermes() {
 		},
 	}
 	log.Println("Successfully created hermes instance")
+}
 
+// loadAvatars load default and saferwall images from file system.
+func loadAvatars() {
+	dir, err := utils.Getwd()
+	if err != nil {
+		log.Fatalln("Failed to Get current directory, err: ", err)
+	}
+
+	defaultAvatarPath := path.Join(dir, "data", "default-avatar.png")
+	AvatarFileDesc, err = os.Open(defaultAvatarPath)
+	if err != nil {
+		log.Fatalf("Failed to open default avatar from %s, reason: %s",
+		 defaultAvatarPath, err.Error())
+	}
+
+	sfwAvatarPath := path.Join(dir, "data", "saferwall-avatar.png")
+	SfwAvatarFileDesc, err = os.Open(sfwAvatarPath)
+	if err != nil {
+		log.Fatalf("Failed to open saferwall avatar from %s, reason: %s",
+		sfwAvatarPath, err.Error())
+	}
 }
 
 // Init will initiate required objects
@@ -305,6 +347,9 @@ func Init() {
 
 	// Get an Object Storage client instance
 	MinioClient = initOSClient()
+
+	// Load default & saferwall image avatar.
+	loadAvatars()
 
 	Debug = viper.GetBool("app.debug")
 	StoragePath = viper.GetString("app.tmp_samples")
