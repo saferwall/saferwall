@@ -659,3 +659,89 @@ func GetAvatar(c echo.Context) error {
 
 	return c.Stream(http.StatusOK, "image/png", reader)
 }
+
+// UpdateAvatar updates the users' avatar
+func UpdateAvatar(c echo.Context) error {
+
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
+	// get path param
+	username := c.Param("username")
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+				"verbose_msg": "Not allowed to update someone else avatar account's"})
+	}
+
+	// Source
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(http.StatusCreated, map[string]string{
+			"verbose_msg":  "Missing file, did you send the file via the form request ?",
+		})
+	}
+
+	// Check file size
+	if fileHeader.Size > app.MaxAvatarFileSize {
+		return c.JSON(http.StatusRequestEntityTooLarge,  map[string]string{
+			"verbose_msg":     "File too large. he maximum allowed is 100KB",
+			"Filename":    fileHeader.Filename,
+		})
+	}
+
+	// Open the file
+	file, err := fileHeader.Open()
+	if err != nil {
+		log.Error("Opening a file handle failed, err: ", err)
+		return c.JSON(http.StatusInternalServerError,  map[string]string{
+			"verbose_msg": "Unable to open the file",
+			"Filename":    fileHeader.Filename,
+		})
+	}
+	defer file.Close()
+
+	// Get the size
+	size := fileHeader.Size
+	log.Infoln("File size: ", size)
+
+	// Read the content
+	fileContents, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Error("Opening a reading the file content, err: ", err)
+		return c.JSON(http.StatusInternalServerError,  map[string]string{
+			"verbose_msg":     "ReadAll failed",
+			"Filename":    fileHeader.Filename,
+		})
+	}
+
+	// Upload the sample to the object storage.
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	n, err := app.MinioClient.PutObjectWithContext(ctx, app.AvatarSpaceBucket,
+		username, bytes.NewReader(fileContents), size,
+		minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	if err != nil {
+		log.Error("Failed to upload object, err: ", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg":     "PutObject failed",
+			"Description": err.Error(),
+			"Filename":    fileHeader.Filename,
+		})
+	}
+	
+	log.Println("Successfully uploaded bytes: ", n)
+
+	// Update user
+	user, err := GetByUsername(username)
+	if err != nil {
+		return err
+	}
+	user.HasAvatar = true
+	user.Save()
+	
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg":     "Updated successefuly",
+		"Filename":    fileHeader.Filename,
+	})
+}

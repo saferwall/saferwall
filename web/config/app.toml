@@ -8,6 +8,7 @@ address = "<host:port>"
 debug = true
 tmp_samples = "/tmp/samples"
 max_file_size = 64000000 # 64MB
+max_avatar_file_size = 100000 # 100KB
 admin_user = "<admin>"
 admin_pwd = "<password>"
 admin_email = "<admin@company.com>"

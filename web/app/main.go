@@ -39,6 +39,9 @@ var (
 	// MaxFileSize allowed
 	MaxFileSize int64
 
+	// MaxAvatarFileSize allowed
+	MaxAvatarFileSize int64
+
 	// Debug mode
 	Debug bool
 
@@ -90,7 +93,7 @@ var (
 	// AvatarFileDesc holds a descriptor to the default image avatar file path.
 	AvatarFileDesc *os.File
 
-	// sfwAvatarFileDesc holds a descriptor to saferwall's image avatar file path.
+	// SfwAvatarFileDesc holds a descriptor to saferwall's image avatar file path.
 	SfwAvatarFileDesc *os.File
 )
 
@@ -356,6 +359,7 @@ func Init() {
 	Debug = viper.GetBool("app.debug")
 	StoragePath = viper.GetString("app.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("app.max_file_size"))
+	MaxAvatarFileSize = int64(viper.GetInt("app.max_avatar_file_size"))
 	os.MkdirAll(StoragePath, os.ModePerm)
 
 }
