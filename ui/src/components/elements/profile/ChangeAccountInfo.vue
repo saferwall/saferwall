@@ -43,14 +43,14 @@
           type="text"
           placeholder="url"
         />
-        <button
-          class="button is-primary is-outlined"
-          :disabled="!tmp_avatar && !$v.$anyDirty"
-          @click="submit"
-        >
-          {{ this.submitLabel }}
-        </button>
       </div>
+      <button
+        class="button is-primary"
+        :disabled="!tmp_avatar && !$v.$anyDirty"
+        @click="submit"
+      >
+        {{ this.submitLabel }}
+      </button>
     </div>
     <div class="column">
       <figure class="image">
@@ -131,7 +131,8 @@ export default {
         this.submitImage()
         updated = true
       }
-      if (updated) this.$store.dispatch("updateUserData", this.userData.username)
+      if (updated)
+        this.$store.dispatch("updateUserData", this.userData.username)
     },
     submitInfo: function() {
       var data = {}
@@ -184,10 +185,6 @@ export default {
       })
     },
     clear() {
-      this.name = ""
-      this.bio = ""
-      this.location = ""
-      this.URL = ""
       this.$v.$reset()
     },
     selectImage() {

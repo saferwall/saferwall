@@ -40,7 +40,7 @@
     </div>
 
     <button
-      class="button is-primary is-outlined"
+      class="button is-primary"
       :disabled="$v.$invalid"
       @click="submit"
     >
