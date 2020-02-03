@@ -64,7 +64,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	var addressOfNames []byte
 
 	if exportDir.NumberOfFunctions == 0 {
-		return errors.New("Export Directory counts zero number of functions")
+		log.Println("Export Directory counts zero number of functions")
+		return nil
 	}
 
 	length = min(lengthUntilEOF(exportDir.AddressOfNames), exportDir.NumberOfNames*4)
