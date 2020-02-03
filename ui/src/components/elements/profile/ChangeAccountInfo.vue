@@ -1,7 +1,7 @@
 <template>
   <div class="columns page">
     <div class="column" style="flex-grow:0.6;">
-      <div class="form-group" :class="{ 'form-group--error': $v.name.$error }">
+      <div class="form-group">
         <label class="form__label">Name</label>
         <input
           class="input"
@@ -9,9 +9,6 @@
           type="text"
           placeholder="Real name"
         />
-        <div class="error" v-if="!$v.name.required && $v.name.$dirty">
-          Field Required
-        </div>
       </div>
       <div class="form-group" :class="{ 'form-group--error': $v.bio.$error }">
         <label class="form__label">Bio</label>
@@ -21,9 +18,6 @@
           placeholder="Small Bio"
           rows="5"
         />
-        <div class="error" v-if="!$v.bio.required && $v.bio.$dirty">
-          Field Required
-        </div>
         <div class="error" v-if="!$v.bio.max && $v.bio.$dirty">
           Bio should contain at most 200 characters
         </div>
@@ -32,10 +26,7 @@
         <label class="form__label">Member Since</label>
         <input class="input" :value="member_since" type="text" readonly />
       </div>
-      <div
-        class="form-group"
-        :class="{ 'form-group--error': $v.location.$error }"
-      >
+      <div class="form-group">
         <label class="form__label">Location</label>
         <input
           class="input"
@@ -43,11 +34,8 @@
           type="text"
           placeholder="location"
         />
-        <div class="error" v-if="!$v.location.required && $v.location.$dirty">
-          Field Required
-        </div>
       </div>
-      <div class="form-group" :class="{ 'form-group--error': $v.URL.$error }">
+      <div class="form-group">
         <label class="form__label">URL</label>
         <input
           class="input"
@@ -55,26 +43,24 @@
           type="text"
           placeholder="url"
         />
-        <div class="error" v-if="!$v.URL.required && $v.URL.$dirty">
-          Field Required
-        </div>
-        <div class="error" v-if="!$v.URL.url && $v.URL.$dirty">
-          Wrong Format
-        </div>
+        <button
+          class="button is-primary is-outlined"
+          :disabled="!tmp_avatar && !$v.$anyDirty"
+          @click="submit"
+        >
+          {{ this.submitLabel }}
+        </button>
       </div>
-      <button
-        class="button is-primary is-outlined"
-        :disabled="$v.$invalid"
-        @click="submit"
-      >
-        Submit
-      </button>
     </div>
     <div class="column">
       <figure class="image">
         <img
           v-if="!tmp_avatar"
-          :src="'data:image/png;base64,' + userData.avatarBase64"
+          :src="
+            userData.avatarBase64
+              ? 'data:image/png;base64,' + userData.avatarBase64
+              : ''
+          "
         />
         <img v-if="tmp_avatar" :src="tmp_avatar" />
 
@@ -95,7 +81,7 @@
 </template>
 
 <script>
-import { required, maxLength, url } from "vuelidate/lib/validators"
+import { maxLength } from "vuelidate/lib/validators"
 import { mapGetters } from "vuex"
 
 export default {
@@ -107,12 +93,18 @@ export default {
       member_since: "",
       URL: "",
       tmp_avatar: null,
+      file: null,
     }
   },
   computed: {
     ...mapGetters({
       userData: "getUserData",
     }),
+    submitLabel: function() {
+      if (this.$v.$anyDirty) return "Submit"
+      else if (this.tmp_avatar) return "Change Avatar"
+      else return "Submit"
+    },
   },
   methods: {
     loadData() {
@@ -130,15 +122,26 @@ export default {
       this.member_since = this.userData.member_since.substring(0, 10)
     },
     submit: function() {
-      if (this.$v.$invalid) return
+      var updated = false
+      if (this.$v.$invalid && this.$v.$anyDirty) {
+        this.submitInfo()
+        updated = true
+      }
+      if (this.tmp_avatar !== null) {
+        this.submitImage()
+        updated = true
+      }
+      if (updated) this.$store.dispatch("updateUserData", this.userData.username)
+    },
+    submitInfo: function() {
+      var data = {}
+      if (this.name) data.name = this.name
+      if (this.bio) data.bio = this.bio
+      if (this.location) data.location = this.location
+      if (this.URL) data.url = this.URL
 
       this.$http
-        .put(this.$api_endpoints.USERS + this.$store.getters.getUsername, {
-          name: this.name,
-          bio: this.bio,
-          location: this.location,
-          url: this.URL,
-        })
+        .put(this.$api_endpoints.USERS + this.$store.getters.getUsername, data)
         .then(() => {
           this.$awn.success("Information Changed Successfully")
           this.trackSuccess()
@@ -147,6 +150,31 @@ export default {
         .catch(() => {
           this.$awn.alert("A problem occured, try again")
         })
+    },
+    submitImage: function() {
+      const reader = new FileReader()
+      reader.onload = (loadEvent) => {
+        // file has been read successfully
+        const formData = new FormData()
+        formData.append("file", this.file)
+        this.$http
+          .put(
+            this.$api_endpoints.USERS + this.userData.username + "/avatar",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            },
+          )
+          .then(() => {
+            this.$awn.success("Avatar Changed Successfully")
+          })
+          .catch(() => {
+            this.$awn.alert("An Error Occured, Try Again")
+          })
+      }
+      reader.readAsArrayBuffer(this.file)
     },
     trackSuccess() {
       this.$gtag.event("Account_information_change", {
@@ -166,39 +194,30 @@ export default {
       this.$refs.imageInput.click()
     },
     imageAdded(e) {
-      console.log(e)
-      var file = e.srcElement.files[0]
+      this.file = e.srcElement.files[0]
 
-      if (file.size > 200000) {
+      if (this.file.size > 400000) {
         this.$awn.alert("Image too big!")
         return
       }
 
-      if (!file) {
+      if (!this.file) {
         this.$awn.alert("File cannot be read!")
         return
       }
-      this.tmp_avatar = URL.createObjectURL(file)
+      this.tmp_avatar = URL.createObjectURL(this.file)
     },
   },
   mounted() {
     this.loadData()
   },
   validations: {
-    name: {
-      required,
-    },
     bio: {
-      required,
       max: maxLength(255),
     },
-    location: {
-      required,
-    },
-    URL: {
-      required,
-      url,
-    },
+    name: {},
+    URL: {},
+    location: {},
   },
 }
 </script>
@@ -253,6 +272,5 @@ export default {
     bottom: 0;
     display: none;
   }
-
 }
 </style>
