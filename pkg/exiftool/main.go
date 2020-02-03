@@ -23,6 +23,7 @@ func Scan(FilePath string) (map[string]string, error) {
 
 	args := []string{FilePath}
 	output, err := utils.ExecCommand(Command, args...)
+	// exiftool returns exit status 1 for unknown files.
 	if err != nil {
 		return nil, err
 	}

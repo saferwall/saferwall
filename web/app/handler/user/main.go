@@ -52,6 +52,8 @@ type User struct {
 	MemberSince *time.Time `json:"member_since,omitempty"`
 	Admin       bool       `json:"admin,omitempty"`
 	HasAvatar	bool 		`json:"has_avatar,omitempty"`
+	Following	[]string 	`json:"following,omitempty"`
+	Followers	[]string 	`json:"followers,omitempty"`
 }
 
 // UpdatePassword creates a JWT token for email confirmation.
@@ -641,7 +643,6 @@ func GetAvatar(c echo.Context) error {
 	// If the user does not set a custom avatar, we serve a default one.
 	if (!usr.HasAvatar) {
 		return c.Stream(http.StatusOK, "image/png", app.AvatarFileDesc)
-
 	}
 
 	// Read it from object storage.
@@ -672,6 +673,13 @@ func UpdateAvatar(c echo.Context) error {
 	if username != currentUsername {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
 				"verbose_msg": "Not allowed to update someone else avatar account's"})
+	}
+
+	// Get user infos.
+	usr, err := GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exist"})
 	}
 
 	// Source
@@ -733,15 +741,67 @@ func UpdateAvatar(c echo.Context) error {
 	log.Println("Successfully uploaded bytes: ", n)
 
 	// Update user
-	user, err := GetByUsername(username)
-	if err != nil {
-		return err
-	}
-	user.HasAvatar = true
-	user.Save()
+	usr.HasAvatar = true
+	usr.Save()
 	
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg":     "Updated successefuly",
 		"Filename":    fileHeader.Filename,
+	})
+}
+
+
+// Actions over a user. Follow or Unfollow.
+func Actions(c echo.Context) error {
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Verify length
+	if len(b) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "You have sent an empty json"})
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.UserActionSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	// get the type of action
+	var actions map[string]interface{}
+	err = json.Unmarshal(b, &actions)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	actionType := actions["type"].(string)
+
+	// get path param
+	username := c.Param("username")
+	
+	switch actionType{
+	case "follow":
+		
+	case "unfollow":
+
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"username":   username,
 	})
 }

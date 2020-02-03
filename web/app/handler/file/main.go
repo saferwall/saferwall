@@ -528,8 +528,8 @@ func Actions(c echo.Context) error {
 		})
 	}
 
-	if actionType == "rescan" {
-
+	switch actionType{
+	case "rescan":
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
 		if err != nil {
@@ -545,7 +545,7 @@ func Actions(c echo.Context) error {
 			Description: "Type of action: " + actionType,
 			Sha256:      sha256,
 		})
-	} else if actionType == "download" {
+	case "download":
 		reader, err := app.MinioClient.GetObject(
 			app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
 		if err != nil {
@@ -563,6 +563,7 @@ func Actions(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
 		return c.File(filepath)
+	case "like":
 	}
 
 	return c.JSON(http.StatusInternalServerError, Response{

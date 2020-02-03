@@ -1,13 +1,13 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User",
-    "description": "This schema is representing an action over a file",
+    "description": "This schema is representing an action over a uer",
     "type": "object",
     "properties": {
       "type": {
         "description": "Type of action to perform",
         "type": "string",
-        "pattern": "^(rescan|download)$"
+        "pattern": "^(follow|unfollow)$"
       }
     },
     "required": ["type"],

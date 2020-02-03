@@ -66,7 +66,7 @@ var (
 	// ResetPasswordSchema represent a change password.
 	ResetPasswordSchema *gojsonschema.Schema
 
-	// FileActionSchema represent a change password.
+	// FileActionSchema represent an action over a file.
 	FileActionSchema *gojsonschema.Schema
 
 	// UserUpdateSchema represent an update user.
@@ -78,6 +78,9 @@ var (
 	// EmailUpdateSchema represent an update email.
 	EmailUpdateSchema *gojsonschema.Schema
 
+	// UserActionSchema represent an action over a user.
+	UserActionSchema *gojsonschema.Schema
+	
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
 
@@ -202,7 +205,7 @@ func loadSchemas() {
 		log.Fatalln("Error while loading email schema: ", err)
 	}
 
-	jsonPath = path.Join(dir, "app", "schema", "action.json")
+	jsonPath = path.Join(dir, "app", "schema", "file-action.json")
 	source = fmt.Sprintf("file:///%s", jsonPath)
 	jsonLoader = gojsonschema.NewReferenceLoader(source)
 	FileActionSchema, err = gojsonschema.NewSchema(jsonLoader)
@@ -234,6 +237,13 @@ func loadSchemas() {
 		log.Fatalln("Error while loading email update schema: ", err)
 	}
 
+	jsonPath = path.Join(dir, "app", "schema", "user-action.json")
+	source = fmt.Sprintf("file:///%s", jsonPath)
+	jsonLoader = gojsonschema.NewReferenceLoader(source)
+	UserActionSchema, err = gojsonschema.NewSchema(jsonLoader)
+	if err != nil {
+		log.Fatalln("Error while loading user action schema: ", err)
+	}
 	log.Infoln("Schemas were loaded")
 }
 

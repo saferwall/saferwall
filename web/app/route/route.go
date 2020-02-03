@@ -63,11 +63,14 @@ func New() *echo.Echo {
 	e.PUT("/v1/users/", user.PutUsers, m.RequireLogin, auth.IsAdmin)
 	e.DELETE("/v1/users/", user.DeleteUsers, m.RequireLogin, auth.IsAdmin)
 
-	// handle /users/:username  endpoint.
+	// handle /users/:username endpoint.
 	e.GET("/v1/users/:username/", user.GetUser, m.RequireLogin)
 	e.PUT("/v1/users/:username/", user.PutUser, m.RequireLogin)
 	e.DELETE("/v1/users/:username/", user.DeleteUser, m.RequireLogin)
 	e.GET("/v1/users/:username/avatar/", user.GetAvatar)
+
+	// actions over a user
+	e.POST("/v1/files/:username/actions/", user.Actions)
 
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)
