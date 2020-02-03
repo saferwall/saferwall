@@ -56,11 +56,17 @@
               >
                 <div class="dropdown-content">
                   <div class="dropdown-item">
+                    <router-link :to="this.$routes.PROFILE.path">
+                      <i class="icon fas fa-user-circle fa-lg"></i>
+                      Profile
+                    </router-link>
+                  </div>
+                  <div class="dropdown-item">
                     <div @click="loginOrLogout" class="has-text-danger">
                       <span>
-                        <i class="icon fas fa-sign-out-alt fa-lg"></i>
-                        Logout
-                      </span>
+                        <i class="icon fas fa-sign-out-alt fa-lg"></i
+                        > Logout</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -87,13 +93,13 @@ export default {
     ...mapGetters(["getLoggedIn", "getUsername"]),
   },
   methods: {
-    ...mapActions(["logOut", "updateHash", "updateFileData"]),
+    ...mapActions(["logOut", "updateHash"]),
     showMobileSearch() {},
-    loginOrLogout() {
-      if (this.getLoggedIn) {
+    loginOrLogout(e) {
+      if (this.getLoggedIn && e.target.textContent.trim() === "Logout") {
         this.logOut()
         this.$router.go(this.$routes.HOME.path)
-      } else {
+      } else if (!this.getLoggedIn) {
         this.$router.push(this.$routes.LOGIN.path)
       }
     },
@@ -108,7 +114,6 @@ export default {
         })
         .then((data) => {
           this.updateHash(this.hash)
-          this.updateFileData(data)
           this.track()
           this.$router.push(this.$routes.SUMMARY.path + this.hash)
         })
@@ -263,6 +268,13 @@ header.dashboard-header {
 
             &:hover {
               font-weight: 600;
+            }
+          }
+
+          .dropdown-content {
+            text-align: left;
+            a {
+              margin: 0;
             }
           }
 

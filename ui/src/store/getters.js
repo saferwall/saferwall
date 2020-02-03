@@ -6,9 +6,12 @@ export default {
     return state.loggedIn
   },
   getUsername: state => {
-    return state.username
+    return state.userData.username
   },
   getFileData: state => {
     return state.fileData
+  },
+  getUserData: state => {
+    return state.userData
   }
 }

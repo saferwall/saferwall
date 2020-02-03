@@ -7,7 +7,7 @@
     <v-content :fullwidth="noSidebarPaths.indexOf($route.name) > -1">
       <router-view></router-view>
     </v-content>
-    <v-footer v-if="noSidebarPaths.indexOf($route.name) != -1"></v-footer>
+    <v-footer v-if="false"></v-footer>
   </div>
 </template>
 <script>
@@ -26,7 +26,7 @@ export default {
 
   data() {
     return {
-      noSidebarPaths: ["Upload", "Scanning"],
+      noSidebarPaths: ["Upload", "Scanning", "profile"],
     }
   },
 }

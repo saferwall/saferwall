@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div :class="{container:emailConfirmed}">
     <form
       novalidate="true"
       class="form"
@@ -74,7 +74,7 @@
       </h3>
     </form>
     <confirm v-if="!emailConfirmed" @sent="emailSent" />
-    <hr />
+    <hr v-if="emailConfirmed"/>
     <h3 class="not-member" v-if="emailConfirmed">
       Not a member?
       <router-link :to="this.$routes.SIGNUP.path">Sign up</router-link>
@@ -86,6 +86,7 @@
 import { required, helpers } from "vuelidate/lib/validators"
 import ConfirmEmailForm from "../elements/ConfirmEmailForm"
 import { mapActions } from "vuex"
+import TokenManager from '../../helpers/token'
 
 const usernameValid = helpers.regex("username", /^[a-zA-Z0-9]{1,20}$/)
 
@@ -108,7 +109,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["updateLoggedIn", "updateUsername"]),
+    ...mapActions(["updateLoggedIn"]),
     handleSubmit() {
       this.$v.$touch()
       if (this.$v.$invalid) {
@@ -122,10 +123,9 @@ export default {
           .then((response) => {
             // We store a second cookie which contains the payload only.
             // The cookie which contains the auth token is stored on a httpOnly cookie.
-            this.$cookies.set("JWTPayload", response.data.token.split(".")[1])
-            this.updateLoggedIn(response.data.token.split(".")[1])
-            this.updateUsername(response.data.token.split(".")[1])
-
+            var payload = response.data.token.split(".")[1]
+            this.$cookies.set("JWTPayload", payload, TokenManager.getTokenExpirationDate(payload))
+            this.updateLoggedIn(payload)
             this.track()
 
             if (this.$route.params.nextUrl != null) {
@@ -179,7 +179,6 @@ export default {
     border-color: #bb0000 !important;
   }
 }
-
 .container {
   margin-bottom: 4em;
   background-color: white;
@@ -197,7 +196,6 @@ export default {
   padding: 1em 2em;
   color: #333333;
   font-size: 16px;
-  
 }
 hr{
 display: block;
@@ -205,8 +203,9 @@ display: block;
     width: 22em;
     margin-top: 0.5em;
     margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
 }
-
 .input-container {
   display: flex;
   height: 80px;

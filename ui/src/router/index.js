@@ -10,6 +10,7 @@ import Login from "@/components/pages/Login"
 import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
+import Profile from "@/components/pages/Profile"
 import store from "../store/index"
 import routes from '../../config/routes'
 
@@ -22,8 +23,7 @@ Vue.prototype.$routes = ROUTES
 const loadTokenFromCookie = () => {
   const payload = Vue.$cookies.get("JWTPayload")
   if (payload !== null) {
-    store.commit('setLoggedIn', payload)
-    store.commit('setUsername', payload)
+    store.dispatch('updateLoggedIn', payload)
     return true
   } else return false
 }
@@ -119,6 +119,15 @@ const router = new Router({
         title: ROUTES.RESET_PWD.meta.title,
         guest: ROUTES.RESET_PWD.meta.guest,
         layout: ROUTES.RESET_PWD.meta.layout,
+      },
+    },
+    {
+      path: ROUTES.PROFILE.path,
+      name: ROUTES.PROFILE.name,
+      component: Profile,
+      meta: {
+        title: ROUTES.PROFILE.meta.title,
+        requiresAuth: ROUTES.PROFILE.meta.requiresAuth,
       },
     },
   ],
