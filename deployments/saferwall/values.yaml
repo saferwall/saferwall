@@ -36,6 +36,10 @@ minio:
   spacename: samples
   avatarspace: images
 
+####### FILEBEAT #########
+filebeat:
+  enabled: false
+  
 ####### COUCHBASE #########
 couchbase-cluster:
   enabled: true

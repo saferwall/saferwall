@@ -35,3 +35,7 @@ dependencies:
       version: 1.29.2
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: nginx-ingress.enabled
+    - name: filebeat
+      version: 7.5.2
+      repository: https://helm.elastic.co
+      condition: filebeat.enabled

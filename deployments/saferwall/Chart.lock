@@ -17,5 +17,8 @@ dependencies:
 - name: nginx-ingress
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.29.2
-digest: sha256:5ccdfedc8cd59f5df28d4b1a620cee0a7b8634d7e7a2c490ee013cbe9d8277c7
-generated: "2020-01-22T18:51:20.421687576+11:00"
+- name: filebeat
+  repository: https://helm.elastic.co
+  version: 7.5.2
+digest: sha256:c7aefe7a2afdede0367193215778f91bbc21ce2d39ceb08ae6972bc44b7dfacc
+generated: "2020-02-04T22:03:30.164262425+11:00"
