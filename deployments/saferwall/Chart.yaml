@@ -39,3 +39,7 @@ dependencies:
       version: 7.5.2
       repository: https://helm.elastic.co
       condition: filebeat.enabled
+    - name: elasticsearch
+      version: 7.5.2
+      repository: https://helm.elastic.co
+      condition: elasticsearch.enabled

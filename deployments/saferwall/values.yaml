@@ -39,7 +39,11 @@ minio:
 ####### FILEBEAT #########
 filebeat:
   enabled: false
-  
+
+####### ELASTIC SEARCH #########
+elasticsearch:
+  enabled: false
+
 ####### COUCHBASE #########
 couchbase-cluster:
   enabled: true
