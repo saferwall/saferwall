@@ -24,6 +24,16 @@ func IsStringInSlice(a string, list []string) bool {
 	return false
 }
 
+// RemoveStringFromSlice removes a string item from a list of strings.
+func RemoveStringFromSlice(s []string, r string) []string {
+    for i, v := range s {
+        if v == r {
+            return append(s[:i], s[i+1:]...)
+        }
+    }
+    return s
+}
+
 // GetQueryParamsFields retrieve `fields`` so we can filter them in GET/
 func GetQueryParamsFields(c echo.Context) []string {
 	var filters []string

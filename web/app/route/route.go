@@ -70,7 +70,7 @@ func New() *echo.Echo {
 	e.GET("/v1/users/:username/avatar/", user.GetAvatar)
 
 	// actions over a user
-	e.POST("/v1/files/:username/actions/", user.Actions)
+	e.POST("/v1/users/:username/actions/", user.Actions, m.RequireLogin, m.RequireJSON)
 
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)

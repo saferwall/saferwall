@@ -754,6 +754,18 @@ func UpdateAvatar(c echo.Context) error {
 // Actions over a user. Follow or Unfollow.
 func Actions(c echo.Context) error {
 
+	// extract user from token
+	u := c.Get("user").(*jwt.Token)
+	claims := u.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+
+	// Get user infos.
+	currentUser, err := GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exist"})
+	}
+
 	// Read the json body
 	b, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
@@ -791,17 +803,40 @@ func Actions(c echo.Context) error {
 
 	actionType := actions["type"].(string)
 
-	// get path param
-	username := c.Param("username")
-	
+	// get target user
+	targetUser, err := GetByUsername(c.Param("username"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Target user does not exist"})
+	}
+
+	if currentUser.Username == targetUser.Username {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Not allowed to follow yourself"})
+	}
+		
 	switch actionType{
 	case "follow":
-		
+		if !utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
+			currentUser.Following = append(currentUser.Following, targetUser.Username)
+		}
+		if !utils.IsStringInSlice(currentUser.Username, targetUser.Followers) {
+			targetUser.Followers = append(targetUser.Followers, currentUser.Username)
+		}
+		currentUser.Save()
+		targetUser.Save()
 	case "unfollow":
-
+		if utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
+			currentUser.Following = utils.RemoveStringFromSlice(currentUser.Following, targetUser.Username)
+		}
+		if utils.IsStringInSlice(currentUser.Username, targetUser.Followers) {
+			targetUser.Followers = utils.RemoveStringFromSlice(targetUser.Followers, currentUser.Username)
+		}
+		currentUser.Save()
+		targetUser.Save()
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"username":   username,
+		"verbose_msg":   "action success",
 	})
 }
