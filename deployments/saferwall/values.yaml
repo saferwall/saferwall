@@ -44,6 +44,10 @@ filebeat:
 elasticsearch:
   enabled: false
 
+####### KIBANA #########
+kibana:
+  enabled: false
+
 ####### COUCHBASE #########
 couchbase-cluster:
   enabled: true

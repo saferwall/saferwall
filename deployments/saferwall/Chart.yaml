@@ -43,3 +43,7 @@ dependencies:
       version: 7.5.2
       repository: https://helm.elastic.co
       condition: elasticsearch.enabled
+    - name: kibana
+      version: 7.5.2
+      repository: https://helm.elastic.co
+      condition: kibana.enabled  
