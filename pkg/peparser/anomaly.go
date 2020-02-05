@@ -30,11 +30,13 @@ var (
 
 	// AnoUncommonSizeOfOptionalHeader32 is reported when size of optional
 	// header for PE32 is larger than 0xE0.
-	AnoUncommonSizeOfOptionalHeader32 = "Size of optional header is larger than 0xE0 (PE32)"
+	AnoUncommonSizeOfOptionalHeader32 = `Size of optional header is larger than
+	 0xE0 (PE32)`
 
 	// AnoUncommonSizeOfOptionalHeader64 is reported when size of optional
 	// header for PE32+ is larger than 0xF0.
-	AnoUncommonSizeOfOptionalHeader64 = "Size of optional header is larger than 0xF0 (PE32+)"
+	AnoUncommonSizeOfOptionalHeader64 = `Size of optional header is larger than
+	 0xF0 (PE32+)`
 
 	// AnoAddressOfEntryPointNull is reported when address of entry point is 0.
 	AnoAddressOfEntryPointNull = "Address of entry point is 0."
@@ -144,12 +146,12 @@ func (pe *File) GetAnomalies() error {
 	case true:
 		oh64 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64)
 	case false:
-		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)		
+		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)
 	}
 
 	// Use oh for fields which are common for both structures.
 	oh := oh32
-	
+
 	if oh.AddressOfEntryPoint != 0 && oh.AddressOfEntryPoint < oh.SizeOfHeaders {
 		pe.Anomalies = append(pe.Anomalies, AnoAddressOfEPLessSizeOfHeaders)
 	}

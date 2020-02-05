@@ -11,14 +11,29 @@ import (
 
 // ImageDelayImportDescriptor represents the _IMAGE_DELAYLOAD_DESCRIPTOR structure.
 type ImageDelayImportDescriptor struct {
-	Attributes                 uint32 // Must be zero.
-	Name                       uint32 // RVA to the name of the target library (NULL-terminate ASCII string)
-	ModuleHandleRVA            uint32 // RVA to the HMODULE caching location (PHMODULE)
-	ImportAddressTableRVA      uint32 // RVA to the start of the IAT (PIMAGE_THUNK_DATA)
-	ImportNameTableRVA         uint32 // RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData)
-	BoundImportAddressTableRVA uint32 // RVA to an optional bound IAT
-	UnloadInformationTableRVA  uint32 // RVA to an optional unload info table
-	TimeDateStamp              uint32 // 0 if not bound, oherwise, date/time of the target DLL
+	// Must be zero.
+	Attributes uint32
+
+	// RVA to the name of the target library (NULL-terminate ASCII string).
+	Name uint32
+
+	// RVA to the HMODULE caching location (PHMODULE).
+	ModuleHandleRVA uint32
+
+	// RVA to the start of the IAT (PIMAGE_THUNK_DATA).
+	ImportAddressTableRVA uint32
+
+	// RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData).
+	ImportNameTableRVA uint32
+
+	// RVA to an optional bound IAT.
+	BoundImportAddressTableRVA uint32
+
+	// RVA to an optional unload info table.
+	UnloadInformationTableRVA uint32
+
+	// 0 if not bound, oherwise, date/time of the target DLL.
+	TimeDateStamp uint32
 }
 
 // DelayImport represents an entry in the delay import table.
@@ -61,7 +76,8 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 			} else if rva < importDelayDesc.ImportAddressTableRVA {
 				maxLen = rva - importDelayDesc.ImportNameTableRVA
 			} else {
-				maxLen = Max(rva-importDelayDesc.ImportNameTableRVA, rva-importDelayDesc.ImportAddressTableRVA)
+				maxLen = Max(rva-importDelayDesc.ImportNameTableRVA,
+					rva-importDelayDesc.ImportAddressTableRVA)
 			}
 		}
 

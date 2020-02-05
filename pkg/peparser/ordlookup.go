@@ -9,7 +9,8 @@ import (
     "strings"
 )
 
-var WS2_32_ORD_NAMES = map[uint64]string{
+// WS232OrdNames
+var WS232OrdNames = map[uint64]string{
     1:   "accept",
     2:   "bind",
     3:   "closesocket",
@@ -129,7 +130,8 @@ var WS2_32_ORD_NAMES = map[uint64]string{
     500: "WEP",
 }
 
-var OLEAUT_32_ORD_NAMES = map[uint64]string{
+// OleAut32OrdNames
+var OleAut32OrdNames = map[uint64]string{
     2:   "SysAllocString",
     3:   "SysReAllocString",
     4:   "SysAllocStringLen",
@@ -530,12 +532,14 @@ var OLEAUT_32_ORD_NAMES = map[uint64]string{
     443: "UnRegisterTypeLibForUser",
 }
 
+// OrdNames maps the dll names to ordinal names.
 var OrdNames = map[string]map[uint64]string{
-    "ws2_32.dll":   WS2_32_ORD_NAMES,
-    "wsock32.dll":  WS2_32_ORD_NAMES,
-    "oleaut32.dll": OLEAUT_32_ORD_NAMES,
+    "ws2_32.dll":   WS232OrdNames,
+    "wsock32.dll":  WS232OrdNames,
+    "oleaut32.dll": OleAut32OrdNames,
 }
 
+// OrdLookup
 func OrdLookup(libname string, ord uint64, makeName bool) string {
     names, ok := OrdNames[strings.ToLower(libname)]
     if ok {

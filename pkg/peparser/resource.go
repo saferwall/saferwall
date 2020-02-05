@@ -45,50 +45,102 @@ var (
 )
 
 // ImageResourceDirectory represents the IMAGE_RESOURCE_DIRECTORY.
-// This data structure should be considered the heading of a table because the table actually consists of directory entries.
+// This data structure should be considered the heading of a table because the
+// table actually consists of directory entries.
 type ImageResourceDirectory struct {
-	Characteristics      uint32 // Resource flags. This field is reserved for future use. It is currently set to zero.
-	TimeDateStamp        uint32 // The time that the resource data was created by the resource compiler.
-	MajorVersion         uint16 // The major version number, set by the user.
-	MinorVersion         uint16 // The minor version number, set by the user.
-	NumberOfNamedEntries uint16 // The number of directory entries immediately following the table that use strings to identify Type, Name, or Language entries (depending on the level of the table).
-	NumberOfIDEntries    uint16 // The number of directory entries immediately following the Name entries that use numeric IDs for Type, Name, or Language entries.
+	// Resource flags. This field is reserved for future use. It is currently
+	// set to zero.
+	Characteristics uint32
+
+	// The time that the resource data was created by the resource compiler.
+	TimeDateStamp uint32
+
+	// The major version number, set by the user.
+	MajorVersion uint16
+
+	// The minor version number, set by the user.
+	MinorVersion uint16
+
+	// The number of directory entries immediately following the table that use
+	// strings to identify Type, Name, or Language entries (depending on the
+	// level of the table).
+	NumberOfNamedEntries uint16
+
+	// The number of directory entries immediately following the Name entries
+	// that use numeric IDs for Type, Name, or Language entries.
+	NumberOfIDEntries uint16
 }
 
 // ImageResourceDirectoryEntry represents an entry in the resource directory entries.
 type ImageResourceDirectoryEntry struct {
-	Name         uint32 // is used to identify either a type of resource, a resource name, or a resource's language ID.
-	OffsetToData uint32 // is always used to point to a sibling in the tree, either a directory node or a leaf node.
+	// is used to identify either a type of resource, a resource name, or a
+	// resource's language ID.
+	Name uint32
+
+	//is always used to point to a sibling in the tree, either a directory node
+	// or a leaf node.
+	OffsetToData uint32
 }
 
-// ImageResourceDataEntry Each Resource Data entry describes an actual unit of raw data in the Resource Data area.
+// ImageResourceDataEntry Each Resource Data entry describes an actual unit of
+// raw data in the Resource Data area.
 type ImageResourceDataEntry struct {
-	OffsetToData uint32 // The address of a unit of resource data in the Resource Data area.
-	Size         uint32 // The size, in bytes, of the resource data that is pointed to by the Data RVA field.
-	CodePage     uint32 // The code page that is used to decode code point values within the resource data. Typically, the code page would be the Unicode code page.
-	Reserved     uint32 // Reserved, must be 0.
+	// The address of a unit of resource data in the Resource Data area.
+	OffsetToData uint32
+
+	// The size, in bytes, of the resource data that is pointed to by the Data
+	// RVA field.
+	Size uint32
+
+	// The code page that is used to decode code point values within the
+	// resource data. Typically, the code page would be the Unicode code page.
+	CodePage uint32
+
+	// Reserved, must be 0.
+	Reserved uint32
 }
 
 // ResourceDirectory represents resource directory information.
 type ResourceDirectory struct {
-	Struct  ImageResourceDirectory   // IMAGE_RESOURCE_DIRECTORY structure
-	Entries []ResourceDirectoryEntry // list of entries
+	// IMAGE_RESOURCE_DIRECTORY structure
+	Struct ImageResourceDirectory
+
+	// list of entries
+	Entries []ResourceDirectoryEntry
 }
 
 // ResourceDirectoryEntry represents a resource directory entry.
 type ResourceDirectoryEntry struct {
-	Struct    ImageResourceDirectoryEntry // IMAGE_RESOURCE_DIRECTORY_ENTRY structure.
-	Name      string                      // If the resource is identified by name this attribute will contain the name string. Empty string otherwise. If identified by id, the id is available at .Id field.
-	ID        uint32                      // The resource identifier.
-	Directory ResourceDirectory           // If this entry has a lower level directory this attribute will point to the ResourceDirData instance representing it.
-	Data      ResourceDataEntry           // If this entry has no further lower directories and points to the actual resource data, this attribute will reference the corresponding  ResourceDataEntry instance.
+	// IMAGE_RESOURCE_DIRECTORY_ENTRY structure.
+	Struct ImageResourceDirectoryEntry
+
+	// If the resource is identified by name this attribute will contain the
+	// name string. Empty string otherwise. If identified by id, the id is
+	//available at .Id field.
+	Name string
+
+	// The resource identifier.
+	ID uint32
+
+	// If this entry has a lower level directory this attribute will point to
+	// the ResourceDirData instance representing it.
+	Directory ResourceDirectory
+
+	// If this entry has no further lower directories and points to the actual
+	// resource data, this attribute will reference the corresponding
+	// ResourceDataEntry instance.
+	Data ResourceDataEntry
 }
 
 // ResourceDataEntry represents a resource data entry.
 type ResourceDataEntry struct {
-	Struct  ImageResourceDataEntry // IMAGE_RESOURCE_DATA_ENTRY structure.
-	Lang    uint32                 // Primary language ID
-	Sublang uint32                 // Sublanguage ID
+
+	// IMAGE_RESOURCE_DATA_ENTRY structure.
+	Struct ImageResourceDataEntry
+
+	// Primary language ID
+	Lang    uint32
+	Sublang uint32 // Sublanguage ID
 }
 
 // makeIntResource mimics the MAKEINTRESOURCE macro.

@@ -18,15 +18,17 @@ type IATEntry struct {
 
 // The structure and content of the import address table are identical to those
 // of the import lookup table, until the file is bound. During binding, the entries
-//  in the import address table are overwritten with the 32-bit (for PE32) or
+// in the import address table are overwritten with the 32-bit (for PE32) or
 // 64-bit (for PE32+) addresses of the symbols that are being imported.
 // These addresses are the actual memory addresses of the symbols, although
 // technically they are still called “virtual addresses.” The loader typically
 // processes the binding.
 //
 // The Import Address Table is there to to only trigger Copy On Write for as
-// few pages as possible (those being the actual Import Address Table pages themselves).
-// This is, partially the reason there's that extra level of indirection in the PE to begin with.
+// few pages as possible (those being the actual Import Address Table pages
+// themselves).
+// This is, partially the reason there's that extra level of indirection in the
+// PE to begin with.
 func (pe *File) parseIATDirectory(rva, size uint32) error {
 
 	var entries []IATEntry

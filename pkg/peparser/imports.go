@@ -26,20 +26,36 @@ const (
 )
 
 // ImageImportDescriptor describes the remainder of the import information.
-// The import directory table contains address information that is used to resolve fixup references to the entry points within a DLL image.
-// It consists of an array of import directory entries, one entry for each DLL to which the image refers.
-// The last directory entry is empty (filled with null values), which indicates the end of the directory table.
+// The import directory table contains address information that is used to
+// resolve fixup references to the entry points within a DLL image.
+// It consists of an array of import directory entries, one entry for each DLL
+// to which the image refers. The last directory entry is empty (filled with
+// null values), which indicates the end of the directory table.
 type ImageImportDescriptor struct {
-	OriginalFirstThunk uint32 // The RVA of the import lookup/name table (INT). This table contains a name or ordinal for each import. The INT is an array of IMAGE_THUNK_DATA structs.
-	TimeDateStamp      uint32 // The stamp that is set to zero until the image is bound. After the image is bound, this field is set to the time/data stamp of the DLL.
-	ForwarderChain     uint32 // The index of the first forwarder reference (-1 if no forwarders)
-	Name               uint32 // The address of an ASCII string that contains the name of the DLL. This address is relative to the image base.
-	FirstThunk         uint32 // The RVA of the import address table (IAT). The contents of this table are identical to the contents of the import lookup table until the image is bound.
+	// The RVA of the import lookup/name table (INT). This table contains a name
+	// or ordinal for each import. The INT is an array of IMAGE_THUNK_DATA structs.
+	OriginalFirstThunk uint32
+
+	// The stamp that is set to zero until the image is bound. After the image
+	// is bound, this field is set to the time/data stamp of the DLL.
+	TimeDateStamp uint32
+
+	// The index of the first forwarder reference (-1 if no forwarders).
+	ForwarderChain uint32
+
+	// The address of an ASCII string that contains the name of the DLL.
+	// This address is relative to the image base.
+	Name uint32
+
+	// The RVA of the import address table (IAT). The contents of this table are
+	// identical to the contents of the import lookup table until the image is bound.
+	FirstThunk uint32
 }
 
 // ImageThunkData32 corresponds to one imported function from the executable.
-// The entries are an array of 32-bit numbers for PE32 or an array of 64-bit numbers for PE32+
-// The ends of both arrays are indicated by an IMAGE_THUNK_DATA element with a value of zero.
+// The entries are an array of 32-bit numbers for PE32 or an array of 64-bit
+// numbers for PE32+. The ends of both arrays are indicated by an IMAGE_THUNK_DATA
+// element with a value of zero.
 // The IMAGE_THUNK_DATA union is a DWORD with these interpretations:
 // DWORD Function;       // Memory address of the imported function
 // DWORD Ordinal;        // Ordinal value of imported API
@@ -104,7 +120,8 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			} else if rva < importDesc.FirstThunk {
 				maxLen = rva - importDesc.OriginalFirstThunk
 			} else {
-				maxLen = Max(rva-importDesc.OriginalFirstThunk, rva-importDesc.FirstThunk)
+				maxLen = Max(rva-importDesc.OriginalFirstThunk,
+					rva-importDesc.FirstThunk)
 			}
 		}
 
@@ -399,7 +416,7 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 		}
 
 		imp.Address = FirstThunk +
-			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase + 
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase +
 			(idx * importOffset)
 		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
 			imp.Bound = iat[idx].AddressOfData

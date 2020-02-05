@@ -165,7 +165,8 @@ func (pe *File) getSectionByOffset(offset uint32) *ImageSectionHeader {
 		}
 
 		adjustedPointer := pe.adjustFileAlignment(section.PointerToRawData)
-		if adjustedPointer <= offset && offset < (adjustedPointer+section.SizeOfRawData) {
+		if adjustedPointer <= offset &&
+			offset < (adjustedPointer+section.SizeOfRawData) {
 			return &section
 		}
 	}
@@ -391,9 +392,11 @@ func (pe *File) PrettyDllCharacteristics() []string {
 	var characteristics uint16
 
 	if pe.Is64 {
-		characteristics =  pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).DllCharacteristics
+		characteristics =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).DllCharacteristics
 	} else {
-		characteristics =  pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DllCharacteristics
+		characteristics =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DllCharacteristics
 	}
 
 	imgDllCharacteristics := map[uint16]string{

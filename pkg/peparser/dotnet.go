@@ -34,8 +34,12 @@ type ImageCOR20Header struct {
 	MinorRuntimeVersio  uint16 // Minor version of the CLR runtime
 
 	// Symbol table and startup information
-	MetaData ImageDataDirectory // RVA to, and size of, the executables meta-data
-	Flags    uint32             // Bitwise flags indicating attributes of this executable
+
+	// RVA to, and size of, the executables meta-data.
+	MetaData ImageDataDirectory
+
+	// Bitwise flags indicating attributes of this executable.
+	Flags uint32
 
 	// union {
 	//
@@ -50,19 +54,20 @@ type ImageCOR20Header struct {
 	EntryPointRVAorToken uint32
 
 	// This is the blob of managed resources. Fetched using
-	// code:AssemblyNative.GetResource and  code:PEFile.GetResource and
-	// accessible from managed code from System.Assembly.GetManifestResourceStream.
-	// The meta data has a table that maps names to offsets into this blob, so
+	// code:AssemblyNative.GetResource and code:PEFile.GetResource and accessible
+	// from managed code from System.Assembly.GetManifestResourceStream. The
+	// meta data has a table that maps names to offsets into this blob, so
 	// logically the blob is a set of resources.
 	Resources ImageDataDirectory
 
-	// IL assemblies can be signed with a public-private key to validate who created it.
-	// The signature goes here if this feature is used.
+	// IL assemblies can be signed with a public-private key to validate who
+	// created it. The signature goes here if this feature is used.
 	StrongNameSignature ImageDataDirectory
 
 	CodeManagerTable ImageDataDirectory // Depricated, not used
 
-	// Used for manged codee that has unmaanaged code inside it (or exports methods as unmanaged entry points)
+	// Used for manged codee that has unmaanaged code inside it
+	// (or exports methods as unmanaged entry points)
 	VTableFixups            ImageDataDirectory
 	ExportAddressTableJumps ImageDataDirectory
 

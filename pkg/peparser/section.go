@@ -39,7 +39,8 @@ const (
 	// ImageScnCntInitializedData indicates the section contains initialized data.
 	ImageScnCntInitializedData = 0x00000040
 
-	// ImageScnCntUninitializedData indicates the section contains uninitialized data.
+	// ImageScnCntUninitializedData indicates the section contains uninitialized
+	// data.
 	ImageScnCntUninitializedData = 0x00000080
 
 	// ImageScnLnkOther is reserved for future use.
@@ -159,9 +160,10 @@ const (
 	ImageScnMemWrite = 0x80000000
 )
 
-// ImageSectionHeader is part of the section table , in fact section table is an array of Image Section Header
-// each contains information about one section of the whole file such as attribute,virtual offset.
-// the array size is the number of sections in the file .
+// ImageSectionHeader is part of the section table , in fact section table is an
+// array of Image Section Header each contains information about one section of
+// the whole file such as attribute,virtual offset. the array size is the number
+// of sections in the file.
 // Binary Spec : each struct is 40 byte and there is no padding .
 type ImageSectionHeader struct {
 
@@ -183,7 +185,8 @@ type ImageSectionHeader struct {
 	// relative to the image base when the section is loaded into memory.
 	// For object files, this field is the address of the first byte before
 	// relocation is applied; for simplicity, compilers should set this to zero.
-	// Otherwise, it is an arbitrary value that is subtracted from offsets during relocation.
+	// Otherwise, it is an arbitrary value that is subtracted from offsets during
+	// relocation.
 	VirtualAddress uint32
 
 	// The size of the section (for object files) or the size of the initialized
@@ -320,9 +323,9 @@ func (section *ImageSectionHeader) Contains(rva uint32, pe *File) bool {
 	}
 	vaAdj := pe.adjustSectionAlignment(section.VirtualAddress)
 
-	// Check whether there's any section after the current one that starts before the
-	// calculated end for the current one. If so, cut the current section's size
-	// to fit in the range up to where the next section starts.
+	// Check whether there's any section after the current one that starts before
+	// the calculated end for the current one. If so, cut the current section's
+	// size to fit in the range up to where the next section starts.
 	if section.NextHeaderAddr(pe) != 0 &&
 		section.NextHeaderAddr(pe) > section.VirtualAddress &&
 		vaAdj+size > section.NextHeaderAddr(pe) {
@@ -352,8 +355,9 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 		end = offset + section.SizeOfRawData
 	}
 
-	// PointerToRawData is not adjusted here as we might want to read any possible extra bytes
-	// that might get cut off by aligning the start (and hence cutting something off the end)
+	// PointerToRawData is not adjusted here as we might want to read any
+	// possible extra bytes that might get cut off by aligning the start (and
+	// hence cutting something off the end)
 	if end > section.PointerToRawData+section.SizeOfRawData {
 		end = section.PointerToRawData + section.SizeOfRawData
 	}
@@ -364,13 +368,17 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 // byVirtualAddress sorts all sections by Virtual Address.
 type byVirtualAddress []ImageSectionHeader
 
-func (s byVirtualAddress) Len() int           { return len(s) }
-func (s byVirtualAddress) Less(i, j int) bool { return s[i].VirtualAddress < s[j].VirtualAddress }
-func (s byVirtualAddress) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s byVirtualAddress) Len() int      { return len(s) }
+func (s byVirtualAddress) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s byVirtualAddress) Less(i, j int) bool {
+	return s[i].VirtualAddress < s[j].VirtualAddress
+}
 
 // byPointerToRawData sorts all sections by PointerToRawData.
 type byPointerToRawData []ImageSectionHeader
 
-func (s byPointerToRawData) Len() int           { return len(s) }
-func (s byPointerToRawData) Less(i, j int) bool { return s[i].PointerToRawData < s[j].PointerToRawData }
-func (s byPointerToRawData) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s byPointerToRawData) Len() int      { return len(s) }
+func (s byPointerToRawData) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s byPointerToRawData) Less(i, j int) bool {
+	return s[i].PointerToRawData < s[j].PointerToRawData
+}

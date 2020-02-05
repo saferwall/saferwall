@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 
 	// "encoding/hex"
 	"crypto/sha256"
@@ -35,10 +34,22 @@ const (
 // (but are not limited to) the items in the following table. Note that some
 // values are not currently supported.
 const (
-	WinCertTypeX509           = 0x0001 // Certificate contains an X.509 Certificate (Not Supported)
-	WinCertTypePKCSSignedData = 0x0002 //Certificate contains a PKCS#7 SignedData structure
-	WinCertTypeReserved1      = 0x0003 // Reserved
-	WinCertTypeTsStackSigned  = 0x0004 // Terminal Server Protocol Stack Certificate signing (Not Supported)
+	// Certificate contains an X.509 Certificate (Not Supported)
+	WinCertTypeX509 = 0x0001
+
+	// Certificate contains a PKCS#7 SignedData structure.
+	WinCertTypePKCSSignedData = 0x0002
+
+	// Reserved.
+	WinCertTypeReserved1 = 0x0003
+
+	// Terminal Server Protocol Stack Certificate signing (Not Supported).
+	WinCertTypeTsStackSigned = 0x0004
+)
+
+var (
+	errSecurityDataDirOutOfBands = errors.New(`Boundary checks failed in Security 
+		Data Directory`)
 )
 
 // Certificate directory.
@@ -49,9 +60,14 @@ type Certificate struct {
 
 // WinCertificate encapsulates a signature used in verifying executable files.
 type WinCertificate struct {
-	Length          uint32 // Specifies the length, in bytes, of the signature.
-	Revision        uint16 // Specifies the certificate revision.
-	CertificateType uint16 // Specifies the type of certificate.
+	// Specifies the length, in bytes, of the signature.
+	Length uint32
+
+	// Specifies the certificate revision.
+	Revision uint16
+
+	// Specifies the type of certificate.
+	CertificateType uint16
 }
 
 // Authentihash generates the pe image file hash.
@@ -70,7 +86,8 @@ func (pe *File) Authentihash() []byte {
 	h := sha256.New()
 
 	// Hash the image header from its base to immediately before the start of
-	// the checksum address, as specified in Optional Header Windows-Specific Fields.
+	// the checksum address, as specified in Optional Header Windows-Specific
+	// Fields.
 	start := uint32(0)
 	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
 	checksumOffset := optionalHeaderOffset + 64
@@ -97,7 +114,8 @@ func (pe *File) Authentihash() []byte {
 		dataDirOffset = uint32(unsafe.Offsetof(oh32.DataDirectory))
 	}
 	securityDirOffset := optionalHeaderOffset + dataDirOffset
-	securityDirOffset += uint32(binary.Size(DataDirectory{}) * ImageDirectoryEntryCertificate)
+	securityDirOffset += uint32(
+		binary.Size(DataDirectory{}) * ImageDirectoryEntryCertificate)
 	h.Write(pe.data[start:securityDirOffset])
 
 	// Skip over the Certificate Table entry, which is 8 bytes long.
@@ -169,8 +187,7 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 	for {
 		// Boundary check
 		if fileOffset+certSize > pe.size {
-			log.Print("Overflow")
-			return Certificate{}, errors.New("Boundary checks failed in Security Data Dir")
+			return Certificate{}, errSecurityDataDirOutOfBands
 		}
 
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+certSize])
