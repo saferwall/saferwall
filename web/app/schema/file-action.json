@@ -7,7 +7,7 @@
       "type": {
         "description": "Type of action to perform",
         "type": "string",
-        "pattern": "^(rescan|download|like)$"
+        "pattern": "^(rescan|download|like|unlike)$"
       }
     },
     "required": ["type"],
