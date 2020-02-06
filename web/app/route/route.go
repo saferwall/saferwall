@@ -54,7 +54,7 @@ func New() *echo.Echo {
 	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin)
 
 	// handle file download.
-	e.POST("/v1/files/:sha256/actions/", file.Actions)
+	e.POST("/v1/files/:sha256/actions/", file.Actions, m.RequireLogin)
 	e.GET("/v1/files/:sha256/download/", file.Download, m.RequireLogin)
 
 	// handle /users endpoint.

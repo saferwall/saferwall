@@ -11,13 +11,13 @@
         </div>
         <div class="bt" :class="{ active: page === 1 }">
           <button class="button is-light" @click="page = 1">
-            Email Address
+            Change Email Address
           </button>
           <hr />
         </div>
         <div class="bt" :class="{ active: page === 2 }">
           <button class="button is-light" @click="page = 2">
-            Password
+            Change Password
           </button>
           <hr />
         </div>

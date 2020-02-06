@@ -54,6 +54,7 @@ type User struct {
 	HasAvatar	bool 		`json:"has_avatar,omitempty"`
 	Following	[]string 	`json:"following,omitempty"`
 	Followers	[]string 	`json:"followers,omitempty"`
+	Likes	[]string 	`json:"likes,omitempty"`
 }
 
 // UpdatePassword creates a JWT token for email confirmation.

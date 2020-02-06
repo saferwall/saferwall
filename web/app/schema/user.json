@@ -59,6 +59,10 @@
       "description": "Users who follows you",
       "type": "array"
     },
+    "likes": {
+      "description": "Hashes of files/urls a user liked",
+      "type": "array"
+    },
     "submissions": {
       "description": "The hashes of files a user submitted",
       "type": "array"

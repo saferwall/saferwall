@@ -162,6 +162,7 @@ github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40T
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0RK8m9o+Q=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+github.com/saferwall/saferwall v0.0.1 h1:9IH1YsVRgOwgEsCH5DhWCUQNYTPWTJyRhira75CczHY=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1 h1:0ijn2JFThOejq+EEdA5+c/Fx3vvKkBHCN6p6PTdosh8=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1/go.mod h1:TBN1cZXPGz9JwipoK6DLoqQb2U/UY38Z34NJlqRLgnQ=
 github.com/saferwall/saferwall/pkg/utils v0.0.1/go.mod h1:JuJN2uLw7LUVhn4MO6yG4X4q+8mErr0VU3ZX0QJ0n+A=

@@ -24,6 +24,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	u "github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app"
+	"github.com/saferwall/saferwall/web/app/handler/user"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	log "github.com/sirupsen/logrus"
@@ -564,6 +565,25 @@ func Actions(c echo.Context) error {
 		}
 		return c.File(filepath)
 	case "like":
+		// extract user from token
+		u := c.Get("user").(*jwt.Token)
+		claims := u.Claims.(jwt.MapClaims)
+		username := claims["name"].(string)
+
+		// Get user infos.
+		usr, err := user.GetByUsername(username)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"verbose_msg": "Username does not exist"})
+		}
+
+		if !utils.IsStringInSlice(sha256, usr.Likes) {
+			usr.Likes = append(usr.Likes, sha256)
+			usr.Save()
+		}
+
+		return c.JSON(http.StatusOK, map[string]string {
+			"verbose_msg": "Sample has been liked successefuly"})
 	}
 
 	return c.JSON(http.StatusInternalServerError, Response{
