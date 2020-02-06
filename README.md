@@ -1,11 +1,16 @@
 <p align="center"><a href="https://saferwall.com" target="_blank" rel="noopener noreferrer"><img width="100" src="https://i.imgur.com/zjCOKPo.png" alt="Saferwall logo"></a></p>
 
-(WIP) Saferwall is an open source malware sandbox. In the first hand, it aims to provide a collaborative platform to share samples among malware researchers. On the other hand, being a tool which acts as a system expert which generates an automated malware analysis for humans. 
+(WIP) Saferwall is an open source malware platform. It aims for the following goals:
+- Provide a collaborative platform to share samples among malware researchers.
+- Acts as a system expert, to help researchers generates an automated malware analysis report.
+- Hunting platform to find new malwares.
+- Quality ensurance for signature before releasing.
 
 ## Features
 
 - Static analysis:
-    - Calculate common crypto hashes, packer identification, strings extraction, etc...).
+    - Crypto hashes, packer identification
+    - Strings extraction
 - Multiple AV scanner which includes major antivirus vendors:
 
     Vendors | status 
@@ -25,13 +30,33 @@
 
 ## Installation
 
-Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high availability, scalibility and the huge ecosystem behind it. Installing this app means deploying a kubernetes cluster. You can either deploy it on cloud or on bare metal. To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). Kops automated provisionning of kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack. For the time being, only AWS is officially supported.
+Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high availability, scalibility and the huge ecosystem behind it. 
 
+Everything runs inside Kubernetes. You can either deploy it in the cloud or have it self hosted.
+
+ To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provionne kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported.
+
+Steps:
 1. Clone the project: `git clone https://github.com/saferwall/saferwall`
 2. Using a debian linux, make sure `build-essential` are installed: `sudo apt-get install build-essential`.
-3. Install it: `make saferwall` (one time)
+3. Install it: `make saferwall`.
 4. The AVs requires licenses, that is why the containers are not publicly avaibable. Put licenses under `build/data ` and run: `make build`
 5. Edit the deployments/values.yaml to match your needs.
+
+## Built with:
+
+- Golang mostly.
+- Backend: [Echo](https://echo.labstack.com/)
+- Frontend: [VueJS](https://vuejs.org/) + [Bulma](https://bulma.io/)
+- Messaging: [NSQ](https://nsq.io/)
+- Database: [Couchbase](https://www.couchbase.com/)
+- Logging: [FileBeat](https://www.elastic.co/beats/filebeat) + [ElasticSearch](https://www.elastic.co/) + [Kibanna](https://www.elastic.co/)
+- Minio: [Object storage](https://min.io/)
+- Deployment: [Helm](https://helm.sh/) + [Kubernetes](https://kubernetes.io/)
+
+## Current architecture:
+
+<p align="center"><img src="https://i.imgur.com/W0qXb5y.png" width="600px" height="auto"></p>
 
 
 ## Acknowledgements
