@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"github.com/kjk/betterguid"
 
 	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
@@ -23,9 +24,9 @@ import (
 	"github.com/saferwall/saferwall/pkg/crypto"
 	u "github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app"
-	"github.com/saferwall/saferwall/web/app/handler/user"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
+	"github.com/saferwall/saferwall/web/app/handler/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -43,9 +44,10 @@ type submission struct {
 }
 
 type comment struct {
-	Timestamp     time.Time `json:"timestamp,omitempty"`
-	Username string    `json:"username,omitempty"`
-	Body   string    `json:"body,omitempty"`
+	Timestamp time.Time `json:"timestamp,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Body      string    `json:"body,omitempty"`
+	ID        string    `json:"id,omitempty"`
 }
 
 // File represent a sample
@@ -68,7 +70,7 @@ type File struct {
 	Strings         []stringStruct         `json:"strings"`
 	MultiAV         map[string]interface{} `json:"multiav"`
 	Status          int                    `json:"status"`
-	Comments		[]comment			`json:"comments,omitempty"`
+	Comments        []comment              `json:"comments,omitempty"`
 }
 
 // Response JSON
@@ -159,6 +161,16 @@ func GetAllFiles(fields []string) ([]File, error) {
 	return retValues, nil
 }
 
+// getByCommentID retreieve a comment from its id.
+func (file *File) getByCommentID(commentID string) comment {
+	for _, com := range file.Comments {
+		if com.ID == commentID {
+			return com
+		}
+	}
+	return comment{}
+}
+
 // DumpRequest dumps the headers.
 func DumpRequest(req *http.Request) {
 	requestDump, err := httputil.DumpRequest(req, true)
@@ -247,8 +259,10 @@ func PutFile(c echo.Context) error {
 	}
 
 	// Specific checks
-	_, alreadyScanned := file.MultiAV["last_scan"]; if alreadyScanned {
-		_, ok := file.MultiAV["first_scan"]; if !ok {
+	_, alreadyScanned := file.MultiAV["last_scan"]
+	if alreadyScanned {
+		_, ok := file.MultiAV["first_scan"]
+		if !ok {
 			file.MultiAV["first_scan"] = file.MultiAV["last_scan"]
 		}
 	}
@@ -427,7 +441,7 @@ func PostFiles(c echo.Context) error {
 	// Create new submission
 	now := time.Now().UTC()
 	s := submission{
-		Date: now,
+		Date:     now,
 		Filename: fileHeader.Filename,
 		Source:   "api",
 		Country:  c.Request().Header.Get("X-Geoip-Country"),
@@ -536,7 +550,7 @@ func Actions(c echo.Context) error {
 		})
 	}
 
-	switch actionType{
+	switch actionType {
 	case "rescan":
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
@@ -589,7 +603,7 @@ func Actions(c echo.Context) error {
 			usr.Save()
 		}
 
-		return c.JSON(http.StatusOK, map[string]string {
+		return c.JSON(http.StatusOK, map[string]string{
 			"verbose_msg": "Sample has been liked successefuly"})
 	case "unlike":
 		// extract user from token
@@ -609,7 +623,7 @@ func Actions(c echo.Context) error {
 			usr.Save()
 		}
 
-		return c.JSON(http.StatusOK, map[string]string {
+		return c.JSON(http.StatusOK, map[string]string{
 			"verbose_msg": "Sample has been unliked successefuly"})
 	}
 
@@ -621,7 +635,7 @@ func Actions(c echo.Context) error {
 }
 
 // PostComment creates a new comment.
-func PostComment (c echo.Context) error {
+func PostComment(c echo.Context) error {
 
 	// get path param
 	sha256 := c.Param("sha256")
@@ -663,25 +677,67 @@ func PostComment (c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// Get the user
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+
 	// Create a new comment
-	com := comment {}
+	com := comment{}
 	err = json.Unmarshal(b, &com)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	// Update file to reflect new comment
+	// Overwrite the content for now
 	com.Timestamp = time.Now().UTC()
+	com.Username = username
+	com.ID = betterguid.New()
 	file.Comments = append(file.Comments, com)
 	file.Save()
 
-	return c.JSON(http.StatusOK, file)
+	return c.JSON(http.StatusOK, com)
 }
 
-
-
-
 // DeleteComment deletes a comment.
-func DeleteComment (c echo.Context) error {
-	return nil
+func DeleteComment(c echo.Context) error {
+
+	// Get the file doc.
+	sha256 := c.Param("sha256")
+	file, err := GetFileBySHA256(sha256)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Get the user
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
+	// Get comment
+	commentID := c.Param("id")
+	com := file.getByCommentID(commentID)
+
+	if (comment{} == com) {
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"verbose_msg": "Comment not found"})
+	}
+
+	// Check if user own comment
+	if com.Username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"verbose_msg": "Not allowed to delete someone else comment"})
+	}
+
+	// Delete comment.
+	for i, com := range file.Comments {
+        if com.ID == commentID {
+			file.Comments = append(file.Comments[:i], file.Comments[i+1:]...)
+			file.Save()
+			break
+        }
+    }
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "Comment was deleted"})
 }

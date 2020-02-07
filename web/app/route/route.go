@@ -55,7 +55,7 @@ func New() *echo.Echo {
 
 	// handle comments
 	e.POST("/v1/files/:sha256/comments/", file.PostComment, m.RequireLogin, m.RequireJSON)
-	e.DELETE("/v1/files/:sha256/comments/", file.DeleteComment, m.RequireLogin, m.RequireJSON)
+	e.DELETE("/v1/files/:sha256/comments/:id/", file.DeleteComment, m.RequireLogin)
 
 	// handle file download.
 	e.POST("/v1/files/:sha256/actions/", file.Actions, m.RequireLogin)
