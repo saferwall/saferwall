@@ -39,11 +39,11 @@
       "description": "Tags",
       "type": "array"
     },
-    "submissions" : {
+    "submissions": {
       "description": "File upload history",
-      "type": "object",
+      "type": "array",
       "properties": {
-        "date" : {
+        "date": {
           "description": "Timestamp when the file was submitted",
           "type": "integer"
         },
@@ -71,7 +71,7 @@
     },
     "comments": {
       "description": "Users comments",
-      "type": "object",
+      "type": "array",
       "properties": {
         "body": {
           "description": "Comment content",
@@ -81,12 +81,15 @@
           "description": "Comment publish date",
           "type": "integer"
         },
-        "user": {
+        "username": {
           "description": "User who made the comment",
           "type": "string"
         }
       },
-      "required": ["body", "timestamp", "user"],
+      "required": [
+        "body",
+        "username"
+      ],
       "additionalProperties": false
     },
     "exif": {

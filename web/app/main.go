@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+    "path/filepath"
 
 	nsq "github.com/bitly/go-nsq"
 	"github.com/matcornic/hermes/v2"
@@ -80,6 +81,9 @@ var (
 
 	// UserActionSchema represent an action over a user.
 	UserActionSchema *gojsonschema.Schema
+
+	// CommentSchema represent an comment creation.
+	CommentSchema *gojsonschema.Schema
 	
 	// SamplesSpaceBucket contains the space name of bucket to save samples.
 	SamplesSpaceBucket string
@@ -164,86 +168,57 @@ func loadSchemas() {
 	if err != nil {
 		log.Fatalln("Failed to Get current directory, err: ", err)
 	}
+	schemasPath := path.Join(dir, "app", "schema")
 
-	jsonPath := path.Join(dir, "app", "schema", "user.json")
-	source := fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader := gojsonschema.NewReferenceLoader(source)
-	UserSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading user schema: ", err)
+	// Get all schemas definitions
+	var files []string
+	err = filepath.Walk(schemasPath, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		files = append(files, path)
+        return nil
+    })
+    if err != nil {
+		log.Fatalln("Failed to walk schemas directory, err: ", err)
 	}
+	
+	// Iterate though json schemas and load them.
+    for _, file := range files {
+		jsonSchema := filepath.Base(file)
+		source := fmt.Sprintf("file:///%s", file)
+		jsonLoader := gojsonschema.NewReferenceLoader(source)
 
-	jsonPath = path.Join(dir, "app", "schema", "file.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	FileSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading file schema: ", err)
-	}
+		switch jsonSchema{
+		case "user.json":
+			UserSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "file.json":
+			FileSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "login.json":
+			LoginSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "email.json":
+			EmailSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "password.json":
+			ResetPasswordSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "file-action.json":
+			FileActionSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "update-user.json":
+			UserUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "update-password.json":
+			PasswordUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "update-email.json":
+			EmailUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "user-action.json":
+			UserActionSchema, err = gojsonschema.NewSchema(jsonLoader)
+		case "comment.json":
+			CommentSchema, err = gojsonschema.NewSchema(jsonLoader)
+		}
 
-	jsonPath = path.Join(dir, "app", "schema", "login.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	LoginSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading file schema: ", err)
-	}
+		if err != nil {
+			log.Fatalf("Error while loading %s schema: ", jsonSchema, err)
+		}
+    }
 
-	jsonPath = path.Join(dir, "app", "schema", "email.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	EmailSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading email schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "password.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	ResetPasswordSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading email schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "file-action.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	FileActionSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading file actions schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "update-user.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	UserUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading user update schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "update-password.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	PasswordUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading password update schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "update-email.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	EmailUpdateSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading email update schema: ", err)
-	}
-
-	jsonPath = path.Join(dir, "app", "schema", "user-action.json")
-	source = fmt.Sprintf("file:///%s", jsonPath)
-	jsonLoader = gojsonschema.NewReferenceLoader(source)
-	UserActionSchema, err = gojsonschema.NewSchema(jsonLoader)
-	if err != nil {
-		log.Fatalln("Error while loading user action schema: ", err)
-	}
 	log.Infoln("Schemas were loaded")
 }
 

@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -43,6 +42,12 @@ type submission struct {
 	Country  string    `json:"country,omitempty"`
 }
 
+type comment struct {
+	Timestamp     time.Time `json:"timestamp,omitempty"`
+	Username string    `json:"username,omitempty"`
+	Body   string    `json:"body,omitempty"`
+}
+
 // File represent a sample
 type File struct {
 	Md5             string                 `json:"md5,omitempty"`
@@ -63,6 +68,7 @@ type File struct {
 	Strings         []stringStruct         `json:"strings"`
 	MultiAV         map[string]interface{} `json:"multiav"`
 	Status          int                    `json:"status"`
+	Comments		[]comment			`json:"comments,omitempty"`
 }
 
 // Response JSON
@@ -209,12 +215,14 @@ func PutFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
 	if !result.Valid() {
+		msg := ""
 		for _, desc := range result.Errors() {
-			log.Printf("- %s\n", desc)
+			msg += fmt.Sprintf("%s, ", desc.Description())
 		}
-		return c.JSON(http.StatusBadRequest, errors.New("json validation failed"))
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
 	}
 
 	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
@@ -429,17 +437,16 @@ func PostFiles(c echo.Context) error {
 	fileDocument.Save()
 
 	return c.JSON(http.StatusOK, fileDocument)
-
 }
 
 // PutFiles bulk updates of files
 func PutFiles(c echo.Context) error {
-	return c.String(http.StatusOK, "putFiles")
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "not implemented"})
 }
 
 // DeleteFiles delete all files
 func DeleteFiles(c echo.Context) error {
-
 	go deleteAllFiles()
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "ok"})
@@ -611,4 +618,70 @@ func Actions(c echo.Context) error {
 		Description: "Type of action: " + actionType,
 		Sha256:      sha256,
 	})
+}
+
+// PostComment creates a new comment.
+func PostComment (c echo.Context) error {
+
+	// get path param
+	sha256 := c.Param("sha256")
+
+	// Read the json body
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Validate JSON
+	l := gojsonschema.NewBytesLoader(b)
+	result, err := app.CommentSchema.Validate(l)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	if !result.Valid() {
+		msg := ""
+		for _, desc := range result.Errors() {
+			msg += fmt.Sprintf("%s, ", desc.Description())
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": msg})
+	}
+
+	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	if !matched {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha265",
+			Description: "File hash is not a sha256 hash" + sha256,
+			Sha256:      sha256,
+		})
+	}
+
+	// Get the document.
+	file, err := GetFileBySHA256(sha256)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Create a new comment
+	com := comment {}
+	err = json.Unmarshal(b, &com)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	// Update file to reflect new comment
+	com.Timestamp = time.Now().UTC()
+	file.Comments = append(file.Comments, com)
+	file.Save()
+
+	return c.JSON(http.StatusOK, file)
+}
+
+
+
+
+// DeleteComment deletes a comment.
+func DeleteComment (c echo.Context) error {
+	return nil
 }

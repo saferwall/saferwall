@@ -1,6 +1,11 @@
 <p align="center"><a href="https://saferwall.com" target="_blank" rel="noopener noreferrer"><img width="100" src="https://i.imgur.com/zjCOKPo.png" alt="Saferwall logo"></a></p>
+<h4 align="center">Saferwall is an open source malware analysis platform</a>.</h4>
 
-(WIP) Saferwall is an open source malware platform. It aims for the following goals:
+<p align="center"> 
+  <a href="https://gitter.im/saferwall/community"><img src="https://img.shields.io/gitter/room/saferwall/community?style=flat-square"></a>
+</p>
+
+It aims for the following goals:
 - Provide a collaborative platform to share samples among malware researchers.
 - Acts as a system expert, to help researchers generates an automated malware analysis report.
 - Hunting platform to find new malwares.
@@ -57,7 +62,6 @@ Steps:
 ## Current architecture:
 
 <p align="center"><img src="https://i.imgur.com/W0qXb5y.png" width="600px" height="auto"></p>
-
 
 ## Acknowledgements
 

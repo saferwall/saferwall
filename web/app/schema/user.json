@@ -68,6 +68,10 @@
       "type": "array"
     }
   },
-  "required": ["username", "email", "password"],
+  "required": [
+    "username",
+    "email",
+    "password"
+  ],
   "additionalProperties": false
 }

@@ -51,7 +51,11 @@ func New() *echo.Echo {
 	// handle /files/:sha256 endpoint.
 	e.GET("/v1/files/:sha256/", file.GetFile)
 	e.PUT("/v1/files/:sha256/", file.PutFile, m.RequireLogin, m.RequireJSON)
-	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin)
+	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin, auth.IsAdmin)
+
+	// handle comments
+	e.POST("/v1/files/:sha256/comments/", file.PostComment, m.RequireLogin, m.RequireJSON)
+	e.DELETE("/v1/files/:sha256/comments/", file.DeleteComment, m.RequireLogin, m.RequireJSON)
 
 	// handle file download.
 	e.POST("/v1/files/:sha256/actions/", file.Actions, m.RequireLogin)
