@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loader v-if="showLoader"></loader>
     <div class="tile is-ancestor" v-if="!showLoader">
       <div class="tile is-parent is-vertical">
         <!-- Basic Properties -->
@@ -16,8 +15,6 @@
 </template>
 
 <script>
-import Loader from "@/components/elements/Loader"
-
 import BasicProperties from "../elements/summary/BasicProperties"
 import ExifTool from "../elements/summary/ExifTool"
 import Submissions from "../elements/summary/Submissions"
@@ -26,7 +23,6 @@ import { mapGetters } from "vuex"
 
 export default {
   components: {
-    loader: Loader,
     basicProperties: BasicProperties,
     exifTool: ExifTool,
     submissions: Submissions,
@@ -42,9 +38,6 @@ export default {
         return {}
         
       return this._.omit(this.fileData.data, ["multiav", "strings", "status"])
-    },
-    showLoader: function() {
-      return this.summaryData === {} || !this.summaryData
     },
   },
 }

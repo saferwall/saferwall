@@ -1,6 +1,5 @@
 <template>
   <div class="tile is-ancestor">
-    <loader v-if="showLoader"></loader>
     <div class="tile is-parent is-6">
       <div class="tile is-child box" v-if="!showLoader">
         <h4 class="title">First Scan</h4>
@@ -119,13 +118,11 @@
 </template>
 
 <script>
-import Loader from "@/components/elements/Loader"
 import Copy from "@/components/elements/Copy"
 import { mapGetters } from "vuex"
 
 export default {
   components: {
-    loader: Loader,
     copy: Copy,
   },
   data() {
@@ -149,9 +146,6 @@ export default {
         firstScan: _firstScan,
         lastScan: _lastScan,
       }
-    },
-    showLoader: function() {
-      return (Array.isArray(this.Scans.firstScan) && this.Scans.firstScan.length === 0) || (Array.isArray(this.Scans.lastScan) && this.Scans.lastScan.length === 0)
     },
   },
   methods: {

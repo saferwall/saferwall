@@ -1,7 +1,6 @@
 <!-- refactor (filtering, sorting…) -->
 <template>
   <div>
-    <loader v-if="showLoader"></loader>
     <div class="columns">
       <div class="column is-6 is-offset-6" style="text-align:right">
         <label for="" class="label">Limit:</label>
@@ -87,18 +86,13 @@
   </div>
 </template>
 <script>
-import Loader from "@/components/elements/Loader"
 import { mapGetters } from "vuex"
 
 export default {
-  components: {
-    loader: Loader,
-  },
   data() {
     return {
       start: 0,
       limit: 10,
-      strings: [],
       filteredStrings: [],
       encodingSorted: "",
       valueSorted: "",
@@ -108,12 +102,24 @@ export default {
   },
   computed: {
     ...mapGetters({ fileData: "getFileData" }),
+    strings: function() {
+      if (
+        !this.fileData ||
+        (Object.entries(this.fileData).length === 0 &&
+          this.fileData.constructor === Object)
+      )
+        return []
+
+      var str = this.fileData.data.strings
+      str.forEach((s) => (s.show = true))
+      return str
+    },
     filteredStringsToShow: function() {
       return this.filteredStrings.filter((string) => string.show)
     },
-    showLoader: function() {
-      return Array.isArray(this.strings) && this.strings.length === 0
-    },
+  },
+  mounted() {
+    this.filteredStrings = this.strings.slice(this.start, this.limit)
   },
 
   methods: {
@@ -185,11 +191,6 @@ export default {
         this.filteredStrings = this.strings.slice(this.start, this.limit)
       }
     },
-  },
-  mounted() {
-    this.strings = this.fileData.data.strings
-    this.strings.forEach((s) => (s.show = true))
-    this.filteredStrings = this.strings.slice(this.start, this.limit)
   },
 }
 </script>

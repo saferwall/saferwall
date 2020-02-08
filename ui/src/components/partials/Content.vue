@@ -2,9 +2,7 @@
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
       <div class="columns">
-        <div
-          class="column is-four-fifths-fullhd is-three-quarters-desktop is-three-fifths-tablet is-half-mobile"
-        >
+        <div class="column is-8">
           <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
             <ul>
               <li>
@@ -18,15 +16,21 @@
             </ul>
           </nav>
         </div>
-        <div class="column">
-          <div class="buttons">
-            <Download v-if="showDownload" :hash="hash" />
-            <Rescan v-if="showRescan" :route="route" :hash="hash" />
+        <div class="column is-1">
+          <Like :hash="hash" />
+        </div>
+        <div class="column is-3">
+          <div class="buttons" v-if="showButtons">
+            <Download :hash="hash" />
+            <Rescan :route="route" :hash="hash" />
           </div>
         </div>
       </div>
-      <p class="no_file" v-if="!showContent">No file Specified</p>
-      <slot v-if="showContent"></slot>
+      <div class="column">
+        <p class="no_file" v-if="!showContent">No file Specified</p>
+        <loader v-if="showLoader && showContent"></loader>
+      </div>
+      <slot v-if="showContent && !showLoader"></slot>
       <div class="column">
         <Social />
       </div>
@@ -34,9 +38,11 @@
   </section>
 </template>
 <script>
+import Loader from "@/components/elements/Loader"
 import Download from "../elements/Download"
 import Rescan from "../elements/Rescan"
 import Social from "../elements/Social"
+import Like from "../elements/LikeButton"
 
 import { mapGetters } from "vuex"
 
@@ -51,18 +57,15 @@ export default {
     Download,
     Rescan,
     Social,
+    Like,
+    Loader,
   },
   computed: {
-    showDownload: function() {
+    showButtons: function() {
       return (
         this.$store.getters.getHashContext &&
         this.$store.getters.getLoggedIn &&
         this.route !== "upload"
-      )
-    },
-    showRescan: function() {
-      return (
-        this.$store.getters.getHashContext && this.$store.getters.getLoggedIn
       )
     },
     showContent: function() {
@@ -72,8 +75,15 @@ export default {
         this.route === "profile"
       )
     },
+    showLoader: function() {
+      return (
+        Object.entries(this.userData).length === 0 &&
+        this.userData.constructor === Object
+      )
+    },
     ...mapGetters({
       hash: "getHashContext",
+      userData: "getUserData",
     }),
   },
   methods: {
@@ -123,5 +133,9 @@ section.main-content {
 .no_file {
   font-size: 20px;
   font-weight: 200;
+}
+#loader {
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 </style>
