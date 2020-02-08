@@ -397,24 +397,17 @@ func GetUser(c echo.Context) error {
 		}
 	}
 
-	currentUser := c.Get("user").(*jwt.Token)
-	claims := currentUser.Claims.(jwt.MapClaims)
-	currentUsername := claims["name"].(string)
-
 	// get path param
 	username := c.Param("username")
-
-	if username != currentUsername {
-		return c.JSON(http.StatusUnauthorized, map[string]string{
-				"verbose_msg": "Not allowed to fetch other users' data"})
-	}	
-
 	user, err := GetUserByUsernameFields(filters, username)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "User not found"})
 	}
+
+	// hide sensitive data
 	user.Password = ""
+	user.Email = ""
 	return c.JSON(http.StatusOK, user)
 }
 
