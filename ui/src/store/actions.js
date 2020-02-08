@@ -46,5 +46,16 @@ export default {
           })
       })
       .catch(console.log)
+  },
+  addRemoveLike: (context, add) =>{
+    var data = context.getters.getUserData.likes
+    if(add){
+      data.push(context.getters.getHashContext)
+       context.commit('setLikes', data)
+    }
+    else{
+      Vue._.pull(data, context.getters.getHashContext)
+       context.commit('setLikes', data)
+    }
   }
 }

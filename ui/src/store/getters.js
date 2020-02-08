@@ -13,5 +13,8 @@ export default {
   },
   getUserData: state => {
     return state.userData
+  },
+  getLikes: state => {
+    return state.userData.likes
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="tile is-ancestor" v-if="!showLoader">
+    <div class="tile is-ancestor">
       <div class="tile is-parent is-vertical">
         <!-- Basic Properties -->
         <basicProperties :summaryData="summaryData" />

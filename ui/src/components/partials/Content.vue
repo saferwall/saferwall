@@ -17,16 +17,16 @@
           </nav>
         </div>
         <div class="column is-1">
-          <Like :hash="hash" />
+          <Like :hash="hash" v-if="!showLoader && showButtons"/>
         </div>
         <div class="column is-3">
-          <div class="buttons" v-if="showButtons">
+          <div class="buttons" v-if="!showLoader && showButtons">
             <Download :hash="hash" />
             <Rescan :route="route" :hash="hash" />
           </div>
         </div>
       </div>
-      <div class="column">
+      <div class="column placeholders">
         <p class="no_file" v-if="!showContent">No file Specified</p>
         <loader v-if="showLoader && showContent"></loader>
       </div>
@@ -65,7 +65,8 @@ export default {
       return (
         this.$store.getters.getHashContext &&
         this.$store.getters.getLoggedIn &&
-        this.route !== "upload"
+        this.route !== "upload" &&
+        this.route !== "profile"
       )
     },
     showContent: function() {
@@ -136,6 +137,9 @@ section.main-content {
 }
 #loader {
   margin-top: 1em;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
+}
+.placeholders{
+  margin-bottom: 2em;
 }
 </style>
