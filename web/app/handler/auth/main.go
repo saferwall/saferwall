@@ -150,6 +150,11 @@ func Login(c echo.Context) error {
 	cookie := createJwtCookie(token)
 	c.SetCookie(cookie)
 
+	// Update last time we have seen the user
+	now := time.Now().UTC()
+	u.LastSeen = &now
+	u.Save()
+
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "You were logged in !",
 		"token":       token,

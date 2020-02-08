@@ -47,10 +47,6 @@
       "description": "Last time we have seen the user",
       "type": "integer"
     },
-    "quota": {
-      "description": "The user quota",
-      "type": "integer"
-    },
     "following": {
       "description": "Users you follow",
       "type": "array"
@@ -65,7 +61,45 @@
     },
     "submissions": {
       "description": "The hashes of files a user submitted",
-      "type": "array"
+      "type": "array",
+      "properties": {
+        "hash": {
+          "description": "Hash of the file submitted",
+          "type": "integer"
+        },
+        "timestamp": {
+          "description": "Timestamp of submission",
+          "type": "integer"
+        }
+      }
+    },
+    "activities": {
+      "description": "Activities performed by user",
+      "type": "array",
+      "properties": {
+        "type": {
+          "description": "Type of activity",
+          "type": "string",
+          "pattern": "^(comment|follow|like|submit)$"
+        },
+        "timestamp": {
+          "description": "When activity happened",
+          "type": "integer"
+        },
+        "detail": {
+          "description": "Comment: body+hash | Follow: username | Like: hash | Submit: hash",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "has_avatar": {
+      "description": "True if user uploaded his own avatar",
+      "type": "boolean"
+    },
+    "admin": {
+      "description": "True if user is admin",
+      "type": "boolean"
     }
   },
   "required": [

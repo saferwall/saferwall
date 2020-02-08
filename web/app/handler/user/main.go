@@ -5,56 +5,68 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
-	"context"
 
+	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/couchbase/gocb/v2"
+	"github.com/minio/minio-go/v6"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
 	"github.com/saferwall/saferwall/web/app/common/utils"
 	"github.com/saferwall/saferwall/web/app/email"
 	"github.com/xeipuuv/gojsonschema"
-	"github.com/minio/minio-go/v6"
 
 	"bytes"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-
-	"golang.org/x/crypto/bcrypt"
 	"github.com/saferwall/saferwall/web/app/middleware"
+	"golang.org/x/crypto/bcrypt"
 )
-
 
 var (
 	// ErrUserAlreadyConfirmed is retgurned when a user account has been already confirmed.
 	ErrUserAlreadyConfirmed = errors.New("Account already confirmed")
 )
 
+type activity struct {
+	Timestamp *time.Time        `json:"timestamp,omitempty"`
+	Type      string            `json:"type,omitempty"`
+	Detail    map[string]string `json:"detail,omitempty"`
+}
+
+type submission struct {
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Sha256    string     `json:"sha156,omitempty"`
+}
+
 // User represent a user.
 type User struct {
-	Email       string     `json:"email,omitempty"`
-	Username    string     `json:"username,omitempty"`
-	Password    string     `json:"password,omitempty"`
-	Name   		string     `json:"name,omitempty"`
-	Location   	string     `json:"location,omitempty"`
-	URL   		string     `json:"url,omitempty"`
-	Bio         string     `json:"bio,omitempty"`
-	Confirmed   bool       `json:"confirmed,omitempty"`
-	MemberSince *time.Time `json:"member_since,omitempty"`
-	Admin       bool       `json:"admin,omitempty"`
-	HasAvatar	bool 		`json:"has_avatar,omitempty"`
-	Following	[]string 	`json:"following,omitempty"`
-	Followers	[]string 	`json:"followers,omitempty"`
-	Likes	[]string 	`json:"likes,omitempty"`
+	Email       string       `json:"email,omitempty"`
+	Username    string       `json:"username,omitempty"`
+	Password    string       `json:"password,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Location    string       `json:"location,omitempty"`
+	URL         string       `json:"url,omitempty"`
+	Bio         string       `json:"bio,omitempty"`
+	Confirmed   bool         `json:"confirmed,omitempty"`
+	MemberSince *time.Time   `json:"member_since,omitempty"`
+	LastSeen    *time.Time   `json:"last_seen,omitempty"`
+	Admin       bool         `json:"admin,omitempty"`
+	HasAvatar   bool         `json:"has_avatar,omitempty"`
+	Following   []string     `json:"following,omitempty"`
+	Followers   []string     `json:"followers,omitempty"`
+	Likes       []string     `json:"likes,omitempty"`
+	Activities  []activity   `json:"activities,omitempty"`
+	Submissions []submission `json:"submissions,omitempty"`
 }
 
 // UpdatePassword creates a JWT token for email confirmation.
@@ -64,7 +76,6 @@ func (u *User) UpdatePassword(newPassword string) {
 	// Creates the new user and save it to DB.
 	u.Save()
 }
-
 
 // GenerateEmailConfirmationToken creates a JWT token for email confirmation.
 func (u *User) GenerateEmailConfirmationToken() (string, error) {
@@ -86,7 +97,6 @@ func (u *User) GenerateEmailConfirmationToken() (string, error) {
 	t, err := token.SignedString([]byte(key))
 	return t, err
 }
-
 
 // GenerateResetPasswordToken creates a JWT token for password change.
 func (u *User) GenerateResetPasswordToken() (string, error) {
@@ -423,7 +433,7 @@ func PutUser(c echo.Context) error {
 
 	if username != currentUsername {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
-				"verbose_msg": "Not allowed to update other users' data"})
+			"verbose_msg": "Not allowed to update other users' data"})
 	}
 
 	// Read the json body
@@ -486,7 +496,7 @@ func DeleteUser(c echo.Context) error {
 
 	if username != currentUsername {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
-				"verbose_msg": "Not allowed to delete another user account's"})
+			"verbose_msg": "Not allowed to delete another user account's"})
 	}
 
 	// Get user infos.
@@ -561,10 +571,21 @@ func PostUsers(c echo.Context) error {
 
 	// Update some details
 	t := time.Now().UTC()
-	newUser.MemberSince = &t
-	newUser.Admin = false
-	newUser.Confirmed = false
 	newUser.Password = hashAndSalt([]byte(newUser.Password))
+	newUser.Name = ""
+	newUser.MemberSince = &t
+	newUser.Confirmed = false
+	newUser.Bio = ""
+	newUser.URL = ""
+	newUser.Location = ""
+	newUser.LastSeen = &t
+	newUser.Following = nil
+	newUser.Followers = nil
+	newUser.Likes = nil
+	newUser.Submissions = nil
+	newUser.Activities = nil
+	newUser.HasAvatar = false
+	newUser.Admin = false
 
 	// Creates the new user and save it to DB.
 	newUser.Save()
@@ -635,7 +656,7 @@ func GetAvatar(c echo.Context) error {
 	}
 
 	// If the user does not set a custom avatar, we serve a default one.
-	if (!usr.HasAvatar) {
+	if !usr.HasAvatar {
 		return c.Stream(http.StatusOK, "image/png", app.AvatarFileDesc)
 	}
 
@@ -666,7 +687,7 @@ func UpdateAvatar(c echo.Context) error {
 	username := c.Param("username")
 	if username != currentUsername {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
-				"verbose_msg": "Not allowed to update someone else avatar account's"})
+			"verbose_msg": "Not allowed to update someone else avatar account's"})
 	}
 
 	// Get user infos.
@@ -680,14 +701,14 @@ func UpdateAvatar(c echo.Context) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusCreated, map[string]string{
-			"verbose_msg":  "Missing file, did you send the file via the form request ?",
+			"verbose_msg": "Missing file, did you send the file via the form request ?",
 		})
 	}
 
 	// Check file size
 	if fileHeader.Size > app.MaxAvatarFileSize {
-		return c.JSON(http.StatusRequestEntityTooLarge,  map[string]string{
-			"verbose_msg":     "File too large. he maximum allowed is 100KB",
+		return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{
+			"verbose_msg": "File too large. he maximum allowed is 100KB",
 			"Filename":    fileHeader.Filename,
 		})
 	}
@@ -696,7 +717,7 @@ func UpdateAvatar(c echo.Context) error {
 	file, err := fileHeader.Open()
 	if err != nil {
 		log.Error("Opening a file handle failed, err: ", err)
-		return c.JSON(http.StatusInternalServerError,  map[string]string{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": "Unable to open the file",
 			"Filename":    fileHeader.Filename,
 		})
@@ -711,8 +732,8 @@ func UpdateAvatar(c echo.Context) error {
 	fileContents, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Error("Opening a reading the file content, err: ", err)
-		return c.JSON(http.StatusInternalServerError,  map[string]string{
-			"verbose_msg":     "ReadAll failed",
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": "ReadAll failed",
 			"Filename":    fileHeader.Filename,
 		})
 	}
@@ -726,24 +747,23 @@ func UpdateAvatar(c echo.Context) error {
 	if err != nil {
 		log.Error("Failed to upload object, err: ", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"verbose_msg":     "PutObject failed",
+			"verbose_msg": "PutObject failed",
 			"Description": err.Error(),
 			"Filename":    fileHeader.Filename,
 		})
 	}
-	
+
 	log.Println("Successfully uploaded bytes: ", n)
 
 	// Update user
 	usr.HasAvatar = true
 	usr.Save()
-	
+
 	return c.JSON(http.StatusOK, map[string]string{
-		"verbose_msg":     "Updated successefuly",
+		"verbose_msg": "Updated successefuly",
 		"Filename":    fileHeader.Filename,
 	})
 }
-
 
 // Actions over a user. Follow or Unfollow.
 func Actions(c echo.Context) error {
@@ -808,8 +828,8 @@ func Actions(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Not allowed to follow yourself"})
 	}
-		
-	switch actionType{
+
+	switch actionType {
 	case "follow":
 		if !utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
 			currentUser.Following = append(currentUser.Following, targetUser.Username)
@@ -831,6 +851,6 @@ func Actions(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"verbose_msg":   "action success",
+		"verbose_msg": "action success",
 	})
 }
