@@ -57,11 +57,12 @@ Steps:
 
 <p align="center"><img src="https://i.imgur.com/W0qXb5y.png" width="600px" height="auto"></p>
 
+Here is a basic workflow which happens during a file scan:
 - Frontend talks to the the backend via REST APIs.
-- Backend uploads samples to object storage.
-- Backend pushes n message into the scanning queue.
+- Backend uploads samples to the object storage.
+- Backend pushes a message into the scanning queue.
 - Consumer fetches the file and copy it into to the nfs share avoiding to pull the sample on every container.
-- Consumer calls scanning services (Like AV scanners) via gRPC and waits for results.
+- Consumer calls asynchronously scanning services (like AV scanners) via gRPC calls and waits for results.
 
 ## Acknowledgements
 

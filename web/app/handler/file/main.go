@@ -9,13 +9,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/kjk/betterguid"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 	"strings"
 	"time"
-	"github.com/kjk/betterguid"
 
 	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
@@ -37,7 +37,7 @@ type stringStruct struct {
 }
 
 type submission struct {
-	Date     time.Time `json:"date,omitempty"`
+	Date     *time.Time `json:"date,omitempty"`
 	Filename string    `json:"filename,omitempty"`
 	Source   string    `json:"source,omitempty"`
 	Country  string    `json:"country,omitempty"`
@@ -60,16 +60,16 @@ type File struct {
 	Crc32           string                 `json:"crc32,omitempty"`
 	Magic           string                 `json:"magic,omitempty"`
 	Size            int64                  `json:"size,omitempty"`
-	Exif            map[string]string      `json:"exif"`
-	TriD            []string               `json:"trid"`
-	Tags            []string               `json:"tags"`
-	Packer          []string               `json:"packer"`
-	FirstSubmission time.Time              `json:"first_submission,omitempty"`
-	LastSubmission  time.Time              `json:"last_submission,omitempty"`
+	Exif            map[string]string      `json:"exif,omitempty"`
+	TriD            []string               `json:"trid,omitempty"`
+	Tags            []string               `json:"tags,omitempty"`
+	Packer          []string               `json:"packer,omitempty"`
+	FirstSubmission *time.Time              `json:"first_submission,omitempty"`
+	LastSubmission  *time.Time              `json:"last_submission,omitempty"`
 	Submissions     []submission           `json:"submissions,omitempty"`
-	Strings         []stringStruct         `json:"strings"`
-	MultiAV         map[string]interface{} `json:"multiav"`
-	Status          int                    `json:"status"`
+	Strings         []stringStruct         `json:"strings,omitempty"`
+	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
+	Status          int                    `json:"status,omitempty"`
 	Comments        []comment              `json:"comments,omitempty"`
 }
 
@@ -182,6 +182,51 @@ func DumpRequest(req *http.Request) {
 
 }
 
+
+// GetFileByFields return user by username(optional: selecting fields)
+func GetFileByFields(fields []string, sha256 string) (File, error) {
+
+	// Select only demanded fields
+	var query string
+	if len(fields) > 0 {
+		var buffer bytes.Buffer
+		buffer.WriteString("SELECT ")
+		length := len(fields)
+		for index, field := range fields {
+			buffer.WriteString(field)
+			if index < length-1 {
+				buffer.WriteString(",")
+			}
+		}
+		buffer.WriteString(" FROM `files` WHERE `sha256`=$sha256")
+		query = buffer.String()
+	} else {
+		query = "SELECT files.* FROM `files` WHERE `sha256`=$sha256"
+	}
+
+	// Interfaces for handling streaming return values
+	var row File
+
+	// Execute Query
+	params := make(map[string]interface{}, 1)
+	params["sha256"] = sha256
+	rows, err := db.Cluster.Query(query,
+		&gocb.QueryOptions{NamedParameters: params})
+	if err != nil {
+		fmt.Println("Error executing n1ql query:", err)
+		return row, err
+	}
+
+	// Stream the first result only into the interface
+	err = rows.One(&row)
+	if err != nil {
+		fmt.Println("Error iterating query result, reason: ", err)
+		return row, err
+	}
+
+	return row, nil
+}
+
 //=================== /file/sha256 handlers ===================
 
 // GetFile returns file informations.
@@ -198,15 +243,32 @@ func GetFile(c echo.Context) error {
 		})
 	}
 
-	file, err := GetFileBySHA256(sha256)
-	if err != nil && gocb.IsKeyNotFoundError(err) {
-		return c.JSON(http.StatusNotFound, Response{
-			Message:     err.Error(),
-			Description: "File was not found in our database",
-			Sha256:      sha256,
-		})
+	// get query param `fields` for filtering & sanitize them
+	filters := utils.GetQueryParamsFields(c)
+	if len(filters) > 0 {
+		allowed := utils.IsFilterAllowed(utils.GetStructFields(File{}), filters)
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, "Filters not allowed")
+		}
+
+		// get path param
+		file, err := GetFileByFields(filters, sha256)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"verbose_msg": "File not found"})
+		}
+		return c.JSON(http.StatusOK, file)
+	} else {
+		file, err := GetFileBySHA256(sha256)
+		if err != nil && gocb.IsKeyNotFoundError(err) {
+			return c.JSON(http.StatusNotFound, Response{
+				Message:     err.Error(),
+				Description: "File was not found in our database",
+				Sha256:      sha256,
+			})
+		}
+		return c.JSON(http.StatusOK, file)
 	}
-	return c.JSON(http.StatusOK, file)
 }
 
 // PutFile updates a specific file
@@ -400,15 +462,15 @@ func PostFiles(c echo.Context) error {
 		now := time.Now().UTC()
 		newFile := File{
 			Sha256:          sha256,
-			FirstSubmission: now,
-			LastSubmission:  now,
+			FirstSubmission: &now,
+			LastSubmission:  &now,
 			Size:            fileHeader.Size,
 			Status:          queued,
 		}
 
 		// Create new submission
 		s := submission{
-			Date:     now,
+			Date:     &now,
 			Filename: fileHeader.Filename,
 			Source:   "web",
 			Country:  c.Request().Header.Get("X-Geoip-Country"),
@@ -441,13 +503,13 @@ func PostFiles(c echo.Context) error {
 	// Create new submission
 	now := time.Now().UTC()
 	s := submission{
-		Date:     now,
+		Date:     &now,
 		Filename: fileHeader.Filename,
 		Source:   "api",
 		Country:  c.Request().Header.Get("X-Geoip-Country"),
 	}
 	fileDocument.Submissions = append(fileDocument.Submissions, s)
-	fileDocument.LastSubmission = now
+	fileDocument.LastSubmission = &now
 	fileDocument.Save()
 
 	return c.JSON(http.StatusOK, fileDocument)
@@ -731,12 +793,12 @@ func DeleteComment(c echo.Context) error {
 
 	// Delete comment.
 	for i, com := range file.Comments {
-        if com.ID == commentID {
+		if com.ID == commentID {
 			file.Comments = append(file.Comments[:i], file.Comments[i+1:]...)
 			file.Save()
 			break
-        }
-    }
+		}
+	}
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "Comment was deleted"})
