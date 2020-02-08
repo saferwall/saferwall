@@ -115,7 +115,7 @@ export default {
       )
         return
 
-      this.name = this.userData.username
+      this.name = this.userData.name?this.userData.name:this.userData.username
       this.bio = this.userData.bio
       this.location = this.userData.location
       this.URL = this.userData.url
@@ -123,7 +123,7 @@ export default {
     },
     submit: function() {
       var updated = false
-      if (this.$v.$invalid && this.$v.$anyDirty) {
+      if (!this.$v.$invalid && this.$v.$anyDirty) {
         this.submitInfo()
         updated = true
       }
