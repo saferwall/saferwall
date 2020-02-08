@@ -18,20 +18,14 @@ It aims for the following goals:
     - Strings extraction
 - Multiple AV scanner which includes major antivirus vendors:
 
-    Vendors | status 
-    --- | ---
-    Avast | :heavy_check_mark: 
-    Avira | :heavy_check_mark: 
-    Bitdefender | :heavy_check_mark: 
-    ClamAV | :heavy_check_mark: 
-    Comodo | :heavy_check_mark: 
-    ESET | :heavy_check_mark: 
-    FSecure | :heavy_check_mark: 
-    Kaspersky | :heavy_check_mark: 
-    MCAfee | :heavy_check_mark: 
-    Sophos | :heavy_check_mark: 
-    Symantec | :heavy_check_mark: 
-    Windows Defender | :heavy_check_mark: 
+    Vendors | status | Vendors | status
+    --- | --- | --- | ---
+    Avast | :heavy_check_mark: | FSecure | :heavy_check_mark: 
+    Avira | :heavy_check_mark: | Kaspersky | :heavy_check_mark: 
+    Bitdefender | :heavy_check_mark: | McAfee | :heavy_check_mark: 
+    ClamAV | :heavy_check_mark: | Sophos | :heavy_check_mark: 
+    Comodo | :heavy_check_mark: | Symantec | :heavy_check_mark: 
+    ESET | :heavy_check_mark: | Windows Defender | :heavy_check_mark: 
 
 ## Installation
 
@@ -59,9 +53,15 @@ Steps:
 - Minio: [Object storage](https://min.io/)
 - Deployment: [Helm](https://helm.sh/) + [Kubernetes](https://kubernetes.io/)
 
-## Current architecture:
+## Current architecture / Workflow:
 
 <p align="center"><img src="https://i.imgur.com/W0qXb5y.png" width="600px" height="auto"></p>
+
+- Frontend talks to the the backend via REST APIs.
+- Backend uploads samples to object storage.
+- Backend pushes n message into the scanning queue.
+- Consumer fetches the file and copy it into to the nfs share avoiding to pull the sample on every container.
+- Consumer calls scanning services (Like AV scanners) via gRPC and waits for results.
 
 ## Acknowledgements
 

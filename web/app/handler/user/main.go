@@ -45,7 +45,7 @@ type activity struct {
 
 type submission struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
-	Sha256    string     `json:"sha156,omitempty"`
+	Sha256    string     `json:"sha256,omitempty"`
 }
 
 // User represent a user.
