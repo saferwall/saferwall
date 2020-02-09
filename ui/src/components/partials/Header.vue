@@ -162,6 +162,7 @@ header.dashboard-header {
       height: calc(#{$header-height - 10px});
       display: inline-block;
       margin-top: 5px;
+      width: auto;
     }
   }
 

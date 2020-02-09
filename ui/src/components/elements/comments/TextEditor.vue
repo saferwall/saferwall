@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="box">
     <div class="tabs is-boxed">
       <ul>
         <li :class="{ 'is-active': activeTab === 0 }">
@@ -106,5 +106,8 @@ export default {
 }
 .comment-btn {
   margin-top: 1rem;
+}
+.tabs li.is-active a{
+  color: #00d1b2;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <button
-    class="button is-outlined is-danger"
+    class="button is-outlined"
     :class="{ active: liked }"
     @click="likeUnlike"
   >
@@ -29,9 +29,9 @@ export default {
     ...mapGetters({ likes: "getLikes" }),
   },
   watch: {
-    hash: function(val){
+    hash: function(val) {
       this.liked = this.likes.includes(val)
-    }
+    },
   },
   methods: {
     likeUnlike: function() {
@@ -56,10 +56,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.active {
-  background-color: #f14668 !important;
-  span{
-    color: white;
+.button {
+  background-color: transparent;
+  border-color: #f14668;
+  span {
+    color: #f14668;
+  }
+
+  &:hover {
+    background-color: #f14668;
+    span {
+      color: white;
+    }
+  }
+
+  &.active {
+    background-color: #f14668;
+    span {
+      color: white;
+    }
   }
 }
 </style>

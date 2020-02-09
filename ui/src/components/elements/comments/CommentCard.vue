@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="comment box">
     <div class="columns" v-if="!verification">
       <div class="column is-2 left_column">
         <img :src="'data:image/png;base64,' + avatar" />
@@ -15,6 +15,9 @@
           </div>
         </div>
       </div>
+      <div class="column is-1 separator">
+        <hr />
+      </div>
       <div class="column right_column">
         <div class="comment_body" v-html="data.body"></div>
       </div>
@@ -27,7 +30,6 @@
         No
       </button>
     </div>
-    <hr />
   </div>
 </template>
 
@@ -107,50 +109,33 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 img {
-  width: 5em;
+  width: 4em;
 }
-h1 {
-  font-size: 2rem;
-}
-h2 {
-  font-size: 1.5rem;
-}
-blockquote {
-  margin-left: 32px;
-  border-left: 4px solid #ccc;
-  padding-left: 8px;
-}
-.ql-syntax {
-  background-color: #23241f;
-  color: #f8f8f2;
-  overflow: visible;
-  white-space: pre-wrap;
-  margin-bottom: 5px;
-  margin-top: 5px;
-  padding: 5px 10px;
-}
-ol {
-  padding-left: 1.5em;
-}
-ul {
-  padding-left: 1.5em;
-}
-hr {
-  background-color: #dde0e3;
-}
+
 .username {
   font-size: 1.3em;
 }
+
 .left_column {
   text-align: center;
 }
+
 .right_column {
-  .comment_body {
-    vertical-align: center;
+  padding: 15px;
+}
+
+.separator {
+  width: fit-content !important;
+  hr {
+    background-color: #4a4a4a54;
+    width: 1px;
+    height: 100%;
+    margin: auto;
   }
 }
+
 .columns {
   .delete {
     right: 3%;
@@ -163,14 +148,19 @@ hr {
     }
   }
 }
+
 .verif {
   text-align: center;
   vertical-align: middle;
   div {
     font-size: 1.5em;
   }
-  button {
+  .button {
     font-size: 1.5em;
+    background-color: transparent;
+    &:hover {
+      background-color: #00000012;
+    }
   }
   .danger {
     color: red;
@@ -179,6 +169,7 @@ hr {
     }
   }
 }
+
 .info {
   width: fit-content;
   margin: auto;
