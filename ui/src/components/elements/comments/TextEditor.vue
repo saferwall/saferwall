@@ -18,8 +18,18 @@
       >
       </quill-editor>
     </div>
-    <div class="preview" v-if="activeTab === 1" v-html="content?content:'Nothing to Preview'"></div>
-    <button class="button comment-btn" @click="sendComment">Comment</button>
+    <div
+      class="preview"
+      v-if="activeTab === 1"
+      v-html="content.length !== 0 ? content : 'Nothing to Preview'"
+    ></div>
+    <button
+      class="button comment-btn"
+      @click="sendComment"
+      :disabled="content.length === 0"
+    >
+      Comment
+    </button>
   </div>
 </template>
 
@@ -55,17 +65,23 @@ export default {
   },
   methods: {
     sendComment: function() {
-      if (this.content !== "") {
-        this.$http.post(this.$api_endpoints.FILES+this.$store.getters.getHashContext+"/comments/", {
-          body:this.content
-        })
-        .then(()=>{
-          this.$store.dispatch('updateComments')
-          this.content = ""
-        })
-        .catch(()=>{
-          this.$awn.alert('An Error Occured, Try Again')
-        })
+      if (this.content.length !== 0) {
+        this.$http
+          .post(
+            this.$api_endpoints.FILES +
+              this.$store.getters.getHashContext +
+              "/comments/",
+            {
+              body: this.content,
+            },
+          )
+          .then(() => {
+            this.$store.dispatch("updateComments")
+            this.content = ""
+          })
+          .catch(() => {
+            this.$awn.alert("An Error Occured, Try Again")
+          })
       }
     },
   },
@@ -107,7 +123,7 @@ export default {
 .comment-btn {
   margin-top: 1rem;
 }
-.tabs li.is-active a{
+.tabs li.is-active a {
   color: #00d1b2;
 }
 </style>
