@@ -1,7 +1,7 @@
 <template>
   <div class="tile is-ancestor">
     <div class="tile is-parent is-6">
-      <div class="tile is-child box" v-if="!showLoader">
+      <div class="tile is-child box">
         <h4 class="title">First Scan</h4>
         <table class="table is-striped is-fullwidth">
           <thead>
@@ -58,7 +58,7 @@
       </div>
     </div>
     <div class="tile is-parent is-6">
-      <div class="tile is-child box" v-if="!showLoader">
+      <div class="tile is-child box">
         <h4 class="title">Last Scan</h4>
         <table class="table is-striped is-fullwidth">
           <thead>

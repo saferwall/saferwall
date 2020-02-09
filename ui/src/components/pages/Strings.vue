@@ -13,7 +13,7 @@
         </div>
       </div>
     </div>
-    <div class="tile is-ancestor" v-if="!showLoader">
+    <div class="tile is-ancestor">
       <div class="tile is-parent">
         <div class="tile is-child box">
           <table class="table is-bordered is-striped">

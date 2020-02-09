@@ -15,5 +15,8 @@ export default {
   },
   setLikes(state, data){
     Vue.set(state.userData, 'likes', data)
+  },
+  setComments(state, data){
+    Vue.set(state.fileData.data, 'comments', data)
   }
 }

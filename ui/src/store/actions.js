@@ -47,15 +47,23 @@ export default {
       })
       .catch(console.log)
   },
-  addRemoveLike: (context, add) =>{
+  addRemoveLike: (context, add) => {
     var data = context.getters.getUserData.likes
-    if(add){
+    if (add) {
       data.push(context.getters.getHashContext)
-       context.commit('setLikes', data)
-    }
-    else{
+      context.commit('setLikes', data)
+    } else {
       Vue._.pull(data, context.getters.getHashContext)
-       context.commit('setLikes', data)
+      context.commit('setLikes', data)
     }
+  },
+  updateComments: (context) => {
+    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + context.getters.getHashContext + "/?fields=comments")
+    .then((res)=>{
+      context.commit('setComments', res.data.comments)
+    })
+    .catch(()=>{
+      Vue.prototype.$awn.alert("An Error Occured while updating the comments")
+    })
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
-      <div class="columns">
-        <div class="column is-8">
+      <div class="columns top_columns">
+        <div class="column is-9">
           <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
             <ul>
               <li>

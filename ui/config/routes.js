@@ -35,6 +35,13 @@ module.exports = {
         title: "Summary"
       },
     },
+    COMMENTS: {
+      path: "/comments/",
+      name: "comments",
+      meta: {
+        title: "Comments"
+      },
+    },
     STRINGS: {
       path: "/strings/",
       name: "strings",

@@ -16,5 +16,11 @@ export default {
   },
   getLikes: state => {
     return state.userData.likes
+  },
+  getComments: state => {
+    return state.fileData.data.comments
+  },
+  getAvatar: state =>{
+    return state.userData.avatarBase64
   }
 }

@@ -30,7 +30,9 @@
         >
           <li
             v-for="(child, index) in item.children"
-            :class="{ current: route.toLowerCase() === child.title.toLowerCase() }"
+            :class="{
+              current: route.toLowerCase() === child.title.toLowerCase(),
+            }"
             :key="index"
           >
             <router-link :to="child.path">
@@ -44,7 +46,7 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import { mapGetters } from "vuex"
 export default {
   data() {
     return {
@@ -72,6 +74,12 @@ export default {
             },
           ],
         },
+        {
+          title: "Comments",
+          slug: "comments",
+          active: false,
+          icon: "ion-chatbubble",
+        },
         // {
         //   title: "Dynamic analysis",
         //   path: false,
@@ -88,9 +96,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getHashContext']),
+    ...mapGetters(["getHashContext"]),
     menuItems: function() {
-      const hash  = this.getHashContext
+      const hash = this.getHashContext
       return this.menu.map(({ slug, children, ...item }) => ({
         ...item,
         ...(slug ? { path: `/${slug}/${hash}` } : {}),
@@ -104,9 +112,9 @@ export default {
           : {}),
       }))
     },
-    route: function(){
-      return this.$route.path.replace(/[/]/g, '')
-    }
+    route: function() {
+      return this.$route.name
+    },
   },
 
   mounted() {
@@ -149,7 +157,7 @@ aside.sidebar {
   position: fixed;
   top: $header-height;
   left: 0;
-  height: calc(100% - #{ $header-height });
+  height: calc(100% - #{$header-height});
   width: 200px;
   box-shadow: 0 0 30px rgba(black, 0.05);
   padding-top: 20px;
