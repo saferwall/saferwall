@@ -82,11 +82,9 @@ export default {
     },
     getUserData: function() {
       this.$http
-        .get(this.$api_endpoints.USERS + this.data.username, {
-          responseType: "arraybuffer",
-        })
+        .get(this.$api_endpoints.USERS + this.data.username)
         .then((res) => {
-          this.userData = res
+          this.userData = res.data
         })
         .catch(() => {
           this.$awn.alert("An Error Occured While fetshing the user data")
@@ -96,6 +94,7 @@ export default {
   mounted() {
     if (this.data.username !== this.$store.getters.getUsername) {
       this.getAvatar()
+      this.getUserData()
       this.deletable = false
     } else {
       this.avatar = this.$store.getters.getAvatar
