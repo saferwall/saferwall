@@ -16,11 +16,9 @@
             </ul>
           </nav>
         </div>
-        <div class="column is-1">
-          <Like :hash="hash" v-if="!showLoader && showButtons"/>
-        </div>
-        <div class="column is-3">
+        <div class="column is-4">
           <div class="buttons" v-if="!showLoader && showButtons">
+            <Like :hash="hash" />
             <Download :hash="hash" />
             <Rescan :route="route" :hash="hash" />
           </div>
@@ -63,7 +61,7 @@ export default {
   computed: {
     showButtons: function() {
       return (
-        this.$store.getters.getHashContext &&
+        Object.entries(this.$store.getters.getFileData).length !== 0 &&
         this.$store.getters.getLoggedIn &&
         this.route !== "upload" &&
         this.route !== "profile"
@@ -105,9 +103,9 @@ export default {
   created() {
     this.getData()
   },
-  updated() {
-    this.getData()
-  },
+  // updated() {
+  //   this.getData()
+  // },
 }
 </script>
 <style scoped lang="scss">
@@ -139,7 +137,7 @@ section.main-content {
   margin-top: 1em;
   margin-bottom: 2em;
 }
-.placeholders{
+.placeholders {
   margin-bottom: 2em;
 }
 </style>

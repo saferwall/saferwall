@@ -61,9 +61,7 @@ export default {
         })
     },
     formatTimestamp: function() {
-      var date = this._.replace(this.data.timestamp.substring(0, 10), ":", "")
-      var time = this._.replace(this.data.timestamp.substring(11, 19), ":", "")
-      this.time = moment(date + time, "YYYYMMDDhhmmss").fromNow()
+      this.time = moment(this.data.timestamp).fromNow()
     },
     deleteComment: function() {
       this.$http

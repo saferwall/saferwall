@@ -18,9 +18,14 @@ export default {
     return state.userData.likes
   },
   getComments: state => {
-    return state.fileData.data.comments
+    if (Object.entries(state.fileData).length === 0 && state.fileData.constructor === Object) return []
+    return state.fileData.data.comments ? state.fileData.data.comments : []
   },
-  getAvatar: state =>{
+  getNbComments: state => {
+    if (Object.entries(state.fileData).length === 0 && state.fileData.constructor === Object) return 0
+    return state.fileData.data.comments ? state.fileData.data.comments.length : 0
+  },
+  getAvatar: state => {
     return state.userData.avatarBase64
   }
 }

@@ -16,11 +16,19 @@
       &lt;&#47;&gt; with <span class="heart">&#10084;</span> by
       <a href="/">SaferWall</a>.
     </p>
+    {{time}}
   </div>
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
+  computed: {
+    time(){
+      return moment()
+    }
+  },
   methods: {
     openSocial(social) {
       switch (social) {
