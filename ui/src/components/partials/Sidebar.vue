@@ -15,6 +15,11 @@
           <span class="icon is-small"><i :class="item.icon"></i></span>
           {{ item.title }}
           <span
+            class="nbComments"
+            v-if="item.title === 'Comments' && getHashContext !== ''"
+            >{{ getNbComments }}</span
+          >
+          <span
             class="icon is-small dropdown-icon"
             :class="{ active: item.active }"
             v-if="item.children"
@@ -30,7 +35,9 @@
         >
           <li
             v-for="(child, index) in item.children"
-            :class="{ current: route.toLowerCase() === child.title.toLowerCase() }"
+            :class="{
+              current: route.toLowerCase() === child.title.toLowerCase(),
+            }"
             :key="index"
           >
             <router-link :to="child.path">
@@ -44,7 +51,7 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import { mapGetters } from "vuex"
 export default {
   data() {
     return {
@@ -72,6 +79,12 @@ export default {
             },
           ],
         },
+        {
+          title: "Comments",
+          slug: "comments",
+          active: false,
+          icon: "ion-chatbubble",
+        },
         // {
         //   title: "Dynamic analysis",
         //   path: false,
@@ -88,9 +101,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getHashContext']),
+    ...mapGetters(["getHashContext", "getNbComments"]),
     menuItems: function() {
-      const hash  = this.getHashContext
+      const hash = this.getHashContext
       return this.menu.map(({ slug, children, ...item }) => ({
         ...item,
         ...(slug ? { path: `/${slug}/${hash}` } : {}),
@@ -104,9 +117,9 @@ export default {
           : {}),
       }))
     },
-    route: function(){
-      return this.$route.path.replace(/[/]/g, '')
-    }
+    route: function() {
+      return this.$route.path.replace(/\//g, '')
+    },
   },
 
   mounted() {
@@ -149,7 +162,7 @@ aside.sidebar {
   position: fixed;
   top: $header-height;
   left: 0;
-  height: calc(100% - #{ $header-height });
+  height: calc(100% - #{$header-height});
   width: 200px;
   box-shadow: 0 0 30px rgba(black, 0.05);
   padding-top: 20px;
@@ -205,5 +218,20 @@ aside.sidebar {
       background-color: $primary-color;
     }
   }
+}
+.nbComments {
+  border: 1px solid black;
+  background-color: #4a4a4a;
+  color: white;
+  display: inline-block;
+  border-radius: 50%;
+  min-width: 1.8em;
+  height: 1.8em;
+  text-align: center;
+  margin-left: 5px;
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5em;
+  padding: 1px;
 }
 </style>

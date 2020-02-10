@@ -30,9 +30,12 @@ export default {
       .then((res) => {
         context.commit('setFileData', res)
       })
-      .catch(() => Vue.prototype.$awn.alert(
-        "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
-      ))
+      .catch(() => {
+        Vue.prototype.$awn.alert(
+          "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
+        )
+         context.commit('setHashContext', "")
+      })
   },
   updateUserData: (context, username) => {
     Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + username)
@@ -46,5 +49,24 @@ export default {
           })
       })
       .catch(console.log)
+  },
+  addRemoveLike: (context, add) => {
+    var data = context.getters.getUserData.likes
+    if (add) {
+      data.push(context.getters.getHashContext)
+      context.commit('setLikes', data)
+    } else {
+      Vue._.pull(data, context.getters.getHashContext)
+      context.commit('setLikes', data)
+    }
+  },
+  updateComments: (context) => {
+    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + context.getters.getHashContext + "/?fields=comments")
+      .then((res) => {
+        context.commit('setComments', res.data.comments)
+      })
+      .catch(() => {
+        Vue.prototype.$awn.alert("An Error Occured while updating the comments")
+      })
   }
 }

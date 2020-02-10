@@ -1,14 +1,22 @@
+import Vue from 'vue'
+
 export default {
-  setHashContext(state, hash){
+  setHashContext(state, hash) {
     state.hashContext = hash
   },
-  setLoggedIn(state, payload){
+  setLoggedIn(state, payload) {
     state.loggedIn = payload
   },
-  setFileData(state, data){
+  setFileData(state, data) {
     state.fileData = data
   },
-  setUserData(state, data){
+  setUserData(state, data) {
     state.userData = data
+  },
+  setLikes(state, data){
+    Vue.set(state.userData, 'likes', data)
+  },
+  setComments(state, data){
+    Vue.set(state.fileData.data, 'comments', data)
   }
 }

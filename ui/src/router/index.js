@@ -5,6 +5,7 @@ import Upload from "@/components/pages/Upload"
 import Scanning from "@/components/pages/Scanning"
 import Antivirus from "@/components/pages/Antivirus"
 import Summary from "@/components/pages/Summary"
+import Comments from "@/components/pages/Comments"
 import Strings from "@/components/pages/Strings"
 import Login from "@/components/pages/Login"
 import Signup from "@/components/pages/Signup"
@@ -71,6 +72,14 @@ const router = new Router({
       component: Summary,
       meta: {
         title: ROUTES.SUMMARY.meta.title
+      },
+    },
+    {
+      path: ROUTES.COMMENTS.path + ":hash",
+      name: ROUTES.COMMENTS.name,
+      component: Comments,
+      meta: {
+        title: ROUTES.COMMENTS.meta.title
       },
     },
     {
