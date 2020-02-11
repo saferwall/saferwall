@@ -1,35 +1,53 @@
 <template>
-  <div class="comment box">
-    <div class="columns" v-if="!verification">
-      <div class="column is-2 left_column">
-        <img :src="'data:image/png;base64,' + avatar" />
-        <div class="username">{{ this.data.username }}</div>
+  <div>
+    <article class="media box" v-if="!verification">
+      <figure class="media-left">
+        <p class="image is-64x64">
+          <img :src="'data:image/png;base64,' + data.avatar" />
+        </p>
         <div class="info">
-          <div>
-            <i class="icon fas fa-location-arrow"></i>
-            {{ this.userData.location }}
-          </div>
-          <div>
-            <i class="icon fas fa-clock"></i>
-            {{ this.time }}
-          </div>
+          <i class="icon fas fa-location-arrow"></i>
+          <p>
+            {{ this.data.location }}
+          </p>
+        </div>
+      </figure>
+      <div class="media-content">
+        <div class="content">
+          <p>
+            <strong class="username">{{
+              this.data.name ? this.data.name : this.data.username
+            }}</strong>
+            &nbsp;
+            <small>@{{ this.data.username }}</small>
+            &nbsp;
+            <small>{{ this.time }}</small>
+            <br />
+            <span class="comment_body" v-html="data.body"></span>
+          </p>
         </div>
       </div>
-      <div class="column is-1 separator">
-        <hr />
+      <div class="media-right">
+        <button
+          class="delete"
+          v-if="deletable"
+          @click="verification = true"
+        ></button>
       </div>
-      <div class="column right_column">
-        <div class="comment_body" v-html="data.body"></div>
+    </article>
+    <article class="media box" v-if="verification">
+      <div class="media-content">
+        <div class="content verif">
+          <div>Are you Sure?</div>
+          <button class="button is-light danger" @click="deleteComment">
+            Yes
+          </button>
+          <button class="button is-light" @click="verification = false">
+            No
+          </button>
+        </div>
       </div>
-      <a class="delete" v-if="deletable" @click="verification = true"></a>
-    </div>
-    <div class="column verif" v-if="verification">
-      <div>Are you Sure?</div>
-      <button class="button is-light danger" @click="deleteComment">Yes</button>
-      <button class="button is-light" @click="verification = false">
-        No
-      </button>
-    </div>
+    </article>
   </div>
 </template>
 
@@ -40,28 +58,14 @@ export default {
   props: ["data"],
   data() {
     return {
-      avatar: null,
       time: null,
       deletable: false,
       verification: false,
-      userData: {},
     }
   },
   methods: {
-    getAvatar: function() {
-      this.$http
-        .get(this.$api_endpoints.USERS + this.data.username + "/avatar", {
-          responseType: "arraybuffer",
-        })
-        .then((secRes) => {
-          this.avatar = Buffer.from(secRes.data, "binary").toString("base64")
-        })
-        .catch(() => {
-          this.$awn.alert("An Error Occured While fetshing the user avatar")
-        })
-    },
     formatTimestamp: function() {
-      this.time = moment(this.data.timestamp).fromNow()
+      this.time = moment(this.data.timestamp).fromNow(true)
     },
     deleteComment: function() {
       this.$http
@@ -80,26 +84,11 @@ export default {
           )
         })
     },
-    getUserData: function() {
-      this.$http
-        .get(this.$api_endpoints.USERS + this.data.username, {
-          responseType: "arraybuffer",
-        })
-        .then((res) => {
-          this.userData = res
-        })
-        .catch(() => {
-          this.$awn.alert("An Error Occured While fetshing the user data")
-        })
-    },
   },
   mounted() {
     if (this.data.username !== this.$store.getters.getUsername) {
-      this.getAvatar()
       this.deletable = false
     } else {
-      this.avatar = this.$store.getters.getAvatar
-      this.userData = this.$store.getters.getUserData
       this.deletable = true
     }
     this.formatTimestamp()
@@ -108,33 +97,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
-img {
-  width: 4em;
-}
-
 .username {
-  font-size: 1.3em;
+  font-size: 1em;
+  font-weight: 600;
 }
 
-.left_column {
-  text-align: center;
-}
+.media {
+  margin-bottom: 0.6em;
 
-.right_column {
-  padding: 15px;
-}
-
-.separator {
-  width: fit-content !important;
-  hr {
-    background-color: #4a4a4a54;
-    width: 1px;
-    height: 100%;
-    margin: auto;
-  }
-}
-
-.columns {
   .delete {
     right: 3%;
     position: absolute;
@@ -169,8 +139,14 @@ img {
 }
 
 .info {
-  width: fit-content;
-  margin: auto;
-  text-align: left;
+  display: flex;
+  margin-top: 5px;
+  p {
+    padding-left: 3px;
+    margin-right: auto;
+  }
+  svg {
+    margin-left: auto;
+  }
 }
 </style>
