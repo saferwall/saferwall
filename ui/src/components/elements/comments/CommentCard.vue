@@ -3,13 +3,23 @@
     <article class="media box" v-if="!verification">
       <figure class="media-left">
         <p class="image is-64x64">
-          <img :src="'data:image/png;base64,' + avatar" />
+          <img :src="'data:image/png;base64,' + data.avatar" />
         </p>
+        <div class="info">
+          <i class="icon fas fa-location-arrow"></i>
+          <p>
+            {{ this.data.location }}
+          </p>
+        </div>
       </figure>
       <div class="media-content">
         <div class="content">
           <p>
-            <strong class="username">{{ this.data.username }}</strong>
+            <strong class="username">{{
+              this.data.name ? this.data.name : this.data.username
+            }}</strong>
+            &nbsp;
+            <small>@{{ this.data.username }}</small>
             &nbsp;
             <small>{{ this.time }}</small>
             <br />
@@ -48,26 +58,12 @@ export default {
   props: ["data"],
   data() {
     return {
-      avatar: null,
       time: null,
       deletable: false,
       verification: false,
-      userData: {},
     }
   },
   methods: {
-    getAvatar: function() {
-      this.$http
-        .get(this.$api_endpoints.USERS + this.data.username + "/avatar", {
-          responseType: "arraybuffer",
-        })
-        .then((secRes) => {
-          this.avatar = Buffer.from(secRes.data, "binary").toString("base64")
-        })
-        .catch(() => {
-          this.$awn.alert("An Error Occured While fetshing the user avatar")
-        })
-    },
     formatTimestamp: function() {
       this.time = moment(this.data.timestamp).fromNow(true)
     },
@@ -88,25 +84,11 @@ export default {
           )
         })
     },
-    getUserData: function() {
-      this.$http
-        .get(this.$api_endpoints.USERS + this.data.username)
-        .then((res) => {
-          this.userData = res.data
-        })
-        .catch(() => {
-          this.$awn.alert("An Error Occured While fetshing the user data")
-        })
-    },
   },
   mounted() {
     if (this.data.username !== this.$store.getters.getUsername) {
-      this.getAvatar()
-      this.getUserData()
       this.deletable = false
     } else {
-      this.avatar = this.$store.getters.getAvatar
-      this.userData = this.$store.getters.getUserData
       this.deletable = true
     }
     this.formatTimestamp()
@@ -115,7 +97,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 .username {
   font-size: 1em;
   font-weight: 600;
@@ -154,6 +135,18 @@ export default {
     &:hover {
       color: red !important;
     }
+  }
+}
+
+.info {
+  display: flex;
+  margin-top: 5px;
+  p {
+    padding-left: 3px;
+    margin-right: auto;
+  }
+  svg {
+    margin-left: auto;
   }
 }
 </style>

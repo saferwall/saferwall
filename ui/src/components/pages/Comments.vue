@@ -1,13 +1,14 @@
 <template>
   <div>
-    <p id="noComments" v-if="!comments || comments.legth === 0">
+    <p id="noComments" v-if="usersData.length === 0">
       No Comments Available
     </p>
-    <CommentCard
-      v-for="comment in comments"
-      :key="comment.id"
-      :data="comment"
-    />
+    <div v-for="(comment, index) in comments" :key="comment.id">
+      <CommentCard
+        :data="getCommentData(index)"
+        v-if="getCommentData(index).avatar"
+      />
+    </div>
     <TextEditor />
   </div>
 </template>
@@ -23,10 +24,71 @@ export default {
     TextEditor,
     CommentCard,
   },
+  data() {
+    return {
+      usersData: [],
+    }
+  },
   computed: {
     ...mapGetters({
       comments: "getComments",
     }),
+  },
+  methods: {
+    getUsersList: function() {
+      return this._.uniq(this.comments.map((comment) => comment.username))
+    },
+    getUserData: async function(username) {
+      if (username === this.$store.getters.getUsername) {
+        var userData = this.$store.getters.getUserData
+        var data = {
+          username: username,
+          name: userData.name,
+          location: userData.location,
+          avatar: this.$store.getters.getAvatar,
+        }
+        this.usersData.push(data)
+        return
+      }
+      this.$http
+        .get(this.$api_endpoints.USERS + username)
+        .then((res) => {
+          this.$http
+            .get(this.$api_endpoints.USERS + username + "/avatar", {
+              responseType: "arraybuffer",
+            })
+            .then((secRes) => {
+              var data = {
+                username: res.data.username,
+                name: res.data.name,
+                location: res.data.location,
+                avatar: Buffer.from(secRes.data, "binary").toString("base64"),
+              }
+              this.usersData.push(data)
+            })
+        })
+        .catch(() => {
+          this.$awn.alert("An Error Occured While fetshing the user data")
+        })
+    },
+    loadUsers: function() {
+      var users = this.getUsersList()
+      for (var index in users) {
+        this.getUserData(users[index])
+      }
+    },
+    getCommentData: function(index) {
+      var comment = this.comments[index]
+      var user = this.usersData.find(
+        (user) => user.username === comment.username,
+      )
+      return this._.merge(comment, user)
+    },
+  },
+  mounted() {
+    if (this.comments && this.comments.length > 0) {
+      this.loadUsers()
+    }
   },
 }
 </script>
