@@ -1,35 +1,43 @@
 <template>
-  <div class="comment box">
-    <div class="columns" v-if="!verification">
-      <div class="column is-2 left_column">
-        <img :src="'data:image/png;base64,' + avatar" />
-        <div class="username">{{ this.data.username }}</div>
-        <div class="info">
-          <div>
-            <i class="icon fas fa-location-arrow"></i>
-            {{ this.userData.location }}
-          </div>
-          <div>
-            <i class="icon fas fa-clock"></i>
-            {{ this.time }}
-          </div>
+  <div>
+    <article class="media box" v-if="!verification">
+      <figure class="media-left">
+        <p class="image is-64x64">
+          <img :src="'data:image/png;base64,' + avatar" />
+        </p>
+      </figure>
+      <div class="media-content">
+        <div class="content">
+          <p>
+            <strong class="username">{{ this.data.username }}</strong>
+            &nbsp;
+            <small>{{ this.time }}</small>
+            <br />
+            <span class="comment_body" v-html="data.body"></span>
+          </p>
         </div>
       </div>
-      <div class="column is-1 separator">
-        <hr />
+      <div class="media-right">
+        <button
+          class="delete"
+          v-if="deletable"
+          @click="verification = true"
+        ></button>
       </div>
-      <div class="column right_column">
-        <div class="comment_body" v-html="data.body"></div>
+    </article>
+    <article class="media box" v-if="verification">
+      <div class="media-content">
+        <div class="content verif">
+          <div>Are you Sure?</div>
+          <button class="button is-light danger" @click="deleteComment">
+            Yes
+          </button>
+          <button class="button is-light" @click="verification = false">
+            No
+          </button>
+        </div>
       </div>
-      <a class="delete" v-if="deletable" @click="verification = true"></a>
-    </div>
-    <div class="column verif" v-if="verification">
-      <div>Are you Sure?</div>
-      <button class="button is-light danger" @click="deleteComment">Yes</button>
-      <button class="button is-light" @click="verification = false">
-        No
-      </button>
-    </div>
+    </article>
   </div>
 </template>
 
@@ -61,7 +69,7 @@ export default {
         })
     },
     formatTimestamp: function() {
-      this.time = moment(this.data.timestamp).fromNow()
+      this.time = moment(this.data.timestamp).fromNow(true)
     },
     deleteComment: function() {
       this.$http
@@ -107,33 +115,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
-img {
-  width: 4em;
-}
 
 .username {
-  font-size: 1.3em;
+  font-size: 1em;
+  font-weight: 600;
 }
 
-.left_column {
-  text-align: center;
-}
+.media {
+  margin-bottom: 0.6em;
 
-.right_column {
-  padding: 15px;
-}
-
-.separator {
-  width: fit-content !important;
-  hr {
-    background-color: #4a4a4a54;
-    width: 1px;
-    height: 100%;
-    margin: auto;
-  }
-}
-
-.columns {
   .delete {
     right: 3%;
     position: absolute;
@@ -165,11 +155,5 @@ img {
       color: red !important;
     }
   }
-}
-
-.info {
-  width: fit-content;
-  margin: auto;
-  text-align: left;
 }
 </style>
