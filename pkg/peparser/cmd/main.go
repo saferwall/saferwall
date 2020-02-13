@@ -54,6 +54,8 @@ func parse(filename string) {
 
 	// }
 
+	pe.Close()
+
 }
 
 func isDirectory(path string) bool {

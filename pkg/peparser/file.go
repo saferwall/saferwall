@@ -38,6 +38,7 @@ type File struct {
 	Is32      bool
 	Anomalies []string
 	size      uint32
+	f         *os.File
 }
 
 // Open opens the named file using os.Open and prepares it for use as a PE binary.
@@ -60,7 +61,17 @@ func Open(name string) (File, error) {
 
 	file.data = data
 	file.size = uint32(len(file.data))
+	file.f = f
 	return file, nil
+}
+
+// Close closes the File.
+func (pe *File) Close() error {
+	var err error
+	if pe.f != nil {
+		err = f.Close()
+	}
+	return err
 }
 
 // Parse performs the file parsing for a PE binary.
