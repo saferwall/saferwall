@@ -6,11 +6,9 @@ package pe
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"errors"
-
-	// "encoding/hex"
-	"crypto/sha256"
 	"sort"
 	"unsafe"
 
@@ -48,8 +46,8 @@ const (
 )
 
 var (
-	errSecurityDataDirOutOfBands = errors.New(`Boundary checks failed in Security 
-		Data Directory`)
+	errSecurityDataDirOutOfBands = errors.New(`Boundary checks failed in 
+		Security Data Directory`)
 )
 
 // Certificate directory.
@@ -173,7 +171,7 @@ func (pe *File) Authentihash() []byte {
 	return h.Sum(nil)
 }
 
-func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
+func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 
 	certHeader := WinCertificate{}
 	certSize := uint32(binary.Size(certHeader))
@@ -187,25 +185,24 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 	for {
 		// Boundary check
 		if fileOffset+certSize > pe.size {
-			return Certificate{}, errSecurityDataDirOutOfBands
+			return errSecurityDataDirOutOfBands
 		}
 
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+certSize])
 		err := binary.Read(buf, binary.LittleEndian, &certHeader)
 		if err != nil {
-			return Certificate{}, err
+			return err
 		}
 
 		certContent := pe.data[fileOffset+certSize : fileOffset+certHeader.Length]
 		pkcs, err = pkcs7.Parse(certContent)
 		if err != nil {
-			return Certificate{Header: certHeader}, err
+			pe.Certificates = Certificate{Header: certHeader}
+			return err
 		}
 
 		// Verify the signature
 		pkcs.Verify()
-
-		// 	log.Printf("%s", hex.Dump(pkcs.Content))
 
 		// Subsequent entries are accessed by advancing that entry's dwLength bytes,
 		// rounded up to an 8-byte multiple, from the start of the current attribute
@@ -221,5 +218,6 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) (Certificate, error) {
 		fileOffset = nextOffset
 	}
 
-	return Certificate{Header: certHeader, Content: pkcs}, nil
+	pe.Certificates = Certificate{Header: certHeader, Content: pkcs}
+	return nil
 }

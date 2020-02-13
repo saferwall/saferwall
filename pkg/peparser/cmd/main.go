@@ -1,20 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	// "encoding/hex"
 
+	// "encoding/hex"
 	// "github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 func parse(filename string) {
-	fmt.Printf("\nProcessing filename %s", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -23,7 +21,7 @@ func parse(filename string) {
 
 	err = pe.Parse()
 	if err != nil {
-		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
+		log.Printf("\nError while parsing file: %s, reason: %s", filename, err)
 		return
 	}
 	// for _, s := range pe.Sections {
