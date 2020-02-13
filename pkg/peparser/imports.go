@@ -25,6 +25,11 @@ const (
 	addressMask64        = uint64(0x7fffffffffffffff)
 )
 
+var (
+	// AnoNullImportTable is reported when the ILT or the IAT are empty.
+	AnoNullImportTable = "Damaged Import Table information. ILT and/or IAT" + 
+	" appear to be broken"
+)
 // ImageImportDescriptor describes the remainder of the import information.
 // The import directory table contains address information that is used to
 // resolve fixup references to the entry points within a DLL image.
@@ -377,9 +382,10 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 		return []*ImportFunction{}, err
 	}
 
-	// Would crash if IAT or ILT had nil type.
+	// Some DLLs has IAT or ILT with nil type.
 	if len(iat) == 0 && len(ilt) == 0 {
-		return []*ImportFunction{}, errors.New("Damaged Import Table information. ILT and/or IAT appear to be broken")
+		pe.Anomalies = append(pe.Anomalies, AnoNullImportTable)
+		return []*ImportFunction{}, nil
 	}
 
 	var table []*ImageThunkData32
