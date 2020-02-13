@@ -9,7 +9,7 @@ import (
     "strings"
 )
 
-// WS232OrdNames
+// WS232OrdNames maps ordinals to name.
 var WS232OrdNames = map[uint64]string{
     1:   "accept",
     2:   "bind",
@@ -130,7 +130,7 @@ var WS232OrdNames = map[uint64]string{
     500: "WEP",
 }
 
-// OleAut32OrdNames
+// OleAut32OrdNames maps ordinals to names.
 var OleAut32OrdNames = map[uint64]string{
     2:   "SysAllocString",
     3:   "SysReAllocString",
@@ -539,7 +539,7 @@ var OrdNames = map[string]map[uint64]string{
     "oleaut32.dll": OleAut32OrdNames,
 }
 
-// OrdLookup
+// OrdLookup returns API name given an ordinal.
 func OrdLookup(libname string, ord uint64, makeName bool) string {
     names, ok := OrdNames[strings.ToLower(libname)]
     if ok {
@@ -549,7 +549,6 @@ func OrdLookup(libname string, ord uint64, makeName bool) string {
     }
     if makeName {
         return fmt.Sprintf("ord%d", ord)
-    } else {
-        return ""
-    }
+    } 
+    return ""
 }

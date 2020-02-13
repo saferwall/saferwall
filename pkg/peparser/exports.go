@@ -71,6 +71,14 @@ type ExportFunction struct {
 	ForwarderRVA uint32
 }
 
+
+// Export represent the export table.
+type Export struct {
+	Functions []ExportFunction
+	Struct	ImageExportDirectory
+	Name 	string
+}
+
 func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	// Define some vars.
@@ -83,6 +91,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	if err != nil {
 		return errors.New(errorMsg)
 	}
+	pe.Export.Struct = exportDir
+	pe.Export.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
 
 	// We keep track of the bytes left in the file and use it to set a upper
 	// bound in the number of items that can be read from the different arrays.
@@ -92,8 +102,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	var length uint32
 	var addressOfNames []byte
 
+	// Some DLLs have null number of functions.
 	if exportDir.NumberOfFunctions == 0 {
-		log.Println("Export Directory counts zero number of functions")
 		return nil
 	}
 
@@ -107,7 +117,6 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	length = min(lengthUntilEOF(exportDir.AddressOfNameOrdinals),
 		exportDir.NumberOfNames*4)
 	addressOfNameOrdinals, err := pe.getData(exportDir.AddressOfNameOrdinals, length)
-
 	if err != nil {
 		return errors.New(errorMsg)
 	}
@@ -194,16 +203,16 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 0x200 {
-			log.Printf(`Export directory contains more than 0x200 repeated
-			 entries: %d, Name:%s, Address:0x%x`, symbolCounts[symbolAddress],
-				string(symbolName), symbolAddress)
-			break
+		if symbolCounts[symbolAddress] > 10 {
+			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
+			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
+			 symbolAddress)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf(`Export directory contains more than %d symbol entries.
-			 Assuming corrupt.`, maxExportedSymbols)
-			break
+			anomaly := fmt.Sprintf("Export directory contains more than %d " +
+			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		newExport := ExportFunction{
 			Name:         symbolName,
@@ -215,7 +224,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Exports = append(pe.Exports, newExport)
+		pe.Export.Functions = append(pe.Export.Functions, newExport)
 	}
 
 	if parsingFailed {
@@ -234,7 +243,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 	parsingFailed = false
 	ordinals := make(map[uint32]bool)
-	for _, exp := range pe.Exports {
+	for _, exp := range pe.Export.Functions {
 		ordinals[exp.Ordinal] = true
 	}
 	numNames = min(exportDir.NumberOfFunctions, safetyBoundary/4)
@@ -262,16 +271,16 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 0x200 {
-			log.Printf(`Export directory contains more than 0x200 repeated
-			 entries: %d, Address:0x%x`, symbolCounts[symbolAddress],
+		if symbolCounts[symbolAddress] > 10 {
+			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
+			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
 				symbolAddress)
-			break
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf(`Export directory contains more than %d ordinal entries.
-			 Assuming corrupt.`, maxExportedSymbols)
-			break
+			anomaly := fmt.Sprintf("Export directory contains more than %d " +
+			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		newExport := ExportFunction{
 			Ordinal:      exportDir.Base + i,
@@ -280,7 +289,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Exports = append(pe.Exports, newExport)
+		pe.Export.Functions = append(pe.Export.Functions, newExport)
 
 	}
 

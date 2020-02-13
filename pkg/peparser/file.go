@@ -5,6 +5,8 @@
 package pe
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -17,7 +19,7 @@ type File struct {
 	NtHeader     ImageNtHeader
 	Sections     []ImageSectionHeader
 	Imports      []Import
-	Exports      []ExportFunction
+	Export      Export
 	Debugs       []DebugEntry
 	Relocations  []Relocation
 	Resources    ResourceDirectory
@@ -69,7 +71,7 @@ func Open(name string) (File, error) {
 func (pe *File) Close() error {
 	var err error
 	if pe.f != nil {
-		err = f.Close()
+		err = pe.f.Close()
 	}
 	return err
 }
@@ -102,14 +104,10 @@ func (pe *File) Parse() error {
 
 	// Parse the Data Directory entries.
 	err = pe.parseDataDirectories()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func (pe *File) parseDataDirectories() (err error) {
+func (pe *File) parseDataDirectories() error {
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
 	switch pe.Is64 {
@@ -138,10 +136,10 @@ func (pe *File) parseDataDirectories() (err error) {
 	}
 
 	// Iterate over data directories and call the appropriate function.
+	var errorMsg string
 	for entryIndex := 0; entryIndex < ImageNumberOfDirectoryEntries; entryIndex++ {
 
 		var va, size uint32
-
 		switch pe.Is64 {
 		case true:
 			dirEntry := oh64.DataDirectory[entryIndex]
@@ -156,10 +154,14 @@ func (pe *File) parseDataDirectories() (err error) {
 		if va != 0 {
 			err := funcMaps[entryIndex](va, size)
 			if err != nil {
-				return err
+				// append error but keep parsing other directories.
+				errorMsg += fmt.Sprintf("%s,", err.Error()) 
 			}
 		}
 	}
 
-	return err
+	if errorMsg != "" {
+		return errors.New(errorMsg)
+	} 
+	return nil
 }

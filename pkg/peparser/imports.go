@@ -19,8 +19,8 @@ const (
 	imageOrdinalFlag32   = uint32(0x80000000)
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
 	maxRepeatedAddresses = uint32(16)
+	maxRepeatedAddresses64 = uint64(0x8000000000000000)
 	maxAddressSpread     = uint32(0x8000000) // 64 MB
-	maxAddressSpread64   = uint64(0x8000000) // 64 MB
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
 )
@@ -177,14 +177,14 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
-		if repeatedAddress >= maxAddressSpread {
+		if repeatedAddress >= maxRepeatedAddresses {
 			return []*ImageThunkData32{},
 				errors.New("getImportTable32() bogus data found in imports")
 		}
 
-		// if the addresses point somewhere but the difference between the highest
-		// and lowest address is larger than maxAddressSpread we assume a bogus
-		// table as the addresses should be contained within a module
+		// if the addresses point somewhere but the difference between the 
+		// highest and lowest address is larger than maxAddressSpread we assume 
+		// a bogus table as the addresses should be contained within a module
 		if maxAddressOfData-minAddressOfData > maxAddressSpread {
 			return []*ImageThunkData32{},
 				errors.New("getImportTable32() data addresses too spread out")
@@ -274,7 +274,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
-		if repeatedAddress >= maxAddressSpread64 {
+		if repeatedAddress >= maxRepeatedAddresses64 {
 			return []*ImageThunkData64{},
 				errors.New("getImportTable64(): bogus data found in imports")
 		}
@@ -282,7 +282,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 		// if the addresses point somewhere but the difference between the highest
 		// and lowest address is larger than maxAddressSpread we assume a bogus
 		// table as the addresses should be contained within a module
-		if maxAddressOfData-minAddressOfData > maxAddressSpread64 {
+		if maxAddressOfData-minAddressOfData > maxRepeatedAddresses64 {
 			return []*ImageThunkData64{},
 				errors.New("getImportTable64: data addresses too spread out")
 		}
@@ -379,7 +379,7 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 		return []*ImportFunction{}, err
 	}
 
-	// Would crash if IAT or ILT had nil type
+	// Would crash if IAT or ILT had nil type.
 	if len(iat) == 0 && len(ilt) == 0 {
 		return []*ImportFunction{}, errors.New("Damaged Import Table information. ILT and/or IAT appear to be broken")
 	}

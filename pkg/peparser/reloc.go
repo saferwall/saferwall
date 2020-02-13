@@ -10,8 +10,19 @@ import (
 	"errors"
 )
 
+var (
+	// ErrInvalidBaseRelocVA is reposed when base reloc lies outside of the image.
+	ErrInvalidBaseRelocVA = errors.New("Invalid relocation information." +
+	"Base Relocation VirtualAddress is outside of PE Image")
+
+	// ErrInvalidBasicRelocSizeOfBloc is reposed when base reloc is too large.
+	ErrInvalidBasicRelocSizeOfBloc = errors.New("Invalid relocation " +
+	"information. Base Relocation SizeOfBlock too large")
+)
+
 // The Type field of the relocation record indicates what kind of relocation
-// should be performed. Different relocation types are defined for each type of machine.
+// should be performed. Different relocation types are defined for each type
+// of machine.
 const (
 	// The base relocation is skipped. This type can be used to pad a block.
 	ImageRelBasedAbsolute = 0
@@ -147,18 +158,19 @@ func (pe *File) parseRelocDirectory(rva, size uint32) error {
 			return err
 		}
 
-		// VirtualAddress must lie within the Image
+		// VirtualAddress must lie within the Image.
 		if baseReloc.VirtualAddress > sizeOfImage {
-			return errors.New("Invalid relocation information. VirtualAddress outside of Image")
+			return ErrInvalidBaseRelocVA
 		}
 
-		// SizeOfBlock must be less or equal than the size of the image
-		// (It's a rather loose sanity test)
+		// SizeOfBlock must be less or equal than the size of the image.
+		// It's a rather loose sanity test.
 		if baseReloc.SizeOfBlock > sizeOfImage {
-			return errors.New("Invalid relocation information. SizeOfBlock too large")
+			return ErrInvalidBasicRelocSizeOfBloc
 		}
 
-		relocEntries, err := pe.parseRelocations(rva+relocSize, baseReloc.VirtualAddress, baseReloc.SizeOfBlock-relocSize)
+		relocEntries, err := pe.parseRelocations(rva+relocSize,
+			baseReloc.VirtualAddress, baseReloc.SizeOfBlock-relocSize)
 		if err != nil {
 			return err
 		}

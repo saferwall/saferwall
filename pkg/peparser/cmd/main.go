@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"fmt"
 
 	// "encoding/hex"
 	// "github.com/donutloop/toolkit/debugutil"
@@ -20,9 +21,17 @@ func parse(filename string) {
 	}
 
 	err = pe.Parse()
-	if err != nil {
-		log.Printf("\nError while parsing file: %s, reason: %s", filename, err)
-		return
+	if err != nil  {
+		fmt.Printf("\nError while parsing %s\n", filename)
+		fmt.Println(err)
+		
+	}
+
+	if len(pe.Anomalies) > 0 {
+		fmt.Printf("\nAnomalies found while parsing %s\n", filename)
+		for _, anomaly := range pe.Anomalies {
+			fmt.Println(anomaly)
+		}
 	}
 	// for _, s := range pe.Sections {
 	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
