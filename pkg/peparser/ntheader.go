@@ -313,16 +313,16 @@ func (pe *File) parseNtHeader() (err error) {
 	signature := binary.LittleEndian.Uint32(pe.data[ntHeaderOffset:])
 
 	// Probe for PE signature.
-	if signature == ImageOS2Signature {
+	if signature & 0xFFFF == ImageOS2Signature {
 		return ErrImageOS2SignatureFound
 	}
-	if signature == ImageOS2LESignature {
+	if signature & 0xFFFF == ImageOS2LESignature {
 		return ErrImageOS2LESignatureFound
 	}
-	if signature == ImageVXDignature {
+	if signature & 0xFFFF == ImageVXDignature {
 		return ErrImageVXDSignatureFound
 	}
-	if signature == ImageTESignature {
+	if signature & 0xFFFF== ImageTESignature {
 		return ErrImageTESignatureFound
 	}
 
