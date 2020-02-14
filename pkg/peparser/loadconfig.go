@@ -216,7 +216,7 @@ type ImageLoadConfigDirectory64 struct {
 	EnclaveConfigurationPointer              uint64
 }
 
-func (pe *File) parseLoadConfigDirectory(rva, size uint32) (interface{}, error) {
+func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 
 	var loadConfig interface{}
 
@@ -227,7 +227,7 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) (interface{}, error) 
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+loadCfgSize])
 		err := binary.Read(buf, binary.LittleEndian, &loadCfg64)
 		if err != nil {
-			return loadConfig, err
+			return err
 		}
 		loadConfig = loadCfg64
 	} else {
@@ -237,10 +237,11 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) (interface{}, error) 
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+loadCfgSize])
 		err := binary.Read(buf, binary.LittleEndian, &loadCfg32)
 		if err != nil {
-			return loadConfig, err
+			return err
 		}
 		loadConfig = loadCfg32
 	}
 
-	return loadConfig, nil
+	pe.LoadConfig = loadConfig
+	return nil
 }

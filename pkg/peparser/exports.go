@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 	"fmt"
+	"log"
 )
 
 const (
@@ -20,17 +20,44 @@ const (
 // The export directory table contains address information that is used
 // to resolve imports to the entry points within this image.
 type ImageExportDirectory struct {
-	Characteristics       uint32 // Reserved, must be 0.
-	TimeDateStamp         uint32 // The time and date that the export data was created.
-	MajorVersion          uint16 // The major version number. The major and minor version numbers can be set by the user.
-	MinorVersion          uint16 // The minor version number.
-	Name                  uint32 // The address of the ASCII string that contains the name of the DLL. This address is relative to the image base.
-	Base                  uint32 // The starting ordinal number for exports in this image. This field specifies the starting ordinal number for the export address table. It is usually set to 1.
-	NumberOfFunctions     uint32 // The number of entries in the export address table.
-	NumberOfNames         uint32 // The number of entries in the name pointer table. This is also the number of entries in the ordinal table.
-	AddressOfFunctions    uint32 //The address of the export address table, relative to the image base.
-	AddressOfNames        uint32 // The address of the export name pointer table, relative to the image base. The table size is given by the Number of Name Pointers field.
-	AddressOfNameOrdinals uint32 // The address of the ordinal table, relative to the image base.
+	// Reserved, must be 0.
+	Characteristics uint32
+
+	// The time and date that the export data was created.
+	TimeDateStamp uint32
+
+	// The major version number.
+	//The major and minor version numbers can be set by the user.
+	MajorVersion uint16
+
+	// The minor version number.
+	MinorVersion uint16
+
+	// The address of the ASCII string that contains the name of the DLL.
+	// This address is relative to the image base.
+	Name uint32
+
+	// The starting ordinal number for exports in this image. This field
+	// specifies the starting ordinal number for the export address table.
+	// It is usually set to 1.
+	Base uint32
+
+	// The number of entries in the export address table.
+	NumberOfFunctions uint32
+
+	// The number of entries in the name pointer table.
+	// This is also the number of entries in the ordinal table.
+	NumberOfNames uint32
+
+	//The address of the export address table, relative to the image base.
+	AddressOfFunctions uint32
+
+	// The address of the export name pointer table, relative to the image base.
+	// The table size is given by the Number of Name Pointers field.
+	AddressOfNames uint32
+
+	// The address of the ordinal table, relative to the image base.
+	AddressOfNameOrdinals uint32
 }
 
 // ExportFunction represents an imported function in the export table.
@@ -42,6 +69,14 @@ type ExportFunction struct {
 	Name         string
 	Forwarder    string
 	ForwarderRVA uint32
+}
+
+
+// Export represent the export table.
+type Export struct {
+	Functions []ExportFunction
+	Struct	ImageExportDirectory
+	Name 	string
 }
 
 func (pe *File) parseExportDirectory(rva, size uint32) error {
@@ -56,32 +91,38 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	if err != nil {
 		return errors.New(errorMsg)
 	}
+	pe.Export.Struct = exportDir
+	pe.Export.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
 
 	// We keep track of the bytes left in the file and use it to set a upper
 	// bound in the number of items that can be read from the different arrays.
-	lengthUntilEOF := func(rva uint32) uint32 { return pe.size - pe.getOffsetFromRva(rva) }
+	lengthUntilEOF := func(rva uint32) uint32 {
+		return pe.size - pe.getOffsetFromRva(rva)
+	}
 	var length uint32
 	var addressOfNames []byte
 
+	// Some DLLs have null number of functions.
 	if exportDir.NumberOfFunctions == 0 {
-		log.Println("Export Directory counts zero number of functions")
 		return nil
 	}
 
-	length = min(lengthUntilEOF(exportDir.AddressOfNames), exportDir.NumberOfNames*4)
+	length = min(lengthUntilEOF(exportDir.AddressOfNames),
+		exportDir.NumberOfNames*4)
 	addressOfNames, err = pe.getData(exportDir.AddressOfNames, length)
 	if err != nil {
 		return errors.New(errorMsg)
 	}
 
-	length = min(lengthUntilEOF(exportDir.AddressOfNameOrdinals), exportDir.NumberOfNames*4)
+	length = min(lengthUntilEOF(exportDir.AddressOfNameOrdinals),
+		exportDir.NumberOfNames*4)
 	addressOfNameOrdinals, err := pe.getData(exportDir.AddressOfNameOrdinals, length)
-
 	if err != nil {
 		return errors.New(errorMsg)
 	}
 
-	length = min(lengthUntilEOF(exportDir.AddressOfFunctions), exportDir.NumberOfFunctions*4)
+	length = min(lengthUntilEOF(exportDir.AddressOfFunctions),
+		exportDir.NumberOfFunctions*4)
 	addressOfFunctions, err := pe.getData(exportDir.AddressOfFunctions, length)
 	if err != nil {
 		return errors.New(errorMsg)
@@ -97,7 +138,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	// read the image export directory
 	section := pe.getSectionByRva(exportDir.AddressOfNames)
 	if section != nil {
-		safetyBoundary = (section.VirtualAddress + uint32(len(section.Data(0, 0, pe)))) - exportDir.AddressOfNames
+		safetyBoundary = (section.VirtualAddress +
+			uint32(len(section.Data(0, 0, pe)))) - exportDir.AddressOfNames
 	}
 
 	numNames := min(exportDir.NumberOfNames, safetyBoundary/4)
@@ -161,16 +203,16 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 0x200 {
-			log.Printf(`Export directory contains more than 0x200 repeated
-			 entries: %d, Name:%s, Address:0x%x`, symbolCounts[symbolAddress],
-			 string(symbolName), symbolAddress)
-			break
+		if symbolCounts[symbolAddress] > 10 {
+			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
+			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
+			 symbolAddress)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf(`Export directory contains more than %d symbol entries.
-			 Assuming corrupt.`, maxExportedSymbols)
-			break
+			anomaly := fmt.Sprintf("Export directory contains more than %d " +
+			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		newExport := ExportFunction{
 			Name:         symbolName,
@@ -182,7 +224,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Exports = append(pe.Exports, newExport)
+		pe.Export.Functions = append(pe.Export.Functions, newExport)
 	}
 
 	if parsingFailed {
@@ -196,12 +238,12 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	// Overly generous upper bound
 	safetyBoundary = pe.size
 	if section != nil {
-		safetyBoundary = section.VirtualAddress + 
-		uint32(len(section.Data(0, 0, pe))) - exportDir.AddressOfNames
+		safetyBoundary = section.VirtualAddress +
+			uint32(len(section.Data(0, 0, pe))) - exportDir.AddressOfNames
 	}
 	parsingFailed = false
 	ordinals := make(map[uint32]bool)
-	for _, exp := range pe.Exports {
+	for _, exp := range pe.Export.Functions {
 		ordinals[exp.Ordinal] = true
 	}
 	numNames = min(exportDir.NumberOfFunctions, safetyBoundary/4)
@@ -229,16 +271,16 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// was being parsed as potentially containing millions of exports.
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
-		if symbolCounts[symbolAddress] > 0x200 {
-			log.Printf(`Export directory contains more than 0x200 repeated
-			 entries: %d, Address:0x%x`, symbolCounts[symbolAddress],
-			 symbolAddress)
-			break
+		if symbolCounts[symbolAddress] > 10 {
+			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
+			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
+				symbolAddress)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			log.Printf(`Export directory contains more than %d ordinal entries.
-			 Assuming corrupt.`, maxExportedSymbols)
-			break
+			anomaly := fmt.Sprintf("Export directory contains more than %d " +
+			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
+			pe.Anomalies  = append(pe.Anomalies, anomaly)
 		}
 		newExport := ExportFunction{
 			Ordinal:      exportDir.Base + i,
@@ -247,7 +289,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Exports = append(pe.Exports, newExport)
+		pe.Export.Functions = append(pe.Export.Functions, newExport)
 
 	}
 

@@ -125,6 +125,6 @@ const (
 	ImageDirectoryEntryIAT          = 12 // Import Address Table
 	ImageDirectoryEntryDelayImport  = 13 // Delay Import Descriptor
 	ImageDirectoryEntryCLR          = 14 // CLR Runtime Header
-	ImageDirectoryEntryRESERVED     = 15 // Must be zero
+	ImageDirectoryEntryReserved     = 15 // Must be zero
 	ImageNumberOfDirectoryEntries   = 16 // Tables count.
 )
