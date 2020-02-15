@@ -36,11 +36,11 @@ var (
 	// ErrUserAlreadyConfirmed is retgurned when a user account has been already confirmed.
 	ErrUserAlreadyConfirmed = errors.New("Account already confirmed")
 )
-
-type activity struct {
+// Activity represents an event made by the user such as `upload`.
+type Activity struct {
 	Timestamp *time.Time        `json:"timestamp,omitempty"`
 	Type      string            `json:"type,omitempty"`
-	Detail    map[string]string `json:"detail,omitempty"`
+	Content    map[string]string `json:"content,omitempty"`
 }
 
 type submission struct {
@@ -65,8 +65,18 @@ type User struct {
 	Following   []string     `json:"following,omitempty"`
 	Followers   []string     `json:"followers,omitempty"`
 	Likes       []string     `json:"likes,omitempty"`
-	Activities  []activity   `json:"activities,omitempty"`
+	Activities  []Activity   `json:"activities,omitempty"`
 	Submissions []submission `json:"submissions,omitempty"`
+}
+
+// NewActivity creates a new activity.
+func (u *User) NewActivity(activityType string, content map[string]string) Activity{
+	act := Activity{}
+	now := time.Now().UTC()
+	act.Timestamp = &now
+	act.Type = activityType
+	act.Content = content
+	return act
 }
 
 // UpdatePassword creates a JWT token for email confirmation.
@@ -833,12 +843,20 @@ func Actions(c echo.Context) error {
 	case "follow":
 		if !utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
 			currentUser.Following = append(currentUser.Following, targetUser.Username)
+
+			// add new activity
+			activity := currentUser.NewActivity("follow", map[string]string{
+				"user":targetUser.Username})
+			currentUser.Activities = append(currentUser.Activities, activity)
+			currentUser.Save()
+
 		}
 		if !utils.IsStringInSlice(currentUser.Username, targetUser.Followers) {
 			targetUser.Followers = append(targetUser.Followers, currentUser.Username)
+			targetUser.Save()
 		}
-		currentUser.Save()
-		targetUser.Save()
+		
+		
 	case "unfollow":
 		if utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
 			currentUser.Following = utils.RemoveStringFromSlice(currentUser.Following, targetUser.Username)

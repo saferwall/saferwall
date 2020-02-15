@@ -377,10 +377,10 @@ func GetFiles(c echo.Context) error {
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	log.Infoln("New file uploaded by", name)
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+	log.Infoln("New file uploaded by", username)
 
 	// Source
 	fileHeader, err := c.FormFile("file")
@@ -489,6 +489,19 @@ func PostFiles(c echo.Context) error {
 				Sha256:      sha256,
 			})
 		}
+
+		// Get user infos.
+		usr, err := user.GetByUsername(username)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"verbose_msg": "Username does not exist"})
+		}
+
+		// add new activity
+		activity := usr.NewActivity("submit", map[string]string{
+			"sha256":sha256})
+		usr.Activities = append(usr.Activities, activity)
+		usr.Save()
 
 		// All went fine
 		return c.JSON(http.StatusCreated, Response{
@@ -662,6 +675,11 @@ func Actions(c echo.Context) error {
 
 		if !utils.IsStringInSlice(sha256, usr.Likes) {
 			usr.Likes = append(usr.Likes, sha256)
+
+			// add new activity
+			activity := usr.NewActivity("like", map[string]string{
+				"sha256":sha256})
+			usr.Activities = append(usr.Activities, activity)
 			usr.Save()
 		}
 
@@ -744,6 +762,13 @@ func PostComment(c echo.Context) error {
 	claims := currentUser.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
 
+	// get target user
+	usr, err := user.GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Target user does not exist"})
+	}
+
 	// Create a new comment
 	com := comment{}
 	err = json.Unmarshal(b, &com)
@@ -757,6 +782,12 @@ func PostComment(c echo.Context) error {
 	com.ID = betterguid.New()
 	file.Comments = append(file.Comments, com)
 	file.Save()
+
+	// add new activity
+	activity := usr.NewActivity("comment", map[string]string{
+		"sha256":sha256, "body": com.Body})
+	usr.Activities = append(usr.Activities, activity)
+	usr.Save()
 
 	return c.JSON(http.StatusOK, com)
 }

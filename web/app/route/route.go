@@ -68,7 +68,7 @@ func New() *echo.Echo {
 	e.DELETE("/v1/users/", user.DeleteUsers, m.RequireLogin, auth.IsAdmin)
 
 	// handle /users/:username endpoint.
-	e.GET("/v1/users/:username/", user.GetUser, m.RequireLogin)
+	e.GET("/v1/users/:username/", user.GetUser)
 	e.PUT("/v1/users/:username/", user.PutUser, m.RequireLogin)
 	e.DELETE("/v1/users/:username/", user.DeleteUser, m.RequireLogin)
 	e.GET("/v1/users/:username/avatar/", user.GetAvatar)
