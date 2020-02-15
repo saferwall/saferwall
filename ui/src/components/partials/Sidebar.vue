@@ -11,6 +11,7 @@
           :class="{ 'is-active': item.children && item.active }"
           :exact="true"
           @click.native="toggleDropdown(index)"
+          v-if="showButton(item.title)"
         >
           <span class="icon is-small"><i :class="item.icon"></i></span>
           {{ item.title }}
@@ -101,7 +102,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getHashContext", "getNbComments"]),
+    ...mapGetters(["getHashContext", "getNbComments", "getLoggedIn"]),
     menuItems: function() {
       const hash = this.getHashContext
       return this.menu.map(({ slug, children, ...item }) => ({
@@ -118,10 +119,9 @@ export default {
       }))
     },
     route: function() {
-      return this.$route.path.replace(/\//g, '')
+      return this.$route.path.replace(/\//g, "")
     },
   },
-
   mounted() {
     this.menu.map((el) => {
       el.active = Boolean(el.children)
@@ -131,7 +131,6 @@ export default {
       el.dropdownHeight = el.active ? el.children.length * 36 + "px" : 0
     })
   },
-
   methods: {
     toggleDropdown(index) {
       if (this.menu[index].children) {
@@ -149,6 +148,11 @@ export default {
         this.menu[index].dropdownHeight =
           this.menu[index].children.length * 36 + "px"
       }
+    },
+    showButton(name) {
+      if (name !== "Comments") return true
+      if (name === "Comments" && this.getLoggedIn) return true
+      else return false
     },
   },
 }

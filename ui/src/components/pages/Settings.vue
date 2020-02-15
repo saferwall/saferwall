@@ -39,10 +39,10 @@
 </template>
 
 <script>
-import ChangeAccountInfo from "../elements/profile/ChangeAccountInfo"
-import ChangeEmail from "../elements/profile/ChangeEmail"
-import ChangePassword from "../elements/profile/ChangePassword"
-import DeleteAccount from "../elements/profile/DeleteAccount"
+import ChangeAccountInfo from "../elements/settings/ChangeAccountInfo"
+import ChangeEmail from "../elements/settings/ChangeEmail"
+import ChangePassword from "../elements/settings/ChangePassword"
+import DeleteAccount from "../elements/settings/DeleteAccount"
 
 export default {
   components: {

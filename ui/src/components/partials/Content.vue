@@ -59,6 +59,11 @@ export default {
     Loader,
   },
   computed: {
+    ...mapGetters({
+      hash: "getHashContext",
+      userData: "getUserData",
+      fileData: "getFileData",
+    }),
     showButtons: function() {
       return (
         Object.entries(this.$store.getters.getFileData).length !== 0 &&
@@ -75,15 +80,17 @@ export default {
       )
     },
     showLoader: function() {
-      return (
-        Object.entries(this.userData).length === 0 &&
-        this.userData.constructor === Object
-      )
+      if (this.$store.getters.getLoggedIn)
+        return (
+          Object.entries(this.userData).length === 0 &&
+          this.userData.constructor === Object
+        )
+      else
+        return (
+          Object.entries(this.fileData).length === 0 &&
+          this.fileData.constructor === Object
+        )
     },
-    ...mapGetters({
-      hash: "getHashContext",
-      userData: "getUserData",
-    }),
   },
   methods: {
     getData: function() {

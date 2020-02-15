@@ -11,7 +11,7 @@ import Login from "@/components/pages/Login"
 import Signup from "@/components/pages/Signup"
 import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
-import Profile from "@/components/pages/Profile"
+import Settings from "@/components/pages/Settings"
 import store from "../store/index"
 import routes from '../../config/routes'
 
@@ -131,12 +131,12 @@ const router = new Router({
       },
     },
     {
-      path: ROUTES.PROFILE.path,
-      name: ROUTES.PROFILE.name,
-      component: Profile,
+      path: ROUTES.SETTINGS.path,
+      name: ROUTES.SETTINGS.name,
+      component: Settings,
       meta: {
-        title: ROUTES.PROFILE.meta.title,
-        requiresAuth: ROUTES.PROFILE.meta.requiresAuth,
+        title: ROUTES.SETTINGS.meta.title,
+        requiresAuth: ROUTES.SETTINGS.meta.requiresAuth,
       },
     },
   ],

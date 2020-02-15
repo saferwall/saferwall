@@ -85,11 +85,11 @@ module.exports = {
         layout: "unauthenticated",
       },
     },
-    PROFILE: {
-      path: "/profile/",
-      name: "profile",
+    SETTINGS: {
+      path: "/settings/",
+      name: "settings",
       meta: {
-        title: "Profile",
+        title: "Settings",
         requiresAuth: true,
       },
     },
