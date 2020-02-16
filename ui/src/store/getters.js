@@ -26,6 +26,9 @@ export default {
     return state.fileData.data.comments ? state.fileData.data.comments.length : 0
   },
   getAvatar: state => {
-    return state.userData.avatarBase64
+    return state.userData.avatar
+  },
+  getFollowing: state => {
+    return state.userData.following?state.userData.following:[]
   }
 }

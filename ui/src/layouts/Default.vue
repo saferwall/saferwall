@@ -26,7 +26,7 @@ export default {
 
   data() {
     return {
-      noSidebarPaths: ["Upload", "Scanning", "profile"],
+      noSidebarPaths: ["Upload", "Scanning", "settings", "profile"],
     }
   },
 }

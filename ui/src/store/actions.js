@@ -44,7 +44,7 @@ export default {
             responseType: "arraybuffer",
           }, )
           .then((secRes) => {
-            res.data.avatarBase64 = Buffer.from(secRes.data, 'binary').toString('base64')
+            res.data.avatar = Buffer.from(secRes.data, 'binary').toString('base64')
             context.commit('setUserData', res.data)
           })
       })

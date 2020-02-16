@@ -2,7 +2,7 @@
   <div>
     <article class="media box" v-if="!verification">
       <figure class="media-left">
-        <p class="image is-64x64">
+        <p class="image is-64x64" @click="goToProfile">
           <img :src="'data:image/png;base64,' + data.avatar" />
         </p>
         <div class="info">
@@ -15,7 +15,7 @@
       <div class="media-content">
         <div class="content">
           <p>
-            <strong class="username">{{
+            <strong class="username" @click="goToProfile">{{
               this.data.name ? this.data.name : this.data.username
             }}</strong>
             &nbsp;
@@ -84,6 +84,9 @@ export default {
           )
         })
     },
+    goToProfile: function() {
+      this.$router.push(this.$routes.PROFILE.path + this.data.username)
+    },
   },
   mounted() {
     if (this.data.username !== this.$store.getters.getUsername) {
@@ -100,6 +103,17 @@ export default {
 .username {
   font-size: 1em;
   font-weight: 600;
+  &:hover {
+    color: #39d9c1;
+    cursor: pointer;
+  }
+}
+
+.image {
+  &:hover {
+    opacity: 0.5;
+    cursor: pointer;
+  }
 }
 
 .media {
