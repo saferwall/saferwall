@@ -25,6 +25,7 @@ import (
 
 	"bytes"
 	"errors"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -36,11 +37,12 @@ var (
 	// ErrUserAlreadyConfirmed is retgurned when a user account has been already confirmed.
 	ErrUserAlreadyConfirmed = errors.New("Account already confirmed")
 )
+
 // Activity represents an event made by the user such as `upload`.
 type Activity struct {
 	Timestamp *time.Time        `json:"timestamp,omitempty"`
 	Type      string            `json:"type,omitempty"`
-	Content    map[string]string `json:"content,omitempty"`
+	Content   interface{} `json:"content,omitempty"`
 }
 
 type submission struct {
@@ -70,7 +72,7 @@ type User struct {
 }
 
 // NewActivity creates a new activity.
-func (u *User) NewActivity(activityType string, content map[string]string) Activity{
+func (u *User) NewActivity(activityType string, content map[string]string) Activity {
 	act := Activity{}
 	now := time.Now().UTC()
 	act.Timestamp = &now
@@ -287,7 +289,7 @@ func GetAllUsers(fields []string) ([]User, error) {
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
-		fmt.Println("Error executing n1ql query:", err)
+		log.Println("Error executing n1ql query:", err)
 	}
 
 	// Interfaces for handling streaming return values
@@ -775,7 +777,7 @@ func UpdateAvatar(c echo.Context) error {
 	})
 }
 
-// Actions over a user. Follow or Unfollow.
+// Actions handles the different actions over a user.
 func Actions(c echo.Context) error {
 
 	// extract user from token
@@ -846,7 +848,7 @@ func Actions(c echo.Context) error {
 
 			// add new activity
 			activity := currentUser.NewActivity("follow", map[string]string{
-				"user":targetUser.Username})
+				"user": targetUser.Username})
 			currentUser.Activities = append(currentUser.Activities, activity)
 			currentUser.Save()
 
@@ -855,8 +857,7 @@ func Actions(c echo.Context) error {
 			targetUser.Followers = append(targetUser.Followers, currentUser.Username)
 			targetUser.Save()
 		}
-		
-		
+
 	case "unfollow":
 		if utils.IsStringInSlice(targetUser.Username, currentUser.Following) {
 			currentUser.Following = utils.RemoveStringFromSlice(currentUser.Following, targetUser.Username)
@@ -871,4 +872,49 @@ func Actions(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "action success",
 	})
+}
+
+// Activities represents the feed displayed in the landing page.
+func Activities(c echo.Context) error {
+
+	currentUser := c.Get("user").(*jwt.Token)
+	claims := currentUser.Claims.(jwt.MapClaims)
+	currentUsername := claims["name"].(string)
+
+	// get path param
+	username := c.Param("username")
+
+	if username != currentUsername {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"verbose_msg": "Not allowed to fetch another user account's activities"})
+	}
+
+	// Get user infos.
+	_, err := GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+
+	// Get all activities from all users whom I am following.
+	params := make(map[string]interface{}, 1)
+	params["user"] = username
+	query := "SELECT RAW u1.activities FROM `users` u1 WHERE u1.`username` IN (SELECT RAW `following`[0] FROM `users` u2 WHERE u2.`username`=$user)"
+
+	// Execute Query
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": err.Error(),
+		})	
+	}
+	defer rows.Close()
+
+	// Interfaces for handling streaming return values
+	// var activities []Activity
+
+	// Stream the values returned from the query into a typed array of structs
+	var activities []Activity
+	for rows.Next(&activities) {}
+	return c.JSON(http.StatusOK, activities)
 }
