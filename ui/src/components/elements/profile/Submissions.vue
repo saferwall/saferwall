@@ -8,7 +8,7 @@
 import FileCard from "./FileCard"
 
 export default {
-  props: ["likes", "active"],
+  props: ["subs", "active"],
   components: {
     FileCard,
   },
@@ -18,7 +18,7 @@ export default {
     }
   },
   watch: {
-    likes: function() {
+    subs: function() {
       this.filesData = []
       this.loadFiles()
     },
@@ -43,8 +43,8 @@ export default {
         .catch()
     },
     loadFiles: function() {
-      for (var index in this.likes) {
-        this.getFileData(this.likes[index])
+      for (var index in this.subs) {
+        this.getFileData(this.subs[index].hash)
       }
     },
   },

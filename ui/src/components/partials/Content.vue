@@ -77,7 +77,8 @@ export default {
       return (
         this.$store.getters.getHashContext !== "" ||
         this.route === "upload" ||
-        this.route === "profile"
+        this.route === "profile" ||
+        this.route === "settings"
       )
     },
     showLoader: function() {

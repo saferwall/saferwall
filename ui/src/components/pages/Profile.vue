@@ -41,6 +41,7 @@
           </ul>
         </div>
         <Likes :active="activeTab === 0" :likes="userData.likes" />
+        <Submissions :active="activeTab === 1" :likes="userData.submissions" />
         <FollowersFollowing
           :active="activeTab === 2 || activeTab === 3"
           :users="activeTab === 3 ? userData.following : userData.followers"
@@ -54,6 +55,7 @@
 <script>
 import UserData from "../elements/profile/UserData"
 import Likes from "../elements/profile/Likes"
+import Submissions from "../elements/profile/Submissions"
 import FollowersFollowing from "../elements/profile/FollowersFollowing"
 
 export default {
@@ -61,6 +63,7 @@ export default {
     UserData,
     Likes,
     FollowersFollowing,
+    Submissions,
   },
   data() {
     return {
