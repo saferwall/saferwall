@@ -43,7 +43,7 @@ type activity struct {
 	Detail    map[string]string `json:"detail,omitempty"`
 }
 
-type submission struct {
+type Submission struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Sha256    string     `json:"sha256,omitempty"`
 }
@@ -66,7 +66,7 @@ type User struct {
 	Followers   []string     `json:"followers,omitempty"`
 	Likes       []string     `json:"likes,omitempty"`
 	Activities  []activity   `json:"activities,omitempty"`
-	Submissions []submission `json:"submissions,omitempty"`
+	Submissions []Submission `json:"submissions,omitempty"`
 }
 
 // UpdatePassword creates a JWT token for email confirmation.

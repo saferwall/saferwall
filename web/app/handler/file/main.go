@@ -377,9 +377,17 @@ func GetFiles(c echo.Context) error {
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
+
+	// Get user infos.
+	u, err := user.GetByUsername(name)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+
 	log.Infoln("New file uploaded by", name)
 
 	// Source
@@ -477,6 +485,10 @@ func PostFiles(c echo.Context) error {
 		}
 		newFile.Submissions = append(newFile.Submissions, s)
 		newFile.Save()
+
+		u.Submissions = append(u.Submissions, user.Submission{
+			Timestamp: &now, Sha256: sha256})
+		u.Save()
 
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
