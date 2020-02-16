@@ -43,8 +43,8 @@ type submission struct {
 	Country  string    `json:"country,omitempty"`
 }
 
-type comment struct {
-	Timestamp time.Time `json:"timestamp,omitempty"`
+type Comment struct {
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Body      string    `json:"body,omitempty"`
 	ID        string    `json:"id,omitempty"`
@@ -70,7 +70,7 @@ type File struct {
 	Strings         []stringStruct         `json:"strings,omitempty"`
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
-	Comments        []comment              `json:"comments,omitempty"`
+	Comments        []Comment              `json:"comments,omitempty"`
 }
 
 // Response JSON
@@ -162,13 +162,13 @@ func GetAllFiles(fields []string) ([]File, error) {
 }
 
 // getByCommentID retreieve a comment from its id.
-func (file *File) getByCommentID(commentID string) comment {
+func (file *File) getByCommentID(commentID string) Comment {
 	for _, com := range file.Comments {
 		if com.ID == commentID {
 			return com
 		}
 	}
-	return comment{}
+	return Comment{}
 }
 
 // DumpRequest dumps the headers.
@@ -756,19 +756,37 @@ func PostComment(c echo.Context) error {
 	claims := currentUser.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
 
-	// Create a new comment
-	com := comment{}
+	// Get user infos.
+	u, err := user.GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exist"})
+	}
+
+	// Create a new comment to store in file document.
+	com := Comment{}
 	err = json.Unmarshal(b, &com)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	// Overwrite the content for now
-	com.Timestamp = time.Now().UTC()
+	now := time.Now().UTC()
+	commentID := betterguid.New()
+	com.Timestamp = &now
 	com.Username = username
-	com.ID = betterguid.New()
+	com.ID = commentID
 	file.Comments = append(file.Comments, com)
 	file.Save()
+
+	// Create the same comment to store in user document.
+	userCom := user.Comment{}
+	userCom.Timestamp = &now
+	userCom.ID = commentID
+	userCom.Body = com.Body
+	userCom.Sha256 = sha256
+	u.Comments = append(u.Comments, userCom)
+	u.Save()
 
 	return c.JSON(http.StatusOK, com)
 }
@@ -792,7 +810,7 @@ func DeleteComment(c echo.Context) error {
 	commentID := c.Param("id")
 	com := file.getByCommentID(commentID)
 
-	if (comment{} == com) {
+	if (Comment{} == com) {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "Comment not found"})
 	}

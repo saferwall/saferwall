@@ -48,6 +48,13 @@ type Submission struct {
 	Sha256    string     `json:"sha256,omitempty"`
 }
 
+type Comment struct {
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Sha256  string    `json:"sha256,omitempty"`
+	Body      string    `json:"body,omitempty"`
+	ID        string    `json:"id,omitempty"`
+}
+
 // User represent a user.
 type User struct {
 	Email       string       `json:"email,omitempty"`
@@ -67,6 +74,7 @@ type User struct {
 	Likes       []string     `json:"likes,omitempty"`
 	Activities  []activity   `json:"activities,omitempty"`
 	Submissions []Submission `json:"submissions,omitempty"`
+	Comments    []Comment    `json:"comments,omitempty"`
 }
 
 // UpdatePassword creates a JWT token for email confirmation.
@@ -582,6 +590,7 @@ func PostUsers(c echo.Context) error {
 	newUser.Following = nil
 	newUser.Followers = nil
 	newUser.Likes = nil
+	newUser.Comments = nil
 	newUser.Submissions = nil
 	newUser.Activities = nil
 	newUser.HasAvatar = false
