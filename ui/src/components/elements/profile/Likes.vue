@@ -1,35 +1,57 @@
 <template>
-  <div class="likes">
-    <div class="tile like is-child box" v-for="(file, index) in filesData" :key="index">
-        <div id="hash">{{file.sha256}}</div>
-    </div>
+  <div class="likes" v-if="active">
+    <LikedFile :file="file" v-for="(file, index) in filesData" :key="index" />
   </div>
 </template>
 
 <script>
+import LikedFile from "./LikedFile"
+
 export default {
-  props: ["likes"],
+  props: ["likes", "active"],
+  components: {
+    LikedFile,
+  },
   data() {
     return {
       filesData: [],
     }
   },
+  watch: {
+    likes: function() {
+      this.filesData = []
+      this.loadFiles()
+    },
+  },
   methods: {
+    getAvDetectionCount: function(scans) {
+      var count = 0
+      for (const av of Object.values(scans)) {
+        if (av.infected) count++
+      }
+      return count
+    },
     getFileData: function(hash) {
       this.$http
-        .get(this.$api_endpoints.FILES + hash+"?fields=sha256,tags,multiav")
+        .get(this.$api_endpoints.FILES + hash + "?fields=sha256,tags,multiav")
         .then((res) => {
+          res.data.AvDetectionCount = this.getAvDetectionCount(
+            res.data.multiav.last_scan,
+          )
           this.filesData.push(res.data)
         })
         .catch()
     },
+    loadFiles: function() {
+      for (var index in this.likes) {
+        this.getFileData(this.likes[index])
+      }
+    },
   },
   mounted() {
-    for (var index in this.likes) {
-      this.getFileData(this.likes[index])
-    }
+    this.loadFiles()
   },
 }
 </script>
 
-<style></style>
+<style lang="scss" scoped></style>

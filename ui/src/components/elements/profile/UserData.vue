@@ -8,7 +8,7 @@
       {{ this.userData.name ? this.userData.name : this.userData.username }}
     </div>
     <div id="username">@{{ this.userData.username }}</div>
-    <button class="button is-medium" id="follow" @click="followUnfollow">
+    <button class="button is-medium" id="follow" @click="followUnfollow" :disabled="self">
       {{ this.followed ? "unfollow" : "follow" }}
     </button>
     <div id="bio" v-if="this.userData.bio">{{ this.userData.bio }}</div>
@@ -29,6 +29,7 @@ export default {
   data() {
     return {
       followed: false,
+      self: false,
     }
   },
   methods: {
@@ -66,6 +67,7 @@ export default {
   mounted() {
     if (this.$store.getters.getFollowing.includes(this.userData.username))
       this.followed = true
+    if (this.userData.username === this.$store.getters.getUsername) this.self = true
   },
 }
 </script>

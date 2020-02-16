@@ -69,6 +69,7 @@ export default {
         Object.entries(this.$store.getters.getFileData).length !== 0 &&
         this.$store.getters.getLoggedIn &&
         this.route !== "upload" &&
+        this.route !== "settings" &&
         this.route !== "profile"
       )
     },
@@ -110,9 +111,9 @@ export default {
   created() {
     this.getData()
   },
-  // updated() {
-  //   this.getData()
-  // },
+  updated() {
+    this.route = this.$router.currentRoute.name
+  },
 }
 </script>
 <style scoped lang="scss">
