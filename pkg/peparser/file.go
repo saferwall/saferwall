@@ -126,6 +126,7 @@ func (pe *File) parseDataDirectories() error {
 		ImageDirectoryEntryCertificate: pe.parseSecurityDirectory,
 		ImageDirectoryEntryBaseReloc:   pe.parseRelocDirectory,
 		ImageDirectoryEntryDebug:       pe.parseDebugDirectory,
+		ImageDirectoryEntryArchitecture:pe.parseArchitectureDirectory,
 		ImageDirectoryEntryGlobalPtr:   pe.parseGlobalPtrDirectory,
 		ImageDirectoryEntryTLS:         pe.parseTLSDirectory,
 		ImageDirectoryEntryLoadConfig:  pe.parseLoadConfigDirectory,

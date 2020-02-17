@@ -18,20 +18,21 @@ import (
 const (
 	imageOrdinalFlag32   = uint32(0x80000000)
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
-	maxRepeatedAddresses = uint32(16)
-	maxAddressSpread     = uint32(0x8000000) // 64 MB
+	maxRepeatedAddresses = uint32(0x10)
+	maxAddressSpread     = uint32(0x8000000)
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
 )
 
 var (
 	// AnoNullImportTable is reported when the ILT or the IAT are empty.
-	AnoNullImportTable = "Damaged Import Table information. ILT and/or IAT" + 
-	" appear to be broken"
+	AnoNullImportTable = "Damaged Import Table information. ILT and/or IAT" +
+		" appear to be broken"
 
 	// AnoInvalidThunkAddressOfData is reported when thunk address is too spread out.
 	AnoInvalidThunkAddressOfData = "Thunk Address Of Data too spread out"
 )
+
 // ImageImportDescriptor describes the remainder of the import information.
 // The import directory table contains address information that is used to
 // resolve fixup references to the entry points within a DLL image.
@@ -188,8 +189,8 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 				errors.New("getImportTable32() bogus data found in imports")
 		}
 
-		// if the addresses point somewhere but the difference between the 
-		// highest and lowest address is larger than maxAddressSpread we assume 
+		// if the addresses point somewhere but the difference between the
+		// highest and lowest address is larger than maxAddressSpread we assume
 		// a bogus table as the addresses should be contained within a module
 		if maxAddressOfData-minAddressOfData > maxAddressSpread {
 			if !stringInSlice(AnoInvalidThunkAddressOfData, pe.Anomalies) {
@@ -231,24 +232,24 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
 				pe.Anomalies = append(pe.Anomalies, "Thunk AddressOfData beyond limits")
 			}
-		}
-	
-		// and if it looks like it should be an RVA keep track of the RVAs seen
-		// and store them to study their  properties. When certain non-standard
-		// features are detected the parsing will be aborted
-		_, ok := addressesOfData[thunk.AddressOfData]
-		if ok {
-			repeatedAddress++
 		} else {
-			addressesOfData[thunk.AddressOfData] = true
-		}
+			// and if it looks like it should be an RVA keep track of the RVAs seen
+			// and store them to study their  properties. When certain non-standard
+			// features are detected the parsing will be aborted
+			_, ok := addressesOfData[thunk.AddressOfData]
+			if ok {
+				repeatedAddress++
+			} else {
+				addressesOfData[thunk.AddressOfData] = true
+			}
 
-		if thunk.AddressOfData > maxAddressOfData {
-			maxAddressOfData = thunk.AddressOfData
-		}
+			if thunk.AddressOfData > maxAddressOfData {
+				maxAddressOfData = thunk.AddressOfData
+			}
 
-		if thunk.AddressOfData < minAddressOfData {
-			minAddressOfData = thunk.AddressOfData
+			if thunk.AddressOfData < minAddressOfData {
+				minAddressOfData = thunk.AddressOfData
+			}
 		}
 
 		thunkTable[rva] = &thunk
@@ -278,7 +279,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
-		if repeatedAddress >= uint64(maxRepeatedAddresses){
+		if repeatedAddress >= uint64(maxRepeatedAddresses) {
 			return []*ImageThunkData64{},
 				errors.New("getImportTable64(): bogus data found in imports")
 		}
@@ -329,23 +330,24 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 				return []*ImageThunkData64{}, errors.New("Thunk AddressOfData beyond limits")
 			}
 			// and if it looks like it should be an RVA
-		} 
-		// keep track of the RVAs seen and store them to study their
-		// properties. When certain non-standard features are detected
-		// the parsing will be aborted
-		_, ok := addressesOfData[thunk.AddressOfData]
-		if ok {
-			repeatedAddress++
 		} else {
-			addressesOfData[thunk.AddressOfData] = true
-		}
+			// keep track of the RVAs seen and store them to study their
+			// properties. When certain non-standard features are detected
+			// the parsing will be aborted
+			_, ok := addressesOfData[thunk.AddressOfData]
+			if ok {
+				repeatedAddress++
+			} else {
+				addressesOfData[thunk.AddressOfData] = true
+			}
 
-		if thunk.AddressOfData > maxAddressOfData {
-			maxAddressOfData = thunk.AddressOfData
-		}
+			if thunk.AddressOfData > maxAddressOfData {
+				maxAddressOfData = thunk.AddressOfData
+			}
 
-		if thunk.AddressOfData < minAddressOfData {
-			minAddressOfData = thunk.AddressOfData
+			if thunk.AddressOfData < minAddressOfData {
+				minAddressOfData = thunk.AddressOfData
+			}
 		}
 
 		thunkTable[rva] = &thunk

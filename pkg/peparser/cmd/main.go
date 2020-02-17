@@ -20,7 +20,7 @@ func parse(filename string) {
 		return
 	}
 
-	log.Println(filename)
+	// log.Println(filename)
 	err = pe.Parse()
 	if err != nil  {
 		fmt.Printf("\nError while parsing %s\n", filename)
@@ -29,7 +29,7 @@ func parse(filename string) {
 	}
 
 	if len(pe.Anomalies) > 0 {
-		fmt.Printf("\nAnomalies found while parsing %s\n", filename)
+		fmt.Printf("Anomalies found while parsing %s\n", filename)
 		for _, anomaly := range pe.Anomalies {
 			fmt.Println(anomaly)
 		}
