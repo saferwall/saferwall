@@ -1,5 +1,5 @@
 <template>
-  <div class="media box" @click="goToProfile">
+  <div class="media">
     <figure class="media-left">
       <p class="image is-64x64">
         <img id="avatar" :src="'data:image/png;base64,' + userData.avatar" />
@@ -8,7 +8,7 @@
     <div class="media-content">
       <div class="content">
         <p>
-          <strong>{{
+          <strong @click="goToProfile" id="username">{{
             this.userData.name ? this.userData.name : this.userData.username
           }}</strong>
           <small> @{{ this.userData.username }}</small>
@@ -18,7 +18,9 @@
       </div>
     </div>
     <div class="media-right">
-      <button :disabled="self" class="button">{{this.followed?"Unfollow":"Follow"}}</button>
+      <button :disabled="self" class="button" @click="followUnfollow">
+        {{ this.followed ? "Unfollow" : "Follow" }}
+      </button>
     </div>
   </div>
 </template>
@@ -34,37 +36,24 @@ export default {
   },
   methods: {
     followUnfollow: function() {
-      if (this.followed) this.unfollow()
-      else this.follow()
-    },
-    follow: function() {
       this.$http
         .post(
           this.$api_endpoints.USERS + this.userData.username + "/actions/",
           {
-            type: "follow",
+            type: this.followed ? "unfollow" : "follow",
           },
         )
         .then(() => {
-          this.followed = true
-        })
-        .catch()
-    },
-    unfollow: function() {
-      this.$http
-        .post(
-          this.$api_endpoints.USERS + this.userData.username + "/actions/",
-          {
-            type: "unfollow",
-          },
-        )
-        .then(() => {
-          this.followed = false
+          this.followed = !this.followed
+          this.$store.dispatch("updateFollowing")
         })
         .catch()
     },
     goToProfile: function() {
-      this.$router.replace({ name: 'profile', params: { user: this.userData.username } })
+      this.$router.replace({
+        name: "profile",
+        params: { user: this.userData.username },
+      })
     },
   },
   mounted() {
@@ -78,7 +67,13 @@ export default {
 
 <style lang="scss" scoped>
 .media {
-  cursor: pointer;
+  padding: 1em;
+  border-bottom-color: #dbdbdb;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  #username {
+    cursor: pointer;
+  }
   .media-left {
     justify-content: left;
   }

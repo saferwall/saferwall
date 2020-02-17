@@ -10,13 +10,16 @@ export default {
   setFileData(state, data) {
     state.fileData = data
   },
+  setComments(state, data) {
+    Vue.set(state.fileData.data, 'comments', data)
+  },
   setUserData(state, data) {
     state.userData = data
   },
-  setLikes(state, data){
+  setLikes(state, data) {
     Vue.set(state.userData, 'likes', data)
   },
-  setComments(state, data){
-    Vue.set(state.fileData.data, 'comments', data)
+  setFollowing(state, data) {
+    state.userData.following = data
   }
 }

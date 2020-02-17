@@ -41,12 +41,10 @@
           </ul>
         </div>
         <Likes :active="activeTab === 0" :likes="userData.likes" />
-        <Submissions :active="activeTab === 1" :likes="userData.submissions" />
-        <FollowersFollowing
-          :active="activeTab === 2 || activeTab === 3"
-          :users="activeTab === 3 ? userData.following : userData.followers"
-          :tab="activeTab"
-        />
+        <Submissions :active="activeTab === 1" :subs="userData.submissions" />
+        <Followers :active="activeTab === 2" :users="userData.followers" />
+        <Following :active="activeTab === 3" :users="userData.following" />
+        <Comments :active="activeTab === 4" :comments="userData.comments" />
       </div>
     </div>
   </div>
@@ -56,14 +54,18 @@
 import UserData from "../elements/profile/UserData"
 import Likes from "../elements/profile/Likes"
 import Submissions from "../elements/profile/Submissions"
-import FollowersFollowing from "../elements/profile/FollowersFollowing"
+import Followers from "../elements/profile/Followers"
+import Following from "../elements/profile/Following"
+import Comments from "../elements/profile/Comments"
 
 export default {
   components: {
     UserData,
     Likes,
-    FollowersFollowing,
+    Followers,
+    Following,
     Submissions,
+    Comments,
   },
   data() {
     return {
@@ -103,6 +105,7 @@ export default {
     this.loadUseData(this.$route.params.user)
   },
   beforeRouteUpdate(to, from, next) {
+    this.loading = true
     this.userData = null
     this.activeTab = 0
     this.loadUseData(to.params.user)

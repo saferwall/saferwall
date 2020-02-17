@@ -31,20 +31,21 @@ export default {
       }
       return count
     },
-    getFileData: function(hash) {
+    getFileData: function(file) {
       this.$http
-        .get(this.$api_endpoints.FILES + hash + "?fields=sha256,tags,multiav")
+        .get(this.$api_endpoints.FILES + file.sha256 + "?fields=sha256,tags,multiav")
         .then((res) => {
           res.data.AvDetectionCount = this.getAvDetectionCount(
             res.data.multiav.last_scan,
           )
+          res.data.timestamp = file.timestamp
           this.filesData.push(res.data)
         })
         .catch()
     },
     loadFiles: function() {
       for (var index in this.subs) {
-        this.getFileData(this.subs[index].hash)
+        this.getFileData(this.subs[index])
       }
     },
   },
