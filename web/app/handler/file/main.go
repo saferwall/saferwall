@@ -376,20 +376,18 @@ func GetFiles(c echo.Context) error {
 
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
-
-
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
 
 	// Get user infos.
-	usr, err := user.GetByUsername(name)
+	usr, err := user.GetByUsername(username)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Username does not exists"})
 	}
   
-	log.Infoln("New file uploaded by", name)
+	log.Infoln("New file uploaded by", username)
 
 	// Source
 	fileHeader, err := c.FormFile("file")
@@ -487,9 +485,9 @@ func PostFiles(c echo.Context) error {
 		newFile.Submissions = append(newFile.Submissions, s)
 		newFile.Save()
 
-		u.Submissions = append(u.Submissions, user.Submission{
+		usr.Submissions = append(usr.Submissions, user.Submission{
 			Timestamp: &now, Sha256: sha256})
-		u.Save()
+		usr.Save()
 
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
@@ -768,8 +766,7 @@ func PostComment(c echo.Context) error {
 	claims := currentUser.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
 
-	// Get user infos.
-	u, err := user.GetByUsername(username)
+	usr, err := user.GetByUsername(username)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Username does not exist"})
@@ -798,8 +795,8 @@ func PostComment(c echo.Context) error {
 	userCom.ID = commentID
 	userCom.Body = com.Body
 	userCom.Sha256 = sha256
-	u.Comments = append(u.Comments, userCom)
-	u.Save()
+	usr.Comments = append(usr.Comments, userCom)
+	usr.Save()
   
 	// add new activity
 	activity := usr.NewActivity("comment", map[string]string{

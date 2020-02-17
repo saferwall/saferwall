@@ -74,7 +74,7 @@ type User struct {
 	Following   []string     `json:"following,omitempty"`
 	Followers   []string     `json:"followers,omitempty"`
 	Likes       []string     `json:"likes,omitempty"`
-	Activities  []activity   `json:"activities,omitempty"`
+	Activities  []Activity   `json:"activities,omitempty"`
 	Submissions []Submission `json:"submissions,omitempty"`
 	Comments    []Comment    `json:"comments,omitempty"`
 }
@@ -920,10 +920,9 @@ func Activities(c echo.Context) error {
 	defer rows.Close()
 
 	// Interfaces for handling streaming return values
-	// var activities []Activity
+	var activities []Activity
 
 	// Stream the values returned from the query into a typed array of structs
-	var activities []Activity
 	for rows.Next(&activities) {}
 	return c.JSON(http.StatusOK, activities)
 }
