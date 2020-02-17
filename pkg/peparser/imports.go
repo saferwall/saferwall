@@ -18,11 +18,19 @@ import (
 const (
 	imageOrdinalFlag32   = uint32(0x80000000)
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
-	maxRepeatedAddresses = uint32(16)
-	maxRepeatedAddresses64 = uint64(0x8000000000000000)
-	maxAddressSpread     = uint32(0x8000000) // 64 MB
+	maxRepeatedAddresses = uint32(0x10)
+	maxAddressSpread     = uint32(0x8000000)
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
+)
+
+var (
+	// AnoNullImportTable is reported when the ILT or the IAT are empty.
+	AnoNullImportTable = "Damaged Import Table information. ILT and/or IAT" +
+		" appear to be broken"
+
+	// AnoInvalidThunkAddressOfData is reported when thunk address is too spread out.
+	AnoInvalidThunkAddressOfData = "Thunk Address Of Data too spread out"
 )
 
 // ImageImportDescriptor describes the remainder of the import information.
@@ -147,7 +155,6 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 			Functions:  importedFunctions,
 			Descriptor: importDesc,
 		})
-
 	}
 
 	return nil
@@ -182,19 +189,19 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 				errors.New("getImportTable32() bogus data found in imports")
 		}
 
-		// if the addresses point somewhere but the difference between the 
-		// highest and lowest address is larger than maxAddressSpread we assume 
+		// if the addresses point somewhere but the difference between the
+		// highest and lowest address is larger than maxAddressSpread we assume
 		// a bogus table as the addresses should be contained within a module
 		if maxAddressOfData-minAddressOfData > maxAddressSpread {
-			return []*ImageThunkData32{},
-				errors.New("getImportTable32() data addresses too spread out")
+			if !stringInSlice(AnoInvalidThunkAddressOfData, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoInvalidThunkAddressOfData)
+			}
 		}
 
 		// Read the image thunk data.
 		thunk := ImageThunkData32{}
 		offset := pe.getOffsetFromRva(rva)
 		buf := bytes.NewReader(pe.data[offset : offset+size])
-
 		err := binary.Read(buf, binary.LittleEndian, &thunk)
 		if err != nil {
 			msg := fmt.Sprintf(`Error parsing the import table. 
@@ -223,13 +230,12 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 			// but its value is beyond 2^16, we will assume it's a
 			// corrupted and ignore it altogether
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
-				return []*ImageThunkData32{}, errors.New("beyond")
+				pe.Anomalies = append(pe.Anomalies, "Thunk AddressOfData beyond limits")
 			}
 		} else {
-			// and if it looks like it should be an RVA
-			// keep track of the RVAs seen and store them to study their
-			// properties. When certain non-standard features are detected
-			// the parsing will be aborted
+			// and if it looks like it should be an RVA keep track of the RVAs seen
+			// and store them to study their  properties. When certain non-standard
+			// features are detected the parsing will be aborted
 			_, ok := addressesOfData[thunk.AddressOfData]
 			if ok {
 				repeatedAddress++
@@ -244,7 +250,6 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 			if thunk.AddressOfData < minAddressOfData {
 				minAddressOfData = thunk.AddressOfData
 			}
-
 		}
 
 		thunkTable[rva] = &thunk
@@ -274,7 +279,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
-		if repeatedAddress >= maxRepeatedAddresses64 {
+		if repeatedAddress >= uint64(maxRepeatedAddresses) {
 			return []*ImageThunkData64{},
 				errors.New("getImportTable64(): bogus data found in imports")
 		}
@@ -282,9 +287,10 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 		// if the addresses point somewhere but the difference between the highest
 		// and lowest address is larger than maxAddressSpread we assume a bogus
 		// table as the addresses should be contained within a module
-		if maxAddressOfData-minAddressOfData > maxRepeatedAddresses64 {
-			return []*ImageThunkData64{},
-				errors.New("getImportTable64: data addresses too spread out")
+		if maxAddressOfData-minAddressOfData > uint64(maxAddressSpread) {
+			if !stringInSlice(AnoInvalidThunkAddressOfData, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoInvalidThunkAddressOfData)
+			}
 		}
 
 		// Read the image thunk data.
@@ -321,7 +327,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 			// but its value is beyond 2^16, we will assume it's a
 			// corrupted and ignore it altogether
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
-				return []*ImageThunkData64{}, errors.New("beyond")
+				return []*ImageThunkData64{}, errors.New("Thunk AddressOfData beyond limits")
 			}
 			// and if it looks like it should be an RVA
 		} else {
@@ -379,9 +385,10 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) ([]*Import
 		return []*ImportFunction{}, err
 	}
 
-	// Would crash if IAT or ILT had nil type.
+	// Some DLLs has IAT or ILT with nil type.
 	if len(iat) == 0 && len(ilt) == 0 {
-		return []*ImportFunction{}, errors.New("Damaged Import Table information. ILT and/or IAT appear to be broken")
+		pe.Anomalies = append(pe.Anomalies, AnoNullImportTable)
+		return []*ImportFunction{}, nil
 	}
 
 	var table []*ImageThunkData32
