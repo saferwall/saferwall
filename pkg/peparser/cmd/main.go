@@ -20,6 +20,7 @@ func parse(filename string) {
 		return
 	}
 
+	log.Println(filename)
 	err = pe.Parse()
 	if err != nil  {
 		fmt.Printf("\nError while parsing %s\n", filename)

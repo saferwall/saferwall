@@ -16,6 +16,11 @@ const (
 	maxExportedSymbols = 0x2000
 )
 
+var (
+	ErrExportMaxOrdEntries       = "Export directory contains more than max ordinal entries"
+	ErrExportManyRepeatedEntries = "Export directory contains many repeated entries"
+)
+
 // ImageExportDirectory represents the IMAGE_EXPORT_DIRECTORY structure.
 // The export directory table contains address information that is used
 // to resolve imports to the entry points within this image.
@@ -71,12 +76,11 @@ type ExportFunction struct {
 	ForwarderRVA uint32
 }
 
-
 // Export represent the export table.
 type Export struct {
 	Functions []ExportFunction
-	Struct	ImageExportDirectory
-	Name 	string
+	Struct    ImageExportDirectory
+	Name      string
 }
 
 func (pe *File) parseExportDirectory(rva, size uint32) error {
@@ -204,15 +208,14 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
 		if symbolCounts[symbolAddress] > 10 {
-			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
-			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
-			 symbolAddress)
-			pe.Anomalies  = append(pe.Anomalies, anomaly)
+			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, ErrExportManyRepeatedEntries)
+			}
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			anomaly := fmt.Sprintf("Export directory contains more than %d " +
-			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
-			pe.Anomalies  = append(pe.Anomalies, anomaly)
+			if !stringInSlice(ErrExportMaxOrdEntries, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, ErrExportMaxOrdEntries)
+			}
 		}
 		newExport := ExportFunction{
 			Name:         symbolName,
@@ -272,15 +275,15 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		// Checking for duplicates addresses the issue.
 		symbolCounts[symbolAddress]++
 		if symbolCounts[symbolAddress] > 10 {
-			anomaly := fmt.Sprintf("Export directory contains more than 10 " +
-			"repeated entries: %d, Address:0x%x", symbolCounts[symbolAddress],
-				symbolAddress)
-			pe.Anomalies  = append(pe.Anomalies, anomaly)
+			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, ErrExportManyRepeatedEntries)
+			}
 		}
 		if len(symbolCounts) > maxExportedSymbols {
-			anomaly := fmt.Sprintf("Export directory contains more than %d " +
-			"ordinal entries, max is %d", len(symbolCounts), maxExportedSymbols)
-			pe.Anomalies  = append(pe.Anomalies, anomaly)
+			if !stringInSlice(ErrExportMaxOrdEntries, pe.Anomalies) {
+
+				pe.Anomalies = append(pe.Anomalies, ErrExportMaxOrdEntries)
+			}
 		}
 		newExport := ExportFunction{
 			Ordinal:      exportDir.Base + i,
