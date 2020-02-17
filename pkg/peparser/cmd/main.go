@@ -28,12 +28,12 @@ func parse(filename string) {
 		
 	}
 
-	if len(pe.Anomalies) > 0 {
-		fmt.Printf("Anomalies found while parsing %s\n", filename)
-		for _, anomaly := range pe.Anomalies {
-			fmt.Println(anomaly)
-		}
-	}
+	// if len(pe.Anomalies) > 0 {
+	// 	fmt.Printf("Anomalies found while parsing %s\n", filename)
+	// 	for _, anomaly := range pe.Anomalies {
+	// 		fmt.Println(anomaly)
+	// 	}
+	// }
 	// for _, s := range pe.Sections {
 	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
 	// }

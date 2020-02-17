@@ -18,7 +18,7 @@ import (
 const (
 	imageOrdinalFlag32   = uint32(0x80000000)
 	imageOrdinalFlag64   = uint64(0x8000000000000000)
-	maxRepeatedAddresses = uint32(0x10)
+	maxRepeatedAddresses = uint32(0xF)
 	maxAddressSpread     = uint32(0x8000000)
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
@@ -31,6 +31,10 @@ var (
 
 	// AnoInvalidThunkAddressOfData is reported when thunk address is too spread out.
 	AnoInvalidThunkAddressOfData = "Thunk Address Of Data too spread out"
+
+	// AnoManyRepeatedEntries is reported when import directory contains many
+	// entries have the same RVA.
+	AnoManyRepeatedEntries = "Import directory contains many repeated entries"
 )
 
 // ImageImportDescriptor describes the remainder of the import information.
@@ -185,8 +189,9 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32) ([]*ImageThunkData32
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
 		if repeatedAddress >= maxRepeatedAddresses {
-			return []*ImageThunkData32{},
-				errors.New("getImportTable32() bogus data found in imports")
+			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoManyRepeatedEntries)
+			}
 		}
 
 		// if the addresses point somewhere but the difference between the
@@ -280,8 +285,9 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32) ([]*ImageThunkData64
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
 		if repeatedAddress >= uint64(maxRepeatedAddresses) {
-			return []*ImageThunkData64{},
-				errors.New("getImportTable64(): bogus data found in imports")
+			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
+			pe.Anomalies = append(pe.Anomalies, AnoManyRepeatedEntries)
+			}
 		}
 
 		// if the addresses point somewhere but the difference between the highest
