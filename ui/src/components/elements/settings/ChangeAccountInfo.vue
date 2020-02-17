@@ -57,8 +57,8 @@
         <img
           v-if="!tmp_avatar"
           :src="
-            userData.avatarBase64
-              ? 'data:image/png;base64,' + userData.avatarBase64
+            userData.avatar
+              ? 'data:image/png;base64,' + userData.avatar
               : ''
           "
         />

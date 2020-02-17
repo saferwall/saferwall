@@ -56,7 +56,7 @@
               >
                 <div class="dropdown-content">
                   <div class="dropdown-item">
-                    <router-link :to="this.$routes.PROFILE.path">
+                    <router-link :to="this.$routes.SETTINGS.path">
                       <i class="icon fas fa-user-circle fa-lg"></i>
                       Profile
                     </router-link>

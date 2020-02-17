@@ -29,6 +29,11 @@ export default {
       usersData: [],
     }
   },
+  watch: {
+    comments:function(){
+      this.loadUsers();
+    }
+  },
   computed: {
     ...mapGetters({
       comments: "getComments",

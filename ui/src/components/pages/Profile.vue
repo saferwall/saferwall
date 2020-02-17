@@ -1,123 +1,120 @@
 <template>
-  <div class="tile is-vertical box">
-    <p class="title">Account Settings:</p>
-    <div class="columns">
-      <div class="column is-one-quarter items">
-        <div class="bt" :class="{ active: page === 0 }">
-          <button class="button is-light" @click="page = 0">
-            Account Information
-          </button>
-          <hr />
-        </div>
-        <div class="bt" :class="{ active: page === 1 }">
-          <button class="button is-light" @click="page = 1">
-            Change Email Address
-          </button>
-          <hr />
-        </div>
-        <div class="bt" :class="{ active: page === 2 }">
-          <button class="button is-light" @click="page = 2">
-            Change Password
-          </button>
-          <hr />
-        </div>
-        <div class="bt" :class="{ active: page === 3 }">
-          <button class="button is-light" @click="page = 3">
-            Delete Account
-          </button>
-          <hr />
-        </div>
+  <div>
+    <p id="no_user" v-if="!userData && !loading">No Such User Exists</p>
+    <div class="columns tile is-ansestor box" v-if="userData">
+      <div class="column is-one-quarter">
+        <UserData :userData="userData" />
       </div>
       <div class="column">
-        <ChangeAccountInfo v-if="page === 0" />
-        <ChangeEmail v-if="page === 1" />
-        <ChangePassword v-if="page === 2" />
-        <DeleteAccount v-if="page === 3" />
+        <div class="tabs is-medium ">
+          <ul>
+            <li
+              :class="{ 'is-active': activeTab === 0 }"
+              @click="activeTab = 0"
+            >
+              <a>Likes</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === 1 }"
+              @click="activeTab = 1"
+            >
+              <a>Submissions</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === 2 }"
+              @click="activeTab = 2"
+            >
+              <a>Followers</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === 3 }"
+              @click="activeTab = 3"
+            >
+              <a>Following</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === 4 }"
+              @click="activeTab = 4"
+            >
+              <a>Comments</a>
+            </li>
+          </ul>
+        </div>
+        <Likes :active="activeTab === 0" :likes="userData.likes" />
+        <Submissions :active="activeTab === 1" :likes="userData.submissions" />
+        <FollowersFollowing
+          :active="activeTab === 2 || activeTab === 3"
+          :users="activeTab === 3 ? userData.following : userData.followers"
+          :tab="activeTab"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ChangeAccountInfo from "../elements/profile/ChangeAccountInfo"
-import ChangeEmail from "../elements/profile/ChangeEmail"
-import ChangePassword from "../elements/profile/ChangePassword"
-import DeleteAccount from "../elements/profile/DeleteAccount"
+import UserData from "../elements/profile/UserData"
+import Likes from "../elements/profile/Likes"
+import Submissions from "../elements/profile/Submissions"
+import FollowersFollowing from "../elements/profile/FollowersFollowing"
 
 export default {
   components: {
-    ChangeAccountInfo,
-    ChangeEmail,
-    ChangePassword,
-    DeleteAccount,
+    UserData,
+    Likes,
+    FollowersFollowing,
+    Submissions,
   },
   data() {
     return {
-      page: 0,
+      activeTab: 0,
+      userData: null,
+      loading: true,
     }
+  },
+  methods: {
+    loadUseData: function(username) {
+      if (username === this.$store.getters.getUsername) {
+        this.userData = this.$store.getters.getUserData
+        return
+      }
+      this.$http
+        .get(this.$api_endpoints.USERS + username)
+        .then((res) => {
+          this.$http
+            .get(this.$api_endpoints.USERS + username + "/avatar", {
+              responseType: "arraybuffer",
+            })
+            .then((secRes) => {
+              res.data.avatar = Buffer.from(secRes.data, "binary").toString(
+                "base64",
+              )
+              this.userData = res.data
+              this.loading = false
+            })
+        })
+        .catch(() => {
+          this.loading = false
+          this.$awn.alert("An Error Occured While fetshing the user data")
+        })
+    },
+  },
+  mounted() {
+    this.loadUseData(this.$route.params.user)
+  },
+  beforeRouteUpdate(to, from, next) {
+    this.userData = null
+    this.activeTab = 0
+    this.loadUseData(to.params.user)
+    next()
   },
 }
 </script>
 
-<style lang="scss" scoped>
-.tile {
-  padding-bottom: 2em;
-  padding-right: 4em;
-  padding-left: 4em;
-
-  .title {
-    margin-bottom: 20px;
-  }
-  .columns {
-    margin-left: 20px;
-
-    .items {
-      display: grid;
-      width: max-content;
-      height: max-content;
-      text-align: left;
-
-      .bt {
-        display: inline-flex;
-        height: 35px;
-        margin-bottom: 0;
-        margin-top: 0;
-
-        .button {
-          background-color: transparent;
-          width: 200px;
-          justify-content: left;
-        }
-        hr {
-          background-color: grey;
-          border: none;
-          display: block;
-          height: 35px;
-          width: 2px;
-          margin: 0;
-        }
-      }
-
-      .active {
-        button {
-          color: #00d1b2;
-          font-weight: 600;
-        }
-        hr {
-          background-color: #00d1b2;
-        }
-      }
-
-      .bt:hover {
-        button {
-          color: #00d1b2;
-          font-weight: 600;
-        }
-        hr {
-          background-color: #00d1b2;
-        }
-      }
-    }
-  }
+<style scoped>
+#no_user {
+  font-size: 30px;
+  font-weight: 200;
+  text-align: center;
 }
 </style>

@@ -45,9 +45,16 @@ type Activity struct {
 	Content   interface{} `json:"content,omitempty"`
 }
 
-type submission struct {
+type Submission struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Sha256    string     `json:"sha256,omitempty"`
+}
+
+type Comment struct {
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Sha256  string    `json:"sha256,omitempty"`
+	Body      string    `json:"body,omitempty"`
+	ID        string    `json:"id,omitempty"`
 }
 
 // User represent a user.
@@ -67,8 +74,9 @@ type User struct {
 	Following   []string     `json:"following,omitempty"`
 	Followers   []string     `json:"followers,omitempty"`
 	Likes       []string     `json:"likes,omitempty"`
-	Activities  []Activity   `json:"activities,omitempty"`
-	Submissions []submission `json:"submissions,omitempty"`
+	Activities  []activity   `json:"activities,omitempty"`
+	Submissions []Submission `json:"submissions,omitempty"`
+	Comments    []Comment    `json:"comments,omitempty"`
 }
 
 // NewActivity creates a new activity.
@@ -594,6 +602,7 @@ func PostUsers(c echo.Context) error {
 	newUser.Following = nil
 	newUser.Followers = nil
 	newUser.Likes = nil
+	newUser.Comments = nil
 	newUser.Submissions = nil
 	newUser.Activities = nil
 	newUser.HasAvatar = false

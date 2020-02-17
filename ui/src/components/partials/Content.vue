@@ -59,11 +59,17 @@ export default {
     Loader,
   },
   computed: {
+    ...mapGetters({
+      hash: "getHashContext",
+      userData: "getUserData",
+      fileData: "getFileData",
+    }),
     showButtons: function() {
       return (
         Object.entries(this.$store.getters.getFileData).length !== 0 &&
         this.$store.getters.getLoggedIn &&
         this.route !== "upload" &&
+        this.route !== "settings" &&
         this.route !== "profile"
       )
     },
@@ -71,19 +77,22 @@ export default {
       return (
         this.$store.getters.getHashContext !== "" ||
         this.route === "upload" ||
-        this.route === "profile"
+        this.route === "profile" ||
+        this.route === "settings"
       )
     },
     showLoader: function() {
-      return (
-        Object.entries(this.userData).length === 0 &&
-        this.userData.constructor === Object
-      )
+      if (this.$store.getters.getLoggedIn)
+        return (
+          Object.entries(this.userData).length === 0 &&
+          this.userData.constructor === Object
+        )
+      else
+        return (
+          Object.entries(this.fileData).length === 0 &&
+          this.fileData.constructor === Object
+        )
     },
-    ...mapGetters({
-      hash: "getHashContext",
-      userData: "getUserData",
-    }),
   },
   methods: {
     getData: function() {
@@ -103,9 +112,9 @@ export default {
   created() {
     this.getData()
   },
-  // updated() {
-  //   this.getData()
-  // },
+  updated() {
+    this.route = this.$router.currentRoute.name
+  },
 }
 </script>
 <style scoped lang="scss">

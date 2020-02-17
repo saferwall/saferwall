@@ -43,8 +43,8 @@ type submission struct {
 	Country  string    `json:"country,omitempty"`
 }
 
-type comment struct {
-	Timestamp time.Time `json:"timestamp,omitempty"`
+type Comment struct {
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Body      string    `json:"body,omitempty"`
 	ID        string    `json:"id,omitempty"`
@@ -70,7 +70,7 @@ type File struct {
 	Strings         []stringStruct         `json:"strings,omitempty"`
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
-	Comments        []comment              `json:"comments,omitempty"`
+	Comments        []Comment              `json:"comments,omitempty"`
 }
 
 // Response JSON
@@ -162,13 +162,13 @@ func GetAllFiles(fields []string) ([]File, error) {
 }
 
 // getByCommentID retreieve a comment from its id.
-func (file *File) getByCommentID(commentID string) comment {
+func (file *File) getByCommentID(commentID string) Comment {
 	for _, com := range file.Comments {
 		if com.ID == commentID {
 			return com
 		}
 	}
-	return comment{}
+	return Comment{}
 }
 
 // DumpRequest dumps the headers.
@@ -377,10 +377,19 @@ func GetFiles(c echo.Context) error {
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
-	currentUser := c.Get("user").(*jwt.Token)
-	claims := currentUser.Claims.(jwt.MapClaims)
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
-	log.Infoln("New file uploaded by", username)
+
+	// Get user infos.
+	usr, err := user.GetByUsername(name)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+  
+	log.Infoln("New file uploaded by", name)
 
 	// Source
 	fileHeader, err := c.FormFile("file")
@@ -478,6 +487,10 @@ func PostFiles(c echo.Context) error {
 		newFile.Submissions = append(newFile.Submissions, s)
 		newFile.Save()
 
+		u.Submissions = append(u.Submissions, user.Submission{
+			Timestamp: &now, Sha256: sha256})
+		u.Save()
+
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
 		if err != nil {
@@ -488,13 +501,6 @@ func PostFiles(c echo.Context) error {
 				Filename:    fileHeader.Filename,
 				Sha256:      sha256,
 			})
-		}
-
-		// Get user infos.
-		usr, err := user.GetByUsername(username)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"verbose_msg": "Username does not exist"})
 		}
 
 		// add new activity
@@ -762,27 +768,39 @@ func PostComment(c echo.Context) error {
 	claims := currentUser.Claims.(jwt.MapClaims)
 	username := claims["name"].(string)
 
-	// get target user
-	usr, err := user.GetByUsername(username)
+	// Get user infos.
+	u, err := user.GetByUsername(username)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "Target user does not exist"})
+			"verbose_msg": "Username does not exist"})
 	}
 
-	// Create a new comment
-	com := comment{}
+	// Create a new comment to store in file document.
+	com := Comment{}
 	err = json.Unmarshal(b, &com)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	// Overwrite the content for now
-	com.Timestamp = time.Now().UTC()
+	now := time.Now().UTC()
+	commentID := betterguid.New()
+  
+	com.Timestamp = &now
 	com.Username = username
-	com.ID = betterguid.New()
+	com.ID = commentID
 	file.Comments = append(file.Comments, com)
 	file.Save()
 
+  // Create the same comment to store in user document.
+	userCom := user.Comment{}
+	userCom.Timestamp = &now
+	userCom.ID = commentID
+	userCom.Body = com.Body
+	userCom.Sha256 = sha256
+	u.Comments = append(u.Comments, userCom)
+	u.Save()
+  
 	// add new activity
 	activity := usr.NewActivity("comment", map[string]string{
 		"sha256":sha256, "body": com.Body})
@@ -811,7 +829,7 @@ func DeleteComment(c echo.Context) error {
 	commentID := c.Param("id")
 	com := file.getByCommentID(commentID)
 
-	if (comment{} == com) {
+	if (Comment{} == com) {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"verbose_msg": "Comment not found"})
 	}
