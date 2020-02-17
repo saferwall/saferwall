@@ -67,7 +67,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .level {
   padding: 1em;
   border-bottom-color: #dbdbdb;
@@ -78,7 +78,35 @@ export default {
     .level-item {
       justify-content: left;
       #comment_body {
-        padding: 0.3em;
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 10px;
+        padding: 1em;
+        h1 {
+          font-size: 2rem;
+        }
+        h2 {
+          font-size: 1.5rem;
+        }
+        blockquote {
+          margin-left: 32px;
+          border-left: 4px solid #ccc;
+          padding-left: 8px;
+        }
+        .ql-syntax {
+          background-color: #23241f;
+          color: #f8f8f2;
+          overflow: visible;
+          white-space: pre-wrap;
+          margin-bottom: 5px;
+          margin-top: 5px;
+          padding: 5px 10px;
+        }
+        ol {
+          padding-left: 1.5em;
+        }
+        ul {
+          padding-left: 1.5em;
+        }
       }
       #hash {
         font-size: large;
