@@ -28,7 +28,7 @@
             <i class="fas fa-heart"></i>
           </span>
           <span>
-            {{ this.liked ? "unlike" : "like" }}
+            {{ this.liked ? "Unlike" : "Like" }}
           </span>
         </button>
       </div>

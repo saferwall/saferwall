@@ -1,5 +1,6 @@
 <template>
   <div v-if="active">
+    <p id="no" v-if="!users">No Users</p>
     <userCard
       v-for="(user, index) in usersData"
       :key="index"
@@ -71,4 +72,10 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped>
+#no {
+  font-size: 25px;
+  font-weight: 200;
+  padding: 0.5em;
+}
+</style>

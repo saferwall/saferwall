@@ -1,11 +1,12 @@
 <template>
   <div>
     <p id="no_user" v-if="!userData && !loading">No Such User Exists</p>
-    <div class="columns tile is-ansestor box" v-if="userData">
-      <div class="column is-one-quarter">
+    <p id="title" v-if="userData">User Profile:</p>
+    <div class="columns" v-if="userData">
+      <div class="column is-one-quarter box">
         <UserData :userData="userData" />
       </div>
-      <div class="column">
+      <div class="column box">
         <div class="tabs is-medium ">
           <ul>
             <li
@@ -159,6 +160,12 @@ export default {
   font-weight: 200;
   text-align: center;
 }
+#title {
+  font-size: 30px;
+  font-weight: 200;
+  margin-left: .5em;
+  margin-bottom: .5em;
+}
 .counter {
   background-color: #f7f7f7;
   color: #4a4a5e;
@@ -169,5 +176,9 @@ export default {
   margin-left: 5px;
   font-size: 0.8em;
   line-height: 180%;
+}
+.column {
+  height: max-content;
+  margin: 1em;
 }
 </style>

@@ -23,7 +23,7 @@
       @click="followUnfollow"
       :disabled="self"
     >
-      {{ this.followed ? "unfollow" : "follow" }}
+      {{ this.followed ? "Unfollow" : "Follow" }}
     </button>
   </div>
 </template>
@@ -89,6 +89,7 @@ export default {
 <style lang="scss" scoped>
 .tile {
   align-items: center;
+  padding: 0.5em;
   #Profile_avatar {
     width: 50%;
   }
@@ -108,6 +109,9 @@ export default {
   }
   #location {
     align-items: center;
+  }
+  .button{
+    margin-top: 0.5em;
   }
 }
 </style>

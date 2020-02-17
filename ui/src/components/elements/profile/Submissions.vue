@@ -1,6 +1,7 @@
 <template>
-  <div class="likes" v-if="active">
-    <FileCard :file="file" v-for="(file, index) in filesData" :key="index" />
+  <div v-if="active">
+    <p id="no" v-if="!subs">No Submissions</p>
+      <FileCard :file="file" v-for="(file, index) in filesData" :key="index" />
   </div>
 </template>
 
@@ -33,7 +34,11 @@ export default {
     },
     getFileData: function(file) {
       this.$http
-        .get(this.$api_endpoints.FILES + file.sha256 + "?fields=sha256,tags,multiav")
+        .get(
+          this.$api_endpoints.FILES +
+            file.sha256 +
+            "?fields=sha256,tags,multiav",
+        )
         .then((res) => {
           res.data.AvDetectionCount = this.getAvDetectionCount(
             res.data.multiav.last_scan,
@@ -55,4 +60,9 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+#no {
+  font-size: 25px;
+  font-weight: 200;
+  padding: 0.5em;
+}</style>
