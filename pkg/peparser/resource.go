@@ -197,7 +197,8 @@ func (pe *File) parseResourceDirectoryEntry(rva uint32) *ImageResourceDirectoryE
 	return &resource
 }
 
-func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (ResourceDirectory, error) {
+func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32) (
+	ResourceDirectory, error) {
 	// Get the resource directory structure, that is, the header
 	// If the table preceding the actual entries
 	resourceDir := ImageResourceDirectory{}
@@ -221,12 +222,14 @@ func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (Resour
 	// table header and pointing to the first entry in the table
 	rva += resourceDirSize
 
-	numberOfEntries := int(resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIDEntries)
+	numberOfEntries := int(resourceDir.NumberOfNamedEntries +
+		resourceDir.NumberOfIDEntries)
 	var dirEntries []ResourceDirectoryEntry
 
 	// Set a hard limit on the maximum reasonable number of entries
 	if numberOfEntries > maxAllowedEntries {
-		log.Printf("Error parsing the resources directory. The directory contains %d entries", numberOfEntries)
+		log.Printf(`Error parsing the resources directory. 
+		 The directory contains %d entries`, numberOfEntries)
 		return ResourceDirectory{}, nil
 	}
 
@@ -246,7 +249,8 @@ func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (Resour
 			nameOffset := res.Name & 0x7FFFFFFF
 			uStringOffset := pe.getOffsetFromRva(baseRVA + nameOffset)
 			maxLen := binary.LittleEndian.Uint16(pe.data[uStringOffset:])
-			entryName = pe.readUnicodeStringAtRVA(baseRVA+nameOffset+2, uint32(maxLen))
+			entryName = pe.readUnicodeStringAtRVA(baseRVA+nameOffset+2,
+				uint32(maxLen))
 		}
 
 		dataIsDirectory := (res.OffsetToData & 0x80000000) >> 31
@@ -261,7 +265,7 @@ func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (Resour
 			// reasonable data so we just break.
 			// 9ee4d0a0caf095314fd7041a3e4404dc is the offending sample.
 			level++
-			directoryEntry, _ := pe.parseResourceDirectory(
+			directoryEntry, _ := pe.doParseResourceDirectory(
 				baseRVA+OffsetToDirectory,
 				size-(rva+baseRVA),
 				baseRVA,
@@ -274,7 +278,8 @@ func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (Resour
 				Directory: directoryEntry})
 		} else {
 			// data is entry
-			dataEntryStruct := pe.parseResourceDataEntry(baseRVA + OffsetToDirectory)
+			dataEntryStruct := pe.parseResourceDataEntry(baseRVA +
+				OffsetToDirectory)
 			entryData := ResourceDataEntry{
 				Struct:  *dataEntryStruct,
 				Lang:    res.Name & 0x3ff,
@@ -295,4 +300,10 @@ func (pe *File) parseResourceDirectory(rva, size, baseRVA, level uint32) (Resour
 		Struct:  resourceDir,
 		Entries: dirEntries,
 	}, nil
+}
+
+func (pe *File) parseResourceDirectory(rva, size uint32) error {
+	Resources, err := pe.doParseResourceDirectory(rva, size, 0, 0)
+	pe.Resources = Resources
+	return err
 }

@@ -90,7 +90,7 @@
           "description": "When activity happened",
           "type": "integer"
         },
-        "detail": {
+        "content": {
           "description": "Comment: body+hash | Follow: username | Like: hash | Submit: hash",
           "type": "object"
         }

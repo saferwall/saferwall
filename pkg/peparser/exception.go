@@ -371,7 +371,7 @@ func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
 	return ui
 }
 
-func (pe *File) parseExceptionDirectory(rva, size uint32) ([]Exception, error) {
+func (pe *File) parseExceptionDirectory(rva, size uint32) error {
 
 	var exceptions []Exception
 	fileOffset := pe.getOffsetFromRva(rva)
@@ -384,7 +384,7 @@ func (pe *File) parseExceptionDirectory(rva, size uint32) ([]Exception, error) {
 		buf := bytes.NewReader(pe.data[fileOffset+(entrySize*i) : fileOffset+(entrySize*(i+1))])
 		err := binary.Read(buf, binary.LittleEndian, &functionEntry)
 		if err != nil {
-			return exceptions, nil
+			return err
 		}
 
 		exception := Exception{
@@ -394,5 +394,6 @@ func (pe *File) parseExceptionDirectory(rva, size uint32) ([]Exception, error) {
 		exceptions = append(exceptions, exception)
 	}
 
-	return exceptions, nil
+	pe.Exceptions = exceptions
+	return nil
 }

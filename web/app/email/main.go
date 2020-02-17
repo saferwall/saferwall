@@ -66,6 +66,7 @@ func Send(username, link, recipient, templateToUse string) {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("email sent success")
 
 }
 

@@ -377,17 +377,18 @@ func GetFiles(c echo.Context) error {
 // PostFiles creates a new file
 func PostFiles(c echo.Context) error {
 
+
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
+	username := claims["name"].(string)
 
 	// Get user infos.
-	u, err := user.GetByUsername(name)
+	usr, err := user.GetByUsername(name)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Username does not exists"})
 	}
-
+  
 	log.Infoln("New file uploaded by", name)
 
 	// Source
@@ -501,6 +502,12 @@ func PostFiles(c echo.Context) error {
 				Sha256:      sha256,
 			})
 		}
+
+		// add new activity
+		activity := usr.NewActivity("submit", map[string]string{
+			"sha256":sha256})
+		usr.Activities = append(usr.Activities, activity)
+		usr.Save()
 
 		// All went fine
 		return c.JSON(http.StatusCreated, Response{
@@ -674,6 +681,11 @@ func Actions(c echo.Context) error {
 
 		if !utils.IsStringInSlice(sha256, usr.Likes) {
 			usr.Likes = append(usr.Likes, sha256)
+
+			// add new activity
+			activity := usr.NewActivity("like", map[string]string{
+				"sha256":sha256})
+			usr.Activities = append(usr.Activities, activity)
 			usr.Save()
 		}
 
@@ -773,13 +785,14 @@ func PostComment(c echo.Context) error {
 	// Overwrite the content for now
 	now := time.Now().UTC()
 	commentID := betterguid.New()
+  
 	com.Timestamp = &now
 	com.Username = username
 	com.ID = commentID
 	file.Comments = append(file.Comments, com)
 	file.Save()
 
-	// Create the same comment to store in user document.
+  // Create the same comment to store in user document.
 	userCom := user.Comment{}
 	userCom.Timestamp = &now
 	userCom.ID = commentID
@@ -787,6 +800,12 @@ func PostComment(c echo.Context) error {
 	userCom.Sha256 = sha256
 	u.Comments = append(u.Comments, userCom)
 	u.Save()
+  
+	// add new activity
+	activity := usr.NewActivity("comment", map[string]string{
+		"sha256":sha256, "body": com.Body})
+	usr.Activities = append(usr.Activities, activity)
+	usr.Save()
 
 	return c.JSON(http.StatusOK, com)
 }

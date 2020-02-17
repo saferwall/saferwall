@@ -1,20 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	// "encoding/hex"
+	"fmt"
 
+	// "encoding/hex"
 	// "github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 func parse(filename string) {
-	fmt.Printf("\nProcessing filename %s", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -22,9 +21,17 @@ func parse(filename string) {
 	}
 
 	err = pe.Parse()
-	if err != nil {
-		log.Printf("Error while parsing file: %s, reason: %s", filename, err)
-		return
+	if err != nil  {
+		fmt.Printf("\nError while parsing %s\n", filename)
+		fmt.Println(err)
+		
+	}
+
+	if len(pe.Anomalies) > 0 {
+		fmt.Printf("\nAnomalies found while parsing %s\n", filename)
+		for _, anomaly := range pe.Anomalies {
+			fmt.Println(anomaly)
+		}
 	}
 	// for _, s := range pe.Sections {
 	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
@@ -55,6 +62,8 @@ func parse(filename string) {
 	// 	log.Println("=============================================")
 
 	// }
+
+	pe.Close()
 
 }
 
