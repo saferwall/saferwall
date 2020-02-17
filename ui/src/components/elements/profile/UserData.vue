@@ -8,14 +8,6 @@
       {{ this.userData.name ? this.userData.name : this.userData.username }}
     </div>
     <div id="username">@{{ this.userData.username }}</div>
-    <button
-      class="button is-medium"
-      id="follow"
-      @click="followUnfollow"
-      :disabled="self"
-    >
-      {{ this.followed ? "unfollow" : "follow" }}
-    </button>
     <div id="bio" v-if="this.userData.bio">{{ this.userData.bio }}</div>
     <div id="location" v-if="this.userData.location">
       <i class="icon fas fa-location-arrow"></i>
@@ -25,6 +17,14 @@
       <i class="icon fas fa-link"></i>
       {{ this.userData.url }}
     </div>
+    <button
+      class="button is-medium is-primary"
+      id="follow"
+      @click="followUnfollow"
+      :disabled="self"
+    >
+      {{ this.followed ? "unfollow" : "follow" }}
+    </button>
   </div>
 </template>
 

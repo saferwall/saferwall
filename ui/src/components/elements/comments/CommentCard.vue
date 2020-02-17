@@ -15,13 +15,13 @@
       <div class="media-content">
         <div class="content">
           <p>
-            <strong class="username" @click="goToProfile">{{
+            <strong id="username" @click="goToProfile">{{
               this.data.name ? this.data.name : this.data.username
             }}</strong>
             &nbsp;
             <small>@{{ this.data.username }}</small>
-            &nbsp;
-            <small>{{ this.time }}</small>
+            &emsp;
+            <small id="time">{{ this.time }}</small>
             <br />
             <span class="comment_body" v-html="data.body"></span>
           </p>
@@ -65,7 +65,7 @@ export default {
   },
   methods: {
     formatTimestamp: function() {
-      this.time = moment(this.data.timestamp).fromNow(true)
+      this.time = moment(this.data.timestamp).fromNow()
     },
     deleteComment: function() {
       this.$http
@@ -100,13 +100,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.username {
+#username {
   font-size: 1em;
   font-weight: 600;
   &:hover {
     color: #39d9c1;
     cursor: pointer;
   }
+}
+
+#time {
+  font-weight: lighter;
 }
 
 .image {

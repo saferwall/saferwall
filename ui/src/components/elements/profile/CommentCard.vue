@@ -55,8 +55,8 @@ export default {
         })
     },
     showFile: function() {
-      this.$store.dispatch("updateHash", this.file.sha256)
-      this.$router.push(this.$routes.SUMMARY.path + this.file.sha256)
+      this.$store.dispatch("updateHash", this.comment.sha256)
+      this.$router.push(this.$routes.SUMMARY.path + this.comment.sha256)
     },
   },
   mounted() {

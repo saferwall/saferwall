@@ -12,31 +12,70 @@
               :class="{ 'is-active': activeTab === 0 }"
               @click="activeTab = 0"
             >
-              <a>Likes</a>
+              <a
+                >Likes
+                <span class="counter">
+                  {{ this.userData.likes ? this.userData.likes.length : "0" }}
+                </span>
+              </a>
             </li>
             <li
               :class="{ 'is-active': activeTab === 1 }"
               @click="activeTab = 1"
             >
-              <a>Submissions</a>
+              <a
+                >Submissions
+                <span class="counter">
+                  {{
+                    this.userData.submissions
+                      ? this.userData.submissions.length
+                      : "0"
+                  }}
+                </span>
+              </a>
             </li>
             <li
               :class="{ 'is-active': activeTab === 2 }"
               @click="activeTab = 2"
             >
-              <a>Followers</a>
+              <a
+                >Followers
+                <span class="counter">
+                  {{
+                    this.userData.followers
+                      ? this.userData.followers.length
+                      : "0"
+                  }}
+                </span>
+              </a>
             </li>
             <li
               :class="{ 'is-active': activeTab === 3 }"
               @click="activeTab = 3"
             >
-              <a>Following</a>
+              <a
+                >Following
+                <span class="counter">
+                  {{
+                    this.userData.following
+                      ? this.userData.following.length
+                      : "0"
+                  }}
+                </span>
+              </a>
             </li>
             <li
               :class="{ 'is-active': activeTab === 4 }"
               @click="activeTab = 4"
             >
-              <a>Comments</a>
+              <a
+                >Comments
+                <span class="counter">
+                  {{
+                    this.userData.comments ? this.userData.comments.length : "0"
+                  }}
+                </span>
+              </a>
             </li>
           </ul>
         </div>
@@ -119,5 +158,16 @@ export default {
   font-size: 30px;
   font-weight: 200;
   text-align: center;
+}
+.counter {
+  background-color: #f7f7f7;
+  color: #4a4a5e;
+  border-radius: 50%;
+  min-width: 1.8em;
+  height: 1.8em;
+  text-align: center;
+  margin-left: 5px;
+  font-size: 0.8em;
+  line-height: 180%;
 }
 </style>
