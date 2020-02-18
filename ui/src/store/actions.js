@@ -34,7 +34,7 @@ export default {
         Vue.prototype.$awn.alert(
           "Sorry, we couldn't find the file you were looking for, please upload it to view the results!",
         )
-         context.commit('setHashContext', "")
+        context.commit('setHashContext', "")
       })
   },
   updateUserData: (context, username) => {
@@ -68,5 +68,24 @@ export default {
       .catch(() => {
         Vue.prototype.$awn.alert("An Error Occured while updating the comments")
       })
-  }
+  },
+  updateLikes: (context) => {
+    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + context.getters.getUsername + "/?fields=likes")
+      .then((res) => {
+        context.commit('setLikes', res.data.likes)
+      })
+      .catch(() => {
+        Vue.prototype.$awn.alert("An Error Occured while updating the likes")
+      })
+  },
+  updateFollowing: (context) => {
+    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + context.getters.getUsername + "/?fields=following")
+      .then((res) => {
+        context.commit('setFollowing', res.data.following)
+      })
+      .catch((e) => {
+        console.log(e)
+        Vue.prototype.$awn.alert("An Error Occured while updating the followings")
+      })
+  },
 }

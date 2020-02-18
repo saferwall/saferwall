@@ -1,6 +1,7 @@
 <template>
   <div v-if="active">
-    <peopleCard
+    <p id="no" v-if="!users">No Users</p>
+    <userCard
       v-for="(user, index) in usersData"
       :key="index"
       :userData="user"
@@ -9,12 +10,12 @@
 </template>
 
 <script>
-import peopleCard from "./people"
+import userCard from "./userCard"
 
 export default {
   props: ["users", "active"],
   components: {
-    peopleCard,
+    userCard,
   },
   data() {
     return {
@@ -24,6 +25,7 @@ export default {
   watch: {
     users: function() {
       this.usersData = []
+
       for (var index in this.users) {
         this.getUserData(this.users[index])
       }
@@ -70,4 +72,10 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped>
+#no {
+  font-size: 25px;
+  font-weight: 200;
+  padding: 0.5em;
+}
+</style>

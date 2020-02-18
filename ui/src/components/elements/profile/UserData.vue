@@ -8,9 +8,6 @@
       {{ this.userData.name ? this.userData.name : this.userData.username }}
     </div>
     <div id="username">@{{ this.userData.username }}</div>
-    <button class="button is-medium" id="follow" @click="followUnfollow" :disabled="self">
-      {{ this.followed ? "unfollow" : "follow" }}
-    </button>
     <div id="bio" v-if="this.userData.bio">{{ this.userData.bio }}</div>
     <div id="location" v-if="this.userData.location">
       <i class="icon fas fa-location-arrow"></i>
@@ -20,6 +17,14 @@
       <i class="icon fas fa-link"></i>
       {{ this.userData.url }}
     </div>
+    <button
+      class="button is-medium is-primary"
+      id="follow"
+      @click="followUnfollow"
+      :disabled="self"
+    >
+      {{ this.followed ? "Unfollow" : "Follow" }}
+    </button>
   </div>
 </template>
 
@@ -31,6 +36,14 @@ export default {
       followed: false,
       self: false,
     }
+  },
+  watch: {
+    userData: function() {
+      if (this.$store.getters.getFollowing.includes(this.userData.username))
+        this.followed = true
+      if (this.userData.username === this.$store.getters.getUsername)
+        this.self = true
+    },
   },
   methods: {
     followUnfollow: function() {
@@ -67,7 +80,8 @@ export default {
   mounted() {
     if (this.$store.getters.getFollowing.includes(this.userData.username))
       this.followed = true
-    if (this.userData.username === this.$store.getters.getUsername) this.self = true
+    if (this.userData.username === this.$store.getters.getUsername)
+      this.self = true
   },
 }
 </script>
@@ -75,6 +89,7 @@ export default {
 <style lang="scss" scoped>
 .tile {
   align-items: center;
+  padding: 0.5em;
   #Profile_avatar {
     width: 50%;
   }
@@ -94,6 +109,9 @@ export default {
   }
   #location {
     align-items: center;
+  }
+  .button{
+    margin-top: 0.5em;
   }
 }
 </style>

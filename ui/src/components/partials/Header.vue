@@ -56,9 +56,15 @@
               >
                 <div class="dropdown-content">
                   <div class="dropdown-item">
-                    <router-link :to="this.$routes.SETTINGS.path">
+                    <router-link :to="this.$routes.PROFILE.path+getUsername">
                       <i class="icon fas fa-user-circle fa-lg"></i>
                       Profile
+                    </router-link>
+                  </div>
+                  <div class="dropdown-item">
+                    <router-link :to="this.$routes.SETTINGS.path">
+                      <i class="icon fas fa-cogs "></i>
+                      Settings
                     </router-link>
                   </div>
                   <div class="dropdown-item">
@@ -395,4 +401,8 @@ header.dashboard-header {
     }
   }
 }
+.fa-cogs{
+  vertical-align: bottom;
+}
+
 </style>

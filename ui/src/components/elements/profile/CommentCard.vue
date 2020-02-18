@@ -2,20 +2,13 @@
   <div class="level">
     <div class="level-left">
       <div class="level-item">
-        <div id="hash" @click="showFile">{{ file.sha256 }}</div>
+        <div id="hash" @click="showFile">{{ comment.sha256 }}</div>
       </div>
       <div class="level-item">
-        <span id="tags">
-          <i class="icon fas fa-tags"></i>
-          Tags:
-          <span v-if="!file.tags">none</span>
-          <span id="tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
-        </span>
-        <span id="Av">
-          <i class="icon fas fa-search"></i>
-          Av Detection Count: {{ file.AvDetectionCount }}
-        </span>
-        <span id="timestamp" v-if="file.timestamp">
+        <span id="comment_body" v-html="comment.body"></span>
+      </div>
+      <div class="level-item">
+        <span id="timestamp">
           <i class="icon fas fa-clock"></i>
           {{ time }}
         </span>
@@ -40,7 +33,7 @@
 import moment from "moment"
 
 export default {
-  props: ["file"],
+  props: ["comment"],
   data() {
     return {
       liked: false,
@@ -50,7 +43,7 @@ export default {
   methods: {
     likeUnlike: function() {
       this.$http
-        .post(`${this.$api_endpoints.FILES}${this.file.sha256}/actions/`, {
+        .post(`${this.$api_endpoints.FILES}${this.comment.sha256}/actions/`, {
           type: this.liked ? "unlike" : "like",
         })
         .then(() => {
@@ -62,47 +55,66 @@ export default {
         })
     },
     showFile: function() {
-      this.$store.dispatch("updateHash", this.file.sha256)
-      this.$router.push(this.$routes.SUMMARY.path + this.file.sha256)
+      this.$store.dispatch("updateHash", this.comment.sha256)
+      this.$router.push(this.$routes.SUMMARY.path + this.comment.sha256)
     },
   },
   mounted() {
-    if (this.$store.getters.getLikes.includes(this.file.sha256))
+    if (this.$store.getters.getLikes.includes(this.comment.sha256))
       this.liked = true
-    if (this.file.timestamp)
-      this.time = moment(this.file.timestamp).format("MMMM Do YYYY")
+    this.time = moment(this.comment.timestamp).format("MMMM Do YYYY")
   },
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .level {
   padding: 1em;
   border-bottom-color: #dbdbdb;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-
   .level-left {
     display: block;
     .level-item {
       justify-content: left;
+      #comment_body {
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 10px;
+        padding: 1em;
+        h1 {
+          font-size: 2rem;
+        }
+        h2 {
+          font-size: 1.5rem;
+        }
+        blockquote {
+          margin-left: 32px;
+          border-left: 4px solid #ccc;
+          padding-left: 8px;
+        }
+        .ql-syntax {
+          background-color: #23241f;
+          color: #f8f8f2;
+          overflow: visible;
+          white-space: pre-wrap;
+          margin-bottom: 5px;
+          margin-top: 5px;
+          padding: 5px 10px;
+        }
+        ol {
+          padding-left: 1.5em;
+        }
+        ul {
+          padding-left: 1.5em;
+        }
+      }
       #hash {
         font-size: large;
         font-weight: 500;
         cursor: pointer;
       }
-      #Av {
-        padding-left: 1em;
-      }
-      #timestamp {
-        padding-left: 1em;
-      }
       svg {
         vertical-align: bottom;
-      }
-      #tag {
-        color: #00d1b2;
-        font-weight: 600;
       }
     }
   }
