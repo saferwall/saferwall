@@ -11,28 +11,47 @@ import (
 
 // ImageDelayImportDescriptor represents the _IMAGE_DELAYLOAD_DESCRIPTOR structure.
 type ImageDelayImportDescriptor struct {
-	// Must be zero.
+	// As yet, no attribute flags are defined. The linker sets this field to zero
+	// in the image. This field can be used to extend the record by indicating
+	// the presence of new fields, or it can be used to indicate behaviors to
+	// the delay or unload helper functions.
 	Attributes uint32
 
-	// RVA to the name of the target library (NULL-terminate ASCII string).
+	// The name of the DLL to be delay-loaded resides in the read-only data
+	// section of the image. It is referenced through the szName field.
 	Name uint32
 
-	// RVA to the HMODULE caching location (PHMODULE).
+	// The handle of the DLL to be delay-loaded is in the data section of the
+	// image. The phmod field points to the handle. The supplied delay-load
+	// helper uses this location to store the handle to the loaded DLL.
 	ModuleHandleRVA uint32
 
-	// RVA to the start of the IAT (PIMAGE_THUNK_DATA).
+	// The delay import address table (IAT) is referenced by the delay import
+	// descriptor through the pIAT field. The delay-load helper updates these
+	// pointers with the real entry points so that the thunks are no longer in
+	// the calling loop
 	ImportAddressTableRVA uint32
 
-	// RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData).
+	// The delay import name table (INT) contains the names of the imports that
+	// might require loading. They are ordered in the same fashion as the
+	// function pointers in the IAT. 
 	ImportNameTableRVA uint32
 
-	// RVA to an optional bound IAT.
+	// The delay bound import address table (BIAT) is an optional table of
+	// IMAGE_THUNK_DATA items that is used along with the timestamp field
+	// of the delay-load directory table by a post-process binding phase.
 	BoundImportAddressTableRVA uint32
 
-	// RVA to an optional unload info table.
+	// The delay unload import address table (UIAT) is an optional table of
+	// IMAGE_THUNK_DATA items that the unload code uses to handle an explicit
+	// unload request. It consists of initialized data in the read-only section
+	// that is an exact copy of the original IAT that referred the code to the
+	// delay-load thunks. On the unload request, the library can be freed,
+	// the *phmod cleared, and the UIAT written over the IAT to restore
+	// everything to its preload state.
 	UnloadInformationTableRVA uint32
 
-	// 0 if not bound, oherwise, date/time of the target DLL.
+	// 0 if not bound, otherwise, date/time of the target DLL.
 	TimeDateStamp uint32
 }
 
@@ -44,7 +63,10 @@ type DelayImport struct {
 	Descriptor ImageDelayImportDescriptor
 }
 
-// The delay-load directory table is the counterpart to the import directory table.
+// Delay-Load Import Tables tables were added to the image to support a uniform
+// mechanism for applications to delay the loading of a DLL until the first call
+// into that DLL. The delay-load directory table is the counterpart to the
+// import directory table.
 func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 	for {
 		importDelayDesc := ImageDelayImportDescriptor{}
@@ -91,7 +113,14 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 			return err
 		}
 
-		dllName := pe.getStringAtRVA(importDelayDesc.Name, maxLen)
+		nameRVA := uint32(0)
+		if importDelayDesc.Attributes == 0 {
+			nameRVA = importDelayDesc.Name - 
+				pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+		} else {
+			nameRVA = importDelayDesc.Name
+		}
+		dllName := pe.getStringAtRVA(nameRVA, maxLen)
 		if !IsValidDosFilename(dllName) {
 			dllName = "*invalid*"
 			continue

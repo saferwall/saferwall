@@ -183,7 +183,7 @@ func (pe *File) getOffsetFromRva(rva uint32) uint32 {
 		if rva < uint32(len(pe.data)) {
 			return rva
 		}
-		log.Println("data at RVA can't be fetched. Corrupt header?")
+		log.Println("Data at RVA can't be fetched. Corrupt header?")
 		return ^uint32(0)
 	}
 	sectionAlignment := pe.adjustSectionAlignment(section.VirtualAddress)

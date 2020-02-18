@@ -405,7 +405,7 @@ func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
 	// The target platform determines which format of the function table entry
 	// to use.
 	if pe.NtHeader.FileHeader.Machine != ImageFileMachineAMD64 {
-		log.Printf("File contains exception directory but not a PE32+ file ")
+		log.Printf("File contains exception directory but not a PE32+ file, %s ", pe.PrettyMachineType())
 		return nil
 	}
 

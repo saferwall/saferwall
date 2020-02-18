@@ -20,7 +20,7 @@ func parse(filename string) {
 		return
 	}
 
-	log.Println(filename)
+	// log.Println(filename)
 	err = pe.Parse()
 	if err != nil  {
 		if err != peparser.ErrDOSMagicNotFound && err != peparser.ErrInvalidPESize {
