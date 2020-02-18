@@ -24,31 +24,31 @@ const (
 
 // Image file machine types
 const (
-	ImageFileMachineUnknown   uint32 = 0x0    // The contents of this field are assumed to be applicable to any machine type
-	ImageFileMachineAM33      uint32 = 0x1d3  // Matsushita AM33
-	ImageFileMachineAMD64     uint32 = 0x8664 // x64
-	ImageFileMachineARM       uint32 = 0x1c0  // ARM little endian
-	ImageFileMachineARM64     uint32 = 0xaa64 // ARM64 little endian
-	ImageFileMachineARMNT     uint32 = 0x1c4  // ARM Thumb-2 little endian
-	ImageFileMachineEBC       uint32 = 0xebc  // EFI byte code
-	ImageFileMachineI386      uint32 = 0x14c  // Intel 386 or later processors and compatible processors
-	ImageFileMachineIA64      uint32 = 0x200  // Intel Itanium processor family
-	ImageFileMachineM32R      uint32 = 0x9041 // Mitsubishi M32R little endian
-	ImageFileMachineMIPS16    uint32 = 0x266  // MIPS16
-	ImageFileMachineMIPSFPU   uint32 = 0x366  // MIPS with FPU
-	ImageFileMachineMIPSFPU16 uint32 = 0x466  // MIPS16 with FPU
-	ImageFileMachinePOWERPC   uint32 = 0x1f0  // Power PC little endian
-	ImageFileMachinePOWERPCFP uint32 = 0x1f1  // Power PC with floating point support
-	ImageFileMachineR4000     uint32 = 0x166  // MIPS little endian
-	ImageFileMachineRISCV32   uint32 = 0x5032 // RISC-V 32-bit address space
-	ImageFileMachineRISCV64   uint32 = 0x5064 // RISC-V 64-bit address space
-	ImageFileMachineRISCV128  uint32 = 0x5128 // RISC-V 128-bit address space
-	ImageFileMachineSH3       uint32 = 0x1a2  // Hitachi SH3
-	ImageFileMachineSH3DSP    uint32 = 0x1a3  // Hitachi SH3 DSP
-	ImageFileMachineSH4       uint32 = 0x1a6  // Hitachi SH4
-	ImageFileMachineSH5       uint32 = 0x1a8  // Hitachi SH5
-	ImageFileMachineTHUMB     uint32 = 0x1c2  // Thumb
-	ImageFileMachineWCEMIPSV2 uint32 = 0x169  // MIPS little-endian WCE v2
+	ImageFileMachineUnknown   = uint16(0x0)    // The contents of this field are assumed to be applicable to any machine type
+	ImageFileMachineAM33      = uint16(0x1d3)  // Matsushita AM33
+	ImageFileMachineAMD64     = uint16(0x8664) // x64
+	ImageFileMachineARM       = uint16(0x1c0)  // ARM little endian
+	ImageFileMachineARM64     = uint16(0xaa64) // ARM64 little endian
+	ImageFileMachineARMNT     = uint16(0x1c4)  // ARM Thumb-2 little endian
+	ImageFileMachineEBC       = uint16(0xebc)  // EFI byte code
+	ImageFileMachineI386      = uint16(0x14c)  // Intel 386 or later processors and compatible processors
+	ImageFileMachineIA64      = uint16(0x200)  // Intel Itanium processor family
+	ImageFileMachineM32R      = uint16(0x9041) // Mitsubishi M32R little endian
+	ImageFileMachineMIPS16    = uint16(0x266)  // MIPS16
+	ImageFileMachineMIPSFPU   = uint16(0x366)  // MIPS with FPU
+	ImageFileMachineMIPSFPU16 = uint16(0x466)  // MIPS16 with FPU
+	ImageFileMachinePowerPC   = uint16(0x1f0)  // Power PC little endian
+	ImageFileMachinePowerPCFP = uint16(0x1f1)  // Power PC with floating point support
+	ImageFileMachineR4000     = uint16(0x166)  // MIPS little endian
+	ImageFileMachineRISCV32   = uint16(0x5032) // RISC-V 32-bit address space
+	ImageFileMachineRISCV64   = uint16(0x5064) // RISC-V 64-bit address space
+	ImageFileMachineRISCV128  = uint16(0x5128) // RISC-V 128-bit address space
+	ImageFileMachineSH3       = uint16(0x1a2)  // Hitachi SH3
+	ImageFileMachineSH3DSP    = uint16(0x1a3)  // Hitachi SH3 DSP
+	ImageFileMachineSH4       = uint16(0x1a6)  // Hitachi SH4
+	ImageFileMachineSH5       = uint16(0x1a8)  // Hitachi SH5
+	ImageFileMachineTHUMB     = uint16(0x1c2)  // Thumb
+	ImageFileMachineWCEMIPSV2 = uint16(0x169)  // MIPS little-endian WCE v2
 )
 
 // The Characteristics field contains flags that indicate attributes of the object or image file.

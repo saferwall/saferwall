@@ -295,7 +295,7 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 
 	default:
 		advanceBy++ // so we can get out of the loop
-		log.Print("Wrong unwind opcode")
+		log.Printf("Wrong unwind opcode %d", unwindCode.UnwindOp)
 	}
 
 	return unwindCode, advanceBy
