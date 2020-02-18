@@ -23,17 +23,18 @@ func parse(filename string) {
 	// log.Println(filename)
 	err = pe.Parse()
 	if err != nil  {
-		fmt.Printf("\nError while parsing %s\n", filename)
-		fmt.Println(err)
-		
-	}
-
-	if len(pe.Anomalies) > 0 {
-		fmt.Printf("Anomalies found while parsing %s\n", filename)
-		for _, anomaly := range pe.Anomalies {
-			fmt.Println(anomaly)
+		if err != peparser.ErrDOSMagicNotFound && err != peparser.ErrInvalidPESize {
+			fmt.Printf("\nError while parsing %s\n", filename)
+			fmt.Println(err)
 		}
 	}
+
+	// if len(pe.Anomalies) > 0 {
+	// 	fmt.Printf("Anomalies found while parsing %s\n", filename)
+	// 	for _, anomaly := range pe.Anomalies {
+	// 		fmt.Println(anomaly)
+	// 	}
+	// }
 	// for _, s := range pe.Sections {
 	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
 	// }
@@ -68,13 +69,6 @@ func parse(filename string) {
 
 }
 
-func isDirectory(path string) bool {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return fileInfo.IsDir()
-}
 
 func main() {
 	var searchDir string
@@ -95,7 +89,7 @@ func main() {
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-		if !isDirectory(path) && !strings.Contains(path, "$Recycle.Bin") && (strings.HasSuffix(path, ".dll") || strings.HasSuffix(path, ".exe") || strings.HasSuffix(path, ".sys")) {
+		if !f.IsDir() && !strings.Contains(path, "Fonts") {
 			fileList = append(fileList, path)
 		}
 		return nil

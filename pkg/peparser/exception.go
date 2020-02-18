@@ -11,6 +11,33 @@ import (
 	"strconv"
 )
 
+
+// ImageARMRuntimeFunctionEntry represents the function table entry for the ARM
+// platform.
+type  ImageARMRuntimeFunctionEntry struct{
+	// Function Start RVA is the 32-bit RVA of the start of the function. If
+	// the function contains thumb code, the low bit of this address must be set.
+	BeginAddress uint32 `bitfield:",functionstart"`
+
+	// Flag is a 2-bit field that indicates how to interpret the remaining
+	// 30 bits of the second .pdata word. If Flag is 0, then the remaining bits
+	// form an Exception Information RVA (with the low two bits implicitly 0).
+	// If Flag is non-zero, then the remaining bits form a Packed Unwind Data
+	// structure.
+ 	Flag uint8
+
+	/* Exception Information RVA or Packed Unwind Data.
+
+	Exception Information RVA is the address of the variable-length exception
+	information structure, stored in the .xdata section.
+	This data must be 4-byte aligned.
+	
+	Packed Unwind Data is a compressed description of the operations required
+	to unwind from a function, assuming a canonical form. In this case, no 
+	.xdata record is required.*/
+	ExceptionFlag uint32
+}
+
 const (
 	// UnwFlagNHandler - The function has no handler.
 	UnwFlagNHandler = uint8(0x0)
@@ -295,7 +322,7 @@ func (pe *File) parseUnwindCode(offset uint32) (UnwindCode, int) {
 
 	default:
 		advanceBy++ // so we can get out of the loop
-		log.Print("Wrong unwind opcode")
+		log.Printf("Wrong unwind opcode %d", unwindCode.UnwindOp)
 	}
 
 	return unwindCode, advanceBy
@@ -371,7 +398,16 @@ func (pe *File) parseUnwinInfo(unwindInfo uint32) UnwindInfo {
 	return ui
 }
 
-func (pe *File) parseExceptionDirectory(rva, size uint32) error {
+// Exception directory contains an array of function table entries that are used
+// for exception handling.
+ func (pe *File) parseExceptionDirectory(rva, size uint32) error {
+
+	// The target platform determines which format of the function table entry
+	// to use.
+	if pe.NtHeader.FileHeader.Machine != ImageFileMachineAMD64 {
+		log.Printf("File contains exception directory but not a PE32+ file, %s ", pe.PrettyMachineType())
+		return nil
+	}
 
 	var exceptions []Exception
 	fileOffset := pe.getOffsetFromRva(rva)

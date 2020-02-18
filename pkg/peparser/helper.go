@@ -183,7 +183,7 @@ func (pe *File) getOffsetFromRva(rva uint32) uint32 {
 		if rva < uint32(len(pe.data)) {
 			return rva
 		}
-		log.Println("data at RVA can't be fetched. Corrupt header?")
+		log.Println("Data at RVA can't be fetched. Corrupt header?")
 		return ^uint32(0)
 	}
 	sectionAlignment := pe.adjustSectionAlignment(section.VirtualAddress)
@@ -354,6 +354,40 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// PrettyMachineType returns the string representations
+// of the `Machine` field of  the IMAGE_FILE_HEADER.
+func (pe *File) PrettyMachineType() string {
+	machineType := map[uint16]string{
+		ImageFileMachineUnknown:   "Unknown",
+		ImageFileMachineAM33:      "Matsushita AM33",
+		ImageFileMachineAMD64:     "x64",
+		ImageFileMachineARM:       "ARM little endian",
+		ImageFileMachineARM64:     "ARM64 little endian",
+		ImageFileMachineARMNT:     "ARM Thumb-2 little endian",
+		ImageFileMachineEBC:       "EFI byte code",
+		ImageFileMachineI386:      "Intel 386 or later / compatible processors",
+		ImageFileMachineIA64:      "Intel Itanium processor family",
+		ImageFileMachineM32R:      "Mitsubishi M32R little endian",
+		ImageFileMachineMIPS16:    "MIPS16",
+		ImageFileMachineMIPSFPU:   "MIPS with FPU",
+		ImageFileMachineMIPSFPU16: "MIPS16 with FPU",
+		ImageFileMachinePowerPC:   "Power PC little endian",
+		ImageFileMachinePowerPCFP: "Power PC with floating point support",
+		ImageFileMachineR4000:     "MIPS little endian",
+		ImageFileMachineRISCV32:   "RISC-V 32-bit address space",
+		ImageFileMachineRISCV64:   "RISC-V 64-bit address space",
+		ImageFileMachineRISCV128:  "RISC-V 128-bit address space",
+		ImageFileMachineSH3:       "Hitachi SH3",
+		ImageFileMachineSH3DSP:    "Hitachi SH3 DSP",
+		ImageFileMachineSH4:       "Hitachi SH4",
+		ImageFileMachineSH5:       "Hitachi SH5",
+		ImageFileMachineTHUMB:     "Thumb",
+		ImageFileMachineWCEMIPSV2: "MIPS little-endian WCE v2",
+	}
+
+	return machineType[pe.NtHeader.FileHeader.Machine]
 }
 
 // PrettyImageFileCharacteristics returns the string representations
