@@ -26,5 +26,6 @@ require (
 	github.com/spf13/viper v1.6.1
 	github.com/stoewer/go-strcase v1.1.0
 	go.mozilla.org/pkcs7 v0.0.0-20200128120323-432b2356ecb1
+	golang.org/x/text v0.3.2
 	google.golang.org/grpc v1.25.1
 )
