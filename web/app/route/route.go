@@ -76,8 +76,11 @@ func New() *echo.Echo {
 	// actions over a user
 	e.POST("/v1/users/:username/actions/", user.Actions, m.RequireLogin, m.RequireJSON)
 
-	// activities for a user
-	e.GET("/v1/users/:username/activities/", user.Activities, m.RequireLogin, m.RequireJSON)
+	// activities show for registered users
+	e.GET("/v1/users/:username/activities/", user.GetActivitiy)
+
+	// activities show for non registered in users
+	e.GET("/v1/users/activities/", user.GetActivities)
 
 	// handle /admin endpoint
 	e.GET("/admin/", auth.Admin, m.RequireLogin, auth.IsAdmin)

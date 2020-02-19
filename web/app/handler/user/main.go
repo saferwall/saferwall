@@ -883,20 +883,11 @@ func Actions(c echo.Context) error {
 	})
 }
 
-// Activities represents the feed displayed in the landing page.
-func Activities(c echo.Context) error {
-
-	currentUser := c.Get("user").(*jwt.Token)
-	claims := currentUser.Claims.(jwt.MapClaims)
-	currentUsername := claims["name"].(string)
+// GetActivitiy represents the feed displayed in the landing page.
+func GetActivitiy(c echo.Context) error {
 
 	// get path param
 	username := c.Param("username")
-
-	if username != currentUsername {
-		return c.JSON(http.StatusUnauthorized, map[string]string{
-			"verbose_msg": "Not allowed to fetch another user account's activities"})
-	}
 
 	// Get user infos.
 	_, err := GetByUsername(username)
@@ -909,6 +900,34 @@ func Activities(c echo.Context) error {
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
 	query := "SELECT `username`, `activities` FROM users WHERE `username` IN (SELECT RAW u1.`following` FROM users u1 where u1.username=$user)[0]"
+
+	// Execute Query
+	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"verbose_msg": err.Error(),
+		})	
+	}
+	defer rows.Close()
+
+	// Interfaces for handling streaming return values
+	var activities []interface{}
+	var row interface{}
+
+	// Stream the values returned from the query into a typed array of structs
+	for rows.Next(&row) {
+		activities = append(activities, row)
+	}
+	return c.JSON(http.StatusOK, activities)
+}
+
+
+// GetActivities represents the feed displayed in the landing page.
+func GetActivities(c echo.Context) error {
+
+	// Get all activities from all users whom I am following.
+	params := make(map[string]interface{}, 1)
+	query := "SELECT `username`, `activities` FROM users ORDER BY activities[*].timestamp DESC"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
