@@ -159,7 +159,7 @@ func hashAndSalt(pwd []byte) string {
 // Save adds user to a database.
 func (u *User) Save() {
 	db.UsersCollection.Upsert(u.Username, u, &gocb.UpsertOptions{})
-	log.Infof("User %s was created successefuly", u.Username)
+	log.Infof("User %s was saved successefuly", u.Username)
 }
 
 // Create creates a new user
@@ -908,7 +908,7 @@ func Activities(c echo.Context) error {
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
-	query := "SELECT RAW u1.activities FROM `users` u1 WHERE u1.`username` IN (SELECT RAW `following`[0] FROM `users` u2 WHERE u2.`username`=$user)"
+	query := "SELECT `username`, `activities` FROM users WHERE `username` IN (SELECT RAW u1.`following` FROM users u1 where u1.username=$user)[0]"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
@@ -920,9 +920,12 @@ func Activities(c echo.Context) error {
 	defer rows.Close()
 
 	// Interfaces for handling streaming return values
-	var activities []Activity
+	var activities []interface{}
+	var row interface{}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next(&activities) {}
+	for rows.Next(&row) {
+		activities = append(activities, row)
+	}
 	return c.JSON(http.StatusOK, activities)
 }
