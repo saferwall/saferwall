@@ -11,7 +11,7 @@
                 >
               </li>
               <li class="is-active">
-                <a href="#" aria-current="page">{{ $route.name }}</a>
+                <a href="#" aria-current="page">{{ route }}</a>
               </li>
             </ul>
           </nav>
@@ -35,6 +35,7 @@
     </div>
   </section>
 </template>
+
 <script>
 import Loader from "@/components/elements/Loader"
 import Download from "../elements/Download"
@@ -63,6 +64,8 @@ export default {
       hash: "getHashContext",
       userData: "getUserData",
       fileData: "getFileData",
+      username: "getUsername",
+      loggedIn: "getLoggedIn",
     }),
     showButtons: function() {
       return (
@@ -70,18 +73,30 @@ export default {
         this.$store.getters.getLoggedIn &&
         this.route !== "upload" &&
         this.route !== "settings" &&
+        this.route !== "home" &&
         this.route !== "profile"
       )
     },
     showContent: function() {
-      return (
-        this.$store.getters.getHashContext !== "" ||
-        this.route === "upload" ||
-        this.route === "profile" ||
-        this.route === "settings"
-      )
+      if (this.loggedIn)
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          (this.route === "home" && this.username) ||
+          this.route === "settings"
+        )
+      else
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          this.route === "home" ||
+          this.route === "settings"
+        )
     },
     showLoader: function() {
+      if (this.route === "home") return false
       if (this.$store.getters.getLoggedIn)
         return (
           Object.entries(this.userData).length === 0 &&
@@ -117,6 +132,7 @@ export default {
   },
 }
 </script>
+
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 $header-height: 50px;
