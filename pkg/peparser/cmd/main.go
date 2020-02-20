@@ -16,16 +16,25 @@ import (
 func parse(filename string) {
 	pe, err := peparser.Open(filename)
 	if err != nil {
-		log.Printf("Error while opening file: %s, reason: %s", filename, err)
+		// log.Printf("Error while opening file: %s, reason: %s", filename, err)
 		return
 	}
 
-	// log.Println(filename)
+    defer func() { //catch or finally
+        if err := recover(); err != nil { //catch
+            fmt.Fprintf(os.Stderr, "Exception: %v\n", err)
+        }
+    }()
+	
 	err = pe.Parse()
 	if err != nil  {
-		if err != peparser.ErrDOSMagicNotFound && err != peparser.ErrInvalidPESize {
+		if err != peparser.ErrDOSMagicNotFound && 
+			err != peparser.ErrInvalidPESize &&
+			err != peparser.ErrImageOS2SignatureFound {
 			fmt.Printf("\nError while parsing %s\n", filename)
 			fmt.Println(err)
+			os.Exit(1)
+
 		}
 	}
 

@@ -350,11 +350,13 @@ func (pe *File) parseNtHeader() (err error) {
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
 
-	optHeaderOffset := ntHeaderOffset + uint32(binary.Size(pe.NtHeader.FileHeader) + 4)
+	optHeaderOffset := ntHeaderOffset +
+	 uint32(binary.Size(pe.NtHeader.FileHeader) + 4)
 	magic := binary.LittleEndian.Uint16(pe.data[optHeaderOffset:])
 
 	// Probes for PE32/PE32+ optional header magic.
-	if magic != ImageNtOptionalHeader32Magic && magic != ImageNtOptionalHeader64Magic {
+	if magic != ImageNtOptionalHeader32Magic && 
+		magic != ImageNtOptionalHeader64Magic {
 		return ErrImageNtOptionalHeaderMagicNotFound
 	}
 
@@ -391,9 +393,9 @@ func (pe *File) parseNtHeader() (err error) {
 
 	// ImageBase can be any value as long as:
 	// ImageBase + SizeOfImage < 80000000h for PE32.
-	if pe.Is32 &&
-		oh32.ImageBase+oh32.SizeOfImage >= 0x80000000 {
-		return ErrImageBaseOverflow
+	if (pe.Is32 && oh32.ImageBase+oh32.SizeOfImage >= 0x80000000) || (pe.Is64 &&
+		oh64.ImageBase+uint64(oh64.SizeOfImage) >= 0xffff080000000000) {
+		pe.Anomalies = append(pe.Anomalies,  AnoImageBaseOverflow)
 	}
 
 	// SizeOfImage must be a multiple of the section alignment.

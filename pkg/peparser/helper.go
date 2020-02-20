@@ -58,9 +58,9 @@ var (
 	// ErrImageBaseNotAligned is reported when the image base is not aligned to 64 K.
 	ErrImageBaseNotAligned = errors.New("Corrupt PE file. Image base not aligned to 64 K")
 
-	// ErrImageBaseOverflow is reported when the image base is larger than
-	// 80000000h/FFFF080000000000h in PE32/P32+.
-	ErrImageBaseOverflow = errors.New("Corrupt PE file. Image base is overflow")
+	// AnoImageBaseOverflow is reported when the image base + SizeOfImage is
+	// larger than 80000000h/FFFF080000000000h in PE32/P32+.
+	AnoImageBaseOverflow = "Image base is overflow"
 
 	// ErrInvalidSectionFileAlignment is reported when section alignment is less than a
 	// PAGE_SIZE and section alignement != file alignment.
