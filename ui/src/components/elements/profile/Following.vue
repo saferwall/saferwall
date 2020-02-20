@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import userCard from "./userCard"
+import userCard from "./UserCard"
 
 export default {
   props: ["users", "active"],

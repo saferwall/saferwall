@@ -102,6 +102,7 @@ export default {
               .get(`${this.$api_endpoints.FILES}${hashHex}/`)
               .then((response) => {
                 // file exists
+                this.$store.dispatch("updateHash", hashHex)
                 this.$router.push(this.$routes.SUMMARY.path + hashHex)
               })
               .catch(() => {
@@ -115,17 +116,11 @@ export default {
                     },
                   })
                   .then(() => {
-                    // set a poll interval of 5s
-
-                    this.pollInterval = setInterval(
-                      this.fetchStatus,
-                      3000,
-                      hashHex,
-                    )
+                    this.setpollInterval(0, hashHex)
                     setTimeout(() => {
                       clearInterval(this.pollInterval)
                       this.trackException()
-                    }, 36000000) // stop polling after an hour
+                    }, 36000000)
                   })
                   .catch(console.log)
               })
@@ -139,9 +134,33 @@ export default {
       }
       reader.readAsArrayBuffer(file)
     },
+    setpollInterval(index, hashHex) {
+      this.pollInterval = setTimeout(
+        () => {
+          this.fetchStatus(hashHex)
+          this.setpollInterval(index++, hashHex)
+        },
+        this.getInterval(index),
+      )
+      // this.pollInterval = setInterval(this.fetchStatus, 10000, hashHex)
+      // setTimeout(() => {
+      //   clearInterval(this.pollInterval)
+      //   this.trackException()
+      // }, 36000000) // stop polling after an hour
+    },
+    getInterval(index) {
+      switch (index) {
+        case 0:
+          return 10000
+        case 1:
+          return 5000
+        default:
+          return 2000
+      }
+    },
     fetchStatus(hashHex) {
       this.$http
-        .get(`${this.$api_endpoints.FILES}${hashHex}/`)
+        .get(`${this.$api_endpoints.FILES}${hashHex}?fields=status`)
         .then((response) => {
           const status = response.data.status
           // change ongoingStep according to status
