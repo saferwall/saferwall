@@ -18,7 +18,8 @@ func (pe *File) parseGlobalPtrDirectory(rva, size uint32) error {
 	// RVA of the value to be stored in the global pointer register.
 	offset := pe.getOffsetFromRva(rva)
 	if offset == ^uint32(0) {
-		log.Println("Global Ptr Directoery offset outside of image")
+		pe.Anomalies = append(pe.Anomalies,
+			 "Global pointer register offset outside of image")
 		return nil
 	}
 

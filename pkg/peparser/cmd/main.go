@@ -33,7 +33,6 @@ func parse(filename string) {
 			err != peparser.ErrImageOS2SignatureFound {
 			fmt.Printf("\nError while parsing %s\n", filename)
 			fmt.Println(err)
-			os.Exit(1)
 
 		}
 	}

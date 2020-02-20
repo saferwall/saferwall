@@ -158,13 +158,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		}()
 
 		symbolOrdinal := binary.LittleEndian.Uint16(addressOfNameOrdinals[i*2:])
-		if symbolOrdinal*4 < uint16(len(addressOfFunctions)) {
-			symbolAddress = binary.LittleEndian.Uint32(addressOfFunctions[symbolOrdinal*4:])
-		} else {
-			return errors.New(`Corrupt? a bad pointer... we assume it's
-			 all useless, no exports`)
-		}
-
+		symbolAddress = binary.LittleEndian.Uint32(addressOfFunctions[symbolOrdinal*4:])
 		if symbolAddress == 0 {
 			continue
 		}
