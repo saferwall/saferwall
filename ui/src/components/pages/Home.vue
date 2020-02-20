@@ -1,11 +1,12 @@
 <template>
   <div class="columns">
     <div class="column"></div>
-    <div class="column is-8 box">
+    <div class="column is-8 box" v-if="usersData.length > 0">
+      <p id="no_activity" v-if="activities.length === 0">No Recent Activities</p>
       <ActivityCard
         :activity="activity"
         :userData="getUserDataPerActivity(activity.username)"
-        v-for="(activity, index) in activities"
+        v-for="(activity, index) in activitiesToShow"
         :key="index"
       />
     </div>
@@ -25,7 +26,13 @@ export default {
       loged: false,
       activities: [],
       usersData: [],
+      actToShowCount: 0,
     }
+  },
+  computed: {
+    activitiesToShow: function() {
+      return this.activities.slice(0, this.actToShowCount)
+    },
   },
   methods: {
     getLoggedInActivities: function() {
@@ -64,21 +71,15 @@ export default {
     },
     getUserData: async function(username) {
       this.$http
-        .get(this.$api_endpoints.USERS + username)
-        .then((res) => {
-          this.$http
-            .get(this.$api_endpoints.USERS + username + "/avatar", {
-              responseType: "arraybuffer",
-            })
-            .then((secRes) => {
-              var data = {
-                username: res.data.username,
-                name: res.data.name,
-                location: res.data.location,
-                avatar: Buffer.from(secRes.data, "binary").toString("base64"),
-              }
-              this.usersData.push(data)
-            })
+        .get(this.$api_endpoints.USERS + username + "/avatar", {
+          responseType: "arraybuffer",
+        })
+        .then((secRes) => {
+          var data = {
+            username: username,
+            avatar: Buffer.from(secRes.data, "binary").toString("base64"),
+          }
+          this.usersData.push(data)
         })
         .catch(() => {
           this.$awn.alert("An Error Occured While fetshing the user data")
@@ -86,6 +87,19 @@ export default {
     },
     getUserDataPerActivity(username) {
       return this._.find(this.usersData, (data) => data.username === username)
+    },
+    scroll() {
+      window.onscroll = () => {
+        var bottomOfWindow =
+          document.documentElement.scrollTop + window.innerHeight ===
+          document.documentElement.offsetHeight
+
+        if (bottomOfWindow) {
+          this.actToShowCount += 10
+          if (this.actToShowCount > this.activities.length)
+            this.actToShowCount = this.activities.length
+        }
+      }
     },
   },
   mounted() {
@@ -96,8 +110,18 @@ export default {
       this.getLoggedOffActivities()
       this.loged = false
     }
+    this.actToShowCount = 10
+    this.scroll()
   },
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.box {
+  padding: 1.5em;
+}
+#no_activity {
+  font-size: 20px;
+  font-weight: 200;
+}
+</style>

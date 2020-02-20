@@ -65,6 +65,7 @@ export default {
       userData: "getUserData",
       fileData: "getFileData",
       username: "getUsername",
+      loggedIn: "getLoggedIn",
     }),
     showButtons: function() {
       return (
@@ -77,13 +78,22 @@ export default {
       )
     },
     showContent: function() {
-      return (
-        this.$store.getters.getHashContext !== "" ||
-        this.route === "upload" ||
-        this.route === "profile" ||
-        (this.route === "home" && this.username) ||
-        this.route === "settings"
-      )
+      if (this.loggedIn)
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          (this.route === "home" && this.username) ||
+          this.route === "settings"
+        )
+      else
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          this.route === "home" ||
+          this.route === "settings"
+        )
     },
     showLoader: function() {
       if (this.route === "home") return false
