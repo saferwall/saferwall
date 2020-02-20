@@ -46,9 +46,9 @@
 <script>
 import moment from "moment"
 
-import UserCard from "./UserCard"
-import FileCard from "./FileCard"
-import CommentCard from "./CommentCard"
+import UserCard from "./UserCardActivities"
+import FileCard from "./FileCardActivities"
+import CommentCard from "./CommentCardActivities"
 
 export default {
   props: ["activity", "userData"],
