@@ -495,8 +495,7 @@ func PutUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-
-	db.UsersCollection.Upsert(username, u, &gocb.UpsertOptions{})
+	u.Save()
 
 	// Empty private fields to not be displayed in json
 	u.Password = ""
@@ -898,7 +897,15 @@ func GetActivitiy(c echo.Context) error {
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
-	query := "SELECT `username`, `activities` FROM users WHERE `username` IN (SELECT RAW u1.`following` FROM users u1 where u1.username=$user)[0]"
+	query := "SELECT `username`, `activities` " +
+			"FROM users WHERE `username` IN " +
+			"(SELECT RAW u1.`following` FROM users u1 " +
+			"WHERE u1.username=$user)[0] UNION " +
+			"SELECT username, activities " +
+			"FROM users u " +
+			"WHERE ANY activity IN u.activities " +
+			"SATISFIES activity.type = 'follow' AND " +
+			"activity.content.`user` =$user END"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
