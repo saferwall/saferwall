@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path"
-    "path/filepath"
+	"path/filepath"
 
 	nsq "github.com/bitly/go-nsq"
 	"github.com/matcornic/hermes/v2"
@@ -97,8 +97,8 @@ var (
 	// SMTPConfig holds smtp config.
 	SMTPConfig SMTPAuthentication
 
-	// AvatarFileDesc holds a descriptor to the default image avatar file path.
-	AvatarFileDesc *os.File
+	// AvatarFileBuff contains the content of the default image avatar file path.
+	AvatarFileBuff []byte
 
 	// SfwAvatarFileDesc holds a descriptor to saferwall's image avatar file path.
 	SfwAvatarFileDesc *os.File
@@ -298,9 +298,9 @@ func loadAvatars() {
 	}
 
 	defaultAvatarPath := path.Join(dir, "data", "default-avatar.png")
-	AvatarFileDesc, err = os.Open(defaultAvatarPath)
+	AvatarFileBuff, err = utils.ReadAll(defaultAvatarPath)
 	if err != nil {
-		log.Fatalf("Failed to open default avatar from %s, reason: %s",
+		log.Fatalf("Failed to open read avatar from %s, reason: %s",
 		 defaultAvatarPath, err.Error())
 	}
 

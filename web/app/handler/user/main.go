@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
 	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -678,7 +677,7 @@ func GetAvatar(c echo.Context) error {
 
 	// If the user does not set a custom avatar, we serve a default one.
 	if !usr.HasAvatar {
-		return c.Stream(http.StatusOK, "image/png", app.AvatarFileDesc)
+		return c.Blob(http.StatusOK, "image/png", app.AvatarFileBuff)
 	}
 
 	// Read it from object storage.

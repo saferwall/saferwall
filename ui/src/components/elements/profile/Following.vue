@@ -1,7 +1,7 @@
 <template>
   <div v-if="active">
     <p id="no" v-if="!users">No Users</p>
-    <userCard
+    <UserCard
       v-for="(user, index) in usersData"
       :key="index"
       :userData="user"
@@ -10,12 +10,12 @@
 </template>
 
 <script>
-import userCard from "./UserCard"
+import UserCard from "./UserCard"
 
 export default {
   props: ["users", "active"],
   components: {
-    userCard,
+    UserCard,
   },
   data() {
     return {

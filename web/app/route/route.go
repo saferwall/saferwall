@@ -39,6 +39,7 @@ func New() *echo.Echo {
 	// To update the email (if user knows its password)
 	e.PUT("/v1/users/:username/email/", auth.UpdateEmail, m.RequireLogin, m.RequireJSON)
 
+	e.GET("/v1/users/:username/avatar/", user.GetAvatar)
 	// To update user avatar
 	e.PUT("/v1/users/:username/avatar/", user.UpdateAvatar, m.RequireLogin)
 
@@ -71,7 +72,6 @@ func New() *echo.Echo {
 	e.GET("/v1/users/:username/", user.GetUser)
 	e.PUT("/v1/users/:username/", user.PutUser, m.RequireLogin)
 	e.DELETE("/v1/users/:username/", user.DeleteUser, m.RequireLogin)
-	e.GET("/v1/users/:username/avatar/", user.GetAvatar)
 
 	// actions over a user
 	e.POST("/v1/users/:username/actions/", user.Actions, m.RequireLogin, m.RequireJSON)
