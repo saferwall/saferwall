@@ -14,8 +14,8 @@
           }}</span>
         </span>
         <span id="Av">
-          <i class="icon fas fa-search"></i>
-          Av Detection Count: {{ fileData.AvDetectionCount }}
+          <i class="icon fas fa-shield-alt"></i>
+          Antivirus: {{ fileData.AvDetectionCount }}/12
         </span>
       </p>
     </div>
@@ -111,7 +111,7 @@ export default {
       vertical-align: bottom;
     }
     #tag {
-      color: #00d1b2;
+      color: #3273dc;
       font-weight: 600;
     }
     #Av {

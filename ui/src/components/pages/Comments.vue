@@ -9,7 +9,31 @@
         v-if="getCommentData(index).avatar"
       />
     </div>
-    <TextEditor />
+    <TextEditor v-if="this.$store.getters.getLoggedIn" />
+    <div v-else id="authToCommentMessage" class="box">
+      <span>Want to leave a comment? </span>
+      <span>
+        <router-link
+          :to="{
+            name: 'login',
+            params: {
+              nextUrl: $route.path,
+            },
+          }"
+          >Sign In</router-link
+        >
+        &nbsp; or &nbsp;
+        <router-link
+          :to="{
+            name: 'signUp',
+            params: {
+              nextUrl: $route.path,
+            },
+          }"
+          >Sign Up</router-link
+        >
+      </span>
+    </div>
   </div>
 </template>
 
@@ -30,9 +54,9 @@ export default {
     }
   },
   watch: {
-    comments:function(){
-      this.loadUsers();
-    }
+    comments: function() {
+      this.loadUsers()
+    },
   },
   computed: {
     ...mapGetters({
@@ -129,6 +153,16 @@ export default {
   }
   ul {
     padding-left: 1.5em;
+  }
+}
+#authToCommentMessage {
+  margin-top: 2em;
+  text-align: center;
+  vertical-align: middle;
+  display: grid;
+  padding: 1em;
+  span {
+    font-size: 1.5em;
   }
 }
 </style>

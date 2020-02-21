@@ -20,6 +20,7 @@
         class="button"
         v-if="this.$store.getters.getLoggedIn"
         @click="followUnfollow"
+        :disabled="self"
       >
         {{ this.followed ? "Unfollow" : "Follow" }}
       </button>
@@ -34,6 +35,7 @@ export default {
     return {
       userData: {},
       followed: false,
+      self: false,
     }
   },
   methods: {
@@ -78,6 +80,7 @@ export default {
     this.getUserData()
     if (this.$store.getters.getFollowing.includes(this.userData.username))
       this.followed = true
+    if (this.username === this.$store.getters.getUsername) this.self = true
   },
 }
 </script>
@@ -122,6 +125,12 @@ export default {
 
     &:hover {
       background-color: #d1d5da;
+    }
+
+    &[disabled] {
+      &:hover {
+        background-color: transparent;
+      }
     }
 
     &.active {

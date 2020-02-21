@@ -5,12 +5,6 @@
         <p class="image is-64x64" @click="goToProfile">
           <img :src="'data:image/png;base64,' + data.avatar" />
         </p>
-        <div class="info">
-          <i class="icon fas fa-location-arrow"></i>
-          <p>
-            {{ this.data.location }}
-          </p>
-        </div>
       </figure>
       <div class="media-content">
         <div class="content">
@@ -113,6 +107,11 @@ export default {
   font-weight: lighter;
 }
 
+.comment_body {
+  display: flex;
+  padding: 0.6em;
+}
+
 .image {
   &:hover {
     opacity: 0.5;
@@ -153,18 +152,6 @@ export default {
     &:hover {
       color: red !important;
     }
-  }
-}
-
-.info {
-  display: flex;
-  margin-top: 5px;
-  p {
-    padding-left: 3px;
-    margin-right: auto;
-  }
-  svg {
-    margin-left: auto;
   }
 }
 </style>
