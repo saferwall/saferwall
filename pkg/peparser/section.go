@@ -228,7 +228,10 @@ type ImageSectionHeader struct {
 	Characteristics uint32
 }
 
-func (pe *File) parseSectionHeader() (err error) {
+// ParseSectionHeader parses the PE section headers.
+// Each row of the section table is, in effect, a section header. This table
+// immediately follows the optional header, if any. 
+func (pe *File) ParseSectionHeader() (err error) {
 
 	// get the first section offset.
 	optionalHeaderOffset := pe.DosHeader.Elfanew + 4 + uint32(binary.Size(pe.NtHeader.FileHeader))
@@ -257,9 +260,8 @@ func (pe *File) parseSectionHeader() (err error) {
 	// fc91013eb72529da005110a3403541b6 example
 	// Should this throw an exception in the minimum header offset
 	// can't be found?
-
 	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
-		offset = offset + (sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections))
+		offset += sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
 	}
 
 	var rawDataPointers []uint32

@@ -69,11 +69,12 @@ type ImageDosHeader struct {
 	Elfanew uint32 `json:"fileAddressOfNewEXEHeader"`
 }
 
-// Every PE file begins with a small MS-DOS stud. The need for this arose in the
-// early days of Windows, before a significant number of consumers were running
-// it. When executed on a machine without Windows, the program could at least
-// print out amessage saying that Windows was required to run the executable.
-func (pe *File) parseDosHeader() (err error) {
+// ParseDOSHeader parses the DOS header stub. Every PE file begins with a small
+// MS-DOS stub. The need for this arose in the early days of Windows, before a
+// significant number of consumers were running it. When executed on a machine
+// without Windows, the program could at least print out amessage saying that
+// Windows was required to run the executable.
+func (pe *File) ParseDOSHeader() (err error) {
 	offset := 0
 	size := binary.Size(pe.DosHeader)
 	buf := bytes.NewReader(pe.data[offset : offset+size])
