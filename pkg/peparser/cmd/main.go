@@ -37,6 +37,19 @@ func parse(filename string) {
 		}
 	}
 
+	if err == nil {
+		if pe.IsDLL() {
+			log.Print("File is DLL")
+		}
+		if pe.IsDriver() {
+			log.Print("File is Driver")
+		}
+		if pe.IsEXE() {
+			log.Print("File is Exe")
+		}
+	}
+
+
 	// if len(pe.Anomalies) > 0 {
 	// 	fmt.Printf("Anomalies found while parsing %s\n", filename)
 	// 	for _, anomaly := range pe.Anomalies {

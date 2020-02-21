@@ -356,6 +356,95 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+// IsDriver returns true if the PE file is a Windows driver.
+func (pe *File)IsDriver() bool {
+
+	// Checking that the ImageBase field of the OptionalHeader is above or
+	// equal to 0x80000000 (that is, whether it lies in the upper 2GB of
+	//the address space, normally belonging to the kernel) is not a
+	// reliable enough indicator.  For instance, PEs that play the invalid
+	// ImageBase trick to get relocated could be incorrectly assumed to be
+	// drivers.
+
+	// Checking if any section characteristics have the IMAGE_SCN_MEM_NOT_PAGED 
+	// flag set is not reliable either.
+
+	// If the import directory was not parsed (fast_load = True); do it now.
+	if len(pe.Imports) == 0 {
+		pe.ParseDataDirectories()
+	}
+
+	// If there's still no import directory (the PE doesn't have one or it's
+	// malformed), give up.
+	if len(pe.Imports) == 0 {
+		return false
+	}
+
+	// DIRECTORY_ENTRY_IMPORT will now exist, although it may be empty.
+	// If it imports from "ntoskrnl.exe" or other kernel components it should
+	// be a driver.
+	systemDLLs := []string {"ntoskrnl.exe", "hal.dll", "ndis.sys",
+	 "bootvid.dll", "kdcom.dll"}
+	for _, dll := range pe.Imports {
+		if stringInSlice(strings.ToLower(dll.Name), systemDLLs) {
+			return true
+		}
+	}
+
+	// If still we couldn't tell, check common driver section with combinaison 
+	// of IMAGE_SUBSYSTEM_NATIVE or IMAGE_SUBSYSTEM_NATIVE_WINDOWS.
+	subsystem := uint16(0)
+	oh32 := ImageOptionalHeader32{}
+	oh64 := ImageOptionalHeader64{}
+	switch pe.Is64 {
+	case true:
+		oh64 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64)
+		subsystem = oh64.Subsystem
+	case false:
+		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)
+		subsystem = oh32.Subsystem
+	}
+	commonDriverSectionNames := []string {"page", "paged", "nonpage", "init"}
+	for _, section := range pe.Sections {
+		s := strings.ToLower(section.NameString())
+		s = strings.Replace(s, "\x00", "", -1)
+		if stringInSlice(s, commonDriverSectionNames) && 
+			(subsystem & ImageSubsystemNativeWindows != 0 || 
+				subsystem & ImageSubsystemNative != 0 ) { 
+			return true
+		}
+
+	}
+
+	return false
+}
+
+// IsDLL returns true if the PE file is a standard DLL.
+func (pe *File)IsDLL() bool {
+	if pe.NtHeader.FileHeader.Characteristics & ImageFileDLL != 0 {
+		return true
+	}
+	return false
+}
+
+
+// IsEXE returns true if the PE file is a standard executable.
+func (pe *File)IsEXE() bool {
+
+	// Returns true only if the file has the IMAGE_FILE_EXECUTABLE_IMAGE flag set
+	// and the IMAGE_FILE_DLL not set and the file does not appear to be a driver either.
+	if pe.IsDLL() || pe.IsDriver() {
+		return false
+	}
+
+	if pe.NtHeader.FileHeader.Characteristics & ImageFileExecutableImage == 0 {
+		return false
+	}
+
+	return true
+}
+
+
 // PrettyMachineType returns the string representations
 // of the `Machine` field of  the IMAGE_FILE_HEADER.
 func (pe *File) PrettyMachineType() string {
