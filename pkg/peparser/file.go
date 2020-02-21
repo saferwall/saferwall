@@ -85,29 +85,32 @@ func (pe *File) Parse() error {
 	}
 
 	// Parse the DOS header.
-	err := pe.parseDosHeader()
+	err := pe.ParseDOSHeader()
 	if err != nil {
 		return err
 	}
 
 	// Parse the NT header.
-	err = pe.parseNtHeader()
+	err = pe.ParseNTHeader()
 	if err != nil {
 		return err
 	}
 
 	// Parse the Section Header.
-	err = pe.parseSectionHeader()
+	err = pe.ParseSectionHeader()
 	if err != nil {
 		return err
 	}
 
 	// Parse the Data Directory entries.
-	err = pe.parseDataDirectories()
+	err = pe.ParseDataDirectories()
 	return err
 }
 
-func (pe *File) parseDataDirectories() error {
+// ParseDataDirectories parses the data directores. The DataDirectory is an 
+// array of 16 structures. Each array entry has a predefined meaning for what
+// it refers to. 
+func (pe *File) ParseDataDirectories() error {
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
 	switch pe.Is64 {

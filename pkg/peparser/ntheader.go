@@ -305,10 +305,10 @@ type DataDirectory struct {
 	Size           uint32 // The size in bytes of the data structure refered to.
 }
 
-// The IMAGE_NT_HEADERS structure is the primary location where specifics of
-// the PE file are stored. Its offset is given by the e_lfanew field in the
-// IMAGE_DOS_HEADER at the beginning of the file.
-func (pe *File) parseNtHeader() (err error) {
+// ParseNtHeader parse the PE NT header structure refered as IMAGE_NT_HEADERS.
+// Its offset is given by the e_lfanew field in the IMAGE_DOS_HEADER at the
+// beginning of the file.
+func (pe *File) ParseNTHeader() (err error) {
 	ntHeaderOffset := pe.DosHeader.Elfanew
 	signature := binary.LittleEndian.Uint32(pe.data[ntHeaderOffset:])
 
