@@ -4,7 +4,7 @@
       <div class="level-item">
         <div id="hash" @click="showFile">{{ file.sha256 }}</div>
       </div>
-      <div class="level-item">
+      <div class="level-item fileInfo">
         <span id="tags">
           <i class="icon fas fa-tags"></i>
           Tags:
@@ -12,8 +12,8 @@
           <span id="tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
         </span>
         <span id="Av">
-          <i class="icon fas fa-search"></i>
-          Av Detection Count: {{ file.AvDetectionCount }}
+          <i class="icon fas fa-shield-alt"></i>
+          Antivirus: {{ file.AvDetectionCount }}/12
         </span>
         <span id="timestamp" v-if="file.timestamp">
           <i class="icon fas fa-clock"></i>
@@ -86,23 +86,26 @@ export default {
     display: block;
     .level-item {
       justify-content: left;
-      #hash {
-        font-size: large;
-        font-weight: 500;
-        cursor: pointer;
-      }
-      #Av {
-        padding-left: 1em;
-      }
-      #timestamp {
-        padding-left: 1em;
-      }
-      svg {
-        vertical-align: bottom;
-      }
-      #tag {
-        color: #00d1b2;
-        font-weight: 600;
+      &.fileInfo {
+        #hash {
+          font-size: large;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        #Av {
+          padding-left: 1em;
+        }
+        #timestamp {
+          padding-top: 0;
+          padding-left: 1em;
+        }
+        svg {
+          vertical-align: bottom;
+        }
+        #tag {
+          color: #3273dc;
+          font-weight: 600;
+        }
       }
     }
   }

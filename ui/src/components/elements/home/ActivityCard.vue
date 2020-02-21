@@ -2,7 +2,12 @@
   <div class="media">
     <figure class="media-left">
       <p class="image is-64x64">
-        <img id="avatar" :src="this.userData ?'data:image/png;base64,'+this.userData.avatar:''" />
+        <img
+          id="avatar"
+          :src="
+            this.userData ? 'data:image/png;base64,' + this.userData.avatar : ''
+          "
+        />
       </p>
     </figure>
     <div class="media-content">
@@ -13,7 +18,11 @@
           <span class="action">{{ this.action }}</span>
           &nbsp;
           <strong v-if="activity.type === 'follow'">{{
-            this.activity.content?this.activity.content.user:''
+            this.activity.content
+              ? this.activity.content.user === this.$store.getters.getUsername
+                ? "You"
+                : this.activity.content.user
+              : ""
           }}</strong>
           &nbsp;
           <small id="time">{{ this.time }}</small>

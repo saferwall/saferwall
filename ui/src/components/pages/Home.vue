@@ -1,8 +1,13 @@
 <template>
   <div class="columns">
     <div class="column"></div>
-    <div class="column is-8 box" v-if="usersData.length > 0">
-      <p id="no_activity" v-if="activities.length === 0">No Recent Activities</p>
+    <div
+      class="column is-8 box"
+      v-if="usersData.length > 0 && activitiesToShow.length > 0"
+    >
+      <p id="no_activity" v-if="activities.length === 0">
+        No Recent Activities
+      </p>
       <ActivityCard
         :activity="activity"
         :userData="getUserDataPerActivity(activity.username)"

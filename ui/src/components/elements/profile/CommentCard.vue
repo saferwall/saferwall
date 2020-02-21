@@ -80,6 +80,7 @@ export default {
       #comment_body {
         background-color: rgba(0, 0, 0, 0.03);
         border-radius: 10px;
+        margin-top:0.5em;
         padding: 1em;
         h1 {
           font-size: 2rem;
@@ -115,6 +116,9 @@ export default {
       }
       svg {
         vertical-align: bottom;
+      }
+      #timestamp{
+        padding-top:0.5em;
       }
     }
   }

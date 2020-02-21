@@ -151,7 +151,7 @@ export default {
     },
     showButton(name) {
       if (name !== "Comments") return true
-      if (name === "Comments" && this.getLoggedIn && this.getHashContext !== '') return true
+      if (name === "Comments" && this.getHashContext !== '') return true
       else return false
     },
   },
