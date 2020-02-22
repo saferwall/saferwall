@@ -8,7 +8,7 @@ FROM golang:1.13-alpine AS builder
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
-    && update-ca-certificates 2>/dev/null || true
+	&& update-ca-certificates 2>/dev/null || true
 
 WORKDIR $GOPATH/src/saferwall/windefender/
 COPY . .
@@ -36,7 +36,7 @@ ENV WINDOWS_DEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
 RUN apt-get install libreadline-dev -y \
-	&& wget $WINDOWS_DEFENDER_UPDATE -O $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe \
+    && curl -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
 	&& cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
 	&& cabextract mpam-fe.exe \
 	&& rm mpam-fe.exe \

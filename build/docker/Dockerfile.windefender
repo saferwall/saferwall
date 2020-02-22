@@ -12,7 +12,7 @@ ENV WINDOWS_DEFENDER_TMP            /tmp/windows-defender
 # Install Windows Defender
 RUN dpkg --add-architecture i386 \
     && apt-get update \ 
-    && apt-get install wget unzip gcc-multilib exiftool cabextract build-essential libreadline-dev:i386 libc6-i386 -y \
+    && apt-get install curl wget unzip gcc-multilib exiftool cabextract build-essential libreadline-dev:i386 libc6-i386 -y \
     && mkdir $WINDOWS_DEFENDER_TMP \
     && wget $WINDOWS_DEFENDER_LOADLIBRARY -P $WINDOWS_DEFENDER_TMP \
     && cd $WINDOWS_DEFENDER_TMP \ 
@@ -22,7 +22,8 @@ RUN dpkg --add-architecture i386 \
     && mv $WINDOWS_DEFENDER_TMP/loadlibrary-master $WINDOWS_DEFENDER_INSTALL_DIR
 
 # Update the VDF
-RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe \
+RUN apt-get install libreadline-dev -y \
+    && curl -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
     && cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
     && cabextract mpam-fe.exe \
     && rm mpam-fe.exe
@@ -31,10 +32,9 @@ RUN apt-get install libreadline-dev -y && wget $WINDOWS_DEFENDER_UPDATE -O $WIND
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # Performs a simple test
-# Commented out as docker does not allow building image with custom seccomp profile
+# Commented out as docker does not allow building image with custom seccomp profile.
 # RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
 
 # Clean up
 RUN rm -rf WINDOWS_DEFENDER_TMP \
 	&& rm -rf /var/lib/apt/lists/*
-
