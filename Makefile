@@ -44,3 +44,4 @@ include build/mk/website.mk
 include build/mk/protobuf.mk
 include build/mk/yara.mk
 include build/mk/certbot.mk
+include build/mk/saferwall.mk

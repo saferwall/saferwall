@@ -54,6 +54,7 @@ func parsePE(filename string, cmd *cobra.Command) {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
 		return
 	}
+	defer pe.Close()
 
 	err = pe.Parse()
 	if err != nil {

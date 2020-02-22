@@ -34,8 +34,9 @@ const (
 func (f *result) GetTags() error {
 
 	var tags []string
-	packer := f.Packer[0]
 
+	// Packers/Compilers/Installers tags
+	packer := f.Packer[0]
 	if strings.Contains(packer, SigNSIS) {
 		tags = append(tags, "nsis")
 	} else if strings.Contains(packer, SigInnoSetup) {
@@ -76,6 +77,16 @@ func (f *result) GetTags() error {
 		tags = append(tags, "gcc")
 	}
 
-	f.Tags = tags
+	// File format tags
+	pe := f.PE
+	if pe.IsEXE() {
+		tags = append(tags, "exe")
+	} else if pe.IsDriver() {
+		tags = append(tags, "sys")
+	} else if pe.IsDLL() {
+		tags = append(tags, "dll")
+	}
+
+	f.Tags = append(f.Tags, tags...)
 	return nil
 }

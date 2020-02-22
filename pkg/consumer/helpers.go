@@ -17,7 +17,10 @@ import (
 )
 
 func loadConfig() {
+	
+	// Add condig path directories
 	viper.AddConfigPath("configs")
+	viper.AddConfigPath("../../configs")
 
 	// Load the config type depending on env variable.
 	var name string

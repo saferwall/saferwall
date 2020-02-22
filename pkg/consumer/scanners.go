@@ -34,12 +34,12 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
 )
 
 func staticScan(sha256, filePath string, b []byte) result {
@@ -110,10 +110,39 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res.Strings = strResults
 	log.Infof("strings success %s", sha256)
 
+	// Parse PE
+	pe, err := parsePE(filePath)
+	if err != nil {
+		log.Infof("PE parser failed %v", err)
+	} else {
+		res.PE = pe
+		res.Tags = append(res.Tags, "pe")
+		log.Infof("PE parser success %s", sha256)
+	}
+
 	// Extract tags
 	res.GetTags()
 
 	return res
+}
+
+
+func parsePE(filePath string) (peparser.File, error) {
+
+	pe, err := peparser.Open(filePath)
+	if err != nil {
+		return peparser.File{}, err
+	}
+	defer pe.Close()
+
+    defer func() { 
+        if err := recover(); err != nil {
+			log.Printf("PE parser raised an unexpected exception: %v\n", err)
+        }
+    }()
+	
+	err = pe.Parse()
+	return pe, err
 }
 
 func avScan(engine string, filePath string, c chan multiav.ScanResult) {

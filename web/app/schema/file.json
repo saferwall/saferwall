@@ -112,6 +112,10 @@
       "description": "strings found on file",
       "type": "array"
     },
+    "pe": {
+      "description": "PE format parsing results",
+      "type": "object"
+    },
     "analysis": {
       "description": "Static and dynamic analysis of file",
       "type": "object",
@@ -120,10 +124,6 @@
           "description": "Static analysis of file",
           "type": "object",
           "properties": {
-            "pe": {
-              "description": "PE format parsing results",
-              "type": "object"
-            },
             "pdf": {
               "description": "PDF format parsing results",
               "type": "object"

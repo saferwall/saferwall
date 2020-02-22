@@ -18,6 +18,8 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
+
 )
 
 var (
@@ -45,6 +47,7 @@ type result struct {
 	Strings []stringStruct         `json:"strings,omitempty"`
 	MultiAV map[string]interface{} `json:"multiav,omitempty"`
 	Status  int                    `json:"status,omitempty"`
+	PE      peparser.File			`json:"pe,omitempty"`
 }
 
 // File scan progress status.
