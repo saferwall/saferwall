@@ -9,7 +9,7 @@
           <i class="icon fas fa-tags"></i>
           Tags:
           <span v-if="!file.tags">none</span>
-          <span id="tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
+          <span class="tag is-link is-normal" id="tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
         </span>
         <span id="Av">
           <i class="icon fas fa-shield-alt"></i>
@@ -103,7 +103,8 @@ export default {
           vertical-align: bottom;
         }
         #tag {
-          color: #3273dc;
+          margin-right: 0.2em;
+          color: white;
           font-weight: 600;
         }
       }
