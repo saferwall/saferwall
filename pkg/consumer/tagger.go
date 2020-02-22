@@ -10,23 +10,23 @@ import (
 
 // Compilers, Installers, Packers names as seen by DiE (Detect It Easy)
 const (
-	SigNSIS      = "Nullsoft Scriptable Install System"
-	SigInnoSetup = "Inno Setup"
-	SigUPX       = "UPX"
-	SigASPack    = "ASPack"
-	SigASProtect = "ASProtect"
-	SigPECompact = "PECompact"
-	SigEnigma    = "ENIGMA"
-	SigGCC       = "gcc"
-	SigMSVC      = "Microsoft Visual C/C++"
-	SigMSVB      = "Microsoft Visual Basic"
-	SigMASM      = "MASM"
-	SigFASM      = "FASM"
-	SigDotNet    = ".NET"
-	SigMFC       = "MFC"
-	SigDelphi    = "Delphi"
-	SigAutoIT    = "AutoIt"
-	SigSFXCab    = "sfx: Microsoft Cabinet"
+	SigNSIS          = "Nullsoft Scriptable Install System"
+	SigInnoSetup     = "Inno Setup"
+	SigUPX           = "UPX"
+	SigASPack        = "ASPack"
+	SigASProtect     = "ASProtect"
+	SigPECompact     = "PECompact"
+	SigEnigma        = "ENIGMA"
+	SigGCC           = "gcc"
+	SigMSVC          = "Microsoft Visual C/C++"
+	SigMSVB          = "Microsoft Visual Basic"
+	SigMASM          = "MASM"
+	SigFASM          = "FASM"
+	SigDotNet        = ".NET"
+	SigMFC           = "MFC"
+	SigDelphi        = "Delphi"
+	SigAutoIT        = "AutoIt"
+	SigSFXCab        = "sfx: Microsoft Cabinet"
 	SigSmartAssembly = "Smart Assembly"
 )
 
@@ -75,16 +75,6 @@ func (f *result) GetTags() error {
 		tags = append(tags, "sfx-cab")
 	} else if strings.Contains(packer, SigGCC) {
 		tags = append(tags, "gcc")
-	}
-
-	// File format tags
-	pe := f.PE
-	if pe.IsEXE() {
-		tags = append(tags, "exe")
-	} else if pe.IsDriver() {
-		tags = append(tags, "sys")
-	} else if pe.IsDLL() {
-		tags = append(tags, "dll")
 	}
 
 	f.Tags = append(f.Tags, tags...)

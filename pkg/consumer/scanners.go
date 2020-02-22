@@ -5,33 +5,35 @@
 package main
 
 import (
+	"bytes"
+
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	avastclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
+	avast_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
 	aviraclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
+	avira_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	bitdefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
+	bitdefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
 	clamavclient "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
+	clamav_api "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	comodoclient "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
+	comodo_api "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
 	esetclient "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
+	eset_api "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
 	fsecureclient "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
+	fsecure_api "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
 	kasperskyclient "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
+	kaspersky_api "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
 	mcafeeclient "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
+	mcafee_api "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
 	sophosclient "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
+	sophos_api "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	symantec_api "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
+	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
@@ -40,6 +42,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/net/html"
 )
 
 func staticScan(sha256, filePath string, b []byte) result {
@@ -117,7 +120,22 @@ func staticScan(sha256, filePath string, b []byte) result {
 	} else {
 		res.PE = pe
 		res.Tags = append(res.Tags, "pe")
+
+		if pe.IsEXE() {
+			res.Tags = append(res.Tags, "exe")
+		} else if pe.IsDriver() {
+			res.Tags = append(res.Tags, "sys")
+		} else if pe.IsDLL() {
+			res.Tags = append(res.Tags, "dll")
+		}
+
 		log.Infof("PE parser success %s", sha256)
+	}
+
+	// Parse HTML
+	_, err = html.Parse(bytes.NewReader(b))
+	if err == nil {
+		res.Tags = append(res.Tags, "html")
 	}
 
 	// Extract tags
@@ -125,7 +143,6 @@ func staticScan(sha256, filePath string, b []byte) result {
 
 	return res
 }
-
 
 func parsePE(filePath string) (peparser.File, error) {
 
@@ -135,12 +152,12 @@ func parsePE(filePath string) (peparser.File, error) {
 	}
 	defer pe.Close()
 
-    defer func() { 
-        if err := recover(); err != nil {
+	defer func() {
+		if err := recover(); err != nil {
 			log.Printf("PE parser raised an unexpected exception: %v\n", err)
-        }
-    }()
-	
+		}
+	}()
+
 	err = pe.Parse()
 	return pe, err
 }
@@ -207,7 +224,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	}
 	c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 
-	if err = utils.DeleteFile(filecopyPath) ; err != nil {
+	if err = utils.DeleteFile(filecopyPath); err != nil {
 		log.Errorf("Failed to delete file path %s.", filecopyPath)
 	}
 }
