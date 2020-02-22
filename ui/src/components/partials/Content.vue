@@ -7,11 +7,14 @@
             <ul>
               <li>
                 <router-link :to="this.$routes.HOME.path"
-                  >Dashboard</router-link
+                  >Home</router-link
                 >
               </li>
               <li class="is-active">
                 <a href="#" aria-current="page">{{ route }}</a>
+              </li>
+              <li>
+                <span>{{$route.params.hash}}</span>
               </li>
             </ul>
           </nav>
@@ -152,6 +155,9 @@ section.main-content {
 .breadcrumb {
   a {
     color: $primary-color;
+  }
+  span{
+    padding-left: 10px;
   }
 }
 .no_file {

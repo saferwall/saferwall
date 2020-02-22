@@ -5,6 +5,9 @@
       class="column is-8 box"
       v-if="usersData.length > 0 && activitiesToShow.length > 0"
     >
+      <div class="title">
+        <span>Activities</span>
+      </div>
       <p id="no_activity" v-if="activities.length === 0">
         No Recent Activities
       </p>
@@ -121,12 +124,18 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .box {
   padding: 1.5em;
 }
 #no_activity {
   font-size: 20px;
   font-weight: 200;
+}
+.title {
+  border-bottom: 1px solid;
+  border-color: #ededed;
+  padding-bottom: 0.6em;
+  margin-bottom: 1.2em;
 }
 </style>
