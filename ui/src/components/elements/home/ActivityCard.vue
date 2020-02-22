@@ -20,7 +20,7 @@
           <strong v-if="activity.type === 'follow'">{{
             this.activity.content
               ? this.activity.content.user === this.$store.getters.getUsername
-                ? "You"
+                ? "you"
                 : this.activity.content.user
               : ""
           }}</strong>
@@ -89,16 +89,16 @@ export default {
     setAction() {
       switch (this.activity.type) {
         case "comment":
-          this.action = "Commented a file"
+          this.action = "commented a file"
           break
         case "like":
-          this.action = "Liked a file"
+          this.action = "liked a file"
           break
         case "submit":
-          this.action = "Submitted a file"
+          this.action = "submitted a file"
           break
         case "follow":
-          this.action = "Started following"
+          this.action = "started following"
           break
       }
     },
