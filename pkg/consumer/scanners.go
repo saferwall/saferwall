@@ -6,6 +6,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/xml"
+	"strings"
 
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -44,6 +46,76 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/net/html"
 )
+
+type stringStruct struct {
+	Encoding string `json:"encoding"`
+	Value    string `json:"value"`
+}
+type result struct {
+	Crc32   string                 `json:"crc32,omitempty"`
+	Md5     string                 `json:"md5,omitempty"`
+	Sha1    string                 `json:"sha1,omitempty"`
+	Sha256  string                 `json:"sha256,omitempty"`
+	Sha512  string                 `json:"sha512,omitempty"`
+	Ssdeep  string                 `json:"ssdeep,omitempty"`
+	Exif    map[string]string      `json:"exif,omitempty"`
+	TriD    []string               `json:"trid,omitempty"`
+	Tags    []string               `json:"tags,omitempty"`
+	Packer  []string               `json:"packer,omitempty"`
+	Magic   string                 `json:"magic,omitempty"`
+	Strings []stringStruct         `json:"strings,omitempty"`
+	MultiAV map[string]interface{} `json:"multiav,omitempty"`
+	Status  int                    `json:"status,omitempty"`
+	PE      peparser.File          `json:"pe,omitempty"`
+}
+
+func (res *result) parseFile(b []byte, filePath string) {
+	// Using linux file magic, run the correct parser.
+	magic := res.Magic
+	if strings.Contains(magic, "PE32") {
+		magic = "PE"
+	} else if strings.Contains(magic, "XML") {
+		magic = "XML"
+	} else if strings.Contains(magic, "HTML") {
+		magic = "HTML"
+	}
+
+	switch magic {
+	case "XML":
+		var v interface{}
+		err := xml.Unmarshal(b, &v)
+		if err != nil {
+			log.Printf("XML parser failed: %v", err)
+		}
+		res.Tags = append(res.Tags, "xml")
+	case "PE":
+		pe, err := parsePE(filePath)
+		if err != nil {
+			log.Infof("PE parser failed: %v", err)
+		} else {
+			res.PE = pe
+			if pe.IsEXE() {
+				res.Tags = append(res.Tags, "exe")
+			} else if pe.IsDriver() {
+				res.Tags = append(res.Tags, "sys")
+			} else if pe.IsDLL() {
+				res.Tags = append(res.Tags, "dll")
+			}
+		}
+		res.Tags = append(res.Tags, "pe")
+	case "HTML":
+		_, err := html.Parse(bytes.NewReader(b))
+		if err != nil {
+			log.Infof("HTML parser failed: %v", err)
+		} else {
+			htmlString := strings.ToLower(string(b))
+			if strings.Contains(htmlString, "language=vbscript") {
+				res.Tags = append(res.Tags, "vba")
+			}
+		}
+		res.Tags = append(res.Tags, "html")
+	}
+}
 
 func staticScan(sha256, filePath string, b []byte) result {
 	res := result{}
@@ -113,33 +185,11 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res.Strings = strResults
 	log.Infof("strings success %s", sha256)
 
-	// Parse PE
-	pe, err := parsePE(filePath)
-	if err != nil {
-		log.Infof("PE parser failed %v", err)
-	} else {
-		res.PE = pe
-		res.Tags = append(res.Tags, "pe")
-
-		if pe.IsEXE() {
-			res.Tags = append(res.Tags, "exe")
-		} else if pe.IsDriver() {
-			res.Tags = append(res.Tags, "sys")
-		} else if pe.IsDLL() {
-			res.Tags = append(res.Tags, "dll")
-		}
-
-		log.Infof("PE parser success %s", sha256)
-	}
-
-	// Parse HTML
-	_, err = html.Parse(bytes.NewReader(b))
-	if err == nil {
-		res.Tags = append(res.Tags, "html")
-	}
+	// Run the parsers
+	res.parseFile(b, filePath)
 
 	// Extract tags
-	res.GetTags()
+	res.getTags()
 
 	return res
 }
@@ -294,7 +344,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 			multiavScanResults["mcafee"] = mcafeeRes
 			avCount++
 		case symantecRes := <-symantecChan:
-			multiavScanResults["symanetc"] = symantecRes
+			multiavScanResults["symantec"] = symantecRes
 			avCount++
 		case sophosRes := <-sophosChan:
 			multiavScanResults["sophos"] = sophosRes

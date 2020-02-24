@@ -18,7 +18,6 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	peparser "github.com/saferwall/saferwall/pkg/peparser"
 
 )
 
@@ -27,28 +26,6 @@ var (
 	backendEndpoint string
 	backendToken    string
 )
-
-type stringStruct struct {
-	Encoding string `json:"encoding"`
-	Value    string `json:"value"`
-}
-type result struct {
-	Crc32   string                 `json:"crc32,omitempty"`
-	Md5     string                 `json:"md5,omitempty"`
-	Sha1    string                 `json:"sha1,omitempty"`
-	Sha256  string                 `json:"sha256,omitempty"`
-	Sha512  string                 `json:"sha512,omitempty"`
-	Ssdeep  string                 `json:"ssdeep,omitempty"`
-	Exif    map[string]string      `json:"exif,omitempty"`
-	TriD    []string               `json:"trid,omitempty"`
-	Tags    []string               `json:"tags,omitempty"`
-	Packer  []string               `json:"packer,omitempty"`
-	Magic   string                 `json:"magic,omitempty"`
-	Strings []stringStruct         `json:"strings,omitempty"`
-	MultiAV map[string]interface{} `json:"multiav,omitempty"`
-	Status  int                    `json:"status,omitempty"`
-	PE      peparser.File			`json:"pe,omitempty"`
-}
 
 // File scan progress status.
 const (

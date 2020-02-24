@@ -74,7 +74,7 @@ func main() {
 		grpclog.Fatalf("failed to read av db update date %v", err)
 	}
 
-	// attach the AviraScanner service to the server
+	// attach the Symanteccanner service to the server
 	pb.RegisterSymantecScannerServer(
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 

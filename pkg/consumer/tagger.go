@@ -30,8 +30,7 @@ const (
 	SigSmartAssembly = "Smart Assembly"
 )
 
-// GetTags get file tags.
-func (f *result) GetTags() error {
+func (f *result) getTags() error {
 
 	var tags []string
 
