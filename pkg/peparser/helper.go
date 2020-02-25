@@ -473,7 +473,7 @@ func (pe *File) PrettyMachineType() string {
 		ImageFileMachineSH4:       "Hitachi SH4",
 		ImageFileMachineSH5:       "Hitachi SH5",
 		ImageFileMachineTHUMB:     "Thumb",
-		ImageFileMachineWCEMIPSV2: "MIPS little-endian WCE v2",
+		ImageFileMachineWCEMIPSv2: "MIPS little-endian WCE v2",
 	}
 
 	return machineType[pe.NtHeader.FileHeader.Machine]
