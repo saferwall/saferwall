@@ -51,20 +51,19 @@
 // For Stack walking
 //
 
-#ifdef _DEBUG
 #include <dbghelp.h>
-#endif // DEBUG
 
-
+//
+// Hook handlers and logging prototypes.
+//
 
 #include "hooking.h"
 #include "logging.h"
-
 #include <intrin.h>
-//#include <psapi.h>
+
+#include <psapi.h>
 //#include <shlwapi.h>
 //#pragma comment (lib, "Shlwapi.lib")
-
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
@@ -85,3 +84,7 @@ using __snwprintf_fn_t = int(__cdecl*)(
 	const wchar_t *format,
 	...
 	);
+
+
+using PathFindFileNameW = LPWSTR(__cdecl*)  (
+	_In_ LPCWSTR pszPath);
