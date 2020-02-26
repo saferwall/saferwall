@@ -33,10 +33,11 @@ NTSTATUS NTAPI HookNtCreateFile(_Out_ PHANDLE FileHandle,
 			ObjectAttributes->ObjectName->Buffer,
 			DesiredAccess, CreateOptions, _ReturnAddress());
 	}
+	else {
+		TraceAPI(L"NtCreateFile(%ws, DesiredAccess:0x%08x, CreateOptions:0x%08x), RETN: %p",
+			ObjectAttributes->ObjectName->Buffer, DesiredAccess, CreateOptions, _ReturnAddress());
+	}
 
-	TraceAPI(L"NtCreateFile(%ws, DesiredAccess:0x%08x, CreateOptions:0x%08x), RETN: %p",
-		ObjectAttributes->ObjectName->Buffer, DesiredAccess, CreateOptions, _ReturnAddress());
-	
 	ReleaseHookGuard();
 
 end:

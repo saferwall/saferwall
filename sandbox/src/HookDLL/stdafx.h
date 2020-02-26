@@ -7,12 +7,16 @@
 
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+//
+// Exclude rarely-used stuff from Windows headers/
+//
+#define WIN32_LEAN_AND_MEAN             
 
-
-
-// reference additional headers your program requires here
+//
+// The Native API header
 #include "ntdll.h"
+//
+
 
 //
 // For program instrumentation.
@@ -53,23 +57,12 @@
 
 
 
-
-
-
-
-
 #include "hooking.h"
 #include "logging.h"
 
-//#include <shlwapi.h>
-//#include <psapi.h>
 #include <intrin.h>
-//#include <stdio.h>
-#include <stdlib.h>
-
-//
-//
-//
+//#include <psapi.h>
+//#include <shlwapi.h>
 //#pragma comment (lib, "Shlwapi.lib")
 
 
@@ -79,8 +72,6 @@
 // load them dynamically.
 //
 
-
-
 using __vsnwprintf_fn_t = int(__cdecl*)(
 	wchar_t *buffer,
 	size_t count,
@@ -88,18 +79,9 @@ using __vsnwprintf_fn_t = int(__cdecl*)(
 	...
 	);
 
-
 using __snwprintf_fn_t = int(__cdecl*)(
 	wchar_t *buffer,
 	size_t count,
 	const wchar_t *format,
 	...
 	);
-
-//extern "C" size_t __cdecl wcslen(wchar_t const* const string)
-//{
-//    wchar_t const* string_it = string;
-//    while (*string_it++) { }
-//    return static_cast<size_t>(string_it - string - 1);
-//}
-

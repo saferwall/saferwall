@@ -582,22 +582,22 @@ InjCreateSettings(
 #define INJ_DLL_X86_NAME    L"HookDLL-x86.dll"
 	UNICODE_STRING InjDllNameX86 = RTL_CONSTANT_STRING(INJ_DLL_X86_NAME);
 	InjpJoinPath(&Directory, &InjDllNameX86, &Settings->DllPath[InjArchitectureX86]);
-	LOG_INFO("DLL path (x86):   '%wZ'\n", &Settings->DllPath[InjArchitectureX86]);
+	LOG_INFO("DLL path (x86):   '%wZ'", &Settings->DllPath[InjArchitectureX86]);
 
 #define INJ_DLL_X64_NAME    L"HookDLL-x64.dll"
 	UNICODE_STRING InjDllNameX64 = RTL_CONSTANT_STRING(INJ_DLL_X64_NAME);
 	InjpJoinPath(&Directory, &InjDllNameX64, &Settings->DllPath[InjArchitectureX64]);
-	LOG_INFO("DLL path (x64):   '%wZ'\n", &Settings->DllPath[InjArchitectureX64]);
+	LOG_INFO("DLL path (x64):   '%wZ'", &Settings->DllPath[InjArchitectureX64]);
 
 #define INJ_DLL_ARM32_NAME  L"HookDLL-ARM.dll"
 	UNICODE_STRING InjDllNameARM32 = RTL_CONSTANT_STRING(INJ_DLL_ARM32_NAME);
 	InjpJoinPath(&Directory, &InjDllNameARM32, &Settings->DllPath[InjArchitectureARM32]);
-	LOG_INFO("DLL path (ARM32): '%wZ'\n", &Settings->DllPath[InjArchitectureARM32]);
+	LOG_INFO("DLL path (ARM32): '%wZ'", &Settings->DllPath[InjArchitectureARM32]);
 
 #define INJ_DLL_ARM64_NAME  L"HookDLL-ARM64.dll"
 	UNICODE_STRING InjDllNameARM64 = RTL_CONSTANT_STRING(INJ_DLL_ARM64_NAME);
 	InjpJoinPath(&Directory, &InjDllNameARM64, &Settings->DllPath[InjArchitectureARM64]);
-	LOG_INFO("DLL path (ARM64): '%wZ'\n", &Settings->DllPath[InjArchitectureARM64]);
+	LOG_INFO("DLL path (ARM64): '%wZ'", &Settings->DllPath[InjArchitectureARM64]);
 
 	return STATUS_SUCCESS;
 }

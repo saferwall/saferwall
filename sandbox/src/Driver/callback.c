@@ -51,7 +51,7 @@ CreateProcessNotifyRoutine(
 	}
 	else
 	{
-		LOG_INFO("CreateProcessNotifyRoutine: process %p (ID 0x%p) destroyed", Process, (PVOID)ProcessId);
+		LOG_INFO("CreateProcessNotifyRoutine: process %p (ID 0x%p) terminated", Process, (PVOID)ProcessId);
 	}
 }
 
