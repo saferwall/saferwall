@@ -91,3 +91,18 @@ using __snwprintf_fn_t = int(__cdecl*)(
 using strlen_fn_t = size_t(__cdecl*)(
 	char const *buffer
 	);
+
+
+
+typedef struct _STACKTRACE
+{
+	//
+	// Number of frames in Frames array.
+	//
+	UINT FrameCount;
+
+	//
+	// PC-Addresses of frames. Index 0 contains the topmost frame.
+	//
+	ULONGLONG Frames[ANYSIZE_ARRAY];
+} STACKTRACE, *PSTACKTRACE;

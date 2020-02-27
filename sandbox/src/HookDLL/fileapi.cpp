@@ -26,7 +26,7 @@ NTSTATUS NTAPI HookNtCreateFile(_Out_ PHANDLE FileHandle,
 		goto end;
 	}
 
-	GetStackWalk();
+	CaptureStackTrace();
 
 	if (CreateOptions & FILE_DIRECTORY_FILE) {
 		TraceAPI(L"CreateDirectory(%ws, DesiredAccess:0x%08x, CreateOptions:0x%08x), RETN: %p",
