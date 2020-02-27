@@ -14,8 +14,10 @@
 
 //
 // The Native API header
-#include "ntdll.h"
 //
+#define NTDLL_NO_INLINE_INIT_STRING
+#include "ntdll.h"
+
 
 
 //
@@ -86,5 +88,6 @@ using __snwprintf_fn_t = int(__cdecl*)(
 	);
 
 
-using PathFindFileNameW = LPWSTR(__cdecl*)  (
-	_In_ LPCWSTR pszPath);
+using strlen_fn_t = size_t(__cdecl*)(
+	char const *buffer
+	);

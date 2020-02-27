@@ -90,7 +90,7 @@ Return Value:
 	//
 	// Initialize injection.
 	//
-	__debugbreak();
+	//__debugbreak();
 	InjInitialize(RegistryPath);
 
 	//
