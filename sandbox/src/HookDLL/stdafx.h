@@ -61,6 +61,7 @@
 
 #include "hooking.h"
 #include "logging.h"
+#include "helpers.h"
 #include <intrin.h>
 
 #include <psapi.h>

@@ -206,6 +206,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fileapi.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="hooking.h" />
     <ClInclude Include="libloaderapi.h" />
     <ClInclude Include="logging.h" />
@@ -222,6 +223,7 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="fileapi.cpp" />
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="hooking.cpp" />
     <ClCompile Include="libloaderapi.cpp" />
     <ClCompile Include="logging.cpp" />

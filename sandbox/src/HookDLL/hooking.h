@@ -28,5 +28,4 @@ VOID Unhook();
 BOOL IsInsideHook();
 VOID ReleaseHookGuard();
 PWCHAR MultiByteToWide(PCHAR lpMultiByteStr);
-LPCWSTR FindFileName(LPCWSTR pPath);
 VOID GetStackWalk();

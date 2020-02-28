@@ -56,21 +56,6 @@ REGHANDLE ProviderHandle;
 #define ATTACH(x)       DetAttach(&(PVOID&)True##x,Hook##x, #x)
 
 
-LPCWSTR FindFileName(LPCWSTR pPath)
-{
-	LPCWSTR pT = NULL;
-	if (!pPath) {
-		return NULL;
-	}
-
-	for (pT = pPath; *pPath; pPath++) {
-		if ((pPath[0] == '\\' || pPath[0] == ':' || pPath[0] == '/')
-			&& pPath[1] && pPath[1] != '\\' && pPath[1] != '/')
-			pT = pPath + 1;
-	}
-
-	return pT;
-}
 
 VOID WaitForMe(LONGLONG delayInMillis) {
 	LARGE_INTEGER DelayInterval;
@@ -78,49 +63,6 @@ VOID WaitForMe(LONGLONG delayInMillis) {
 	NtDelayExecution(FALSE, &DelayInterval);
 }
 
-
-//VOID CaptureStackTrace()
-//{
-//	//
-//	// Capture up to 25 stack frames from the current call stack.  We're going to
-//	// skip the first stack frame returned because that's the GetStackWalk function
-//	// itself, which we don't care about.
-//	//
-//
-//	PVOID addrs[50] = { 0 };
-//	USHORT frames = RtlCaptureStackBackTrace(0, 50, addrs, NULL);
-//
-//	//
-//	// Allocate a buffer large enough to hold the symbol information on the stack and get 
-//	// a pointer to the buffer.  We also have to set the size of the symbol structure itself
-//	// and the number of bytes reserved for the name.
-//	// 
-//
-//	char buffer[sizeof(SYMBOL_INFO) + 1024 * sizeof(WCHAR)];
-//	PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-//
-//	pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-//	pSymbol->MaxNameLen = 1024;
-//
-//	//
-//	// Iterate over our frames.
-//	// 
-//
-//	HANDLE hProcess = NtCurrentProcess();
-//	WCHAR pszFilename[MAX_PATH + 1];
-//	DWORD64 displacement = 0;
-//	for (ULONG i = 0; i < frames; i++)
-//	{
-//		DWORD64 address = (DWORD64)addrs[i];
-//		if (SymFromAddr(hProcess, address, &displacement, pSymbol)) {
-//			GetMappedFileNameW(hProcess, (LPVOID)addrs[i], pszFilename, MAX_PATH);
-//			LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
-//			LogMessage(L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
-//				ModuleName, MultiByteToWide(pSymbol->Name),
-//				pSymbol->Address, address);
-//		}
-//	}
-//}
 
 CRITICAL_SECTION DbgHelpLock;
 
@@ -259,7 +201,7 @@ VOID GetStackWalk()
 			//
 			// Retrieves symbol information for the specified address.
 			//
-	/*		if (SymFromAddr(GetCurrentProcess(), StackFrame.AddrPC.Offset, &displacement, pSymbol)) {
+			if (SymFromAddr(GetCurrentProcess(), StackFrame.AddrPC.Offset, &displacement, pSymbol)) {
 					LogMessage(L"Module: %s, SymbolName:%ws, SymbolAddress:0x%08llx, Offset:0x%p",
 						ModuleName, MultiByteToWide(pSymbol->Name),
 						pSymbol->Address, StackFrame.AddrPC.Offset);
@@ -268,7 +210,7 @@ VOID GetStackWalk()
 			{
 				LogMessage(L"Module: %s, SymbolName:N/A, SymbolAddress: N/A, Offset:0x%p",
 					ModuleName,  StackFrame.AddrPC.Offset);
-			}*/
+			}
 		}
 		else
 		{
