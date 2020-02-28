@@ -25,10 +25,8 @@
 
 VOID SetupHook();
 VOID Unhook();
-VOID GetStackWalk();
 BOOL IsInsideHook();
 VOID ReleaseHookGuard();
 PWCHAR MultiByteToWide(PCHAR lpMultiByteStr);
 LPCWSTR FindFileName(LPCWSTR pPath);
-VOID PrintStackTrace();
-VOID CaptureStackTrace();
+VOID GetStackWalk();

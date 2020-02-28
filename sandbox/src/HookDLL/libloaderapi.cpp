@@ -32,7 +32,11 @@ NTSTATUS WINAPI HookLdrGetProcedureAddress(PVOID DllHandle, PANSI_STRING Procedu
 	}
 	GetStackWalk();
 
-	TraceAPI(L"LdrGetProcedureAddress(%ws), RETN: 0x%p", MultiByteToWide(ProcedureName->Buffer), _ReturnAddress());
+	if (ProcedureName && ProcedureName->Buffer)
+		TraceAPI(L"LdrGetProcedureAddress(%ws), Oridinal:%d  RETN: 0x%p",
+			MultiByteToWide(ProcedureName->Buffer), ProcedureNumber, _ReturnAddress());
+	else
+		TraceAPI(L"LdrGetProcedureAddress(Oridinal:%d), RETN: 0x%p", ProcedureNumber, _ReturnAddress());
 
 	ReleaseHookGuard();
 end:

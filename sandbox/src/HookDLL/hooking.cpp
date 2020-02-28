@@ -79,143 +79,53 @@ VOID WaitForMe(LONGLONG delayInMillis) {
 }
 
 
-typedef struct StackFrame
-{
-	DWORD64 address;
-	WCHAR name[MAX_PATH];
-	WCHAR module[MAX_PATH];
-	unsigned int line;
-	WCHAR file[MAX_PATH];
-}StackFrame;
-
-VOID PrintStackTrace() {
-
-
-#if _WIN64
-	DWORD machine = IMAGE_FILE_MACHINE_AMD64;
-#else
-	DWORD machine = IMAGE_FILE_MACHINE_I386;
-#endif
-	HANDLE process = NtCurrentProcess();
-	HANDLE thread = NtCurrentThread();
-
-	CONTEXT context = {};
-	context.ContextFlags = CONTEXT_FULL;
-	RtlCaptureContext(&context);
-
-#if _WIN64
-	STACKFRAME frame = {};
-	frame.AddrPC.Offset = context.Rip;
-	frame.AddrPC.Mode = AddrModeFlat;
-	frame.AddrFrame.Offset = context.Rbp;
-	frame.AddrFrame.Mode = AddrModeFlat;
-	frame.AddrStack.Offset = context.Rsp;
-	frame.AddrStack.Mode = AddrModeFlat;
-#else
-	STACKFRAME frame = {};
-	frame.AddrPC.Offset = context.Eip;
-	frame.AddrPC.Mode = AddrModeFlat;
-	frame.AddrFrame.Offset = context.Ebp;
-	frame.AddrFrame.Mode = AddrModeFlat;
-	frame.AddrStack.Offset = context.Esp;
-	frame.AddrStack.Mode = AddrModeFlat;
-#endif
-
-
-	bool first = true;
-	while (StackWalk(machine, process, thread, &frame, &context, NULL, SymFunctionTableAccess, SymGetModuleBase, NULL))
-	{
-		StackFrame f = {};
-		f.address = frame.AddrPC.Offset;
-
-#if _WIN64
-		DWORD64 moduleBase = 0;
-#else
-		DWORD moduleBase = 0;
-#endif
-
-		moduleBase = SymGetModuleBase(process, frame.AddrPC.Offset);
-
-		WCHAR moduelBuff[MAX_PATH];
-		if (moduleBase && GetModuleFileNameW((HINSTANCE)moduleBase, moduelBuff, MAX_PATH))
-		{
-			wcscpy(f.module, FindFileName(moduelBuff));
-		}
-		else
-		{
-			wcscpy(f.module, L"Unknown Module");
-		}
-#if _WIN64
-		DWORD64 offset = 0;
-#else
-		DWORD offset = 0;
-#endif
-		char symbolBuffer[sizeof(IMAGEHLP_SYMBOL) + 255];
-		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)symbolBuffer;
-		symbol->SizeOfStruct = (sizeof IMAGEHLP_SYMBOL) + 255;
-		symbol->MaxNameLength = 254;
-
-		if (SymGetSymFromAddr(process, frame.AddrPC.Offset, &offset, symbol)) {
-			wcscpy(f.name, MultiByteToWide(symbol->Name));
-		}
-		else {
-			DWORD error = GetLastError();
-			//DBG_TRACE(__FUNCTION__ ": Failed to resolve address 0x%X: %u\n", frame.AddrPC.Offset, error);
-			EtwEventWriteString(ProviderHandle, 0, 0, L"Failed to resolve address() failed");
-			wcscpy(f.name, L"Unknown Function");
-		}
-	}
-
-}
-
-
-VOID GetStackWalk()
-{
-	//
-	// Capture up to 25 stack frames from the current call stack.  We're going to
-	// skip the first stack frame returned because that's the GetStackWalk function
-	// itself, which we don't care about.
-	//
-
-	PVOID addrs[50] = { 0 };
-	USHORT frames = RtlCaptureStackBackTrace(0, 50, addrs, NULL);
-
-	//
-	// Allocate a buffer large enough to hold the symbol information on the stack and get 
-	// a pointer to the buffer.  We also have to set the size of the symbol structure itself
-	// and the number of bytes reserved for the name.
-	// 
-
-	char buffer[sizeof(SYMBOL_INFO) + 1024 * sizeof(WCHAR)];
-	PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-
-	pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-	pSymbol->MaxNameLen = 1024;
-
-	//
-	// Iterate over our frames.
-	// 
-
-	HANDLE hProcess = NtCurrentProcess();
-	WCHAR pszFilename[MAX_PATH + 1];
-	DWORD64 displacement = 0;
-	for (ULONG i = 0; i < frames; i++)
-	{
-		DWORD64 address = (DWORD64)addrs[i];
-		if (SymFromAddr(hProcess, address, &displacement, pSymbol)) {
-			GetMappedFileNameW(hProcess, (LPVOID)addrs[i], pszFilename, MAX_PATH);
-			LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
-			LogMessage(L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
-				ModuleName, MultiByteToWide(pSymbol->Name),
-				pSymbol->Address, address);
-		}
-	}
-}
+//VOID CaptureStackTrace()
+//{
+//	//
+//	// Capture up to 25 stack frames from the current call stack.  We're going to
+//	// skip the first stack frame returned because that's the GetStackWalk function
+//	// itself, which we don't care about.
+//	//
+//
+//	PVOID addrs[50] = { 0 };
+//	USHORT frames = RtlCaptureStackBackTrace(0, 50, addrs, NULL);
+//
+//	//
+//	// Allocate a buffer large enough to hold the symbol information on the stack and get 
+//	// a pointer to the buffer.  We also have to set the size of the symbol structure itself
+//	// and the number of bytes reserved for the name.
+//	// 
+//
+//	char buffer[sizeof(SYMBOL_INFO) + 1024 * sizeof(WCHAR)];
+//	PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
+//
+//	pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+//	pSymbol->MaxNameLen = 1024;
+//
+//	//
+//	// Iterate over our frames.
+//	// 
+//
+//	HANDLE hProcess = NtCurrentProcess();
+//	WCHAR pszFilename[MAX_PATH + 1];
+//	DWORD64 displacement = 0;
+//	for (ULONG i = 0; i < frames; i++)
+//	{
+//		DWORD64 address = (DWORD64)addrs[i];
+//		if (SymFromAddr(hProcess, address, &displacement, pSymbol)) {
+//			GetMappedFileNameW(hProcess, (LPVOID)addrs[i], pszFilename, MAX_PATH);
+//			LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
+//			LogMessage(L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
+//				ModuleName, MultiByteToWide(pSymbol->Name),
+//				pSymbol->Address, address);
+//		}
+//	}
+//}
 
 CRITICAL_SECTION DbgHelpLock;
 
 
-VOID CaptureStackTrace()
+VOID GetStackWalk()
 {
 	PCONTEXT InitialContext = NULL;
 	STACKTRACE StackTrace;
@@ -293,20 +203,21 @@ VOID CaptureStackTrace()
 
 	//
 	// Allocate a buffer large enough to hold the symbol information on the stack and get 
-	// a pointer to the buffer.  We also have to set the size of the symbol structure itself
+	// a pointer to the buffer. We also have to set the size of the symbol structure itself
 	// and the number of bytes reserved for the name.
 	// 
 
-	WCHAR buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+	BYTE buffer[sizeof(SYMBOL_INFO) + 1024];
 	PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-
 	pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-	pSymbol->MaxNameLen = MAX_SYM_NAME;
+	pSymbol->MaxNameLen = 1024;
 
 	UINT FrameCount = 0;
 	DWORD64 displacement = 0;
 	WCHAR pszFilename[MAX_PATH + 1];
-
+	WCHAR* ModuleName = NULL;
+	DWORD dwResult = 0;
+	
 	//
 	// Dbghelp is is singlethreaded, so acquire a lock.
 	//
@@ -336,34 +247,28 @@ VOID CaptureStackTrace()
 			//StackTrace->Frames[StackTrace->FrameCount++] = StackFrame.AddrPC.Offset;
 			FrameCount++;
 
-			DWORD hModuleBase = SymGetModuleBase(GetCurrentProcess(), StackFrame.AddrPC.Offset);
-			if (hModuleBase && GetModuleFileNameW((HINSTANCE)hModuleBase, pszFilename, MAX_PATH))
-			{
-				LogMessage(L"Module:%ws", FindFileName(pszFilename));
+			dwResult = GetMappedFileNameW(GetCurrentProcess(), (LPVOID)StackFrame.AddrPC.Offset, pszFilename, MAX_PATH);
+			if (dwResult) {
+				ModuleName = (WCHAR*)FindFileName(pszFilename);
 			}
 			else
 			{
-				LogMessage(L"Unknown Module");
+				ModuleName = (WCHAR*)L"N/A";
 			}
-
-			if (SymFromAddr(GetCurrentProcess(), StackFrame.AddrPC.Offset, &displacement, pSymbol)) {
-				DWORD Result = GetMappedFileNameW(GetCurrentProcess(), (LPVOID)StackFrame.AddrPC.Offset, pszFilename, MAX_PATH);
-				if (Result) {
-					LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
-					LogMessage(L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
+		
+			//
+			// Retrieves symbol information for the specified address.
+			//
+	/*		if (SymFromAddr(GetCurrentProcess(), StackFrame.AddrPC.Offset, &displacement, pSymbol)) {
+					LogMessage(L"Module: %s, SymbolName:%ws, SymbolAddress:0x%08llx, Offset:0x%p",
 						ModuleName, MultiByteToWide(pSymbol->Name),
 						pSymbol->Address, StackFrame.AddrPC.Offset);
-				}
-				else {
-					LogMessage(L"Unknown module: Address:0x%08llx, Addr:0x%p",
-						pSymbol->Address, StackFrame.AddrPC.Offset);
-				}
 			}
-			else {
-				LogMessage(L"SymFromAddr failed: Addr:0x%p",
-					StackFrame.AddrPC.Offset);
-			}
-
+			else 
+			{
+				LogMessage(L"Module: %s, SymbolName:N/A, SymbolAddress: N/A, Offset:0x%p",
+					ModuleName,  StackFrame.AddrPC.Offset);
+			}*/
 		}
 		else
 		{
@@ -610,8 +515,8 @@ VOID SetupHook()
 	// Detours the APIs.
 	//
 
-	//ATTACH(LdrLoadDll);
-	//ATTACH(LdrGetProcedureAddress);
+	ATTACH(LdrLoadDll);
+	ATTACH(LdrGetProcedureAddress);
 	//ATTACH(NtDelayExecution);
 	//ATTACH(NtProtectVirtualMemory);
 	//ATTACH(NtQueryVirtualMemory);
