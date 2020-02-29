@@ -41,6 +41,15 @@ __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
 strlen_fn_t _strlen = nullptr;
 
+
+
+CRITICAL_SECTION gDbgHelpLock;
+CRITICAL_SECTION gInsideHookLock;
+BOOL gInsideHook = FALSE;
+DWORD dwTlsIndex;
+
+
+
 //
 // ETW provider GUID and global provider handle.
 // GUID:
@@ -62,10 +71,6 @@ VOID WaitForMe(LONGLONG delayInMillis) {
 	DelayInterval.QuadPart = -delayInMillis;
 	NtDelayExecution(FALSE, &DelayInterval);
 }
-
-
-CRITICAL_SECTION gDbgHelpLock;
-
 
 typedef struct _STACKTRACE
 {
@@ -244,11 +249,6 @@ PULONG_PTR GetCurrentNestingLevelPtr()
 }
 
 
-VOID ReleaseHookGuard()
-{
-	PULONG_PTR level = GetCurrentNestingLevelPtr();
-	(*level)--;
-}
 
 
 BOOL
@@ -262,28 +262,40 @@ Routine Description:
 	This helps avoid infinite recursions which happens in hooking 
 	as some APIs inside the hook handler end up calling functions
 	which are detoured as well.
-
-	Unfortunately, we cannot use thread local variables in our DLL,
-	for two reasons:
+	
+	There are some few issues you have to be concerned about
+	if you are injecting a 64bits DLL inside a WoW64 process.
 		1.  Implicit TLS (__declspec(thread)) relies heavily on the
 			CRT, which is not available to us.
 		2.  Explicit TLS APIs (TlsAlloc() / TlsFree(), etc.) are 
 			implemented entirely in kernel32.dll, whose 64-bit
 			version is not loaded into WoW64 processes.
 
+	In our case, we alweays injects DLL of the same architecture
+	as the process. So it should be safe to use TLS. The TLS 
+	allocation should happen before attacking the hooks as TlsAlloc
+	end up calling RtlAllocateHeap() which might be hooked as well.
+
 Return Value:
 	TRUE: if we are inside a hook handler.
 	FALSE: otherwise.
 --*/
 {
-	
-	PULONG_PTR level = GetCurrentNestingLevelPtr();
-	if (*level == 0) {
-		(*level)++;
+	BOOL IsInsideHook = (BOOL)TlsGetValue(dwTlsIndex);
+	if (!IsInsideHook) {
+		TlsSetValue(dwTlsIndex, (LPVOID)TRUE);
 		return FALSE;
 	}
 	return TRUE;
 }
+
+
+VOID ReleaseHookGuard()
+{
+	TlsSetValue(dwTlsIndex, (LPVOID)FALSE);
+
+}
+
 
 
 LONG CheckDetourAttach(LONG err)
@@ -404,6 +416,10 @@ VOID SetupHook()
 	}
 	SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
 
+	// Allocate a TLS index. 
+
+	if ((dwTlsIndex = TlsAlloc()) == TLS_OUT_OF_INDEXES)
+		LogMessage(L"TlsAlloc failed");
 
 	//
 	// Begin a new transaction for attaching detours.
@@ -477,10 +493,12 @@ VOID SetupHook()
 	}
 
 	//
-	// Initializes a critical section object used in capturing stack trace.
+	// Initializes a critical section objects.
+	// Uesd for capturing stack trace and IsInsideHook.
 	//
 
 	InitializeCriticalSection(&gDbgHelpLock);
+	InitializeCriticalSection(&gInsideHookLock);
 
 	//
 	// Detours the APIs.
@@ -499,12 +517,12 @@ VOID SetupHook()
 	//ATTACH(NtProtectVirtualMemory);
 	//ATTACH(MoveFileWithProgressTransactedW);
 	ATTACH(NtCreateFile);
-	//ATTACH(NtOpenKey);
-	//ATTACH(NtOpenKeyEx);
-	//ATTACH(NtCreateKey);
-	//ATTACH(NtQueryValueKey);
-	//ATTACH(NtDeleteKey);
-	//ATTACH(NtDeleteValueKey);
+	ATTACH(NtOpenKey);
+	ATTACH(NtOpenKeyEx);
+	ATTACH(NtCreateKey);
+	ATTACH(NtQueryValueKey);
+	ATTACH(NtDeleteKey);
+	ATTACH(NtDeleteValueKey);
 	//ATTACH(NtCreateUserProcess);
 	//ATTACH(NtCreateUserProcess);
 	//ATTACH(NtCreateThread);
@@ -513,8 +531,8 @@ VOID SetupHook()
 	//ATTACH(NtResumeThread);
 	//ATTACH(NtOpenProcess);
 	//ATTACH(NtTerminateProcess);
-	//ATTACH(NtReadFile);
-	//ATTACH(NtWriteFile);
+	ATTACH(NtReadFile);
+	ATTACH(NtWriteFile);
 	//ATTACH(NtDeleteFile);
 	//ATTACH(NtUnmapViewOfSection);
 	//ATTACH(RtlDecompressBuffer);
@@ -560,4 +578,8 @@ VOID Unhook()
 	//
 
 	DetourTransactionCommit();
+
+
+	TlsFree(dwTlsIndex);
+
 }
