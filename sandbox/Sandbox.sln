@@ -18,6 +18,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Driver", "src\Driver\Driver
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Loader", "src\Loader\Loader.vcxproj", "{AB786C3B-C52A-4E52-A0E2-4A39CE579A5A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookTest", "HookTest\HookTest.vcxproj", "{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -106,6 +108,18 @@ Global
 		{AB786C3B-C52A-4E52-A0E2-4A39CE579A5A}.Release|x64.Build.0 = Release|x64
 		{AB786C3B-C52A-4E52-A0E2-4A39CE579A5A}.Release|x86.ActiveCfg = Release|Win32
 		{AB786C3B-C52A-4E52-A0E2-4A39CE579A5A}.Release|x86.Build.0 = Release|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|ARM.ActiveCfg = Debug|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|x64.ActiveCfg = Debug|x64
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|x64.Build.0 = Debug|x64
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|x86.ActiveCfg = Debug|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Debug|x86.Build.0 = Debug|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|ARM.ActiveCfg = Release|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|ARM64.ActiveCfg = Release|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|x64.ActiveCfg = Release|x64
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|x64.Build.0 = Release|x64
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|x86.ActiveCfg = Release|Win32
+		{64DA4FF0-B1F9-4009-B33C-9873E4119EA0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

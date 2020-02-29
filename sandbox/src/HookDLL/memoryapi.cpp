@@ -20,7 +20,7 @@ NTSTATUS NTAPI HookNtAllocateVirtualMemory(
 	_In_ ULONG AllocationType,
 	_In_ ULONG Protect)
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -43,7 +43,7 @@ NTSTATUS WINAPI HookNtProtectVirtualMemory(
 	_Out_ PULONG OldProtect)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -68,7 +68,7 @@ NTSTATUS WINAPI HookNtQueryVirtualMemory(
 	_Out_opt_ PSIZE_T ReturnLength)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -91,7 +91,7 @@ NTSTATUS WINAPI HookNtReadVirtualMemory(
 	_Out_opt_ PSIZE_T NumberOfBytesRead)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -117,7 +117,7 @@ NTSTATUS WINAPI HookNtWriteVirtualMemory(
 	_Out_opt_ PSIZE_T NumberOfBytesWritten)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -140,7 +140,7 @@ NTSTATUS WINAPI HookNtFreeVirtualMemory(
 	_In_ ULONG FreeType)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -169,7 +169,7 @@ NTSTATUS WINAPI HookNtMapViewOfSection(
 	_In_ ULONG Win32Protect)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -194,7 +194,7 @@ NTSTATUS WINAPI HookNtUnmapViewOfSection(
 )
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

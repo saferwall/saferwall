@@ -10,7 +10,7 @@ NTSTATUS WINAPI HookNtDelayExecution(
 )
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

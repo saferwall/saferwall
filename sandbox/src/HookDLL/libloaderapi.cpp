@@ -9,7 +9,7 @@ decltype(LdrGetProcedureAddress)* TrueLdrGetProcedureAddress = nullptr;
 
 NTSTATUS WINAPI HookLdrLoadDll(PWSTR  DllPath, PULONG  DllCharacteristics, PUNICODE_STRING DllName, PVOID* DllHandle)
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -27,7 +27,7 @@ end:
 
 NTSTATUS WINAPI HookLdrGetProcedureAddress(PVOID DllHandle, PANSI_STRING ProcedureName, ULONG ProcedureNumber, PVOID *ProcedureAddress)
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 	GetStackWalk();

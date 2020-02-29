@@ -15,7 +15,7 @@ NTSTATUS WINAPI HookRtlDecompressBuffer(
 	_Out_ PULONG FinalUncompressedSize
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

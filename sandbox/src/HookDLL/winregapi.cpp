@@ -16,7 +16,7 @@ NTSTATUS WINAPI HookNtOpenKey(
 )
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -42,7 +42,7 @@ NTSTATUS WINAPI HookNtOpenKeyEx(
 )
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -70,7 +70,7 @@ NTSTATUS WINAPI HookNtCreateKey(
 	_Out_opt_ PULONG Disposition
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -97,7 +97,7 @@ NTSTATUS WINAPI HookNtQueryValueKey(
 	_Out_ PULONG ResultLength
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -119,7 +119,7 @@ NTSTATUS WINAPI HookNtDeleteKey(
 	_In_ HANDLE KeyHandle
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -141,7 +141,7 @@ NTSTATUS WINAPI HookNtDeleteValueKey(
 	_In_ PUNICODE_STRING ValueName
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

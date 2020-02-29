@@ -2,6 +2,9 @@
 
 #include "stdafx.h"
 
+// 
+// Prototypes 
+// 
 
 NTSTATUS WINAPI HookRtlDecompressBuffer(
 	_In_ USHORT CompressionFormat,

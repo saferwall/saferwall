@@ -1,4 +1,4 @@
 #pragma once
-#include "stdafx.h"
 
 LPCWSTR FindFileName(LPCWSTR pPath);
+WCHAR* MultiByteToWide(CHAR* lpMultiByteStr);

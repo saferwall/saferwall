@@ -2,7 +2,10 @@
 
 #include "stdafx.h"
 
-// Prototypes
+// 
+// Prototypes 
+//
+
 NTSTATUS WINAPI HookNtCreateUserProcess(
 	_Out_ PHANDLE ProcessHandle,
 	_Out_ PHANDLE ThreadHandle,

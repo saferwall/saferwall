@@ -64,8 +64,21 @@ VOID WaitForMe(LONGLONG delayInMillis) {
 }
 
 
-CRITICAL_SECTION DbgHelpLock;
+CRITICAL_SECTION gDbgHelpLock;
 
+
+typedef struct _STACKTRACE
+{
+	//
+	// Number of frames in Frames array.
+	//
+	UINT FrameCount;
+
+	//
+	// PC-Addresses of frames. Index 0 contains the topmost frame.
+	//
+	ULONGLONG Frames[ANYSIZE_ARRAY];
+} STACKTRACE, *PSTACKTRACE;
 
 VOID GetStackWalk()
 {
@@ -167,7 +180,7 @@ VOID GetStackWalk()
 	// SymInitialize( GetCurrentProcess(), NULL, TRUE ) has 
 	// already been called.
 	//
-	EnterCriticalSection(&DbgHelpLock);
+	EnterCriticalSection(&gDbgHelpLock);
 
 	while (FrameCount < MaxFrames)
 	{
@@ -221,26 +234,13 @@ VOID GetStackWalk()
 		}
 	}
 
-	LeaveCriticalSection(&DbgHelpLock);
-}
-
-
-
-PTEB GetCurrentTeb()
-{
-	// wow64 teb
-	//static constexpr ULONG ThreadBasicInformation = 0;
-	//THREAD_BASIC_INFORMATION tbi{};
-	//_NtQueryInformationThread(NtCurrentThread(), (THREADINFOCLASS)(ThreadBasicInformation),
-	//	&tbi, sizeof(tbi), nullptr);
-	//return (PTEB)(tbi.TebBaseAddress);
-	return NtCurrentTeb();
+	LeaveCriticalSection(&gDbgHelpLock);
 }
 
 
 PULONG_PTR GetCurrentNestingLevelPtr()
 {
-	return (PULONG_PTR)(&GetCurrentTeb()->TlsSlots[63]);
+	return (PULONG_PTR)(&NtCurrentTeb()->TlsExpansionSlots[63]);
 }
 
 
@@ -251,13 +251,38 @@ VOID ReleaseHookGuard()
 }
 
 
-BOOL IsInsideHook() {
+BOOL
+IsInsideHook(
+)
+/*++
+
+Routine Description:
+
+	This function checks if are already inside a hook handler.
+	This helps avoid infinite recursions which happens in hooking 
+	as some APIs inside the hook handler end up calling functions
+	which are detoured as well.
+
+	Unfortunately, we cannot use thread local variables in our DLL,
+	for two reasons:
+		1.  Implicit TLS (__declspec(thread)) relies heavily on the
+			CRT, which is not available to us.
+		2.  Explicit TLS APIs (TlsAlloc() / TlsFree(), etc.) are 
+			implemented entirely in kernel32.dll, whose 64-bit
+			version is not loaded into WoW64 processes.
+
+Return Value:
+	TRUE: if we are inside a hook handler.
+	FALSE: otherwise.
+--*/
+{
+	
 	PULONG_PTR level = GetCurrentNestingLevelPtr();
 	if (*level == 0) {
 		(*level)++;
-		return TRUE;
+		return FALSE;
 	}
-	return FALSE;
+	return TRUE;
 }
 
 
@@ -381,7 +406,7 @@ VOID SetupHook()
 
 
 	//
-	// Begin a new transaction for attaching or detaching detours.
+	// Begin a new transaction for attaching detours.
 	//
 
 	if (DetourTransactionBegin() != NO_ERROR) {
@@ -451,7 +476,11 @@ VOID SetupHook()
 		EtwEventWriteString(ProviderHandle, 0, 0, L"_snwprintf() is NULL");
 	}
 
-	InitializeCriticalSection(&DbgHelpLock);
+	//
+	// Initializes a critical section object used in capturing stack trace.
+	//
+
+	InitializeCriticalSection(&gDbgHelpLock);
 
 	//
 	// Detours the APIs.
@@ -508,7 +537,16 @@ VOID SetupHook()
 
 VOID Unhook()
 {
+	//
+	// Begin a new transaction for detaching detours.
+	//
+
 	DetourTransactionBegin();
+
+	// 
+	// Enlist a thread for update in the current transaction.
+	//
+
 	DetourUpdateThread(NtCurrentThread());
 
 	//DetourDetach(&(PVOID&)TrueLdrLoadDll, HookLdrLoadDll);
@@ -517,39 +555,9 @@ VOID Unhook()
 	//DetourDetach(&(PVOID&)TrueMoveFileWithProgressTransactedW, HookMoveFileWithProgressTransactedW);
 	//DetourDetach(&(PVOID&)TrueNtAllocateVirtualMemory, HookNtAllocateVirtualMemory);
 
+	//
+	// Commit the current transaction.
+	//
+
 	DetourTransactionCommit();
-}
-
-
-
-WCHAR* MultiByteToWide(CHAR* lpMultiByteStr)
-{
-	//int Size = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, szSource, strlen(szSource), NULL, 0);
-	//WCHAR *wszDest = reinterpret_cast<WCHAR*>(RtlAllocateHeap(RtlProcessHeap(), 0, Size));
-	//SecureZeroMemory(wszDest, Size);
-	//MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szSource, strlen(szSource), wszDest, Size);
-
-		/* Get the required size */
-	size_t iNumChars = strlen(lpMultiByteStr);
-
-	/* Allocate new wide string */
-	SIZE_T Size = (1 + iNumChars) * sizeof(WCHAR);
-
-	WCHAR *lpWideCharStr = reinterpret_cast<WCHAR*>(RtlAllocateHeap(RtlProcessHeap(), 0, Size));
-	WCHAR *It;
-	It = lpWideCharStr;
-	if (lpWideCharStr) {
-		SecureZeroMemory(lpWideCharStr, Size);
-		while (iNumChars) {
-
-			*lpWideCharStr = *lpMultiByteStr;
-			lpWideCharStr++;
-			lpMultiByteStr++;
-			iNumChars--;
-		}
-
-	}
-	return It;
-
-	//return wszDest;
 }

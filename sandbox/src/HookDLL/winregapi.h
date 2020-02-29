@@ -13,7 +13,6 @@ NTSTATUS NTAPI HookNtOpenKey
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
-
 NTSTATUS NTAPI HookNtOpenKeyEx
 (
 	_Out_ PHANDLE KeyHandle,
@@ -21,7 +20,6 @@ NTSTATUS NTAPI HookNtOpenKeyEx
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
 	_In_ ULONG OpenOptions
 );
-
 
 NTSTATUS NTAPI HookNtCreateKey(
 	_Out_ PHANDLE KeyHandle,
@@ -33,7 +31,6 @@ NTSTATUS NTAPI HookNtCreateKey(
 	_Out_opt_ PULONG Disposition
 );
 
-
 NTSTATUS NTAPI HookNtQueryValueKey(
 	_In_ HANDLE KeyHandle,
 	_In_ PUNICODE_STRING ValueName,
@@ -43,11 +40,9 @@ NTSTATUS NTAPI HookNtQueryValueKey(
 	_Out_ PULONG ResultLength
 );
 
-
 NTSTATUS NTAPI HookNtDeleteKey(
 	_In_ HANDLE KeyHandle
 );
-
 
 NTSTATUS NTAPI HookNtDeleteValueKey(
 	_In_ HANDLE KeyHandle,

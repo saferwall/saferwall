@@ -22,7 +22,7 @@ NTSTATUS NTAPI HookNtCreateFile(_Out_ PHANDLE FileHandle,
 	_In_reads_bytes_opt_(EaLength) PVOID EaBuffer,
 	_In_ ULONG EaLength)
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -59,7 +59,7 @@ NTSTATUS NTAPI HookNtWriteFile(
 	_In_opt_ PULONG Key
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -87,7 +87,7 @@ NTSTATUS NTAPI HookNtReadFile(
 	_In_opt_ PULONG Key
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -111,7 +111,7 @@ HookNtDeleteFile(
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -133,7 +133,7 @@ NTSTATUS WINAPI HookMoveFileWithProgressTransactedW(
 	__in	  HANDLE hTransaction)
 {
 
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

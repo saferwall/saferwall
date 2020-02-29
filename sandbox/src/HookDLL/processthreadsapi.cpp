@@ -26,7 +26,7 @@ NTSTATUS NTAPI HookNtCreateUserProcess(
 	_In_opt_ PPS_ATTRIBUTE_LIST AttributeList
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -55,7 +55,7 @@ NTSTATUS NTAPI HookNtCreateThread(
 	_In_ BOOLEAN CreateSuspended
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -87,7 +87,7 @@ NTSTATUS NTAPI HookNtCreateThreadEx(
 	_In_opt_ PPS_ATTRIBUTE_LIST AttributeList
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -111,7 +111,7 @@ NTSTATUS NTAPI HookNtSuspendThread(
 	_Out_opt_ PULONG PreviousSuspendCount
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -133,7 +133,7 @@ NTSTATUS NTAPI HookNtResumeThread(
 	_Out_opt_ PULONG PreviousSuspendCount
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -156,7 +156,7 @@ NTSTATUS NTAPI HookNtOpenProcess(
 	_In_opt_ PCLIENT_ID ClientId
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 
@@ -179,7 +179,7 @@ NTSTATUS NTAPI HookNtTerminateProcess(
 	_In_ NTSTATUS ExitStatus
 )
 {
-	if (IsInsideHook() == FALSE) {
+	if (IsInsideHook()) {
 		goto end;
 	}
 

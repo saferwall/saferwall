@@ -2,6 +2,9 @@
 
 #include "stdafx.h"
 
+// 
+// Prototypes 
+// 
 
 NTSTATUS
 WINAPI

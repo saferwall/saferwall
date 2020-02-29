@@ -18,13 +18,10 @@
 #define NTDLL_NO_INLINE_INIT_STRING
 #include "ntdll.h"
 
-
-
 //
 // For program instrumentation.
 //
 #include <detours.h>
-
 
 //
 // Include support for ETW logging.
@@ -48,7 +45,6 @@
 
 #include <evntprov.h>
 
-
 //
 // For Stack walking
 //
@@ -62,48 +58,9 @@
 #include "hooking.h"
 #include "logging.h"
 #include "helpers.h"
+
+//
+// For GetMappedFileNameW and _ReturnAddress.
+// 
 #include <intrin.h>
-
 #include <psapi.h>
-//#include <shlwapi.h>
-//#pragma comment (lib, "Shlwapi.lib")
-
-//
-// Unfortunatelly sprintf-like functions are not exposed
-// by ntdll.lib, which we're linking against.  We have to
-// load them dynamically.
-//
-
-using __vsnwprintf_fn_t = int(__cdecl*)(
-	wchar_t *buffer,
-	size_t count,
-	const wchar_t *format,
-	...
-	);
-
-using __snwprintf_fn_t = int(__cdecl*)(
-	wchar_t *buffer,
-	size_t count,
-	const wchar_t *format,
-	...
-	);
-
-
-using strlen_fn_t = size_t(__cdecl*)(
-	char const *buffer
-	);
-
-
-
-typedef struct _STACKTRACE
-{
-	//
-	// Number of frames in Frames array.
-	//
-	UINT FrameCount;
-
-	//
-	// PC-Addresses of frames. Index 0 contains the topmost frame.
-	//
-	ULONGLONG Frames[ANYSIZE_ARRAY];
-} STACKTRACE, *PSTACKTRACE;

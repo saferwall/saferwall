@@ -6,7 +6,6 @@
 // Prototypes 
 // 
 
-
 NTSTATUS NTAPI HookNtQuerySystemInformation
 (
 	_In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
