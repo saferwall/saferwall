@@ -1,158 +1,149 @@
 #include "stdafx.h"
 #include "synchapi.h"
 
-decltype(NtOpenKey)* TrueNtOpenKey = nullptr;
-decltype(NtOpenKeyEx)* TrueNtOpenKeyEx = nullptr;
-decltype(NtCreateKey)* TrueNtCreateKey = nullptr;
-decltype(NtQueryValueKey)* TrueNtQueryValueKey = nullptr;
-decltype(NtDeleteKey)* TrueNtDeleteKey = nullptr;
-decltype(NtDeleteValueKey)* TrueNtDeleteValueKey = nullptr;
+decltype(NtOpenKey) *TrueNtOpenKey = nullptr;
+decltype(NtOpenKeyEx) *TrueNtOpenKeyEx = nullptr;
+decltype(NtCreateKey) *TrueNtCreateKey = nullptr;
+decltype(NtQueryValueKey) *TrueNtQueryValueKey = nullptr;
+decltype(NtDeleteKey) *TrueNtDeleteKey = nullptr;
+decltype(NtDeleteValueKey) *TrueNtDeleteValueKey = nullptr;
 
-
-NTSTATUS WINAPI HookNtOpenKey(
-	_Out_ PHANDLE KeyHandle,
-	_In_ ACCESS_MASK DesiredAccess,
-	_In_ POBJECT_ATTRIBUTES ObjectAttributes
-)
+NTSTATUS WINAPI
+HookNtOpenKey(_Out_ PHANDLE KeyHandle, _In_ ACCESS_MASK DesiredAccess, _In_ POBJECT_ATTRIBUTES ObjectAttributes)
 {
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	if (IsInsideHook()) {
-		goto end;
-	}
+    CaptureStackTrace();
 
-	GetStackWalk();
+    TraceAPI(
+        L"NtOpenKey(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
+        DesiredAccess,
+        ObjectAttributes->ObjectName->Buffer,
+        _ReturnAddress());
 
-	TraceAPI(L"NtOpenKey(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
-		DesiredAccess, ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
-
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
-
+    return TrueNtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
 }
 
-
-
-NTSTATUS WINAPI HookNtOpenKeyEx(
-	_Out_ PHANDLE KeyHandle,
-	_In_ ACCESS_MASK DesiredAccess,
-	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
-	_In_ ULONG OpenOptions
-)
+NTSTATUS WINAPI
+HookNtOpenKeyEx(
+    _Out_ PHANDLE KeyHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_ ULONG OpenOptions)
 {
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	if (IsInsideHook()) {
-		goto end;
-	}
+    CaptureStackTrace();
 
-	GetStackWalk();
+    TraceAPI(
+        L"NtOpenKeyEx(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
+        DesiredAccess,
+        ObjectAttributes->ObjectName->Buffer,
+        _ReturnAddress());
 
-	TraceAPI(L"NtOpenKeyEx(DesiredAccess: 0x%d, ObjectName:%ws, ReturnLength:0x%p), RETN: %p",
-		DesiredAccess, ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
-
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes, OpenOptions);
-
+    return TrueNtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes, OpenOptions);
 }
 
-
-
-NTSTATUS WINAPI HookNtCreateKey(
-	_Out_ PHANDLE KeyHandle,
-	_In_ ACCESS_MASK DesiredAccess,
-	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
-	_Reserved_ ULONG TitleIndex,
-	_In_opt_ PUNICODE_STRING Class,
-	_In_ ULONG CreateOptions,
-	_Out_opt_ PULONG Disposition
-)
+NTSTATUS WINAPI
+HookNtCreateKey(
+    _Out_ PHANDLE KeyHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _Reserved_ ULONG TitleIndex,
+    _In_opt_ PUNICODE_STRING Class,
+    _In_ ULONG CreateOptions,
+    _Out_opt_ PULONG Disposition)
 {
-	if (IsInsideHook()) {
-		goto end;
-	}
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	GetStackWalk();
+    CaptureStackTrace();
 
-	TraceAPI(L"NtCreateKey(DesiredAccess: 0x%d, ObjectName:0x%ws, CreateOptions: %ul, ReturnLength:0x%p), RETN: %p",
-		DesiredAccess, ObjectAttributes->ObjectName->Buffer, CreateOptions, _ReturnAddress());
+    TraceAPI(
+        L"NtCreateKey(DesiredAccess: 0x%d, ObjectName:0x%ws, CreateOptions: %ul, ReturnLength:0x%p), RETN: %p",
+        DesiredAccess,
+        ObjectAttributes->ObjectName->Buffer,
+        CreateOptions,
+        _ReturnAddress());
 
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtCreateKey(KeyHandle, DesiredAccess, ObjectAttributes, TitleIndex, Class, CreateOptions, Disposition);
-
+    return TrueNtCreateKey(KeyHandle, DesiredAccess, ObjectAttributes, TitleIndex, Class, CreateOptions, Disposition);
 }
 
-
-
-NTSTATUS WINAPI HookNtQueryValueKey(
-	_In_ HANDLE KeyHandle,
-	_In_ PUNICODE_STRING ValueName,
-	_In_ KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
-	_Out_writes_bytes_opt_(Length) PVOID KeyValueInformation,
-	_In_ ULONG Length,
-	_Out_ PULONG ResultLength
-)
+NTSTATUS WINAPI
+HookNtQueryValueKey(
+    _In_ HANDLE KeyHandle,
+    _In_ PUNICODE_STRING ValueName,
+    _In_ KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
+    _Out_writes_bytes_opt_(Length) PVOID KeyValueInformation,
+    _In_ ULONG Length,
+    _Out_ PULONG ResultLength)
 {
-	if (IsInsideHook()) {
-		goto end;
-	}
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	GetStackWalk();
+    CaptureStackTrace();
 
-	TraceAPI(L"NtQueryValueKey(KeyHandle: 0x%d, ValueName:0x%ws), RETN: %p",
-		KeyHandle, ValueName->Buffer, _ReturnAddress());
+    TraceAPI(
+        L"NtQueryValueKey(KeyHandle: 0x%d, ValueName:0x%ws), RETN: %p", KeyHandle, ValueName->Buffer, _ReturnAddress());
 
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtQueryValueKey(KeyHandle, ValueName, KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
-
+    return TrueNtQueryValueKey(
+        KeyHandle, ValueName, KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
 }
 
-
-
-NTSTATUS WINAPI HookNtDeleteKey(
-	_In_ HANDLE KeyHandle
-)
+NTSTATUS WINAPI
+HookNtDeleteKey(_In_ HANDLE KeyHandle)
 {
-	if (IsInsideHook()) {
-		goto end;
-	}
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	GetStackWalk();
+    CaptureStackTrace();
 
-	TraceAPI(L"NtDeleteKey(KeyHandle: 0x%d), RETN: %p",
-		KeyHandle, _ReturnAddress());
+    TraceAPI(L"NtDeleteKey(KeyHandle: 0x%d), RETN: %p", KeyHandle, _ReturnAddress());
 
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtDeleteKey(KeyHandle);
-
+    return TrueNtDeleteKey(KeyHandle);
 }
 
-
-NTSTATUS WINAPI HookNtDeleteValueKey(
-	_In_ HANDLE KeyHandle,
-	_In_ PUNICODE_STRING ValueName
-)
+NTSTATUS WINAPI
+HookNtDeleteValueKey(_In_ HANDLE KeyHandle, _In_ PUNICODE_STRING ValueName)
 {
-	if (IsInsideHook()) {
-		goto end;
-	}
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	GetStackWalk();
+    CaptureStackTrace();
 
-	TraceAPI(L"NtDeleteValueKey(KeyHandle: 0x%d, ValueName: %ws), RETN: %p",
-		KeyHandle, ValueName, _ReturnAddress());
+    TraceAPI(L"NtDeleteValueKey(KeyHandle: 0x%d, ValueName: %ws), RETN: %p", KeyHandle, ValueName, _ReturnAddress());
 
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtDeleteValueKey(KeyHandle, ValueName);
-
+    return TrueNtDeleteValueKey(KeyHandle, ValueName);
 }

@@ -12,14 +12,6 @@
 
 
 //
-// Defines
-//
-
-
-#define NtCurrentThread()         ((HANDLE)(LONG_PTR)-2)
-
-
-//
 // Prototypes
 //
 
@@ -27,7 +19,7 @@ BOOL ProcessAttach();
 BOOL ProcessDetach();
 BOOL IsInsideHook();
 VOID ReleaseHookGuard();
-VOID GetStackWalk();
+VOID CaptureStackTrace();
 
 
 //

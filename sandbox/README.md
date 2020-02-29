@@ -45,7 +45,12 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 ### Libload
 
 - LdrLoadDll
-- LdrGetProcedureAddress
+	- LoadLibraryA -> LoadLibraryExA
+	- LoadLibraryW -> LoadLibraryExW
+
+- LdrGetProcedureAddressEx
+	- GetProcAddress
+	- LdrGetProcedureAddress
 
 ### Files
 

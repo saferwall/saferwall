@@ -1,27 +1,26 @@
 #include "stdafx.h"
 #include "synchapi.h"
 
-decltype(NtDelayExecution)* TrueNtDelayExecution = nullptr;
+decltype(NtDelayExecution) *TrueNtDelayExecution = nullptr;
 
-
-NTSTATUS WINAPI HookNtDelayExecution(
-	_In_ BOOLEAN Alertable,
-	_In_opt_ PLARGE_INTEGER DelayInterval
-)
+NTSTATUS WINAPI
+HookNtDelayExecution(_In_ BOOLEAN Alertable, _In_opt_ PLARGE_INTEGER DelayInterval)
 {
+    if (IsInsideHook())
+    {
+        goto end;
+    }
 
-	if (IsInsideHook()) {
-		goto end;
-	}
+    CaptureStackTrace();
 
-	GetStackWalk();
-	
-	TraceAPI(L"NtDelayExecution(Alertable: 0x%d, DelayInterval:0x%, ReturnLength:0x%p), RETN: %p",
-		Alertable, DelayInterval->QuadPart, _ReturnAddress());
+    TraceAPI(
+        L"NtDelayExecution(Alertable: 0x%d, DelayInterval:0x%, ReturnLength:0x%p), RETN: %p",
+        Alertable,
+        DelayInterval->QuadPart,
+        _ReturnAddress());
 
-	ReleaseHookGuard();
+    ReleaseHookGuard();
 
 end:
-	return TrueNtDelayExecution(Alertable, DelayInterval);
-
+    return TrueNtDelayExecution(Alertable, DelayInterval);
 }

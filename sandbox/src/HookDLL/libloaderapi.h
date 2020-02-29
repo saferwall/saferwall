@@ -13,10 +13,10 @@ NTSTATUS WINAPI HookLdrLoadDll(
 	PVOID * DllHandle
 );
 
-NTSTATUS WINAPI HookLdrGetProcedureAddress(
+NTSTATUS WINAPI HookLdrGetProcedureAddressEx(
 	PVOID DllHandle,
 	PANSI_STRING ProcedureName,
 	ULONG ProcedureNumber,
-	PVOID *ProcedureAddress
+	PVOID *ProcedureAddress,
+	ULONG Flags
 );
-
