@@ -21,20 +21,29 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		//printf("\nprocess attach\n");
-		SetupHook();
-	case DLL_THREAD_ATTACH:
-		//printf("\nthread attach\n");
 
-	case DLL_THREAD_DETACH:
-		//printf("\nthread detach\n");
+		//
+		// Restore the contents in memory import table after a process was started
+		// with DetourCreateProcessWithDllEx or DetourCreateProcessWithDlls.
+		// As we are mapping the dll from kernel, we don't need to call DetourRestoreAfterWith();
+		// 
+		ProcessAttach();
 
 	case DLL_PROCESS_DETACH:
-		//printf("\nProcess detach\n");
 
-		//SymCleanup(GetCurrentProcess());
-		//Unhook();
-		break;
+		//
+		// Removes all the hooks.
+		//
+
+		ProcessDetach();
+
+
+	case DLL_THREAD_ATTACH:
+		OutputDebugStringA("HookDLL" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
+			" DllMain DLL_THREAD_ATTACH\n");
+	case DLL_THREAD_DETACH:
+		OutputDebugStringA("HookDLL" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
+			" DllMain DLL_THREAD_DETACH\n");
 	}
 
 	return TRUE;

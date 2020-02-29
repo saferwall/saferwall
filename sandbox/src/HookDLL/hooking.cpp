@@ -63,7 +63,7 @@ GUID ProviderGuid = {
 
 REGHANDLE ProviderHandle;
 #define ATTACH(x)       DetAttach(&(PVOID&)True##x,Hook##x, #x)
-
+#define DETACH(x)       DetDetach(&(PVOID&)True##x,Hook##x, #x)
 
 
 VOID WaitForMe(LONGLONG delayInMillis) {
@@ -242,15 +242,6 @@ VOID GetStackWalk()
 	LeaveCriticalSection(&gDbgHelpLock);
 }
 
-
-PULONG_PTR GetCurrentNestingLevelPtr()
-{
-	return (PULONG_PTR)(&NtCurrentTeb()->TlsExpansionSlots[63]);
-}
-
-
-
-
 BOOL
 IsInsideHook(
 )
@@ -281,8 +272,7 @@ Return Value:
 	FALSE: otherwise.
 --*/
 {
-	BOOL IsInsideHook = (BOOL)TlsGetValue(dwTlsIndex);
-	if (!IsInsideHook) {
+	if (!TlsGetValue(dwTlsIndex)) {
 		TlsSetValue(dwTlsIndex, (LPVOID)TRUE);
 		return FALSE;
 	}
@@ -293,7 +283,6 @@ Return Value:
 VOID ReleaseHookGuard()
 {
 	TlsSetValue(dwTlsIndex, (LPVOID)FALSE);
-
 }
 
 
@@ -332,7 +321,7 @@ static const char *DetRealName(const char* psz)
 }
 
 
-VOID DetAttach(PVOID *ppvReal, PVOID pvMine, const char* psz)
+VOID DetAttach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
 {
 	PVOID pvReal = NULL;
 	if (ppvReal == NULL) {
@@ -343,7 +332,7 @@ VOID DetAttach(PVOID *ppvReal, PVOID pvMine, const char* psz)
 	if (l != 0) {
 		WCHAR Buffer[128];
 		_snwprintf(Buffer, RTL_NUMBER_OF(Buffer),
-			L"DetourAttach failed: `%s': error %d", DetRealName(psz), l);
+			L"Detour Attach failed: `%s': error %d", DetRealName(psz), l);
 		EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
 
 		//Decode((PBYTE)*ppvReal, 3);
@@ -351,13 +340,13 @@ VOID DetAttach(PVOID *ppvReal, PVOID pvMine, const char* psz)
 }
 
 
-VOID DetDetach(PVOID *ppvReal, PVOID pvMine, PCHAR psz)
+VOID DetDetach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
 {
 	LONG l = DetourDetach(ppvReal, pvMine);
 	if (l != 0) {
 		WCHAR Buffer[128];
 		_snwprintf(Buffer, RTL_NUMBER_OF(Buffer),
-			L"Detach failed: `%s': error %d", DetRealName(psz), l);
+			L"Detour Detach failed: `%s': error %d", DetRealName(psz), l);
 		EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
 	}
 }
@@ -390,7 +379,7 @@ PVOID GetAPIAddress(PSTR FunctionName, PWSTR ModuleName) {
 }
 
 
-VOID SetupHook()
+BOOL ProcessAttach()
 {
 
 	//
@@ -409,10 +398,9 @@ VOID SetupHook()
 	// symbol servers or paths via a semi-colon separated list in SymInitialized.
 	//
 
-	HANDLE hProcess = NtCurrentProcess();
-	if (!SymInitialize(hProcess, NULL, TRUE)) {
+	if (!SymInitialize(NtCurrentProcess(), NULL, TRUE)) {
 		LogMessage(L"SymInitialize returned error : %d", GetLastError());
-		return;
+		return STATUS_UNSUCCESSFUL;
 	}
 	SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
 
@@ -427,7 +415,7 @@ VOID SetupHook()
 
 	if (DetourTransactionBegin() != NO_ERROR) {
 		EtwEventWriteString(ProviderHandle, 0, 0, L"DetourTransactionBegin() failed");
-		return;
+		return STATUS_UNSUCCESSFUL;
 	}
 
 	// 
@@ -436,7 +424,7 @@ VOID SetupHook()
 
 	if (DetourUpdateThread(NtCurrentThread()) != NO_ERROR) {
 		EtwEventWriteString(ProviderHandle, 0, 0, L"DetourUpdateThread() failed");
-		return;
+		return STATUS_UNSUCCESSFUL;
 	}
 
 	//
@@ -506,7 +494,7 @@ VOID SetupHook()
 
 	ATTACH(LdrLoadDll);
 	ATTACH(LdrGetProcedureAddress);
-	//ATTACH(NtDelayExecution);
+	ATTACH(NtDelayExecution);
 	//ATTACH(NtProtectVirtualMemory);
 	//ATTACH(NtQueryVirtualMemory);
 	//ATTACH(NtReadVirtualMemory);
@@ -523,37 +511,38 @@ VOID SetupHook()
 	ATTACH(NtQueryValueKey);
 	ATTACH(NtDeleteKey);
 	ATTACH(NtDeleteValueKey);
-	//ATTACH(NtCreateUserProcess);
-	//ATTACH(NtCreateUserProcess);
-	//ATTACH(NtCreateThread);
-	//ATTACH(NtCreateThreadEx);
-	//ATTACH(NtSuspendThread);
-	//ATTACH(NtResumeThread);
-	//ATTACH(NtOpenProcess);
-	//ATTACH(NtTerminateProcess);
+	ATTACH(NtCreateUserProcess);
+	ATTACH(NtCreateUserProcess);
+	ATTACH(NtCreateThread);
+	ATTACH(NtCreateThreadEx);
+	ATTACH(NtSuspendThread);
+	ATTACH(NtResumeThread);
+	ATTACH(NtOpenProcess);
+	ATTACH(NtTerminateProcess);
 	ATTACH(NtReadFile);
 	ATTACH(NtWriteFile);
-	//ATTACH(NtDeleteFile);
+	ATTACH(NtDeleteFile);
 	//ATTACH(NtUnmapViewOfSection);
-	//ATTACH(RtlDecompressBuffer);
+	ATTACH(RtlDecompressBuffer);
 
 	//
 	// Commit the current transaction.
 	//
 
-	LONG error = DetourTransactionCommit();
-	if (error == NO_ERROR) {
-		EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Attached");
-	}
-	else {
-		EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Attached failed");
+	PVOID *ppbFailedPointer = NULL;
+	LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
+	if (error != NO_ERROR) {
+		LogMessage(L"Attach transaction failed to commit. Error %d (%p/%p)",
+			error, ppbFailedPointer, *ppbFailedPointer);
+		return error;
 	}
 
-	EtwEventWriteString(ProviderHandle, 0, 0, L"Hook DLL Loaded");
+	EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Attached");
+	return STATUS_SUCCESS;
 
 }
 
-VOID Unhook()
+BOOL ProcessDetach()
 {
 	//
 	// Begin a new transaction for detaching detours.
@@ -567,19 +556,62 @@ VOID Unhook()
 
 	DetourUpdateThread(NtCurrentThread());
 
-	//DetourDetach(&(PVOID&)TrueLdrLoadDll, HookLdrLoadDll);
-	//DetourDetach(&(PVOID&)TrueLdrGetProcedureAddress, HookLdrGetProcedureAddress);
-	//DetourDetach(&(PVOID&)TrueNtCreateFile, HookNtCreateFile);
-	//DetourDetach(&(PVOID&)TrueMoveFileWithProgressTransactedW, HookMoveFileWithProgressTransactedW);
-	//DetourDetach(&(PVOID&)TrueNtAllocateVirtualMemory, HookNtAllocateVirtualMemory);
+
+	DETACH(LdrLoadDll);
+	DETACH(LdrGetProcedureAddress);
+	DETACH(NtDelayExecution);
+	//DETACH(NtProtectVirtualMemory);
+	//DETACH(NtQueryVirtualMemory);
+	//DETACH(NtReadVirtualMemory);
+	//DETACH(NtWriteVirtualMemory);
+	//DETACH(NtFreeVirtualMemory);
+	//DETACH(NtMapViewOfSection);
+	//DETACH(NtAllocateVirtualMemory);
+	//DETACH(NtProtectVirtualMemory);
+	//DETACH(MoveFileWithProgressTransactedW);
+	DETACH(NtCreateFile);
+	DETACH(NtOpenKey);
+	DETACH(NtOpenKeyEx);
+	DETACH(NtCreateKey);
+	DETACH(NtQueryValueKey);
+	DETACH(NtDeleteKey);
+	DETACH(NtDeleteValueKey);
+	DETACH(NtCreateUserProcess);
+	DETACH(NtCreateUserProcess);
+	DETACH(NtCreateThread);
+	DETACH(NtCreateThreadEx);
+	DETACH(NtSuspendThread);
+	DETACH(NtResumeThread);
+	DETACH(NtOpenProcess);
+	DETACH(NtTerminateProcess);
+	DETACH(NtReadFile);
+	DETACH(NtWriteFile);
+	DETACH(NtDeleteFile);
+	//DETACH(NtUnmapViewOfSection);
+	DETACH(RtlDecompressBuffer);
+
 
 	//
 	// Commit the current transaction.
 	//
 
-	DetourTransactionCommit();
+	PVOID *ppbFailedPointer = NULL;
+	LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
+	if (error != NO_ERROR) {
+		LogMessage(L"Detach transaction failed to commit. Error %d (%p/%p)",
+			error, ppbFailedPointer, *ppbFailedPointer);
+		return error;
+	}
 
+	EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Dettached");
+
+	//
+	// Deallocates all resources we allocated before.
+	//
 
 	TlsFree(dwTlsIndex);
+	SymCleanup(NtCurrentProcess());
+	EtwEventUnregister(ProviderHandle);
 
+	return STATUS_SUCCESS;
 }

@@ -23,8 +23,8 @@
 // Prototypes
 //
 
-VOID SetupHook();
-VOID Unhook();
+BOOL ProcessAttach();
+BOOL ProcessDetach();
 BOOL IsInsideHook();
 VOID ReleaseHookGuard();
 VOID GetStackWalk();
