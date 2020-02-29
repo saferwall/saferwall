@@ -45,18 +45,18 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 ### Libload
 
 - LdrLoadDll
-	- LoadLibraryA -> LoadLibraryExA
-	- LoadLibraryW -> LoadLibraryExW
-
 - LdrGetProcedureAddressEx
-	- GetProcAddress
-	- LdrGetProcedureAddress
 
 ### Files
 
 - NtCreateFile
+	- CreateFileA -> CreateFileW
 - NtReadFile
+	- ReadFile
+	- ReadFileEx
 - NtWriteFile
+	- WriteFile
+	- WriteFileEx
 - NtDeleteFile
 - MoveFileWithProgressTransactedW 
 - NtQueryDirectoryFile (to add)

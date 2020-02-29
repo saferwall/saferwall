@@ -7,6 +7,11 @@ decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx = nullptr;
 NTSTATUS
 WINAPI
 HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle)
+/*
+- LdrLoadDll
+    - LoadLibraryA -> LoadLibraryExA
+    - LoadLibraryW -> LoadLibraryExW
+*/
 {
     if (IsInsideHook())
     {
@@ -33,6 +38,11 @@ HookLdrGetProcedureAddressEx(
     ULONG ProcedureNumber,
     PVOID *ProcedureAddress,
     ULONG Flags)
+/*
+- LdrGetProcedureAddressEx
+    - GetProcAddress
+    - LdrGetProcedureAddress
+ */
 {
     if (IsInsideHook())
     {
@@ -41,11 +51,7 @@ HookLdrGetProcedureAddressEx(
     CaptureStackTrace();
 
     if (ProcedureName && ProcedureName->Buffer)
-        TraceAPI(
-            L"LdrGetProcedureAddressEx(%ws), Ordinal:%d  RETN: 0x%p",
-            MultiByteToWide(ProcedureName->Buffer),
-            ProcedureNumber,
-            _ReturnAddress());
+        TraceAPI(L"LdrGetProcedureAddressEx(%ws) RETN: 0x%p", MultiByteToWide(ProcedureName->Buffer), _ReturnAddress());
     else
         TraceAPI(L"LdrGetProcedureAddressEx(Ordinal:0x%x), RETN: 0x%p", ProcedureNumber, _ReturnAddress());
 

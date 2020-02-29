@@ -5,7 +5,6 @@
 #include "hooking.h"
 
 // Globals
-extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(NtCreateFile) *TrueNtCreateFile;
 extern decltype(NtReadFile) *TrueNtReadFile;
 extern decltype(NtWriteFile) *TrueNtWriteFile;
@@ -36,6 +35,8 @@ extern decltype(NtSuspendThread) *TrueNtSuspendThread;
 extern decltype(NtTerminateProcess) *TrueNtTerminateProcess;
 extern decltype(NtUnmapViewOfSection) *TrueNtUnmapViewOfSection;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
+extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
+extern decltype(NtSetInformationFile) *TrueNtSetInformationFile;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -477,6 +478,8 @@ ProcessAttach()
     TrueNtOpenProcess = NtOpenProcess;
     TrueNtTerminateProcess = NtTerminateProcess;
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
+    TrueNtQuerySystemInformation = NtQuerySystemInformation;
+    TrueNtSetInformationFile = NtSetInformationFile;
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -524,6 +527,9 @@ ProcessAttach()
     // ATTACH(NtProtectVirtualMemory);
     // ATTACH(MoveFileWithProgressTransactedW);
     ATTACH(NtCreateFile);
+    ATTACH(NtReadFile);
+    ATTACH(NtWriteFile);
+    ATTACH(NtDeleteFile);
     // ATTACH(NtOpenKey);
     // ATTACH(NtOpenKeyEx);
     // ATTACH(NtCreateKey);
@@ -538,11 +544,11 @@ ProcessAttach()
     // ATTACH(NtResumeThread);
     // ATTACH(NtOpenProcess);
     // ATTACH(NtTerminateProcess);
-    // ATTACH(NtReadFile);
-    // ATTACH(NtWriteFile);
-    // ATTACH(NtDeleteFile);
     // ATTACH(NtUnmapViewOfSection);
     // ATTACH(RtlDecompressBuffer);
+    //ATTACH(NtQuerySystemInformation);
+    ATTACH(NtSetInformationFile);
+    ATTACH(RtlDecompressBuffer);
 
     //
     // Commit the current transaction.
@@ -588,7 +594,10 @@ ProcessDetach()
     // DETACH(NtAllocateVirtualMemory);
     // DETACH(NtProtectVirtualMemory);
     // DETACH(MoveFileWithProgressTransactedW);
+    DETACH(NtReadFile);
     DETACH(NtCreateFile);
+    DETACH(NtWriteFile);
+    DETACH(NtDeleteFile);
     // DETACH(NtOpenKey);
     // DETACH(NtOpenKeyEx);
     // DETACH(NtCreateKey);
@@ -603,11 +612,10 @@ ProcessDetach()
     // DETACH(NtResumeThread);
     // DETACH(NtOpenProcess);
     // DETACH(NtTerminateProcess);
-    // DETACH(NtReadFile);
-    // DETACH(NtWriteFile);
-    // DETACH(NtDeleteFile);
     // DETACH(NtUnmapViewOfSection);
     // DETACH(RtlDecompressBuffer);
+    //DETACH(NtQuerySystemInformation);
+    DETACH(NtSetInformationFile);
 
     //
     // Commit the current transaction.

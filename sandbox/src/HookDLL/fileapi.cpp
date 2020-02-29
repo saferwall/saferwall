@@ -20,6 +20,10 @@ HookNtCreateFile(
     _In_ ULONG CreateOptions,
     _In_reads_bytes_opt_(EaLength) PVOID EaBuffer,
     _In_ ULONG EaLength)
+/*
+- NtCreateFile
+    - CreateFileA -> CreateFileW
+*/
 {
     if (IsInsideHook())
     {
@@ -75,6 +79,11 @@ HookNtWriteFile(
     _In_ ULONG Length,
     _In_opt_ PLARGE_INTEGER ByteOffset,
     _In_opt_ PULONG Key)
+/*
+- NtWriteFile
+    - WriteFile
+    - WriteFileEx
+*/
 {
     if (IsInsideHook())
     {
@@ -102,6 +111,11 @@ HookNtReadFile(
     _In_ ULONG Length,
     _In_opt_ PLARGE_INTEGER ByteOffset,
     _In_opt_ PULONG Key)
+/*
+- NtReadFile
+    - ReadFile
+    - ReadFileEx
+*/
 {
     if (IsInsideHook())
     {
@@ -121,6 +135,9 @@ end:
 NTSTATUS
 WINAPI
 HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes)
+/*
+- NtDeleteFile
+*/
 {
     if (IsInsideHook())
     {
