@@ -53,49 +53,57 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 - NtReadFile
 - NtWriteFile
 - NtDeleteFile
-- MoveFileWithProgressTransactedW
 - NtSetInformationFile
-- NtQueryDirectoryFile (to add)
-- NtQueryInformationFile (to add)
+- NtQueryDirectoryFile
+- NtQueryInformationFile
+- NtQueryFullAttributesFile (Add)
+- MoveFileWithProgressTransactedW
 
 ### Memory
 
-- NtAllocateVirtualMemory
-- NtFreeVirtualMemory
 - NtProtectVirtualMemory
 - NtQueryVirtualMemory
 - NtReadVirtualMemory
 - NtWriteVirtualMemory
+- NtMapViewOfSection
 - NtUnmapViewOfSection
-
-### Crypto
-
-- RtlDecompressBuffer
-
-### Process/Threads
-
-- NtCreateUserProcess
-- NtCreateThread
-- NtCreateThreadEx
-- NtResumeThread;
-- NtSuspendThread
-- NtOpenProcess
-- NtTerminateProcess
-
-### Synchronization
-
-- NtDelayExecution
+- NtAllocateVirtualMemory
+- NtFreeVirtualMemory
 
 ### Registry
 
+- NtOpenKey
+- NtOpenKeyEx
 - NtCreateKey
 - NtQueryValueKey
 - NtDeleteKey
 - NtDeleteValueKey
 
+
+### Process/Threads
+
+- NtOpenProcess
+- NtTerminateProcess
+- NtCreateUserProcess
+- NtCreateThread
+- NtCreateThreadEx
+- NtSuspendThread
+- NtResumeThread
+
+### Network
+
+### Crypto
+
+- RtlDecompressBuffer
+
+### Synchronization
+
+- NtDelayExecution
+
 ### System
 
 - NtQuerySystemInformation
+- NtLoadDriver
 
 
 ## Apps running inside the VM

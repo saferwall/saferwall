@@ -2,6 +2,7 @@
 #include "systemapi.h"
 
 decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation = nullptr;
+decltype(NtLoadDriver) *TrueNtLoadDriver = nullptr;
 
 NTSTATUS WINAPI
 HookNtQuerySystemInformation(
@@ -31,3 +32,25 @@ end:
         SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
 }
 
+NTSTATUS WINAPI
+HookNtLoadDriver(
+	_In_ PUNICODE_STRING DriverServiceName)
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+	if (DriverServiceName && DriverServiceName->Buffer)
+    TraceAPI(
+        L"NtLoadDriver(DriverServiceName: %ws), RETN: %p",
+
+        _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtLoadDriver(DriverServiceName);
+}
