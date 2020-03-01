@@ -5,6 +5,8 @@ decltype(NtCreateFile) *TrueNtCreateFile = nullptr;
 decltype(NtReadFile) *TrueNtReadFile = nullptr;
 decltype(NtWriteFile) *TrueNtWriteFile = nullptr;
 decltype(NtDeleteFile) *TrueNtDeleteFile = nullptr;
+decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
+decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
 pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW = nullptr;
 
 NTSTATUS NTAPI
@@ -179,4 +181,82 @@ HookMoveFileWithProgressTransactedW(
 end:
     return TrueMoveFileWithProgressTransactedW(
         lpExistingFileName, lpNewFileName, lpProgressRoutine, lpData, dwFlags, hTransaction);
+}
+
+NTSTATUS WINAPI
+HookNtSetInformationFile(
+    _In_ HANDLE FileHandle,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _In_reads_bytes_(Length) PVOID FileInformation,
+    _In_ ULONG Length,
+    _In_ FILE_INFORMATION_CLASS FileInformationClass)
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtSetInformationFile(FileInformationClass: %d, FileInformation:0x%p, Length:0x%08x, ReturnLength:0x%p), RETN: %p",
+        FileInformationClass,
+        FileInformation,
+        Length,
+        _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+}
+
+NTSTATUS WINAPI
+HookNtQueryDirectoryFile(
+    _In_ HANDLE FileHandle,
+    _In_opt_ HANDLE Event,
+    _In_opt_ PIO_APC_ROUTINE ApcRoutine,
+    _In_opt_ PVOID ApcContext,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _Out_writes_bytes_(Length) PVOID FileInformation,
+    _In_ ULONG Length,
+    _In_ FILE_INFORMATION_CLASS FileInformationClass,
+    _In_ BOOLEAN ReturnSingleEntry,
+    _In_opt_ PUNICODE_STRING FileName,
+    _In_ BOOLEAN RestartScan)
+/*
+- FindFirstFileA->FindFirstFileExW -> NtQueryDirectoryFile
+- FindFirstFileW->FindFirstFileExW -> NtQueryDirectoryFile
+- FindFirstFileExA -> FindFirstFileExW -> NtQueryDirectoryFile
+*/
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtQueryDirectoryFile(FileHandle: %p, FileInformationClass: %d, Length:0x%08x), RETN: %p",
+        FileHandle,
+        FileInformationClass,
+        Length,
+        _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtQueryDirectoryFile(
+        FileHandle,
+        Event,
+        ApcRoutine,
+        ApcContext,
+        IoStatusBlock,
+        FileInformation,
+        Length,
+        FileInformationClass,
+        ReturnSingleEntry,
+        FileName,
+        RestartScan);
 }

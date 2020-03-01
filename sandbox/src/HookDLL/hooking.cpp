@@ -37,6 +37,7 @@ extern decltype(NtUnmapViewOfSection) *TrueNtUnmapViewOfSection;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(NtSetInformationFile) *TrueNtSetInformationFile;
+extern decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -454,6 +455,8 @@ ProcessAttach()
     TrueNtWriteFile = NtWriteFile;
     TrueNtReadFile = NtReadFile;
     TrueNtDeleteFile = NtDeleteFile;
+    TrueNtSetInformationFile = NtSetInformationFile;
+    TrueNtQueryDirectoryFile = NtQueryDirectoryFile;
     TrueNtDelayExecution = NtDelayExecution;
     TrueNtProtectVirtualMemory = NtProtectVirtualMemory;
     TrueNtQueryVirtualMemory = NtQueryVirtualMemory;
@@ -479,7 +482,7 @@ ProcessAttach()
     TrueNtTerminateProcess = NtTerminateProcess;
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
-    TrueNtSetInformationFile = NtSetInformationFile;
+
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -530,6 +533,8 @@ ProcessAttach()
     ATTACH(NtReadFile);
     ATTACH(NtWriteFile);
     ATTACH(NtDeleteFile);
+    ATTACH(NtSetInformationFile);
+    ATTACH(NtQueryDirectoryFile);
     // ATTACH(NtOpenKey);
     // ATTACH(NtOpenKeyEx);
     // ATTACH(NtCreateKey);
@@ -547,7 +552,6 @@ ProcessAttach()
     // ATTACH(NtUnmapViewOfSection);
     // ATTACH(RtlDecompressBuffer);
     //ATTACH(NtQuerySystemInformation);
-    ATTACH(NtSetInformationFile);
     ATTACH(RtlDecompressBuffer);
 
     //
@@ -598,6 +602,8 @@ ProcessDetach()
     DETACH(NtCreateFile);
     DETACH(NtWriteFile);
     DETACH(NtDeleteFile);
+    DETACH(NtSetInformationFile);
+    DETACH(NtQueryDirectoryFile);
     // DETACH(NtOpenKey);
     // DETACH(NtOpenKeyEx);
     // DETACH(NtCreateKey);
@@ -615,7 +621,6 @@ ProcessDetach()
     // DETACH(NtUnmapViewOfSection);
     // DETACH(RtlDecompressBuffer);
     //DETACH(NtQuerySystemInformation);
-    DETACH(NtSetInformationFile);
 
     //
     // Commit the current transaction.
