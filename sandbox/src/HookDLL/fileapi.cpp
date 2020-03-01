@@ -7,6 +7,7 @@ decltype(NtWriteFile) *TrueNtWriteFile = nullptr;
 decltype(NtDeleteFile) *TrueNtDeleteFile = nullptr;
 decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
 decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
+decltype(NtQueryInformationFile) *TrueNtQueryInformationFile = nullptr;
 pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW = nullptr;
 
 NTSTATUS NTAPI
@@ -228,6 +229,8 @@ HookNtQueryDirectoryFile(
 - FindFirstFileA->FindFirstFileExW -> NtQueryDirectoryFile
 - FindFirstFileW->FindFirstFileExW -> NtQueryDirectoryFile
 - FindFirstFileExA -> FindFirstFileExW -> NtQueryDirectoryFile
+- FindNextFileA -> NtQueryDirectoryFile
+- FindNextFileW -> NtQueryDirectoryFile
 */
 {
     if (IsInsideHook())
@@ -259,4 +262,36 @@ end:
         ReturnSingleEntry,
         FileName,
         RestartScan);
+}
+
+NTSTATUS WINAPI
+HookNtQueryInformationFile(
+    _In_ HANDLE FileHandle,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _Out_writes_bytes_(Length) PVOID FileInformation,
+    _In_ ULONG Length,
+    _In_ FILE_INFORMATION_CLASS FileInformationClass)
+/*
+- GetFileSize -> GetFileSizeEx -> NtQueryInformationFile
+- GetFileSizeEx -> NtQueryInformationFile.
+*/
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtQueryInformationFile(FileHandle: %p, FileInformationClass: %d, Length:0x%08x), RETN: %p",
+        FileHandle,
+        FileInformationClass,
+        Length,
+        _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
 }

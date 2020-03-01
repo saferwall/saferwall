@@ -38,6 +38,7 @@ extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(NtSetInformationFile) *TrueNtSetInformationFile;
 extern decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile;
+extern decltype(NtQueryInformationFile) *TrueNtQueryInformationFile;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -457,6 +458,7 @@ ProcessAttach()
     TrueNtDeleteFile = NtDeleteFile;
     TrueNtSetInformationFile = NtSetInformationFile;
     TrueNtQueryDirectoryFile = NtQueryDirectoryFile;
+    TrueNtQueryInformationFile = NtQueryInformationFile;
     TrueNtDelayExecution = NtDelayExecution;
     TrueNtProtectVirtualMemory = NtProtectVirtualMemory;
     TrueNtQueryVirtualMemory = NtQueryVirtualMemory;
@@ -482,7 +484,6 @@ ProcessAttach()
     TrueNtTerminateProcess = NtTerminateProcess;
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
-
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -535,6 +536,7 @@ ProcessAttach()
     ATTACH(NtDeleteFile);
     ATTACH(NtSetInformationFile);
     ATTACH(NtQueryDirectoryFile);
+    ATTACH(NtQueryInformationFile);
     // ATTACH(NtOpenKey);
     // ATTACH(NtOpenKeyEx);
     // ATTACH(NtCreateKey);
@@ -604,6 +606,7 @@ ProcessDetach()
     DETACH(NtDeleteFile);
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
+    DETACH(NtQueryInformationFile);
     // DETACH(NtOpenKey);
     // DETACH(NtOpenKeyEx);
     // DETACH(NtCreateKey);

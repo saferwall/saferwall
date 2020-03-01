@@ -92,3 +92,12 @@ HookNtQueryDirectoryFile(
     _In_ BOOLEAN ReturnSingleEntry,
     _In_opt_ PUNICODE_STRING FileName,
     _In_ BOOLEAN RestartScan);
+
+NTSTATUS
+NTAPI
+HookNtQueryInformationFile(
+    _In_ HANDLE FileHandle,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _Out_writes_bytes_(Length) PVOID FileInformation,
+    _In_ ULONG Length,
+    _In_ FILE_INFORMATION_CLASS FileInformationClass);
