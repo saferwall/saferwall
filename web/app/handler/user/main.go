@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -39,8 +40,8 @@ var (
 
 // Activity represents an event made by the user such as `upload`.
 type Activity struct {
-	Timestamp *time.Time        `json:"timestamp,omitempty"`
-	Type      string            `json:"type,omitempty"`
+	Timestamp *time.Time  `json:"timestamp,omitempty"`
+	Type      string      `json:"type,omitempty"`
 	Content   interface{} `json:"content,omitempty"`
 }
 
@@ -51,9 +52,9 @@ type Submission struct {
 
 type Comment struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
-	Sha256  string    `json:"sha256,omitempty"`
-	Body      string    `json:"body,omitempty"`
-	ID        string    `json:"id,omitempty"`
+	Sha256    string     `json:"sha256,omitempty"`
+	Body      string     `json:"body,omitempty"`
+	ID        string     `json:"id,omitempty"`
 }
 
 // User represent a user.
@@ -157,7 +158,7 @@ func hashAndSalt(pwd []byte) string {
 
 // Save adds user to a database.
 func (u *User) Save() {
-	db.UsersCollection.Upsert(u.Username, u, &gocb.UpsertOptions{})
+	db.UsersCollection.Upsert(strings.ToLower(u.Username), u, &gocb.UpsertOptions{})
 	log.Infof("User %s was saved successefuly", u.Username)
 }
 
@@ -195,6 +196,7 @@ func Confirm(username string) error {
 // CheckEmailExist returns true if emails exists
 func CheckEmailExist(email string) (bool, error) {
 
+	email = strings.ToLower(email)
 	query := "SELECT COUNT(*) as count FROM `users` WHERE `email`=$email;"
 	params := make(map[string]interface{}, 1)
 	params["email"] = email
@@ -318,6 +320,8 @@ func GetByUsername(username string) (User, error) {
 	// get our user
 	user := User{}
 
+	username  = strings.ToLower(username)
+
 	getResult, err := db.UsersCollection.Get(username, &gocb.GetOptions{})
 	if err != nil {
 		log.Errorln(err)
@@ -336,6 +340,7 @@ func GetByUsername(username string) (User, error) {
 // GetUserByEmail return a user document from email
 func GetUserByEmail(email string) (User, error) {
 
+	email = strings.ToLower(email)
 	query := "SELECT users.* FROM `users` WHERE `email`=$email"
 
 	// Execute Query
@@ -409,7 +414,7 @@ func CreateAdminUser() {
 func deleteUser(username string) error {
 
 	// delete user
-	_, err := db.UsersCollection.Remove(username, &gocb.RemoveOptions{})
+	_, err := db.UsersCollection.Remove(strings.ToLower(username), &gocb.RemoveOptions{})
 	return err
 }
 
@@ -607,6 +612,7 @@ func PostUsers(c echo.Context) error {
 	newUser.Admin = false
 
 	// Creates the new user and save it to DB.
+	newUser.Email = strings.ToLower(newUser.Email)
 	newUser.Save()
 
 	// Send confirmation email
@@ -898,21 +904,21 @@ func GetActivitiy(c echo.Context) error {
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
 	query := "SELECT `username`, `activities` " +
-			"FROM users WHERE `username` IN " +
-			"(SELECT RAW u1.`following` FROM users u1 " +
-			"WHERE u1.username=$user)[0] UNION " +
-			"SELECT username, activities " +
-			"FROM users u " +
-			"WHERE ANY activity IN u.activities " +
-			"SATISFIES activity.type = 'follow' AND " +
-			"activity.content.`user` =$user END"
+		"FROM users WHERE `username` IN " +
+		"(SELECT RAW u1.`following` FROM users u1 " +
+		"WHERE u1.username=$user)[0] UNION " +
+		"SELECT username, activities " +
+		"FROM users u " +
+		"WHERE ANY activity IN u.activities " +
+		"SATISFIES activity.type = 'follow' AND " +
+		"activity.content.`user` =$user END"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": err.Error(),
-		})	
+		})
 	}
 	defer rows.Close()
 
@@ -927,7 +933,6 @@ func GetActivitiy(c echo.Context) error {
 	return c.JSON(http.StatusOK, activities)
 }
 
-
 // GetActivities represents the feed displayed in the landing page.
 func GetActivities(c echo.Context) error {
 
@@ -940,7 +945,7 @@ func GetActivities(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": err.Error(),
-		})	
+		})
 	}
 	defer rows.Close()
 

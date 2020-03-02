@@ -315,6 +315,7 @@ func ReconfirmAccount(c echo.Context) error {
 	// get user by email
 	u, err := user.GetUserByEmail(confirmEmail)
 	if err != nil {
+		// tofix: error code and status code
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 

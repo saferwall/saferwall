@@ -114,6 +114,8 @@ func (res *result) parseFile(b []byte, filePath string) {
 			}
 		}
 		res.Tags = append(res.Tags, "html")
+	default:
+		log.Infoln("Unknow file format")
 	}
 }
 
