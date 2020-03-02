@@ -7,6 +7,7 @@
 // Globals
 extern decltype(LdrLoadDll) *TrueLdrLoadDll;
 extern decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx;
+extern decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx;
 
 extern decltype(NtCreateFile) *TrueNtCreateFile;
 extern decltype(NtReadFile) *TrueNtReadFile;
@@ -460,6 +461,7 @@ ProcessAttach()
 
     TrueLdrLoadDll = LdrLoadDll;
     TrueLdrGetProcedureAddressEx = LdrGetProcedureAddressEx;
+    TrueLdrGetDllHandleEx = LdrGetDllHandleEx;
     TrueNtCreateFile = NtCreateFile;
     TrueNtWriteFile = NtWriteFile;
     TrueNtReadFile = NtReadFile;
@@ -529,6 +531,7 @@ ProcessAttach()
 
     ATTACH(LdrLoadDll);
     ATTACH(LdrGetProcedureAddressEx);
+    ATTACH(LdrGetDllHandleEx);
 
 	//
 	// File APIs.
@@ -630,6 +633,7 @@ ProcessDetach()
 
     DETACH(LdrLoadDll);
     DETACH(LdrGetProcedureAddressEx);
+    DETACH(LdrGetDllHandleEx);
 
     //
     // File APIs.

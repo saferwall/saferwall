@@ -3,6 +3,7 @@
 
 decltype(LdrLoadDll) *TrueLdrLoadDll = nullptr;
 decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx = nullptr;
+decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx = nullptr;
 
 NTSTATUS
 WINAPI
@@ -58,4 +59,35 @@ HookLdrGetProcedureAddressEx(
     ReleaseHookGuard();
 end:
     return TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
+}
+
+
+
+NTSTATUS
+WINAPI
+HookLdrGetDllHandleEx(
+    _In_ ULONG Flags,
+    _In_opt_ PWSTR DllPath,
+    _In_opt_ PULONG DllCharacteristics,
+    _In_ PUNICODE_STRING DllName,
+    _Out_opt_ PVOID *DllHandle)
+/*
+- LdrGetDllHandle -> LdrGetDllHandleEx
+*/
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    if (DllName && DllName->Buffer)
+    {
+        TraceAPI(L"LdrGetDllHandleEx(%ws), RETN: 0x%p", DllName->Buffer, _ReturnAddress());
+    }
+
+    ReleaseHookGuard();
+end:
+    return TrueLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
 }
