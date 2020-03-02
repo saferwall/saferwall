@@ -309,6 +309,7 @@ func GetAllUsers(fields []string) ([]User, error) {
 	for rows.Next(&row) {
 		row.Password = ""
 		retValues = append(retValues, row)
+		row = User{}
 	}
 
 	return retValues, nil

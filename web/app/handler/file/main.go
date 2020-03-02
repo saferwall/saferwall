@@ -156,6 +156,7 @@ func GetAllFiles(fields []string) ([]File, error) {
 	// Stream the values returned from the query into a typed array of structs
 	for rows.Next(&row) {
 		retValues = append(retValues, row)
+		row = File{}
 	}
 
 	return retValues, nil
@@ -181,7 +182,6 @@ func DumpRequest(req *http.Request) {
 	}
 
 }
-
 
 // GetFileByFields return user by username(optional: selecting fields)
 func GetFileByFields(fields []string, sha256 string) (File, error) {
