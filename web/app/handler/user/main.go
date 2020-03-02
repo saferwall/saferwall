@@ -939,7 +939,8 @@ func GetActivities(c echo.Context) error {
 
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
-	query := "SELECT `username`, `activities` FROM users ORDER BY activities[*].timestamp DESC"
+	query := "SELECT `username`, `activities` FROM users " +
+			"ORDER BY activities[*].timestamp DESC LIMIT 100"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
