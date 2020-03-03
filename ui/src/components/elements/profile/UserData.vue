@@ -47,6 +47,15 @@ export default {
   },
   methods: {
     followUnfollow: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       if (this.followed) this.unfollow()
       else this.follow()
     },
@@ -110,7 +119,7 @@ export default {
   #location {
     align-items: center;
   }
-  .button{
+  .button {
     margin-top: 0.5em;
   }
 }

@@ -12,7 +12,7 @@
           </thead>
           <tbody>
             <tr v-for="(value, vendor) in Scans.firstScan" :key="vendor">
-              <td>{{ vendor }}</td>
+              <td>{{ _.upperFirst(vendor) }}</td>
               <td>
                 <span
                   :class="[
@@ -69,7 +69,7 @@
           </thead>
           <tbody>
             <tr v-for="(value, vendor) in Scans.lastScan" :key="vendor">
-              <td>{{ vendor }}</td>
+              <td>{{ _.upperFirst(vendor) }}</td>
               <td>
                 <span
                   :class="[
