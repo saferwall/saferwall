@@ -78,13 +78,23 @@ export default {
       )
     },
     showContent: function() {
-      return (
-        this.$store.getters.getHashContext !== "" ||
-        this.route === "upload" ||
-        this.route === "profile" ||
-        this.route === "home" ||
-        this.route === "settings"
-      )
+      if (!this.loggedIn) {
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          this.route === "home" ||
+          this.route === "settings"
+        )
+      } else {
+        return (
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          this.route === "home" && this.username||
+          this.route === "settings"
+        )
+      }
     },
   },
   methods: {
