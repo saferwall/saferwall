@@ -76,6 +76,9 @@ HookNtQueryVirtualMemory(
     _Out_writes_bytes_(MemoryInformationLength) PVOID MemoryInformation,
     _In_ SIZE_T MemoryInformationLength,
     _Out_opt_ PSIZE_T ReturnLength)
+/*
+- VirtualQuery -> VirtualQueryEx -> NtQueryVirtualMemory
+*/
 {
     if (IsInsideHook())
     {

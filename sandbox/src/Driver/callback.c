@@ -32,7 +32,6 @@ CreateProcessNotifyRoutine(
 			return;
 		}
 	
-
 		PINJECTION_INFO CapturedInjectionInfo;
 
 		CapturedInjectionInfo = ExAllocatePoolWithTag(NonPagedPoolNx,sizeof(INJECTION_INFO), INJ_MEMORY_TAG);

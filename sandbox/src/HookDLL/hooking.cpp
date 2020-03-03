@@ -27,11 +27,11 @@ extern decltype(NtUnmapViewOfSection) *TrueNtUnmapViewOfSection;
 extern decltype(NtAllocateVirtualMemory) *TrueNtAllocateVirtualMemory;
 extern decltype(NtFreeVirtualMemory) *TrueNtFreeVirtualMemory;
 
-
 extern decltype(NtOpenKey) *TrueNtOpenKey;
 extern decltype(NtOpenKeyEx) *TrueNtOpenKeyEx;
 extern decltype(NtCreateKey) *TrueNtCreateKey;
 extern decltype(NtQueryValueKey) *TrueNtQueryValueKey;
+extern decltype(NtSetValueKey) *TrueNtSetValueKey;
 extern decltype(NtDeleteKey) *TrueNtDeleteKey;
 extern decltype(NtDeleteValueKey) *TrueNtDeleteValueKey;
 
@@ -47,7 +47,6 @@ extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
-
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -483,6 +482,7 @@ ProcessAttach()
     TrueNtOpenKeyEx = NtOpenKeyEx;
     TrueNtCreateKey = NtCreateKey;
     TrueNtQueryValueKey = NtQueryValueKey;
+    TrueNtSetValueKey = NtSetValueKey;
     TrueNtDeleteKey = NtDeleteKey;
     TrueNtDeleteValueKey = NtDeleteValueKey;
     TrueNtCreateUserProcess = NtCreateUserProcess;
@@ -525,17 +525,17 @@ ProcessAttach()
     InitializeCriticalSection(&gDbgHelpLock);
     InitializeCriticalSection(&gInsideHookLock);
 
-	//
-	// Lib Load APIs.
-	//
+    //
+    // Lib Load APIs.
+    //
 
     ATTACH(LdrLoadDll);
     ATTACH(LdrGetProcedureAddressEx);
     ATTACH(LdrGetDllHandleEx);
 
-	//
-	// File APIs.
-	//
+    //
+    // File APIs.
+    //
 
     ATTACH(NtCreateFile);
     ATTACH(NtReadFile);
@@ -544,56 +544,54 @@ ProcessAttach()
     ATTACH(NtSetInformationFile);
     ATTACH(NtQueryDirectoryFile);
     ATTACH(NtQueryInformationFile);
-    // ATTACH(MoveFileWithProgressTransactedW);
+    ATTACH(MoveFileWithProgressTransactedW);
 
-	//
-	// Memory APIs.
-	//
+    //
+    // Memory APIs.
+    //
 
-    // ATTACH(NtProtectVirtualMemory);
-    // ATTACH(NtQueryVirtualMemory);
-    // ATTACH(NtReadVirtualMemory);
-    // ATTACH(NtWriteVirtualMemory);
-    // ATTACH(NtFreeVirtualMemory);
-    // ATTACH(NtMapViewOfSection);
-    // ATTACH(NtAllocateVirtualMemory);
-    // ATTACH(NtProtectVirtualMemory);
-	// TTACH(NtUnmapViewOfSection);
+    ATTACH(NtProtectVirtualMemory);
+    ATTACH(NtQueryVirtualMemory);
+    ATTACH(NtReadVirtualMemory);
+    ATTACH(NtWriteVirtualMemory);
+    ATTACH(NtFreeVirtualMemory);
+    ATTACH(NtMapViewOfSection);
+    ATTACH(NtAllocateVirtualMemory);
+    ATTACH(NtProtectVirtualMemory);
+    ATTACH(NtUnmapViewOfSection);
 
+    //
+    // Registry APIs.
+    //
 
-	//
-	// Registry APIs.
-	//
-
-	ATTACH(NtOpenKey);
+    ATTACH(NtOpenKey);
     ATTACH(NtOpenKeyEx);
     ATTACH(NtCreateKey);
     ATTACH(NtQueryValueKey);
+    ATTACH(NtSetValueKey);
     ATTACH(NtDeleteKey);
     ATTACH(NtDeleteValueKey);
 
-	//
+    //
     // Process/Thread APIs.
-	//
+    //
 
-	ATTACH(NtOpenProcess);
+    ATTACH(NtOpenProcess);
     ATTACH(NtTerminateProcess);
-    // ATTACH(NtCreateUserProcess);
-    // ATTACH(NtCreateThread);
-    // ATTACH(NtCreateThreadEx);
-    // ATTACH(NtSuspendThread);
-    // ATTACH(NtResumeThread);
+    ATTACH(NtCreateUserProcess);
+    ATTACH(NtCreateThread);
+    ATTACH(NtCreateThreadEx);
+    ATTACH(NtSuspendThread);
+    ATTACH(NtResumeThread);
 
+    //
+    // System APIs.
+    //
 
-	//
-	// System APIs.
-	//
-
-    //ATTACH(NtQuerySystemInformation);
+    ATTACH(NtQuerySystemInformation);
     ATTACH(RtlDecompressBuffer);
     ATTACH(NtDelayExecution);
     ATTACH(NtLoadDriver);
-
 
     //
     // Commit the current transaction.
@@ -627,7 +625,7 @@ ProcessDetach()
 
     DetourUpdateThread(NtCurrentThread());
 
-   	//
+    //
     // Lib Load APIs.
     //
 
@@ -646,21 +644,21 @@ ProcessDetach()
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
     DETACH(NtQueryInformationFile);
-    // DETACH(MoveFileWithProgressTransactedW);
+    DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Memory APIs.
     //
 
-    // DETACH(NtProtectVirtualMemory);
-    // DETACH(NtQueryVirtualMemory);
-    // DETACH(NtReadVirtualMemory);
-    // DETACH(NtWriteVirtualMemory);
-    // DETACH(NtFreeVirtualMemory);
-    // DETACH(NtMapViewOfSection);
-    // DETACH(NtAllocateVirtualMemory);
-    // DETACH(NtProtectVirtualMemory);
-    // TTACH(NtUnmapViewOfSection);
+    DETACH(NtProtectVirtualMemory);
+    DETACH(NtQueryVirtualMemory);
+    DETACH(NtReadVirtualMemory);
+    DETACH(NtWriteVirtualMemory);
+    DETACH(NtFreeVirtualMemory);
+    DETACH(NtMapViewOfSection);
+    DETACH(NtAllocateVirtualMemory);
+    DETACH(NtProtectVirtualMemory);
+    DETACH(NtUnmapViewOfSection);
 
     //
     // Registry APIs.
@@ -670,6 +668,7 @@ ProcessDetach()
     DETACH(NtOpenKeyEx);
     DETACH(NtCreateKey);
     DETACH(NtQueryValueKey);
+    DETACH(NtSetValueKey);
     DETACH(NtDeleteKey);
     DETACH(NtDeleteValueKey);
 
@@ -679,17 +678,17 @@ ProcessDetach()
 
     DETACH(NtOpenProcess);
     DETACH(NtTerminateProcess);
-    // DETACH(NtCreateUserProcess);
-    // DETACH(NtCreateThread);
-    // DETACH(NtCreateThreadEx);
-    // DETACH(NtSuspendThread);
-    // DETACH(NtResumeThread);
+    DETACH(NtCreateUserProcess);
+    DETACH(NtCreateThread);
+    DETACH(NtCreateThreadEx);
+    DETACH(NtSuspendThread);
+    DETACH(NtResumeThread);
 
     //
     // System APIs.
     //
 
-    // DETACH(NtQuerySystemInformation);
+    DETACH(NtQuerySystemInformation);
     DETACH(RtlDecompressBuffer);
     DETACH(NtDelayExecution);
     DETACH(NtLoadDriver);

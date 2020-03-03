@@ -7,6 +7,8 @@ decltype(NtCreateKey) *TrueNtCreateKey = nullptr;
 decltype(NtQueryValueKey) *TrueNtQueryValueKey = nullptr;
 decltype(NtDeleteKey) *TrueNtDeleteKey = nullptr;
 decltype(NtDeleteValueKey) *TrueNtDeleteValueKey = nullptr;
+decltype(NtSetValueKey) *TrueNtSetValueKey = nullptr;
+
 
 NTSTATUS WINAPI
 HookNtOpenKey(_Out_ PHANDLE KeyHandle, _In_ ACCESS_MASK DesiredAccess, _In_ POBJECT_ATTRIBUTES ObjectAttributes)
@@ -74,7 +76,7 @@ HookNtCreateKey(
     CaptureStackTrace();
 
     TraceAPI(
-        L"NtCreateKey(DesiredAccess: 0x%d, ObjectName:0x%ws, CreateOptions: %ul, ReturnLength:0x%p), RETN: %p",
+        L"NtCreateKey(DesiredAccess: 0x%d, ObjectName:%ws, CreateOptions: %ul, ReturnLength:0x%p), RETN: %p",
         DesiredAccess,
         ObjectAttributes->ObjectName->Buffer,
         CreateOptions,
@@ -103,7 +105,7 @@ HookNtQueryValueKey(
     CaptureStackTrace();
 
     TraceAPI(
-        L"NtQueryValueKey(KeyHandle: 0x%d, ValueName:0x%ws), RETN: %p", KeyHandle, ValueName->Buffer, _ReturnAddress());
+        L"NtQueryValueKey(KeyHandle: 0x%d, ValueName:%ws), RETN: %p", KeyHandle, ValueName->Buffer, _ReturnAddress());
 
     ReleaseHookGuard();
 
@@ -146,4 +148,30 @@ HookNtDeleteValueKey(_In_ HANDLE KeyHandle, _In_ PUNICODE_STRING ValueName)
 
 end:
     return TrueNtDeleteValueKey(KeyHandle, ValueName);
+}
+
+
+NTSTATUS WINAPI
+HookNtSetValueKey(
+    _In_ HANDLE KeyHandle,
+    _In_ PUNICODE_STRING ValueName,
+    _In_opt_ ULONG TitleIndex,
+    _In_ ULONG Type,
+    _In_reads_bytes_opt_(DataSize) PVOID Data,
+    _In_ ULONG DataSize)
+{
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtSetValueKey(KeyHandle: 0x%d, ValueName:%ws), RETN: %p", KeyHandle, ValueName->Buffer, _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtSetValueKey(KeyHandle, ValueName, TitleIndex, Type, Data, DataSize);
 }

@@ -77,6 +77,7 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 - NtOpenKeyEx
 - NtCreateKey
 - NtQueryValueKey
+- NtSetValueKey
 - NtDeleteKey
 - NtDeleteValueKey
 
