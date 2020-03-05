@@ -35,6 +35,15 @@ export default {
   },
   methods: {
     likeUnlike: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       this.$http
         .post(`${this.$api_endpoints.FILES}${this.hash}/actions/`, {
           type: this.liked ? "unlike" : "like",

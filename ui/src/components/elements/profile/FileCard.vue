@@ -9,13 +9,19 @@
           <i class="icon fas fa-tags"></i>
           Tags:
           <span v-if="!file.tags">none</span>
-          <span class="tag is-link is-normal" id="tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
+          <span
+            class="tag is-link is-normal"
+            id="tag"
+            v-for="tag in file.tags"
+            :key="tag"
+            >{{ tag }}</span
+          >
         </span>
         <span id="Av">
           <i class="icon fas fa-shield-alt"></i>
           Antivirus: {{ file.AvDetectionCount }}/12
         </span>
-        <span id="timestamp" v-if="file.timestamp">
+        <span id="timestamp" v-if="time">
           <i class="icon fas fa-clock"></i>
           {{ time }}
         </span>
@@ -49,6 +55,15 @@ export default {
   },
   methods: {
     likeUnlike: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       this.$http
         .post(`${this.$api_endpoints.FILES}${this.file.sha256}/actions/`, {
           type: this.liked ? "unlike" : "like",
@@ -67,7 +82,7 @@ export default {
     },
   },
   mounted() {
-    if (this.$store.getters.getLikes.includes(this.file.sha256))
+    if (this.$store.getters.getloggedIn && this.$store.getters.getLikes.includes(this.file.sha256))
       this.liked = true
     if (this.file.timestamp)
       this.time = moment(this.file.timestamp).format("MMMM Do YYYY")

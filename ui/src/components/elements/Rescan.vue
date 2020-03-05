@@ -54,6 +54,15 @@ export default {
   },
   methods: {
     rescanFile: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       this.$http
         .post(`${this.$api_endpoints.FILES}${this.hash}/actions/`, {
           type: "rescan",
@@ -132,7 +141,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.rescan-button-text span:last-child{
+.rescan-button-text span:last-child {
   vertical-align: text-bottom;
 }
 </style>

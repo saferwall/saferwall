@@ -42,6 +42,15 @@ export default {
   },
   methods: {
     likeUnlike: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       this.$http
         .post(`${this.$api_endpoints.FILES}${this.comment.sha256}/actions/`, {
           type: this.liked ? "unlike" : "like",
@@ -60,7 +69,7 @@ export default {
     },
   },
   mounted() {
-    if (this.$store.getters.getLikes.includes(this.comment.sha256))
+    if (this.$store.getters.getLoggedIn && this.$store.getters.getLikes.includes(this.comment.sha256))
       this.liked = true
     this.time = moment(this.comment.timestamp).format("MMMM Do YYYY")
   },
@@ -80,7 +89,7 @@ export default {
       #comment_body {
         background-color: rgba(0, 0, 0, 0.03);
         border-radius: 10px;
-        margin-top:0.5em;
+        margin-top: 0.5em;
         padding: 1em;
         h1 {
           font-size: 2rem;
@@ -117,8 +126,8 @@ export default {
       svg {
         vertical-align: bottom;
       }
-      #timestamp{
-        padding-top:0.5em;
+      #timestamp {
+        padding-top: 0.5em;
       }
     }
   }
