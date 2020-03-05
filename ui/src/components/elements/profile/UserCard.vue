@@ -36,6 +36,15 @@ export default {
   },
   methods: {
     followUnfollow: function() {
+      if (!this.$store.getters.getLoggedIn) {
+        this.$router.push({
+          name: "login",
+          params: {
+            nextUrl: this.$route.path,
+          },
+        })
+        return
+      }
       this.$http
         .post(
           this.$api_endpoints.USERS + this.userData.username + "/actions/",

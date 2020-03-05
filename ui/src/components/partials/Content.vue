@@ -3,24 +3,22 @@
     <div class="container is-fluid">
       <div class="columns top_columns">
         <div class="column is-9">
-          <nav class="breadcrumb" aria-label="breadcrumbs" v-if="!fullwidth">
+          <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
               <li>
-                <router-link :to="this.$routes.HOME.path"
-                  >Home</router-link
-                >
+                <router-link :to="this.$routes.HOME.path">Home</router-link>
               </li>
-              <li class="is-active">
+              <li class="is-active" v-if="route !== 'home'">
                 <a href="#" aria-current="page">{{ route }}</a>
               </li>
               <li>
-                <span>{{$route.params.hash}}</span>
+                <span>{{ $route.params.hash }}</span>
               </li>
             </ul>
           </nav>
         </div>
         <div class="column is-4">
-          <div class="buttons" v-if="!showLoader && showButtons">
+          <div class="buttons" v-if="showButtons">
             <Like :hash="hash" />
             <Download :hash="hash" />
             <Rescan :route="route" :hash="hash" />
@@ -29,9 +27,9 @@
       </div>
       <div class="column placeholders">
         <p class="no_file" v-if="!showContent">No file Specified</p>
-        <loader v-if="showLoader && showContent"></loader>
+        <loader v-if="false"></loader>
       </div>
-      <slot v-if="showContent && !showLoader"></slot>
+      <slot v-if="showContent"></slot>
       <div class="column">
         <Social />
       </div>
@@ -73,7 +71,6 @@ export default {
     showButtons: function() {
       return (
         Object.entries(this.$store.getters.getFileData).length !== 0 &&
-        this.$store.getters.getLoggedIn &&
         this.route !== "upload" &&
         this.route !== "settings" &&
         this.route !== "home" &&
@@ -81,15 +78,7 @@ export default {
       )
     },
     showContent: function() {
-      if (this.loggedIn)
-        return (
-          this.$store.getters.getHashContext !== "" ||
-          this.route === "upload" ||
-          this.route === "profile" ||
-          (this.route === "home" && this.username) ||
-          this.route === "settings"
-        )
-      else
+      if (!this.loggedIn) {
         return (
           this.$store.getters.getHashContext !== "" ||
           this.route === "upload" ||
@@ -97,19 +86,15 @@ export default {
           this.route === "home" ||
           this.route === "settings"
         )
-    },
-    showLoader: function() {
-      if (this.route === "home") return false
-      if (this.$store.getters.getLoggedIn)
+      } else {
         return (
-          Object.entries(this.userData).length === 0 &&
-          this.userData.constructor === Object
+          this.$store.getters.getHashContext !== "" ||
+          this.route === "upload" ||
+          this.route === "profile" ||
+          this.route === "home" && this.username||
+          this.route === "settings"
         )
-      else
-        return (
-          Object.entries(this.fileData).length === 0 &&
-          this.fileData.constructor === Object
-        )
+      }
     },
   },
   methods: {
@@ -156,7 +141,7 @@ section.main-content {
   a {
     color: $primary-color;
   }
-  span{
+  span {
     padding-left: 10px;
   }
 }

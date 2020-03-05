@@ -98,7 +98,7 @@ module.exports = {
     name: "profile",
     meta: {
       title: "Profile",
-      requiresAuth: true,
+      requiresAuth: false,
     },
   }
 }
