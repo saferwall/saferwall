@@ -48,7 +48,7 @@ extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
 
-//extern decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx;
+extern decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -96,7 +96,7 @@ VOID
 CaptureStackTrace()
 {
     PCONTEXT InitialContext = NULL;
-    STACKTRACE StackTrace;
+    //STACKTRACE StackTrace;
     UINT MaxFrames = 50;
     STACKFRAME64 StackFrame;
     DWORD MachineType = 0;
@@ -361,9 +361,14 @@ DetAttach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
     if (l != 0)
     {
         WCHAR Buffer[128];
-        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Attach failed: %s: error %d", DetRealName(psz), l);
+        _snwprintf(
+            Buffer,
+            RTL_NUMBER_OF(Buffer),
+            L"Detour Attach failed: %ws: error %d",
+            MultiByteToWide((CHAR *)DetRealName(psz)),
+            l);
         EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
-        //Decode((PBYTE)*ppvReal, 3);
+        // Decode((PBYTE)*ppvReal, 3);
     }
 }
 
@@ -374,7 +379,12 @@ DetDetach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
     if (l != 0)
     {
         WCHAR Buffer[128];
-        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Detach failed: %s: error %d", DetRealName(psz), l);
+        _snwprintf(
+            Buffer,
+            RTL_NUMBER_OF(Buffer),
+            L"Detour Detach failed: %s: error %d",
+            MultiByteToWide((CHAR *)DetRealName(psz)),
+            l);
         EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
     }
 }
@@ -496,7 +506,7 @@ ProcessAttach()
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
     TrueNtLoadDriver = NtLoadDriver;
-    //TrueCoCreateInstanceEx = CoCreateInstanceEx;
+    TrueCoCreateInstanceEx = CoCreateInstanceEx;
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -546,21 +556,7 @@ ProcessAttach()
     ATTACH(NtSetInformationFile);
     ATTACH(NtQueryDirectoryFile);
     ATTACH(NtQueryInformationFile);
-    ATTACH(MoveFileWithProgressTransactedW);
-
-    //
-    // Memory APIs.
-    //
-
-    ATTACH(NtProtectVirtualMemory);
-    ATTACH(NtQueryVirtualMemory);
-    ATTACH(NtReadVirtualMemory);
-    ATTACH(NtWriteVirtualMemory);
-    ATTACH(NtFreeVirtualMemory);
-    ATTACH(NtMapViewOfSection);
-    ATTACH(NtAllocateVirtualMemory);
-    ATTACH(NtProtectVirtualMemory);
-    ATTACH(NtUnmapViewOfSection);
+    //ATTACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
@@ -598,7 +594,20 @@ ProcessAttach()
     //
     // OLE
     //
-    //ATTACH(CoCreateInstanceEx);
+    ATTACH(CoCreateInstanceEx);
+
+    //
+    // Memory APIs.
+    //
+
+    ATTACH(NtQueryVirtualMemory);
+    ATTACH(NtReadVirtualMemory);
+    ATTACH(NtWriteVirtualMemory);
+    ATTACH(NtFreeVirtualMemory);
+    ATTACH(NtMapViewOfSection);
+    //ATTACH(NtAllocateVirtualMemory);
+    ATTACH(NtUnmapViewOfSection);
+    ATTACH(NtProtectVirtualMemory);
 
     //
     // Commit the current transaction.
@@ -651,21 +660,7 @@ ProcessDetach()
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
     DETACH(NtQueryInformationFile);
-    DETACH(MoveFileWithProgressTransactedW);
-
-    //
-    // Memory APIs.
-    //
-
-    DETACH(NtProtectVirtualMemory);
-    DETACH(NtQueryVirtualMemory);
-    DETACH(NtReadVirtualMemory);
-    DETACH(NtWriteVirtualMemory);
-    DETACH(NtFreeVirtualMemory);
-    DETACH(NtMapViewOfSection);
-    DETACH(NtAllocateVirtualMemory);
-    DETACH(NtProtectVirtualMemory);
-    DETACH(NtUnmapViewOfSection);
+    //DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
@@ -703,7 +698,20 @@ ProcessDetach()
     //
     // OLE
     //
-    //DETACH(CoCreateInstanceEx);
+     DETACH(CoCreateInstanceEx);
+
+    //
+    // Memory APIs.
+    //
+
+    DETACH(NtQueryVirtualMemory);
+    DETACH(NtReadVirtualMemory);
+    DETACH(NtWriteVirtualMemory);
+    DETACH(NtFreeVirtualMemory);
+    DETACH(NtMapViewOfSection);
+    //DETACH(NtAllocateVirtualMemory);
+    DETACH(NtUnmapViewOfSection);
+    DETACH(NtProtectVirtualMemory);
 
     //
     // Commit the current transaction.

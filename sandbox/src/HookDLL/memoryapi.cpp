@@ -65,7 +65,6 @@ HookNtProtectVirtualMemory(
     ReleaseHookGuard();
 end:
     return TrueNtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect);
-    ;
 }
 
 NTSTATUS WINAPI
