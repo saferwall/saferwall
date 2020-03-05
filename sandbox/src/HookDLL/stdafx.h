@@ -64,3 +64,8 @@
 // 
 #include <intrin.h>
 #include <psapi.h>
+
+
+//#pragma comment(lib, "wbemuuid.lib")
+//
+//#include <comdef.h>

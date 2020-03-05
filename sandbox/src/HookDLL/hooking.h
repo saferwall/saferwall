@@ -9,6 +9,7 @@
 #include "winregapi.h"
 #include "processthreadsapi.h"
 #include "ntifs.h"
+#include "ole.h"
 
 
 //

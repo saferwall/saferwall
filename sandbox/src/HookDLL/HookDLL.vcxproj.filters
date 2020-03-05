@@ -66,6 +66,9 @@
     <ClInclude Include="helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ole.h">
+      <Filter>Source Files\Hooks\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -106,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="helpers.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ole.cpp">
+      <Filter>Source Files\Hooks\Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

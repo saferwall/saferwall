@@ -48,6 +48,8 @@ extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
 
+//extern decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx;
+
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
 strlen_fn_t _strlen = nullptr;
@@ -359,10 +361,9 @@ DetAttach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
     if (l != 0)
     {
         WCHAR Buffer[128];
-        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Attach failed: `%s': error %d", DetRealName(psz), l);
+        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Attach failed: %s: error %d", DetRealName(psz), l);
         EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
-
-        // Decode((PBYTE)*ppvReal, 3);
+        //Decode((PBYTE)*ppvReal, 3);
     }
 }
 
@@ -373,7 +374,7 @@ DetDetach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
     if (l != 0)
     {
         WCHAR Buffer[128];
-        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Detach failed: `%s': error %d", DetRealName(psz), l);
+        _snwprintf(Buffer, RTL_NUMBER_OF(Buffer), L"Detour Detach failed: %s: error %d", DetRealName(psz), l);
         EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
     }
 }
@@ -495,6 +496,7 @@ ProcessAttach()
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
     TrueNtLoadDriver = NtLoadDriver;
+    //TrueCoCreateInstanceEx = CoCreateInstanceEx;
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -592,6 +594,11 @@ ProcessAttach()
     ATTACH(RtlDecompressBuffer);
     ATTACH(NtDelayExecution);
     ATTACH(NtLoadDriver);
+
+    //
+    // OLE
+    //
+    //ATTACH(CoCreateInstanceEx);
 
     //
     // Commit the current transaction.
@@ -692,6 +699,11 @@ ProcessDetach()
     DETACH(RtlDecompressBuffer);
     DETACH(NtDelayExecution);
     DETACH(NtLoadDriver);
+
+    //
+    // OLE
+    //
+    //DETACH(CoCreateInstanceEx);
 
     //
     // Commit the current transaction.

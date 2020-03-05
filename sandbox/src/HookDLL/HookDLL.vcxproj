@@ -215,6 +215,7 @@
     <ClInclude Include="memoryapi.h" />
     <ClInclude Include="ntdll.h" />
     <ClInclude Include="ntifs.h" />
+    <ClInclude Include="ole.h" />
     <ClInclude Include="processthreadsapi.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="synchapi.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="memoryapi.cpp" />
     <ClCompile Include="ntifs.cpp" />
+    <ClCompile Include="ole.cpp" />
     <ClCompile Include="processthreadsapi.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
