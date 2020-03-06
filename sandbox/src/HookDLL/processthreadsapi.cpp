@@ -8,6 +8,12 @@ decltype(NtResumeThread) *TrueNtResumeThread = nullptr;
 decltype(NtSuspendThread) *TrueNtSuspendThread = nullptr;
 decltype(NtOpenProcess) *TrueNtOpenProcess = nullptr;
 decltype(NtTerminateProcess) *TrueNtTerminateProcess = nullptr;
+decltype(NtContinue) *TrueNtContinue = nullptr;
+
+
+BOOL bFirstTime = TRUE;
+
+
 
 NTSTATUS NTAPI
 HookNtCreateUserProcess(
@@ -216,4 +222,42 @@ HookNtTerminateProcess(_In_opt_ HANDLE ProcessHandle, _In_ NTSTATUS ExitStatus)
 
 end:
     return TrueNtTerminateProcess(ProcessHandle, ExitStatus);
+}
+
+NTSTATUS NTAPI
+HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
+{
+    NTSTATUS Status;
+    UNICODE_STRING ModulePath;
+    HANDLE ModuleHandle = NULL;
+
+	if (bFirstTime)
+    {
+        RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
+        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        if (Status == STATUS_SUCCESS)
+        {
+            HookOleAPIs(TRUE);
+            LogMessage(L"Hooked OLE");
+        }
+        bFirstTime = FALSE;
+    }
+
+    if (IsInsideHook())
+    {
+        goto end;
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtTerminateProcess(ContextRecord: 0x%p, TestAlert: %d), RETN: %p",
+        ContextRecord,
+        TestAlert,
+        _ReturnAddress());
+
+    ReleaseHookGuard();
+
+end:
+    return TrueNtContinue(ContextRecord, TestAlert);
 }

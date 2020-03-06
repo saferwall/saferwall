@@ -4,7 +4,27 @@
 #include "stdafx.h"
 #include "hooking.h"
 
+//
+// Defines
+//
+
+//
+// Begin a new transaction for detaching detours.
+// Then, Enlist a thread for update in the current transaction.
+//
+#define DETOUR_BEGING \
+    DetourTransactionBegin(); \
+    DetourUpdateThread(NtCurrentThread());
+
+#define DETOUR_END
+
+//
+// Lib Load APIs.
+//
+
+//
 // Globals
+//
 extern decltype(LdrLoadDll) *TrueLdrLoadDll;
 extern decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx;
 extern decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx;
@@ -42,6 +62,7 @@ extern decltype(NtCreateThread) *TrueNtCreateThread;
 extern decltype(NtCreateThreadEx) *TrueNtCreateThreadEx;
 extern decltype(NtSuspendThread) *TrueNtSuspendThread;
 extern decltype(NtResumeThread) *TrueNtResumeThread;
+extern decltype(NtContinue) *TrueNtContinue;
 
 extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
@@ -53,9 +74,12 @@ extern decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx;
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
 strlen_fn_t _strlen = nullptr;
+pfn_wcsstr _wcsstr = nullptr;
+pfnStringFromGUID2 _StringFromGUID2 = nullptr;
+pfnStringFromCLSID _StringFromCLSID = nullptr;
+pfnCoTaskMemFree _CoTaskMemFree = nullptr;
 
-CRITICAL_SECTION gDbgHelpLock;
-CRITICAL_SECTION gInsideHookLock;
+CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
 DWORD dwTlsIndex;
 
@@ -71,13 +95,6 @@ REGHANDLE ProviderHandle;
 #define ATTACH(x) DetAttach(&(PVOID &)True##x, Hook##x, #x)
 #define DETACH(x) DetDetach(&(PVOID &)True##x, Hook##x, #x)
 
-VOID
-WaitForMe(LONGLONG delayInMillis)
-{
-    LARGE_INTEGER DelayInterval;
-    DelayInterval.QuadPart = -delayInMillis;
-    NtDelayExecution(FALSE, &DelayInterval);
-}
 
 typedef struct _STACKTRACE
 {
@@ -92,11 +109,13 @@ typedef struct _STACKTRACE
     ULONGLONG Frames[ANYSIZE_ARRAY];
 } STACKTRACE, *PSTACKTRACE;
 
+
 VOID
 CaptureStackTrace()
 {
+    return;
     PCONTEXT InitialContext = NULL;
-    //STACKTRACE StackTrace;
+    // STACKTRACE StackTrace;
     UINT MaxFrames = 50;
     STACKFRAME64 StackFrame;
     DWORD MachineType = 0;
@@ -402,15 +421,17 @@ GetAPIAddress(PSTR FunctionName, PWSTR ModuleName)
 
     HANDLE ModuleHandle = NULL;
     Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-    if (!NT_SUCCESS(Status))
+    if (Status != STATUS_SUCCESS)
     {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"LdrGetDllHandle failed");
         return NULL;
     }
 
     PVOID Address;
     Status = LdrGetProcedureAddress(ModuleHandle, &RoutineName, 0, &Address);
-    if (!NT_SUCCESS(Status))
+    if (Status != STATUS_SUCCESS)
     {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"LdrGetProcedureAddress failed");
         return NULL;
     }
 
@@ -440,7 +461,9 @@ ProcessAttach()
     }
     SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
 
+    //
     // Allocate a TLS index.
+    //
 
     if ((dwTlsIndex = TlsAlloc()) == TLS_OUT_OF_INDEXES)
         LogMessage(L"TlsAlloc failed");
@@ -503,21 +526,15 @@ ProcessAttach()
     TrueNtSuspendThread = NtSuspendThread;
     TrueNtOpenProcess = NtOpenProcess;
     TrueNtTerminateProcess = NtTerminateProcess;
+    TrueNtContinue = NtContinue;
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
     TrueNtLoadDriver = NtLoadDriver;
-    TrueCoCreateInstanceEx = CoCreateInstanceEx;
 
     //
     // Resolve the ones not exposed by ntdll.
     //
 
-    TrueMoveFileWithProgressTransactedW = (pfnMoveFileWithProgressTransactedW)GetAPIAddress(
-        (PSTR) "MoveFileWithProgressTransactedW", (PWSTR)L"kernelbase.dll");
-    if (TrueMoveFileWithProgressTransactedW == NULL)
-    {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"MoveFileWithProgressTransactedW() is NULL");
-    }
     _vsnwprintf = (__vsnwprintf_fn_t)GetAPIAddress((PSTR) "_vsnwprintf", (PWSTR)L"ntdll.dll");
     if (_vsnwprintf == NULL)
     {
@@ -529,6 +546,19 @@ ProcessAttach()
         EtwEventWriteString(ProviderHandle, 0, 0, L"_snwprintf() is NULL");
     }
 
+    _wcsstr = (pfn_wcsstr)GetAPIAddress((PSTR) "wcsstr", (PWSTR)L"ntdll.dll");
+    if (_wcsstr == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"wcsstr() is NULL");
+    }
+
+    TrueMoveFileWithProgressTransactedW = (pfnMoveFileWithProgressTransactedW)GetAPIAddress(
+        (PSTR) "MoveFileWithProgressTransactedW", (PWSTR)L"kernelbase.dll");
+    if (TrueMoveFileWithProgressTransactedW == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"MoveFileWithProgressTransactedW() is NULL");
+    }
+ 
     //
     // Initializes a critical section objects.
     // Uesd for capturing stack trace and IsInsideHook.
@@ -538,112 +568,18 @@ ProcessAttach()
     InitializeCriticalSection(&gInsideHookLock);
 
     //
-    // Lib Load APIs.
+    // Attach Native APIs.
     //
 
-    ATTACH(LdrLoadDll);
-    ATTACH(LdrGetProcedureAddressEx);
-    ATTACH(LdrGetDllHandleEx);
+    HookNtAPIs();
 
-    //
-    // File APIs.
-    //
-
-    ATTACH(NtCreateFile);
-    ATTACH(NtReadFile);
-    ATTACH(NtWriteFile);
-    ATTACH(NtDeleteFile);
-    ATTACH(NtSetInformationFile);
-    ATTACH(NtQueryDirectoryFile);
-    ATTACH(NtQueryInformationFile);
-    //ATTACH(MoveFileWithProgressTransactedW);
-
-    //
-    // Registry APIs.
-    //
-
-    ATTACH(NtOpenKey);
-    ATTACH(NtOpenKeyEx);
-    ATTACH(NtCreateKey);
-    ATTACH(NtQueryValueKey);
-    ATTACH(NtSetValueKey);
-    ATTACH(NtDeleteKey);
-    ATTACH(NtDeleteValueKey);
-
-    //
-    // Process/Thread APIs.
-    //
-
-    ATTACH(NtOpenProcess);
-    ATTACH(NtTerminateProcess);
-    ATTACH(NtCreateUserProcess);
-    ATTACH(NtCreateThread);
-    ATTACH(NtCreateThreadEx);
-    ATTACH(NtSuspendThread);
-    ATTACH(NtResumeThread);
-
-    //
-    // System APIs.
-    //
-
-    ATTACH(NtQuerySystemInformation);
-    ATTACH(RtlDecompressBuffer);
-    ATTACH(NtDelayExecution);
-    ATTACH(NtLoadDriver);
-
-    //
-    // OLE
-    //
-    ATTACH(CoCreateInstanceEx);
-
-    //
-    // Memory APIs.
-    //
-
-    ATTACH(NtQueryVirtualMemory);
-    ATTACH(NtReadVirtualMemory);
-    ATTACH(NtWriteVirtualMemory);
-    ATTACH(NtFreeVirtualMemory);
-    ATTACH(NtMapViewOfSection);
-    //ATTACH(NtAllocateVirtualMemory);
-    ATTACH(NtUnmapViewOfSection);
-    ATTACH(NtProtectVirtualMemory);
-
-    //
-    // Commit the current transaction.
-    //
-
-    PVOID *ppbFailedPointer = NULL;
-    LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
-    if (error != NO_ERROR)
-    {
-        LogMessage(
-            L"Attach transaction failed to commit. Error %d (%p/%p)", error, ppbFailedPointer, *ppbFailedPointer);
-        return error;
-    }
-
-    EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Attached");
-    return STATUS_SUCCESS;
+    return TRUE;
 }
 
 BOOL
 ProcessDetach()
 {
-    //
-    // Begin a new transaction for detaching detours.
-    //
-
-    DetourTransactionBegin();
-
-    //
-    // Enlist a thread for update in the current transaction.
-    //
-
-    DetourUpdateThread(NtCurrentThread());
-
-    //
-    // Lib Load APIs.
-    //
+    HookBegingTransation();
 
     DETACH(LdrLoadDll);
     DETACH(LdrGetProcedureAddressEx);
@@ -660,7 +596,7 @@ ProcessDetach()
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
     DETACH(NtQueryInformationFile);
-    //DETACH(MoveFileWithProgressTransactedW);
+    // DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
@@ -696,11 +632,6 @@ ProcessDetach()
     DETACH(NtLoadDriver);
 
     //
-    // OLE
-    //
-     DETACH(CoCreateInstanceEx);
-
-    //
     // Memory APIs.
     //
 
@@ -709,32 +640,175 @@ ProcessDetach()
     DETACH(NtWriteVirtualMemory);
     DETACH(NtFreeVirtualMemory);
     DETACH(NtMapViewOfSection);
-    //DETACH(NtAllocateVirtualMemory);
+    // DETACH(NtAllocateVirtualMemory);
     DETACH(NtUnmapViewOfSection);
     DETACH(NtProtectVirtualMemory);
 
-    //
-    // Commit the current transaction.
-    //
-
-    PVOID *ppbFailedPointer = NULL;
-    LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
-    if (error != NO_ERROR)
-    {
-        LogMessage(
-            L"Detach transaction failed to commit. Error %d (%p/%p)", error, ppbFailedPointer, *ppbFailedPointer);
-        return error;
-    }
-
-    EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Dettached");
-
-    //
-    // Deallocates all resources we allocated before.
-    //
+    HookCommitTransaction();
 
     TlsFree(dwTlsIndex);
     SymCleanup(NtCurrentProcess());
     EtwEventUnregister(ProviderHandle);
 
+    EtwEventWriteString(ProviderHandle, 0, 0, L"Detached success");
+
     return STATUS_SUCCESS;
+}
+
+BOOL
+HookBegingTransation()
+{
+    //
+    // Begin a new transaction for attaching detours.
+    //
+
+    if (DetourTransactionBegin() != NO_ERROR)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourTransactionBegin() failed");
+        return FALSE;
+    }
+
+    //
+    // Enlist a thread for update in the current transaction.
+    //
+
+    if (DetourUpdateThread(NtCurrentThread()) != NO_ERROR)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourUpdateThread() failed");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+BOOL
+HookCommitTransaction()
+{
+    PVOID *ppbFailedPointer = NULL;
+    LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
+    if (error != NO_ERROR)
+    {
+        LogMessage(
+            L"Attach transaction failed to commit. Error %d (%p/%p)", error, ppbFailedPointer, *ppbFailedPointer);
+        return FALSE;
+    }
+
+    EtwEventWriteString(ProviderHandle, 0, 0, L"Detours Attached");
+    return TRUE;
+}
+
+VOID
+HookOleAPIs(BOOL Attach)
+{
+    _StringFromGUID2 = (pfnStringFromGUID2)GetAPIAddress((PSTR) "StringFromGUID2", (PWSTR)L"ole32.dll");
+    if (_StringFromGUID2 == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"StringFromGUID2() is NULL");
+    }
+
+	_StringFromCLSID = (pfnStringFromCLSID)GetAPIAddress((PSTR) "StringFromCLSID", (PWSTR)L"ole32.dll");
+    if (_StringFromCLSID == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"StringFromCLSID() is NULL");
+    }
+
+	_CoTaskMemFree = (pfnCoTaskMemFree)GetAPIAddress((PSTR) "CoTaskMemFree", (PWSTR)L"ole32.dll");
+    if (_CoTaskMemFree == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"CoTaskMemFree() is NULL");
+    }
+
+    TrueCoCreateInstanceEx = (pfnCoCreateInstanceEx)GetAPIAddress((PSTR) "CoCreateInstanceEx", (PWSTR)L"ole32.dll");
+    if (TrueCoCreateInstanceEx == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"CoCreateInstanceEx() is NULL");
+    }
+
+    HookBegingTransation();
+    if (Attach)
+    {
+        ATTACH(CoCreateInstanceEx);
+    }
+    else
+    {
+        DETACH(CoCreateInstanceEx);
+    }
+
+    HookCommitTransaction();
+}
+
+VOID
+HookNtAPIs()
+{
+    HookBegingTransation();
+
+    //
+    // Lib Load APIs.
+    //
+
+    ATTACH(LdrLoadDll);
+    ATTACH(LdrGetProcedureAddressEx);
+    ATTACH(LdrGetDllHandleEx);
+
+    //
+    // File APIs.
+    //
+
+    ATTACH(NtCreateFile);
+    ATTACH(NtReadFile);
+    ATTACH(NtWriteFile);
+    ATTACH(NtDeleteFile);
+    ATTACH(NtSetInformationFile);
+    ATTACH(NtQueryDirectoryFile);
+    ATTACH(NtQueryInformationFile);
+    // ATTACH(MoveFileWithProgressTransactedW);
+
+    //
+    // Registry APIs.
+    //
+
+    ATTACH(NtOpenKey);
+    ATTACH(NtOpenKeyEx);
+    ATTACH(NtCreateKey);
+    ATTACH(NtQueryValueKey);
+    ATTACH(NtSetValueKey);
+    ATTACH(NtDeleteKey);
+    ATTACH(NtDeleteValueKey);
+
+    //
+    // Process/Thread APIs.
+    //
+
+    ATTACH(NtOpenProcess);
+    ATTACH(NtTerminateProcess);
+    ATTACH(NtCreateUserProcess);
+    ATTACH(NtCreateThread);
+    ATTACH(NtCreateThreadEx);
+    ATTACH(NtSuspendThread);
+    ATTACH(NtResumeThread);
+    ATTACH(NtContinue);
+
+    //
+    // System APIs.
+    //
+
+    ATTACH(NtQuerySystemInformation);
+    ATTACH(RtlDecompressBuffer);
+    ATTACH(NtDelayExecution);
+    ATTACH(NtLoadDriver);
+
+    //
+    // Memory APIs.
+    //
+
+    ATTACH(NtQueryVirtualMemory);
+    ATTACH(NtReadVirtualMemory);
+    ATTACH(NtWriteVirtualMemory);
+    ATTACH(NtFreeVirtualMemory);
+    ATTACH(NtMapViewOfSection);
+    // ATTACH(NtAllocateVirtualMemory);
+    ATTACH(NtUnmapViewOfSection);
+    ATTACH(NtProtectVirtualMemory);
+
+    HookCommitTransaction();
 }

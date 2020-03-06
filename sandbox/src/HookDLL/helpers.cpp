@@ -48,3 +48,37 @@ WCHAR* MultiByteToWide(CHAR* lpMultiByteStr)
 
 	//return wszDest;
 }
+
+
+// This makro assures that INVALID_HANDLE_VALUE (0xFFFFFFFF) returns FALSE
+#define IsConsoleHandle(h) (((((ULONG_PTR)h) & 0x10000003) == 0x3) ? TRUE : FALSE)
+
+DWORD
+GetNtPathFromHandle(HANDLE Handle, PUNICODE_STRING* ObjectName)
+{
+    ULONG ObjectInformationLength;
+    PVOID ObjectNameInfo;
+
+    if (Handle == 0 || Handle == INVALID_HANDLE_VALUE)
+        return ERROR_INVALID_HANDLE;
+
+    //
+    // Get the size of the information needed.
+    //
+    if (!NT_SUCCESS(
+            NtQueryObject(Handle, ObjectNameInformation, ObjectNameInfo, sizeof(ULONG), &ObjectInformationLength)))
+    {
+        //
+        // Reallocate the buffer and try again.
+        //
+        ObjectNameInfo = RtlAllocateHeap(RtlProcessHeap(), 0, ObjectInformationLength);
+        if (!NT_SUCCESS(NtQueryObject(Handle, ObjectNameInformation, ObjectNameInfo, ObjectInformationLength, NULL)))
+        {
+            RtlFreeHeap(ObjectNameInfo, 0, NULL);
+            return 0;
+        }
+    }
+
+	*ObjectName = (PUNICODE_STRING)ObjectNameInfo;
+    return 0;
+}

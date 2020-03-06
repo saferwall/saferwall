@@ -5,6 +5,9 @@ decltype(LdrLoadDll) *TrueLdrLoadDll = nullptr;
 decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx = nullptr;
 decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx = nullptr;
 
+extern pfn_wcsstr _wcsstr;
+
+
 NTSTATUS
 WINAPI
 HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle)
@@ -24,6 +27,19 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
     if (DllName && DllName->Buffer)
     {
         TraceAPI(L"LdrLoadDll(%ws), RETN: 0x%p", DllName->Buffer, _ReturnAddress());
+
+        if (_wcsstr(DllName->Buffer, L"ole32.dll") != NULL)
+        {
+            NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
+            if (NT_SUCCESS(Status))
+            {
+                LogMessage(L"Enabling OLE hooks ...");
+                HookOleAPIs(TRUE);
+                ReleaseHookGuard();
+                return Status;
+            }
+
+        }
     }
 
     ReleaseHookGuard();
@@ -60,8 +76,6 @@ HookLdrGetProcedureAddressEx(
 end:
     return TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
 }
-
-
 
 NTSTATUS
 WINAPI

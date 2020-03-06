@@ -79,3 +79,7 @@ HookNtTerminateProcess(
 	_In_opt_ HANDLE ProcessHandle,
 	_In_ NTSTATUS ExitStatus
 );
+
+NTSTATUS
+NTAPI
+HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert);

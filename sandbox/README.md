@@ -94,6 +94,16 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 
 ### Network
 
+### Service (to add)
+
+- OpenSCManagerW
+- CreateServiceW
+- OpenServiceW
+- StartServiceW
+- ControlService
+- DeleteService
+- EnumServicesStatusW
+
 ### Crypto
 
 - RtlDecompressBuffer

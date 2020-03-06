@@ -10,6 +10,7 @@ decltype(NtFreeVirtualMemory) *TrueNtFreeVirtualMemory = nullptr;
 decltype(NtMapViewOfSection) *TrueNtMapViewOfSection = nullptr;
 decltype(NtUnmapViewOfSection) *TrueNtUnmapViewOfSection = nullptr;
 
+
 NTSTATUS NTAPI
 HookNtAllocateVirtualMemory(
     _In_ HANDLE ProcessHandle,
@@ -31,7 +32,7 @@ HookNtAllocateVirtualMemory(
         ProcessHandle,
         AllocationType,
         Protect,
-        _ReturnAddress()); // , Protect
+        _ReturnAddress());
 
     ReleaseHookGuard();
 end:
@@ -180,7 +181,6 @@ HookNtFreeVirtualMemory(
     ReleaseHookGuard();
 end:
     return TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
-    ;
 }
 
 NTSTATUS WINAPI
@@ -198,6 +198,7 @@ HookNtMapViewOfSection(
     _In_ ULONG AllocationType,
     _In_ ULONG Win32Protect)
 {
+
     if (IsInsideHook())
     {
         goto end;
@@ -216,7 +217,7 @@ HookNtMapViewOfSection(
     ReleaseHookGuard();
 
 end:
-    return TrueNtMapViewOfSection(
+    NTSTATUS Status =  TrueNtMapViewOfSection(
         SectionHandle,
         ProcessHandle,
         BaseAddress,
@@ -227,6 +228,8 @@ end:
         InheritDisposition,
         AllocationType,
         Win32Protect);
+
+	return Status;
 }
 
 NTSTATUS WINAPI

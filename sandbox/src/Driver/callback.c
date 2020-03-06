@@ -55,11 +55,6 @@ LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     UNREFERENCED_PARAMETER(ProcessId);
     UNREFERENCED_PARAMETER(ImageInfo);
 
-    LOG_INFO(
-        "LoadImageNotifyRoutine: Process: %s, FullImageName %wZ",
-        PsGetProcessImageFileName(PsGetCurrentProcess()),
-        FullImageName);
-
     //
     // Check if current process is injected.
     //
@@ -70,6 +65,11 @@ LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     {
         return;
     }
+
+    LOG_INFO(
+        "LoadImageNotifyRoutine: Process: %s, FullImageName %wZ",
+        PsGetProcessImageFileName(PsGetCurrentProcess()),
+        FullImageName);
 
     if (PsIsProtectedProcess(PsGetCurrentProcess()))
     {

@@ -1,7 +1,11 @@
 #include "stdafx.h"
 #include "ole.h"
 
-decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx = nullptr;
+extern pfnCoCreateInstanceEx TrueCoCreateInstanceEx = nullptr;
+extern pfnStringFromGUID2 _StringFromGUID2;
+extern pfnStringFromCLSID _StringFromCLSID;
+extern pfnCoTaskMemFree _CoTaskMemFree;
+
 
 HRESULT
 HookCoCreateInstanceEx(
@@ -12,21 +16,23 @@ HookCoCreateInstanceEx(
     _In_ DWORD dwCount,
     _Inout_updates_(dwCount) MULTI_QI *pResults)
 {
-    WCHAR szGuidW[40] = {0};
-
-    if (IsInsideHook())
+   /* if (IsInsideHook())
     {
         goto end;
     }
 
-    CaptureStackTrace();
+    CaptureStackTrace();*/
 
-	StringFromGUID2(Clsid, szGuidW, 40);
-    TraceAPI(L"CoCreateInstanceEx(szGuidW: %ws), RETN: 0x%p", _ReturnAddress());
-
-    ReleaseHookGuard();
-end:
+	//_StringFromGUID2(Clsid, szGuidW, 100);
+//    OLECHAR *guidString;
+//    _StringFromCLSID(Clsid, &guidString);
+//    TraceAPI(L"CoCreateInstanceEx(szGuidW: %ws), RETN: 0x%p", guidString, _ReturnAddress());
+//    _CoTaskMemFree(guidString);
+//
+//    ReleaseHookGuard();
+//end:
     return TrueCoCreateInstanceEx(
         Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
 }
+
 
