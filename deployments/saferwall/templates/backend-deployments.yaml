@@ -25,7 +25,7 @@ spec:
             - containerPort: {{ .Values.backend.containerPort }}
           env:
             - name: ENVIRONMENT
-              value: "dev"
+              value: "prod"
           volumeMounts:
             - name:  {{ $.Release.Name }}-configmap-volume
               mountPath: /backend/config/
@@ -35,7 +35,7 @@ spec:
           name: {{ include "saferwall.backend.fullname" . }}
           items:
             - key: backends_conf
-              path: app.dev.toml
+              path: app.prod.toml
 {{- end }}
 
 

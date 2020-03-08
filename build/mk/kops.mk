@@ -3,7 +3,7 @@ awscli-install:		## Install aws cli tool
 	pip install awscli
 	aws configure
 
-aws-create-user:		## Create user to provision the cluster
+aws-create-user:	## Create user to provision the cluster
 	aws iam create-group --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --group-name kops
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonRoute53FullAccess --group-name kops
@@ -16,20 +16,20 @@ aws-create-user:		## Create user to provision the cluster
 	aws iam create-access-key --user-name kops
 
 kops-install:		## Install Kubernetes Kops
-	curl -Lo kops https://github.com/kubernetes/kops/releases/download/$$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v1.16.0/kops-linux-amd64
 	chmod +x ./kops
 	sudo mv ./kops /usr/local/bin/
 	kops version
 
 ZONE = us-east-1
-kops-create-kops-bucket:		## create s3 bucket for kops
+kops-create-kops-bucket:		## Create s3 bucket for kops
 	aws s3api create-bucket --bucket kops-saferwall-com-state-store --region $(ZONE)
 	aws s3api put-bucket-versioning --bucket kops-saferwall-com-state-store --versioning-configuration Status=Enabled
 
-NODE_COUNT = 1
+NODE_COUNT = 2
 NODE_SIZE = t2.xlarge
 FS_TOKEN = saferwall-efs
-kops-create-cluster:	## create k8s cluster
+kops-create-cluster:			## Create k8s cluster
 	kubectl config get-contexts
 	aws ec2 describe-availability-zones --region $(ZONE)
 	kops create cluster \
@@ -39,21 +39,21 @@ kops-create-cluster:	## create k8s cluster
 		${NAME} 
 	kops edit cluster ${NAME}
 	kops update cluster ${NAME} --yes
-	sleep 8m
+	sleep 10m
 	kops validate cluster
 	kubectl config current-context
 	kubectl get nodes
 
-kops-create-efs:		## create AWS EFS file system
+kops-create-efs:				## Create AWS EFS file system
 	aws efs create-file-system \
 		--creation-token $(FS_TOKEN) \
 		--performance-mode maxIO \
 		--region us-east-1
 
-kops-create-mount-targers:	## Create mount targets
+kops-create-mount-targers:		## Create mount targets
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SubnetId' --output text | head -n 1))
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SubnetId' --output text | head -n 1 | cut -f 1 ))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
 		--subnet-id $(SUBNET) \
@@ -104,6 +104,7 @@ saferwall: ## Deploy the cluster
 	make aws-create-user
 	make kops-install
 	make kops-create-kops-bucket
+	make kops-create-cluster
 	make kops-create-efs
 	make kops-create-mount-targers
 	make kops-init-cert-manager
