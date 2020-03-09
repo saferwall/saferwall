@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -38,16 +38,16 @@ type stringStruct struct {
 
 type submission struct {
 	Date     *time.Time `json:"date,omitempty"`
-	Filename string    `json:"filename,omitempty"`
-	Source   string    `json:"source,omitempty"`
-	Country  string    `json:"country,omitempty"`
+	Filename string     `json:"filename,omitempty"`
+	Source   string     `json:"source,omitempty"`
+	Country  string     `json:"country,omitempty"`
 }
 
 type Comment struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
-	Username  string    `json:"username,omitempty"`
-	Body      string    `json:"body,omitempty"`
-	ID        string    `json:"id,omitempty"`
+	Username  string     `json:"username,omitempty"`
+	Body      string     `json:"body,omitempty"`
+	ID        string     `json:"id,omitempty"`
 }
 
 // File represent a sample
@@ -64,8 +64,8 @@ type File struct {
 	TriD            []string               `json:"trid,omitempty"`
 	Tags            []string               `json:"tags,omitempty"`
 	Packer          []string               `json:"packer,omitempty"`
-	FirstSubmission *time.Time              `json:"first_submission,omitempty"`
-	LastSubmission  *time.Time              `json:"last_submission,omitempty"`
+	FirstSubmission *time.Time             `json:"first_submission,omitempty"`
+	LastSubmission  *time.Time             `json:"last_submission,omitempty"`
 	Submissions     []submission           `json:"submissions,omitempty"`
 	Strings         []stringStruct         `json:"strings,omitempty"`
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
@@ -386,7 +386,7 @@ func PostFiles(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"verbose_msg": "Username does not exists"})
 	}
-  
+
 	log.Infoln("New file uploaded by", username)
 
 	// Source
@@ -503,7 +503,7 @@ func PostFiles(c echo.Context) error {
 
 		// add new activity
 		activity := usr.NewActivity("submit", map[string]string{
-			"sha256":sha256})
+			"sha256": sha256})
 		usr.Activities = append(usr.Activities, activity)
 		usr.Save()
 
@@ -682,7 +682,7 @@ func Actions(c echo.Context) error {
 
 			// add new activity
 			activity := usr.NewActivity("like", map[string]string{
-				"sha256":sha256})
+				"sha256": sha256})
 			usr.Activities = append(usr.Activities, activity)
 			usr.Save()
 		}
@@ -782,14 +782,14 @@ func PostComment(c echo.Context) error {
 	// Overwrite the content for now
 	now := time.Now().UTC()
 	commentID := betterguid.New()
-  
+
 	com.Timestamp = &now
 	com.Username = username
 	com.ID = commentID
 	file.Comments = append(file.Comments, com)
 	file.Save()
 
-  // Create the same comment to store in user document.
+	// Create the same comment to store in user document.
 	userCom := user.Comment{}
 	userCom.Timestamp = &now
 	userCom.ID = commentID
@@ -797,10 +797,10 @@ func PostComment(c echo.Context) error {
 	userCom.Sha256 = sha256
 	usr.Comments = append(usr.Comments, userCom)
 	usr.Save()
-  
+
 	// add new activity
 	activity := usr.NewActivity("comment", map[string]string{
-		"sha256":sha256, "body": com.Body})
+		"sha256": sha256, "body": com.Body})
 	usr.Activities = append(usr.Activities, activity)
 	usr.Save()
 

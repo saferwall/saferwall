@@ -1,13 +1,13 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package middleware
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
 	"net/http"
 	"strings"
@@ -25,7 +25,7 @@ var (
 // Used for email confirmation and pwd reset.
 type CustomClaims struct {
 	Username string `json:"username"`
-	Purpose string `json:"purpose"`
+	Purpose  string `json:"purpose"`
 	jwt.StandardClaims
 }
 
@@ -35,7 +35,6 @@ type LoginCustomClaims struct {
 	Admin bool   `json:"admin"`
 	jwt.StandardClaims
 }
-
 
 // RequireJSON requires an application/json content type.
 func RequireJSON(next echo.HandlerFunc) echo.HandlerFunc {
@@ -59,8 +58,8 @@ func Init(e *echo.Echo) {
 
 	// cors
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{viper.GetString("ui.address")},
-		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.OPTIONS},
+		AllowOrigins:     []string{viper.GetString("ui.address")},
+		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.OPTIONS},
 		AllowCredentials: true,
 	}))
 
@@ -75,7 +74,7 @@ func Init(e *echo.Echo) {
 	})
 
 	RequireToken = middleware.JWTWithConfig(middleware.JWTConfig{
-		Claims:     &CustomClaims{},
+		Claims:      &CustomClaims{},
 		SigningKey:  []byte(key),
 		TokenLookup: "query:token",
 	})

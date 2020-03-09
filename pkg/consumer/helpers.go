@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -7,17 +7,18 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
-	"errors"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func loadConfig() {
-	
+
 	// Add condig path directories
 	viper.AddConfigPath("configs")
 	viper.AddConfigPath("../../configs")
@@ -85,7 +86,7 @@ func login() string {
 
 	var res map[string]string
 	json.Unmarshal(d, &res)
-	return res["token"]	
+	return res["token"]
 }
 
 func updateDocument(sha256 string, buff []byte) error {

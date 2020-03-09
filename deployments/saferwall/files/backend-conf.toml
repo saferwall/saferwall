@@ -1,0 +1,42 @@
+# This file needs to be edited !
+
+[ui]
+address = "https://company.com"
+
+[app]
+address = ":8080"
+debug = true
+tmp_samples = "/tmp/samples"
+max_file_size = 64000000 # 64MB
+max_avatar_file_size = 100000 # 100KB
+admin_user = "Administrator"
+admin_pwd = "password"
+admin_email = "admin@company.com"
+
+[db]
+server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}'
+username = "Administrator"
+password = "password"
+
+[nsq]
+address = '{{ printf "%s-nsq-%s" .Release.Name .Values.nsq.nsqd.name }}:4150'
+
+[minio]
+endpoint = '{{ printf "%s-minio" .Release.Name }}:9000'
+seckey = "{{ .Values.minio.secretKey }}"
+accesskey = "{{ .Values.minio.accessKey }}"
+spacename = "{{ .Values.minio.spacename }}"
+avatarspace = "{{ .Values.minio.avatarspace }}"
+
+ssl = false
+
+[auth]
+signkey = "jwt_secret_auth_key"
+
+[smtp]
+server = "smtp.gmail.com"
+port = 465
+user =  "noreply@company.com"
+password = "password"
+identity =  "CompanyIdentify"
+sender =  "noreply@company.com"

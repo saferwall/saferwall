@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -16,7 +16,6 @@ type Rule struct {
 	Namespace string
 	Filename  string
 }
-
 
 // Load and compile yara rules
 func Load(rules []Rule) (*yara.Rules, error) {

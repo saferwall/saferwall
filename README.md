@@ -11,6 +11,8 @@ It aims for the following goals:
 - Hunting platform to find new malwares.
 - Quality ensurance for signature before releasing.
 
+<p align="center"><img src="https://i.imgur.com/dztfZiB.png" width="600px" height="auto"></p>
+
 ## Features
 
 - Static analysis:
@@ -39,7 +41,9 @@ Steps:
 1. Clone the project: `git clone https://github.com/saferwall/saferwall`
 2. Using a debian linux, make sure `build-essential` are installed: `sudo apt-get install build-essential`.
 3. Install it: `make saferwall`.
-4. The AVs requires licenses, that is why the containers are not publicly avaibable. Put licenses under `build/data ` and run: `make build`
+4. The AVs requires licenses, that is why the containers are not publicly avaibable.
+  - Rename the `example.env` to `.env` and fill the credentials according to which AVs you want to have. 
+  - Put licenses under `build/data` and run: `make build`
 5. Edit the deployments/values.yaml to match your needs.
 
 ## Built with:

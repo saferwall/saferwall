@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,11 +6,11 @@ package avast
 
 import (
 	"errors"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"io"
 	"os"
 	"strings"
 	"time"
-	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
@@ -196,7 +196,7 @@ func RestartService() error {
 // StartDaemon starts the Avast daemon.
 func StartDaemon() error {
 	err := utils.StartCommand("sudo", avastDaemon, "-n", "-D")
-	time.Sleep(5* time.Second)
+	time.Sleep(5 * time.Second)
 	err = utils.StartCommand("sudo", avastDaemon, "-n", "-D")
 	return err
 }

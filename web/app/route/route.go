@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -22,7 +22,7 @@ func New() *echo.Echo {
 	m.Init(e)
 
 	// handle user login and confirmation via email.
-	e.POST("/v1/auth/login/", auth.Login, m.RequireJSON) 	
+	e.POST("/v1/auth/login/", auth.Login, m.RequireJSON)
 	e.GET("/v1/auth/confirm/", auth.Confirm, m.RequireToken)
 	e.POST("/v1/auth/resend-confirmation/", auth.ReconfirmAccount)
 
@@ -87,6 +87,6 @@ func New() *echo.Echo {
 
 	// ugly hack
 	user.CreateAdminUser()
-	
+
 	return e
 }

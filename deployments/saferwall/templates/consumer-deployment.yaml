@@ -28,7 +28,7 @@ spec:
             mountPath: /consumer/configs/
           env:
             - name: ENVIRONMENT
-              value: "dev"
+              value: "prod"
       volumes:
       - name: samples
         persistentVolumeClaim:
@@ -38,5 +38,5 @@ spec:
           name: {{ include "saferwall.consumer.fullname" . }}
           items:
             - key: consumer_conf
-              path: saferwall.dev.toml
+              path: saferwall.prod.toml
 {{- end }}

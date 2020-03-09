@@ -1,20 +1,20 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package email
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/go-gomail/gomail"
 	"github.com/matcornic/hermes/v2"
 	"github.com/saferwall/saferwall/web/app"
 	log "github.com/sirupsen/logrus"
-	"github.com/go-gomail/gomail"
 	"io/ioutil"
 	"net/mail"
 	"os"
-	"crypto/tls"
 )
 
 type template interface {
@@ -27,7 +27,7 @@ func Send(username, link, recipient, templateToUse string) {
 
 	// Get our Hermes instance
 	h := app.Hermes
-	
+
 	// Use the default theme
 	h.Theme = new(hermes.Default)
 
@@ -37,10 +37,9 @@ func Send(username, link, recipient, templateToUse string) {
 
 	var t template
 
-	if templateToUse == "confirm"{
+	if templateToUse == "confirm" {
 		t = new(confirm)
 		options.Subject = "Saferwall - Confirm Account"
-
 
 	}
 	if templateToUse == "reset" {
@@ -49,8 +48,7 @@ func Send(username, link, recipient, templateToUse string) {
 	}
 
 	// Generate emails
-	generateEmails(h, t.Email(username, link), t.Name()) 
-
+	generateEmails(h, t.Email(username, link), t.Name())
 
 	log.Printf("Sending email '%s'...", options.Subject)
 	path := fmt.Sprintf("%v/%v.%v.html", h.Theme.Name(), h.Theme.Name(), t.Name())

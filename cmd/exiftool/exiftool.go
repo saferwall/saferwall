@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -28,7 +28,6 @@ func main() {
 	// get exiftool output
 	r, err := exiftool.Scan(os.Args[1])
 	check(err)
-
 
 	// pretty print the results
 	b, err := json.MarshalIndent(r, "", "  ")

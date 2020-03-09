@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -290,8 +290,8 @@ func CreateFile(path string) error {
 
 // DeleteFile delete a file.
 func DeleteFile(path string) error {
-	if err := os.Remove(path) ; err != nil  {
-		 return err
+	if err := os.Remove(path); err != nil {
+		return err
 	}
 	return nil
 }

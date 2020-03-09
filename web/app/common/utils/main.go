@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -26,12 +26,12 @@ func IsStringInSlice(a string, list []string) bool {
 
 // RemoveStringFromSlice removes a string item from a list of strings.
 func RemoveStringFromSlice(s []string, r string) []string {
-    for i, v := range s {
-        if v == r {
-            return append(s[:i], s[i+1:]...)
-        }
-    }
-    return s
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
 }
 
 // GetQueryParamsFields retrieve `fields`` so we can filter them in GET/

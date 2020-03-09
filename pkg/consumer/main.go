@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -18,7 +18,6 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
 )
 
 var (
@@ -82,8 +81,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	err = updateDocument(sha256, buff)
 	if err != nil {
 		log.Errorf("Failed to update document for file %s, reason: %s",
-		 sha256, err.Error())
-		 return err
+			sha256, err.Error())
+		return err
 	}
 
 	// Download the sample
@@ -117,12 +116,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	err = updateDocument(sha256, buff)
 	if err != nil {
 		log.Errorf("Failed to update document for file %s, reason: %s",
-		 sha256, err.Error())
-		 return err
+			sha256, err.Error())
+		return err
 	}
 
 	// Delete the file from nfs share.
-	if err = utils.DeleteFile(filePath) ; err != nil {
+	if err = utils.DeleteFile(filePath); err != nil {
 		log.Errorf("Failed to delete file path %s.", filePath)
 	}
 
@@ -165,7 +164,7 @@ func main() {
 	// configuration: https://github.com/nsqio/go-nsq/issues/199
 	config.LowRdyIdleTimeout = time.Duration(2 * time.Minute)
 
-	// Fix: What's causing this are those "timed out" messages - NSQ isn't hearing 
+	// Fix: What's causing this are those "timed out" messages - NSQ isn't hearing
 	// back from your consumer and it's delivering the message to another consumer.
 	// failed ID not in flight (https://github.com/nsqio/nsq/issues/729)
 	config.MsgTimeout = time.Duration(2 * time.Minute)

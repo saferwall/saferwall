@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -321,7 +321,7 @@ func GetByUsername(username string) (User, error) {
 	// get our user
 	user := User{}
 
-	username  = strings.ToLower(username)
+	username = strings.ToLower(username)
 
 	getResult, err := db.UsersCollection.Get(username, &gocb.GetOptions{})
 	if err != nil {
@@ -940,7 +940,7 @@ func GetActivities(c echo.Context) error {
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
 	query := "SELECT `username`, `activities` FROM users " +
-			"ORDER BY activities[*].timestamp DESC LIMIT 100"
+		"ORDER BY activities[*].timestamp DESC LIMIT 100"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})

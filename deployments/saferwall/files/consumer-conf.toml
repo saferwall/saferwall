@@ -1,0 +1,26 @@
+# This file needs to be edited !
+
+[backend]
+address = 'http://{{ include "saferwall.backend.fullname" . }}'
+admin_user = "Administrator"
+admin_pwd = "password"
+
+[nsq]
+lookupd = [
+{{ $lookupdFullName := printf "%s-nsq-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}
+{{ range $i, $e := until (atoi (printf "%d" (int64 .Values.nsq.nsqlookupd.replicaCount))) -}}
+    "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
+{{- end }}]
+
+[minio]
+endpoint = '{{ printf "%s-minio" .Release.Name }}:9000'
+seckey = "{{ .Values.minio.secretKey }}"
+accesskey = "{{ .Values.minio.accessKey }}"
+spacename = "{{ .Values.minio.spacename }}"
+ssl = false
+
+[multiav]
+{{- $root := . -}}
+{{- range $av, $value := .Values.multiav.vendors }}
+{{ $av }}_addr = "{{ include "saferwall.multiav.fullname" $root }}-{{ $av }}:50051"
+{{- end }}

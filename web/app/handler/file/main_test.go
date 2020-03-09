@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -68,4 +68,3 @@ func TestGetFile(t *testing.T) {
 	json.NewDecoder(resp.Body).Decode(&result)
 	log.Println(result)
 }
-

@@ -1,4 +1,4 @@
-// Copyright 2019 Saferwall. All rights reserved.
+// Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,20 +6,19 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
-	log "github.com/sirupsen/logrus"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/symantec"
 	"github.com/saferwall/saferwall/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/grpclog"
-
 )
 
 const (
-	symcfgd = "/opt/Symantec/symantec_antivirus/symcfgd"
+	symcfgd  = "/opt/Symantec/symantec_antivirus/symcfgd"
 	rtvscand = "/opt/Symantec/symantec_antivirus/rtvscand"
 )
-
 
 // server is used to implement symantec.SymantecScanner.
 type server struct {
@@ -40,7 +39,6 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 		Output:   res.Output,
 		Update:   s.avDbUpdateDate}, err
 }
-
 
 // main start a gRPC server and waits for connection.
 func main() {
