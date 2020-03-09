@@ -16,7 +16,7 @@ k8s-minikube-start:			## Start minikube
 	minikube start --cpus 8 --memory 20480 --disk-size=80GB
 	kubectl proxy --address='0.0.0.0' --disable-filter=true &
 
-k8s-prepare:	k8s-minikube-install k8s-kubectl-install k8s-minikube-start ## Install minikube, kubectl and start a cluster
+k8s-prepare:	k8s-minikube-install k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
 k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-deploy-nsq k8s-deploy-backend k8s-deploy-consumer k8s-deploy-multiav ## Deploy all stack in k8s
 
@@ -115,12 +115,12 @@ k8s-delete:			## delete all
 	kubectl delete cbc cb-saferwall ; kubectl create -f couchbase-cluster.yaml
 	kubectl delete deployments backend ; kubectl apply -f backend.yaml
 
-KEY_FILE =  tls.key
-CERT_FILE =  tls.crt
-k8s-create-tls-secrets:
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${KEY_FILE} -out ${CERT_FILE} -subj "/CN=${HOST}/O=${HOST}"
-	kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}
+k8s-pf:				## Port fordward
+	kubectl port-forward --namespace default $(POD) $(PORT):$(PORT)
 
-
-k8s-pf:
-	kubectl port-forward --namespace default v1-couchbase-cluster-0000 8091:8091
+k8s-kube-capacity: 	## Install kube-capacity
+	wget https://github.com/robscott/kube-capacity/releases/download/0.4.0/kube-capacity_0.4.0_Linux_x86_64.tar.gz -P /tmp
+	cd /tmp \
+		&& tar zxvf kube-capacity_0.4.0_Linux_x86_64.tar.gz \
+		&& sudo mv kube-capacity /usr/local/bin \
+		&& kube-capacity

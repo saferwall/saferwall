@@ -11,7 +11,7 @@ It aims for the following goals:
 - Hunting platform to find new malwares.
 - Quality ensurance for signature before releasing.
 
-<p align="center"><img src="https://i.imgur.com/9e46aMh.png" width="700px" height="auto"></p>
+<p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="700px" height="auto"></p>
 
 ## Features
 
