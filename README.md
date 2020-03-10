@@ -35,7 +35,7 @@ Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high av
 
 Everything runs inside Kubernetes. You can either deploy it in the cloud or have it self hosted.
 
- To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provionne kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported.
+ To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provisions a kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported.
 
 Steps:
 (This still needs to be improved)
