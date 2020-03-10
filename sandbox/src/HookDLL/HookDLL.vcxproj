@@ -213,6 +213,7 @@
     <ClInclude Include="libloaderapi.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="memoryapi.h" />
+    <ClInclude Include="net.h" />
     <ClInclude Include="ntdll.h" />
     <ClInclude Include="ntifs.h" />
     <ClInclude Include="ole.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="libloaderapi.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="memoryapi.cpp" />
+    <ClCompile Include="net.cpp" />
     <ClCompile Include="ntifs.cpp" />
     <ClCompile Include="ole.cpp" />
     <ClCompile Include="processthreadsapi.cpp" />

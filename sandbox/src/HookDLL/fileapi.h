@@ -52,24 +52,6 @@ NTAPI
 HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes);
 
 NTSTATUS
-WINAPI
-HookMoveFileWithProgressTransactedW(
-    __in LPWSTR lpExistingFileName,
-    __in_opt LPWSTR lpNewFileName,
-    __in_opt LPPROGRESS_ROUTINE lpProgressRoutine,
-    __in_opt LPVOID lpData,
-    __in DWORD dwFlags,
-    __in HANDLE hTransaction);
-
-typedef NTSTATUS(WINAPI *pfnMoveFileWithProgressTransactedW)(
-    __in LPWSTR lpExistingFileName,
-    __in_opt LPWSTR lpNewFileName,
-    __in_opt LPPROGRESS_ROUTINE lpProgressRoutine,
-    __in_opt LPVOID lpData,
-    __in DWORD dwFlags,
-    __in HANDLE hTransaction);
-
-NTSTATUS
 NTAPI
 HookNtSetInformationFile(
     _In_ HANDLE FileHandle,

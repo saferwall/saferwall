@@ -10,10 +10,7 @@ decltype(NtOpenProcess) *TrueNtOpenProcess = nullptr;
 decltype(NtTerminateProcess) *TrueNtTerminateProcess = nullptr;
 decltype(NtContinue) *TrueNtContinue = nullptr;
 
-
 BOOL bFirstTime = TRUE;
-
-
 
 NTSTATUS NTAPI
 HookNtCreateUserProcess(
@@ -231,18 +228,6 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
     UNICODE_STRING ModulePath;
     HANDLE ModuleHandle = NULL;
 
-	if (bFirstTime)
-    {
-        RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
-        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-        if (Status == STATUS_SUCCESS)
-        {
-            HookOleAPIs(TRUE);
-            LogMessage(L"Hooked OLE");
-        }
-        bFirstTime = FALSE;
-    }
-
     if (IsInsideHook())
     {
         goto end;
@@ -250,14 +235,35 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 
     CaptureStackTrace();
 
-    TraceAPI(
-        L"NtTerminateProcess(ContextRecord: 0x%p, TestAlert: %d), RETN: %p",
-        ContextRecord,
-        TestAlert,
-        _ReturnAddress());
+    TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
+
+    Status = TrueNtContinue(ContextRecord, TestAlert);
+
+    if (bFirstTime)
+    {
+        //RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
+        //Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        //if (Status == STATUS_SUCCESS)
+        //{
+        //    LogMessage(L"Attaching to ole32");
+        //    HookOleAPIs(TRUE);
+        //    LogMessage(L"Hooked OLE");
+        //}
+
+		RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
+        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        if (Status == STATUS_SUCCESS)
+        {
+            LogMessage(L"Attaching to wininet");
+            HookNetworkAPIs(TRUE);
+            LogMessage(L"Hooked wininet");
+        }
+        bFirstTime = FALSE;
+    }
 
     ReleaseHookGuard();
 
 end:
-    return TrueNtContinue(ContextRecord, TestAlert);
+
+    return Status;
 }

@@ -8,7 +8,6 @@ decltype(NtDeleteFile) *TrueNtDeleteFile = nullptr;
 decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
 decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
 decltype(NtQueryInformationFile) *TrueNtQueryInformationFile = nullptr;
-pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW = nullptr;
 
 NTSTATUS NTAPI
 HookNtCreateFile(
@@ -154,34 +153,6 @@ HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes)
     ReleaseHookGuard();
 end:
     return TrueNtDeleteFile(ObjectAttributes);
-}
-
-NTSTATUS WINAPI
-HookMoveFileWithProgressTransactedW(
-    __in LPWSTR lpExistingFileName,
-    __in_opt LPWSTR lpNewFileName,
-    __in_opt LPPROGRESS_ROUTINE lpProgressRoutine,
-    __in_opt LPVOID lpData,
-    __in DWORD dwFlags,
-    __in HANDLE hTransaction)
-{
-    if (IsInsideHook())
-    {
-        goto end;
-    }
-
-    CaptureStackTrace();
-
-    TraceAPI(
-        L"MoveFileWithProgressTransactedW(lpExistingFileName:%ws, lpNewFileName:%ws), RETN: %p",
-        lpExistingFileName,
-        lpNewFileName,
-        _ReturnAddress());
-
-    ReleaseHookGuard();
-end:
-    return TrueMoveFileWithProgressTransactedW(
-        lpExistingFileName, lpNewFileName, lpProgressRoutine, lpData, dwFlags, hTransaction);
 }
 
 NTSTATUS WINAPI

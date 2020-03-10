@@ -8,14 +8,6 @@
 // Defines
 //
 
-//
-// Begin a new transaction for detaching detours.
-// Then, Enlist a thread for update in the current transaction.
-//
-#define DETOUR_BEGING \
-    DetourTransactionBegin(); \
-    DetourUpdateThread(NtCurrentThread());
-
 #define DETOUR_END
 
 //
@@ -36,7 +28,6 @@ extern decltype(NtDeleteFile) *TrueNtDeleteFile;
 extern decltype(NtSetInformationFile) *TrueNtSetInformationFile;
 extern decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile;
 extern decltype(NtQueryInformationFile) *TrueNtQueryInformationFile;
-extern pfnMoveFileWithProgressTransactedW TrueMoveFileWithProgressTransactedW;
 
 extern decltype(NtProtectVirtualMemory) *TrueNtProtectVirtualMemory;
 extern decltype(NtQueryVirtualMemory) *TrueNtQueryVirtualMemory;
@@ -69,7 +60,6 @@ extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
 
-extern decltype(CoCreateInstanceEx) *TrueCoCreateInstanceEx;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -78,6 +68,8 @@ pfn_wcsstr _wcsstr = nullptr;
 pfnStringFromGUID2 _StringFromGUID2 = nullptr;
 pfnStringFromCLSID _StringFromCLSID = nullptr;
 pfnCoTaskMemFree _CoTaskMemFree = nullptr;
+pfnCoCreateInstanceEx TrueCoCreateInstanceEx = nullptr;
+pfnInternetOpenA TrueInternetOpenA = nullptr;
 
 CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
@@ -377,7 +369,7 @@ DetAttach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
     }
 
     LONG l = DetourAttach(ppvReal, pvMine);
-    if (l != 0)
+    if (l != NO_ERROR)
     {
         WCHAR Buffer[128];
         _snwprintf(
@@ -395,7 +387,7 @@ VOID
 DetDetach(PVOID *ppvReal, PVOID pvMine, PCCH psz)
 {
     LONG l = DetourDetach(ppvReal, pvMine);
-    if (l != 0)
+    if (l != NO_ERROR)
     {
         WCHAR Buffer[128];
         _snwprintf(
@@ -469,26 +461,6 @@ ProcessAttach()
         LogMessage(L"TlsAlloc failed");
 
     //
-    // Begin a new transaction for attaching detours.
-    //
-
-    if (DetourTransactionBegin() != NO_ERROR)
-    {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourTransactionBegin() failed");
-        return STATUS_UNSUCCESSFUL;
-    }
-
-    //
-    // Enlist a thread for update in the current transaction.
-    //
-
-    if (DetourUpdateThread(NtCurrentThread()) != NO_ERROR)
-    {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourUpdateThread() failed");
-        return STATUS_UNSUCCESSFUL;
-    }
-
-    //
     // Save real API addresses.
     //
 
@@ -552,13 +524,6 @@ ProcessAttach()
         EtwEventWriteString(ProviderHandle, 0, 0, L"wcsstr() is NULL");
     }
 
-    TrueMoveFileWithProgressTransactedW = (pfnMoveFileWithProgressTransactedW)GetAPIAddress(
-        (PSTR) "MoveFileWithProgressTransactedW", (PWSTR)L"kernelbase.dll");
-    if (TrueMoveFileWithProgressTransactedW == NULL)
-    {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"MoveFileWithProgressTransactedW() is NULL");
-    }
- 
     //
     // Initializes a critical section objects.
     // Uesd for capturing stack trace and IsInsideHook.
@@ -658,13 +623,16 @@ ProcessDetach()
 BOOL
 HookBegingTransation()
 {
+    LONG Status;
+
     //
     // Begin a new transaction for attaching detours.
     //
 
-    if (DetourTransactionBegin() != NO_ERROR)
+	Status = DetourTransactionBegin();
+    if (Status != NO_ERROR)
     {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourTransactionBegin() failed");
+        LogMessage(L"DetourTransactionBegin() failed with %d", Status);
         return FALSE;
     }
 
@@ -672,9 +640,10 @@ HookBegingTransation()
     // Enlist a thread for update in the current transaction.
     //
 
-    if (DetourUpdateThread(NtCurrentThread()) != NO_ERROR)
+	Status = DetourUpdateThread(NtCurrentThread());
+    if (Status != NO_ERROR)
     {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"DetourUpdateThread() failed");
+        LogMessage(L"DetourUpdateThread() failed with %d", Status);
         return FALSE;
     }
 
@@ -684,7 +653,12 @@ HookBegingTransation()
 BOOL
 HookCommitTransaction()
 {
+    /*
+    Commit the current transaction.
+	*/
+
     PVOID *ppbFailedPointer = NULL;
+
     LONG error = DetourTransactionCommitEx(&ppbFailedPointer);
     if (error != NO_ERROR)
     {
@@ -700,12 +674,6 @@ HookCommitTransaction()
 VOID
 HookOleAPIs(BOOL Attach)
 {
-    _StringFromGUID2 = (pfnStringFromGUID2)GetAPIAddress((PSTR) "StringFromGUID2", (PWSTR)L"ole32.dll");
-    if (_StringFromGUID2 == NULL)
-    {
-        EtwEventWriteString(ProviderHandle, 0, 0, L"StringFromGUID2() is NULL");
-    }
-
 	_StringFromCLSID = (pfnStringFromCLSID)GetAPIAddress((PSTR) "StringFromCLSID", (PWSTR)L"ole32.dll");
     if (_StringFromCLSID == NULL)
     {
@@ -725,9 +693,11 @@ HookOleAPIs(BOOL Attach)
     }
 
     HookBegingTransation();
+
     if (Attach)
     {
         ATTACH(CoCreateInstanceEx);
+        
     }
     else
     {
@@ -738,8 +708,33 @@ HookOleAPIs(BOOL Attach)
 }
 
 VOID
+HookNetworkAPIs(BOOL Attach)
+{
+    TrueInternetOpenA = (pfnInternetOpenA)GetAPIAddress((PSTR) "InternetOpenA", (PWSTR)L"wininet.dll");
+    if (TrueInternetOpenA == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"InternetOpenA() is NULL");
+    }
+
+    HookBegingTransation();
+
+    if (Attach)
+    {
+        ATTACH(InternetOpenA);
+    }
+    else
+    {
+        DETACH(InternetOpenA);
+    }
+
+    HookCommitTransaction();
+}
+
+VOID
 HookNtAPIs()
 {
+    LogMessage(L"HookNtAPIs Begin");
+
     HookBegingTransation();
 
     //
@@ -761,7 +756,6 @@ HookNtAPIs()
     ATTACH(NtSetInformationFile);
     ATTACH(NtQueryDirectoryFile);
     ATTACH(NtQueryInformationFile);
-    // ATTACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
@@ -811,4 +805,6 @@ HookNtAPIs()
     ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
+
+LogMessage(L"HookNtAPIs End");
 }

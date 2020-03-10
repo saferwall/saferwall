@@ -57,7 +57,7 @@ DWORD
 GetNtPathFromHandle(HANDLE Handle, PUNICODE_STRING* ObjectName)
 {
     ULONG ObjectInformationLength;
-    PVOID ObjectNameInfo;
+    PVOID ObjectNameInfo = NULL;
 
     if (Handle == 0 || Handle == INVALID_HANDLE_VALUE)
         return ERROR_INVALID_HANDLE;
