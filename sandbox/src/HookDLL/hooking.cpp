@@ -70,6 +70,8 @@ pfnStringFromCLSID _StringFromCLSID = nullptr;
 pfnCoTaskMemFree _CoTaskMemFree = nullptr;
 pfnCoCreateInstanceEx TrueCoCreateInstanceEx = nullptr;
 pfnInternetOpenA TrueInternetOpenA = nullptr;
+pfnInternetConnectA TrueInternetConnectA = nullptr;
+pfnInternetConnectW TrueInternetConnectW = nullptr;
 
 CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
@@ -714,6 +716,18 @@ HookNetworkAPIs(BOOL Attach)
     if (TrueInternetOpenA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"InternetOpenA() is NULL");
+    }
+
+	TrueInternetConnectA = (pfnInternetConnectA)GetAPIAddress((PSTR) "InternetConnectA", (PWSTR)L"wininet.dll");
+    if (TrueInternetOpenA == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"InternetConnectA() is NULL");
+    }
+
+	TrueInternetConnectW = (pfnInternetConnectW)GetAPIAddress((PSTR) "InternetConnectW", (PWSTR)L"wininet.dll");
+    if (TrueInternetOpenA == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"InternetConnectW() is NULL");
     }
 
     HookBegingTransation();
