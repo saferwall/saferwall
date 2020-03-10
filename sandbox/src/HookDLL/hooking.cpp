@@ -72,6 +72,8 @@ pfnCoCreateInstanceEx TrueCoCreateInstanceEx = nullptr;
 pfnInternetOpenA TrueInternetOpenA = nullptr;
 pfnInternetConnectA TrueInternetConnectA = nullptr;
 pfnInternetConnectW TrueInternetConnectW = nullptr;
+pfnHttpOpenRequestA TrueHttpOpenRequestA = nullptr;
+pfnHttpOpenRequestW TrueHttpOpenRequestW = nullptr;
 
 CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
@@ -728,6 +730,18 @@ HookNetworkAPIs(BOOL Attach)
     if (TrueInternetOpenA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"InternetConnectW() is NULL");
+    }
+
+	TrueHttpOpenRequestA = (pfnHttpOpenRequestA)GetAPIAddress((PSTR) "HttpOpenRequestA", (PWSTR)L"wininet.dll");
+    if (TrueInternetOpenA == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestA() is NULL");
+    }
+
+	TrueHttpOpenRequestW = (pfnHttpOpenRequestW)GetAPIAddress((PSTR) "HttpOpenRequestW", (PWSTR)L"wininet.dll");
+    if (TrueHttpOpenRequestW == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestW() is NULL");
     }
 
     HookBegingTransation();
