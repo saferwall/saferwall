@@ -15,6 +15,9 @@ HookInternetOpenA(
     _In_opt_ LPCSTR lpszProxyBypass,
     _In_ DWORD dwFlags)
 {
+/*
+    InternetOpenW -> InternetOpenA.
+*/
     if (IsInsideHook())
     {
         goto end;
@@ -22,7 +25,7 @@ HookInternetOpenA(
 
     CaptureStackTrace();
 
-    TraceAPI(L"InternetOpenA(zAgent: %s), RETN: 0x%p", lpszAgent, _ReturnAddress());
+    TraceAPI(L"InternetOpenA(Agent: %s), RETN: 0x%p", MultiByteToWide((CHAR*)lpszAgent), _ReturnAddress());
 
     ReleaseHookGuard();
 end:
@@ -47,7 +50,8 @@ HookInternetConnectA(
 
     CaptureStackTrace();
 
-    TraceAPI(L"InternetConnectA(ServerName: %s), RETN: 0x%p", lpszServerName, _ReturnAddress());
+    TraceAPI(
+        L"InternetConnectA(ServerName: %s), RETN: 0x%p", MultiByteToWide((CHAR *)lpszServerName), _ReturnAddress());
 
     ReleaseHookGuard();
 
@@ -103,7 +107,7 @@ HookHttpOpenRequestA(
 
     CaptureStackTrace();
 
-    TraceAPI(L"HttpOpenRequestA(Method: %s), RETN: 0x%p", lpszVerb, _ReturnAddress());
+    TraceAPI(L"HttpOpenRequestA(Method: %s), RETN: 0x%p", MultiByteToWide((CHAR *)lpszVerb), _ReturnAddress());
 
     ReleaseHookGuard();
 

@@ -7,7 +7,6 @@ decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx = nullptr;
 
 extern pfn_wcsstr _wcsstr;
 
-
 NTSTATUS
 WINAPI
 HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle)
@@ -38,7 +37,17 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
                 ReleaseHookGuard();
                 return Status;
             }
-
+        }
+        else if (_wcsstr(DllName->Buffer, L"wininet.dll") != NULL)
+        {
+            NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
+            if (NT_SUCCESS(Status))
+            {
+                LogMessage(L"Enabling WinInet hooks ...");
+                HookNetworkAPIs(TRUE);
+                ReleaseHookGuard();
+                return Status;
+            }
         }
     }
 

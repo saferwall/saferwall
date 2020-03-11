@@ -224,9 +224,8 @@ end:
 NTSTATUS NTAPI
 HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 {
-    NTSTATUS Status;
-    UNICODE_STRING ModulePath;
-    HANDLE ModuleHandle = NULL;
+    //NTSTATUS Status;
+
 
     if (IsInsideHook())
     {
@@ -237,20 +236,19 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 
     TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
 
-    Status = TrueNtContinue(ContextRecord, TestAlert);
-
-    if (bFirstTime)
+	/*if (bFirstTime)
     {
-        //RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
-        //Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-        //if (Status == STATUS_SUCCESS)
-        //{
-        //    LogMessage(L"Attaching to ole32");
-        //    HookOleAPIs(TRUE);
-        //    LogMessage(L"Hooked OLE");
-        //}
+         RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
+         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+         if (Status == STATUS_SUCCESS)
+        {
+             
+            LogMessage(L"Attaching to ole32");
+            HookOleAPIs(TRUE);
+            LogMessage(L"Hooked OLE");
+        }
 
-		RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
+        RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
         if (Status == STATUS_SUCCESS)
         {
@@ -259,11 +257,12 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             LogMessage(L"Hooked wininet");
         }
         bFirstTime = FALSE;
-    }
+    }*/
 
     ReleaseHookGuard();
 
 end:
 
-    return Status;
+    return TrueNtContinue(ContextRecord, TestAlert);
+  
 }

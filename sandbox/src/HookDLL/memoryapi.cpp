@@ -94,7 +94,9 @@ HookNtQueryVirtualMemory(
         MemoryInformationClass,
         MemoryInformationLength,
         _ReturnAddress());
+
     ReleaseHookGuard();
+
 end:
     return TrueNtQueryVirtualMemory(
         ProcessHandle, BaseAddress, MemoryInformationClass, MemoryInformation, MemoryInformationLength, ReturnLength);
@@ -126,7 +128,6 @@ HookNtReadVirtualMemory(
 
 end:
     return TrueNtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
-    ;
 }
 
 NTSTATUS WINAPI

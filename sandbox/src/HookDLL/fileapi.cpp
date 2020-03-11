@@ -171,7 +171,7 @@ HookNtSetInformationFile(
     CaptureStackTrace();
 
     TraceAPI(
-        L"NtSetInformationFile(FileInformationClass: %d, FileInformation:0x%p, Length:0x%08x, ReturnLength:0x%p), RETN: %p",
+        L"NtSetInformationFile(FileInformationClass: %d, FileInformation:0x%p, Length:0x%08x), RETN: %p",
         FileInformationClass,
         FileInformation,
         Length,

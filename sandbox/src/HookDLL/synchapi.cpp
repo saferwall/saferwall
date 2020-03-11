@@ -8,19 +8,43 @@ HookNtDelayExecution(_In_ BOOLEAN Alertable, _In_opt_ PLARGE_INTEGER DelayInterv
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtDelayExecution(Alertable, DelayInterval);
+    }
+
+    if (DelayInterval->QuadPart == 3)
+    {
+        NTSTATUS Status;
+
+        UNICODE_STRING ModulePath;
+        HANDLE ModuleHandle = NULL;
+
+        RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
+        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        if (Status == STATUS_SUCCESS)
+        {
+            LogMessage(L"Attaching to ole32");
+            HookOleAPIs(TRUE);
+            LogMessage(L"Hooked OLE");
+        }
+
+        // RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
+        // Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        // if (Status == STATUS_SUCCESS)
+        //{
+        //    LogMessage(L"Attaching to wininet");
+        //    HookNetworkAPIs(TRUE);
+        //    LogMessage(L"Hooked wininet");
+        //}
     }
 
     CaptureStackTrace();
 
     TraceAPI(
-        L"NtDelayExecution(Alertable: 0x%d, DelayInterval:0x%, ReturnLength:0x%p), RETN: %p",
+        L"NtDelayExecution(Alertable: %d, DelayInterval: %I64u), RETN: %p",
         Alertable,
         DelayInterval->QuadPart,
         _ReturnAddress());
-
+    NTSTATUS Status = TrueNtDelayExecution(Alertable, DelayInterval);
     ReleaseHookGuard();
-
-end:
-    return TrueNtDelayExecution(Alertable, DelayInterval);
+    return Status;
 }

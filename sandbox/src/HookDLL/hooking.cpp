@@ -550,68 +550,70 @@ ProcessDetach()
 {
     HookBegingTransation();
 
-    DETACH(LdrLoadDll);
-    DETACH(LdrGetProcedureAddressEx);
-    DETACH(LdrGetDllHandleEx);
+    //DETACH(LdrLoadDll);
+    //DETACH(LdrGetProcedureAddressEx);
+    //DETACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
-    DETACH(NtCreateFile);
+   /* DETACH(NtCreateFile);
     DETACH(NtReadFile);
     DETACH(NtWriteFile);
     DETACH(NtDeleteFile);
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
-    DETACH(NtQueryInformationFile);
+    DETACH(NtQueryInformationFile);*/
     // DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
     //
 
-    DETACH(NtOpenKey);
-    DETACH(NtOpenKeyEx);
-    DETACH(NtCreateKey);
-    DETACH(NtQueryValueKey);
-    DETACH(NtSetValueKey);
-    DETACH(NtDeleteKey);
-    DETACH(NtDeleteValueKey);
+    //DETACH(NtOpenKey);
+    //DETACH(NtOpenKeyEx);
+    //DETACH(NtCreateKey);
+    //DETACH(NtQueryValueKey);
+    //DETACH(NtSetValueKey);
+    //DETACH(NtDeleteKey);
+    //DETACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    DETACH(NtOpenProcess);
-    DETACH(NtTerminateProcess);
-    DETACH(NtCreateUserProcess);
-    DETACH(NtCreateThread);
-    DETACH(NtCreateThreadEx);
-    DETACH(NtSuspendThread);
-    DETACH(NtResumeThread);
+    //DETACH(NtOpenProcess);
+    //DETACH(NtTerminateProcess);
+    //DETACH(NtCreateUserProcess);
+    //DETACH(NtCreateThread);
+    //DETACH(NtCreateThreadEx);
+    //DETACH(NtSuspendThread);
+    //DETACH(NtResumeThread);
+    // DETACH(NtContinue);
+
 
     //
     // System APIs.
     //
 
-    DETACH(NtQuerySystemInformation);
-    DETACH(RtlDecompressBuffer);
+    //DETACH(NtQuerySystemInformation);
+    //DETACH(RtlDecompressBuffer);
     DETACH(NtDelayExecution);
-    DETACH(NtLoadDriver);
+    //DETACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    DETACH(NtQueryVirtualMemory);
-    DETACH(NtReadVirtualMemory);
-    DETACH(NtWriteVirtualMemory);
-    DETACH(NtFreeVirtualMemory);
-    DETACH(NtMapViewOfSection);
-    // DETACH(NtAllocateVirtualMemory);
-    DETACH(NtUnmapViewOfSection);
-    DETACH(NtProtectVirtualMemory);
+    //DETACH(NtQueryVirtualMemory);
+    //DETACH(NtReadVirtualMemory);
+    //DETACH(NtWriteVirtualMemory);
+    //DETACH(NtFreeVirtualMemory);
+    //DETACH(NtMapViewOfSection);
+    //// DETACH(NtAllocateVirtualMemory);
+    //DETACH(NtUnmapViewOfSection);
+    //DETACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -733,7 +735,7 @@ HookNetworkAPIs(BOOL Attach)
     }
 
 	TrueHttpOpenRequestA = (pfnHttpOpenRequestA)GetAPIAddress((PSTR) "HttpOpenRequestA", (PWSTR)L"wininet.dll");
-    if (TrueInternetOpenA == NULL)
+    if (TrueHttpOpenRequestA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestA() is NULL");
     }
@@ -749,10 +751,18 @@ HookNetworkAPIs(BOOL Attach)
     if (Attach)
     {
         ATTACH(InternetOpenA);
+        ATTACH(InternetConnectA);
+        ATTACH(InternetConnectW);
+        ATTACH(HttpOpenRequestA);
+        ATTACH(HttpOpenRequestW);
     }
     else
     {
         DETACH(InternetOpenA);
+        DETACH(InternetConnectA);
+        DETACH(InternetConnectW);
+        DETACH(HttpOpenRequestA);
+        DETACH(HttpOpenRequestW);
     }
 
     HookCommitTransaction();
@@ -769,68 +779,68 @@ HookNtAPIs()
     // Lib Load APIs.
     //
 
-    ATTACH(LdrLoadDll);
-    ATTACH(LdrGetProcedureAddressEx);
-    ATTACH(LdrGetDllHandleEx);
+    //ATTACH(LdrLoadDll);
+    //ATTACH(LdrGetProcedureAddressEx);
+    //ATTACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
-    ATTACH(NtCreateFile);
+   /* ATTACH(NtCreateFile);
     ATTACH(NtReadFile);
     ATTACH(NtWriteFile);
     ATTACH(NtDeleteFile);
     ATTACH(NtSetInformationFile);
     ATTACH(NtQueryDirectoryFile);
     ATTACH(NtQueryInformationFile);
-
+*/
     //
     // Registry APIs.
     //
 
-    ATTACH(NtOpenKey);
-    ATTACH(NtOpenKeyEx);
-    ATTACH(NtCreateKey);
-    ATTACH(NtQueryValueKey);
-    ATTACH(NtSetValueKey);
-    ATTACH(NtDeleteKey);
-    ATTACH(NtDeleteValueKey);
+    //ATTACH(NtOpenKey);
+    //ATTACH(NtOpenKeyEx);
+    //ATTACH(NtCreateKey);
+    //ATTACH(NtQueryValueKey);
+    //ATTACH(NtSetValueKey);
+    //ATTACH(NtDeleteKey);
+    //ATTACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    ATTACH(NtOpenProcess);
-    ATTACH(NtTerminateProcess);
-    ATTACH(NtCreateUserProcess);
-    ATTACH(NtCreateThread);
-    ATTACH(NtCreateThreadEx);
-    ATTACH(NtSuspendThread);
-    ATTACH(NtResumeThread);
-    ATTACH(NtContinue);
+    //ATTACH(NtOpenProcess);
+    //ATTACH(NtTerminateProcess);
+    //ATTACH(NtCreateUserProcess);
+    //ATTACH(NtCreateThread);
+    //ATTACH(NtCreateThreadEx);
+    //ATTACH(NtSuspendThread);
+    //ATTACH(NtResumeThread);
+    //ATTACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    ATTACH(NtQuerySystemInformation);
-    ATTACH(RtlDecompressBuffer);
+    //ATTACH(NtQuerySystemInformation);
+    //ATTACH(RtlDecompressBuffer);
     ATTACH(NtDelayExecution);
-    ATTACH(NtLoadDriver);
+    //ATTACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    ATTACH(NtQueryVirtualMemory);
+  /*  ATTACH(NtQueryVirtualMemory);
     ATTACH(NtReadVirtualMemory);
     ATTACH(NtWriteVirtualMemory);
     ATTACH(NtFreeVirtualMemory);
-    ATTACH(NtMapViewOfSection);
+    ATTACH(NtMapViewOfSection);*/
     // ATTACH(NtAllocateVirtualMemory);
-    ATTACH(NtUnmapViewOfSection);
-    ATTACH(NtProtectVirtualMemory);
+    //ATTACH(NtUnmapViewOfSection);
+    //ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 

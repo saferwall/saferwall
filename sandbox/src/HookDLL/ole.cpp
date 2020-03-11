@@ -13,23 +13,20 @@ HRESULT HookCoCreateInstanceEx(
     _In_ DWORD dwCount,
     _Inout_updates_(dwCount) MULTI_QI *pResults)
 {
-    OLECHAR *guidString = NULL;
-
     if (IsInsideHook())
     {
-        goto end;
+        return TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
     }
 
+	OLECHAR *guidString = NULL;
+    HRESULT hResult;
     CaptureStackTrace();
-
     _StringFromCLSID(Clsid, &guidString);
     TraceAPI(L"CoCreateInstanceEx(szGuidW: %ws), RETN: 0x%p", guidString, _ReturnAddress());
     _CoTaskMemFree(guidString);
-
+    hResult = TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
     ReleaseHookGuard();
-end:
-    return TrueCoCreateInstanceEx(
-        Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
+    return hResult;
 }
 
 
