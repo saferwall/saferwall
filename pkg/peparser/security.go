@@ -192,6 +192,9 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 		if err != nil {
 			return err
 		}
+		if fileOffset+certHeader.Length > pe.size {
+			return errSecurityDataDirOutOfBands;
+		}
 
 		certContent := pe.data[fileOffset+certSize : fileOffset+certHeader.Length]
 		pkcs, err = pkcs7.Parse(certContent)
