@@ -6,6 +6,8 @@ extern pfnInternetConnectA TrueInternetConnectA;
 extern pfnInternetConnectW TrueInternetConnectW;
 extern pfnHttpOpenRequestA TrueHttpOpenRequestA;
 extern pfnHttpOpenRequestW TrueHttpOpenRequestW;
+extern pfnHttpSendRequestA TrueHttpSendRequestA;
+extern pfnHttpSendRequestW TrueHttpSendRequestW;
 
 HINTERNET WINAPI
 HookInternetOpenA(
@@ -149,4 +151,52 @@ HookHttpOpenRequestW(
     ReleaseHookGuard();
 
     return hRequest;
+}
+
+BOOL WINAPI
+HookHttpSendRequestA(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength)
+{
+    if (IsInsideHook())
+    {
+        return TrueHttpSendRequestA(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(L"HttpSendRequestA(hRequest: %p), RETN: 0x%p", hRequest, _ReturnAddress());
+
+    BOOL bSend = TrueHttpSendRequestA(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
+
+    ReleaseHookGuard();
+
+    return bSend;
+}
+
+BOOL WINAPI
+HookHttpSendRequestW(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCWSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength)
+{
+    if (IsInsideHook())
+    {
+        return TrueHttpSendRequestW(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(L"HttpSendRequestW(hRequest: %p), RETN: 0x%p", hRequest, _ReturnAddress());
+
+    BOOL bSend = TrueHttpSendRequestW(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
+
+    ReleaseHookGuard();
+
+    return bSend;
 }

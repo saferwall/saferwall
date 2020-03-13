@@ -68,11 +68,14 @@ pfnStringFromGUID2 _StringFromGUID2 = nullptr;
 pfnStringFromCLSID _StringFromCLSID = nullptr;
 pfnCoTaskMemFree _CoTaskMemFree = nullptr;
 pfnCoCreateInstanceEx TrueCoCreateInstanceEx = nullptr;
+
 pfnInternetOpenA TrueInternetOpenA = nullptr;
 pfnInternetConnectA TrueInternetConnectA = nullptr;
 pfnInternetConnectW TrueInternetConnectW = nullptr;
 pfnHttpOpenRequestA TrueHttpOpenRequestA = nullptr;
 pfnHttpOpenRequestW TrueHttpOpenRequestW = nullptr;
+pfnHttpSendRequestA TrueHttpSendRequestA = nullptr;
+pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
 
 CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
@@ -745,6 +748,18 @@ HookNetworkAPIs(BOOL Attach)
         EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestW() is NULL");
     }
 
+    TrueHttpSendRequestA = (pfnHttpSendRequestA)GetAPIAddress((PSTR) "HttpSendRequestA", (PWSTR)L"wininet.dll");
+    if (TrueHttpOpenRequestA == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"HttpSendRequestA() is NULL");
+    }
+
+    TrueHttpSendRequestW = (pfnHttpSendRequestW)GetAPIAddress((PSTR) "HttpSendRequestW", (PWSTR)L"wininet.dll");
+    if (TrueHttpOpenRequestW == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"HttpSendRequestW() is NULL");
+    }
+
     HookBegingTransation();
 
     if (Attach)
@@ -754,6 +769,8 @@ HookNetworkAPIs(BOOL Attach)
         ATTACH(InternetConnectW);
         ATTACH(HttpOpenRequestA);
         ATTACH(HttpOpenRequestW);
+        ATTACH(HttpSendRequestA);
+        ATTACH(HttpSendRequestW);
     }
     else
     {
@@ -762,6 +779,8 @@ HookNetworkAPIs(BOOL Attach)
         DETACH(InternetConnectW);
         DETACH(HttpOpenRequestA);
         DETACH(HttpOpenRequestW);
+        DETACH(HttpSendRequestA);
+        DETACH(HttpSendRequestW);
     }
 
     HookCommitTransaction();

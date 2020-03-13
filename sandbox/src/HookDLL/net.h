@@ -54,9 +54,24 @@ using pfnHttpOpenRequestW = HINTERNET(__stdcall *)(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
+using pfnHttpSendRequestA = BOOL(__stdcall *)(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength);
+
+using pfnHttpSendRequestW = BOOL(__stdcall *)(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCWSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength);
+
 //////////////////////////////////////////////////////////////
 
-HINTERNET WINAPI HookInternetOpenA(
+HINTERNET WINAPI
+HookInternetOpenA(
     _In_opt_ LPCSTR lpszAgent,
     _In_ DWORD dwAccessType,
     _In_opt_ LPCSTR lpszProxy,
@@ -85,8 +100,8 @@ HookInternetConnectW(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
-
-HINTERNET __stdcall HookHttpOpenRequestA(
+HINTERNET WINAPI
+HookHttpOpenRequestA(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCSTR lpszVerb,
     _In_opt_ LPCSTR lpszObjectName,
@@ -96,7 +111,8 @@ HINTERNET __stdcall HookHttpOpenRequestA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
-HINTERNET __stdcall HookHttpOpenRequestW(
+HINTERNET WINAPI
+HookHttpOpenRequestW(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCWSTR lpszVerb,
     _In_opt_ LPCWSTR lpszObjectName,
@@ -105,3 +121,19 @@ HINTERNET __stdcall HookHttpOpenRequestW(
     _In_opt_z_ LPCWSTR FAR *lplpszAcceptTypes,
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
+
+BOOL WINAPI
+HookHttpSendRequestA(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength);
+
+BOOL WINAPI
+HookHttpSendRequestW(
+    _In_ HINTERNET hRequest,
+    _In_reads_opt_(dwHeadersLength) LPCWSTR lpszHeaders,
+    _In_ DWORD dwHeadersLength,
+    _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
+    _In_ DWORD dwOptionalLength);
