@@ -4,8 +4,7 @@ extern pfnCoCreateInstanceEx TrueCoCreateInstanceEx;
 extern pfnStringFromCLSID _StringFromCLSID;
 extern pfnCoTaskMemFree _CoTaskMemFree;
 
-
-HRESULT HookCoCreateInstanceEx(
+HRESULT __stdcall HookCoCreateInstanceEx(
     _In_ REFCLSID Clsid,
     _In_opt_ IUnknown *punkOuter,
     _In_ DWORD dwClsCtx,
@@ -18,7 +17,7 @@ HRESULT HookCoCreateInstanceEx(
         return TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
     }
 
-	OLECHAR *guidString = NULL;
+    OLECHAR *guidString = NULL;
     HRESULT hResult;
     CaptureStackTrace();
     _StringFromCLSID(Clsid, &guidString);
@@ -28,5 +27,3 @@ HRESULT HookCoCreateInstanceEx(
     ReleaseHookGuard();
     return hResult;
 }
-
-

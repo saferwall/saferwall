@@ -56,16 +56,14 @@ using pfnHttpOpenRequestW = HINTERNET(__stdcall *)(
 
 //////////////////////////////////////////////////////////////
 
-HINTERNET
-HookInternetOpenA(
+HINTERNET __stdcall HookInternetOpenA(
     _In_opt_ LPCSTR lpszAgent,
     _In_ DWORD dwAccessType,
     _In_opt_ LPCSTR lpszProxy,
     _In_opt_ LPCSTR lpszProxyBypass,
     _In_ DWORD dwFlags);
 
-HINTERNET
-HookInternetConnectA(
+HINTERNET __stdcall HookInternetConnectA(
     _In_ HINTERNET hInternet,
     _In_ LPCSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -75,8 +73,7 @@ HookInternetConnectA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
-HINTERNET
-HookInternetConnectW(
+HINTERNET __stdcall HookInternetConnectW(
     _In_ HINTERNET hInternet,
     _In_ LPCWSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -87,8 +84,7 @@ HookInternetConnectW(
     _In_opt_ DWORD_PTR dwContext);
 
 
-HINTERNET
-HookHttpOpenRequestA(
+HINTERNET __stdcall HookHttpOpenRequestA(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCSTR lpszVerb,
     _In_opt_ LPCSTR lpszObjectName,
@@ -98,8 +94,7 @@ HookHttpOpenRequestA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
-HINTERNET
-HookHttpOpenRequestW(
+HINTERNET __stdcall HookHttpOpenRequestW(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCWSTR lpszVerb,
     _In_opt_ LPCWSTR lpszObjectName,

@@ -558,7 +558,7 @@ ProcessDetach()
     // File APIs.
     //
 
-   /* DETACH(NtCreateFile);
+   /*DETACH(NtCreateFile);
     DETACH(NtReadFile);
     DETACH(NtWriteFile);
     DETACH(NtDeleteFile);
@@ -787,19 +787,19 @@ HookNtAPIs()
     // File APIs.
     //
 
-   /* ATTACH(NtCreateFile);
-    ATTACH(NtReadFile);
-    ATTACH(NtWriteFile);
-    ATTACH(NtDeleteFile);
-    ATTACH(NtSetInformationFile);
-    ATTACH(NtQueryDirectoryFile);
-    ATTACH(NtQueryInformationFile);
-*/
+    //ATTACH(NtCreateFile);
+    //ATTACH(NtReadFile);
+    //ATTACH(NtWriteFile);
+    //ATTACH(NtDeleteFile);
+    //ATTACH(NtSetInformationFile);
+    //ATTACH(NtQueryDirectoryFile);
+    //ATTACH(NtQueryInformationFile);
+
     //
     // Registry APIs.
     //
 
-    //ATTACH(NtOpenKey);
+    ATTACH(NtOpenKey);
     //ATTACH(NtOpenKeyEx);
     //ATTACH(NtCreateKey);
     //ATTACH(NtQueryValueKey);

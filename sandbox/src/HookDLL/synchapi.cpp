@@ -27,14 +27,14 @@ HookNtDelayExecution(_In_ BOOLEAN Alertable, _In_opt_ PLARGE_INTEGER DelayInterv
             LogMessage(L"Hooked OLE");
         }
 
-        // RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
-        // Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-        // if (Status == STATUS_SUCCESS)
-        //{
-        //    LogMessage(L"Attaching to wininet");
-        //    HookNetworkAPIs(TRUE);
-        //    LogMessage(L"Hooked wininet");
-        //}
+         RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
+         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+         if (Status == STATUS_SUCCESS)
+        {
+            LogMessage(L"Attaching to wininet");
+            HookNetworkAPIs(TRUE);
+            LogMessage(L"Hooked wininet");
+        }
     }
 
     CaptureStackTrace();

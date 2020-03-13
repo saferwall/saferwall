@@ -7,8 +7,7 @@ extern pfnInternetConnectW TrueInternetConnectW;
 extern pfnHttpOpenRequestA TrueHttpOpenRequestA;
 extern pfnHttpOpenRequestW TrueHttpOpenRequestW;
 
-HINTERNET
-HookInternetOpenA(
+HINTERNET __stdcall HookInternetOpenA(
     _In_opt_ LPCSTR lpszAgent,
     _In_ DWORD dwAccessType,
     _In_opt_ LPCSTR lpszProxy,
@@ -32,8 +31,7 @@ end:
     return TrueInternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
 }
 
-HINTERNET
-HookInternetConnectA(
+HINTERNET __stdcall HookInternetConnectA(
     _In_ HINTERNET hInternet,
     _In_ LPCSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -61,8 +59,7 @@ end:
 }
 
 
-HINTERNET
-HookInternetConnectW(
+HINTERNET __stdcall HookInternetConnectW(
     _In_ HINTERNET hInternet,
     _In_ LPCWSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -89,8 +86,7 @@ end:
 }
 
 
-HINTERNET
-HookHttpOpenRequestA(
+HINTERNET __stdcall HookHttpOpenRequestA(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCSTR lpszVerb,
     _In_opt_ LPCSTR lpszObjectName,
@@ -116,8 +112,7 @@ end:
 }
 
 
-HINTERNET
-HookHttpOpenRequestW(
+HINTERNET __stdcall HookHttpOpenRequestW(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCWSTR lpszVerb,
     _In_opt_ LPCWSTR lpszObjectName,

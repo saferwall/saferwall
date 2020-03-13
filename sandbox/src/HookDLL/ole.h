@@ -7,8 +7,7 @@
 // Prototypes
 //
 
-HRESULT
-HookCoCreateInstanceEx(
+HRESULT __stdcall HookCoCreateInstanceEx(
     _In_ REFCLSID Clsid,
     _In_opt_ IUnknown *punkOuter,
     _In_ DWORD dwClsCtx,
