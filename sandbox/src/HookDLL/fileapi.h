@@ -7,7 +7,7 @@
 //
 
 NTSTATUS
-WINAPI
+NTAPI
 HookNtCreateFile(
     _Out_ PHANDLE FileHandle,
     _In_ ACCESS_MASK DesiredAccess,

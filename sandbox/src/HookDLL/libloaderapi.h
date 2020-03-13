@@ -7,11 +7,11 @@
 //
 
 NTSTATUS
-WINAPI
+NTAPI
 HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle);
 
 NTSTATUS
-WINAPI
+NTAPI
 HookLdrGetProcedureAddressEx(
     PVOID DllHandle,
     PANSI_STRING ProcedureName,

@@ -6,7 +6,6 @@
 // Prototypes 
 // 
 
-
 NTSTATUS NTAPI HookNtDelayExecution
 (
 	_In_ BOOLEAN Alertable,

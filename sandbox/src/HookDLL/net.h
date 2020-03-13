@@ -56,14 +56,15 @@ using pfnHttpOpenRequestW = HINTERNET(__stdcall *)(
 
 //////////////////////////////////////////////////////////////
 
-HINTERNET __stdcall HookInternetOpenA(
+HINTERNET WINAPI HookInternetOpenA(
     _In_opt_ LPCSTR lpszAgent,
     _In_ DWORD dwAccessType,
     _In_opt_ LPCSTR lpszProxy,
     _In_opt_ LPCSTR lpszProxyBypass,
     _In_ DWORD dwFlags);
 
-HINTERNET __stdcall HookInternetConnectA(
+HINTERNET WINAPI
+HookInternetConnectA(
     _In_ HINTERNET hInternet,
     _In_ LPCSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -73,7 +74,8 @@ HINTERNET __stdcall HookInternetConnectA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext);
 
-HINTERNET __stdcall HookInternetConnectW(
+HINTERNET WINAPI
+HookInternetConnectW(
     _In_ HINTERNET hInternet,
     _In_ LPCWSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,

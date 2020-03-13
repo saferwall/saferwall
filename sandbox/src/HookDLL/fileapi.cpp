@@ -29,7 +29,18 @@ HookNtCreateFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtCreateFile(
+            FileHandle,
+            DesiredAccess,
+            ObjectAttributes,
+            IoStatusBlock,
+            AllocationSize,
+            FileAttributes,
+            ShareAccess,
+            CreateDisposition,
+            CreateOptions,
+            EaBuffer,
+            EaLength);
     }
 
     CaptureStackTrace();
@@ -52,11 +63,7 @@ HookNtCreateFile(
             CreateOptions,
             _ReturnAddress());
     }
-
-    ReleaseHookGuard();
-
-end:
-    return TrueNtCreateFile(
+    NTSTATUS Status = TrueNtCreateFile(
         FileHandle,
         DesiredAccess,
         ObjectAttributes,
@@ -68,6 +75,10 @@ end:
         CreateOptions,
         EaBuffer,
         EaLength);
+
+    ReleaseHookGuard();
+
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -89,17 +100,20 @@ HookNtWriteFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtWriteFile(
+            FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtWriteFile(FileHandle: %p), RETN: %p", FileHandle, _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtWriteFile(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtWriteFile(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -121,21 +135,24 @@ HookNtReadFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtReadFile(
+            FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock, Buffer, Length, ByteOffset, Key);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtReadFile(FileHandle: %p), RETN: %p", FileHandle, _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtReadFile(FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock, Buffer, Length, ByteOffset, Key);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtReadFile(FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock, Buffer, Length, ByteOffset, Key);
+    return Status;
 }
 
 NTSTATUS
-WINAPI
+NTAPI
 HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes)
 /*
 - NtDeleteFile
@@ -143,19 +160,21 @@ HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes)
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtDeleteFile(ObjectAttributes);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtDeleteFile(Filename:%ws), RETN: %p", ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
 
+    NTSTATUS Status = TrueNtDeleteFile(ObjectAttributes);
+
     ReleaseHookGuard();
-end:
-    return TrueNtDeleteFile(ObjectAttributes);
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtSetInformationFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
@@ -165,7 +184,7 @@ HookNtSetInformationFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }
 
     CaptureStackTrace();
@@ -177,13 +196,15 @@ HookNtSetInformationFile(
         Length,
         _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtQueryDirectoryFile(
     _In_ HANDLE FileHandle,
     _In_opt_ HANDLE Event,
@@ -206,7 +227,18 @@ HookNtQueryDirectoryFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtQueryDirectoryFile(
+            FileHandle,
+            Event,
+            ApcRoutine,
+            ApcContext,
+            IoStatusBlock,
+            FileInformation,
+            Length,
+            FileInformationClass,
+            ReturnSingleEntry,
+            FileName,
+            RestartScan);
     }
 
     CaptureStackTrace();
@@ -218,10 +250,7 @@ HookNtQueryDirectoryFile(
         Length,
         _ReturnAddress());
 
-    ReleaseHookGuard();
-
-end:
-    return TrueNtQueryDirectoryFile(
+    NTSTATUS Status = TrueNtQueryDirectoryFile(
         FileHandle,
         Event,
         ApcRoutine,
@@ -233,9 +262,13 @@ end:
         ReturnSingleEntry,
         FileName,
         RestartScan);
+
+    ReleaseHookGuard();
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtQueryInformationFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
@@ -249,7 +282,7 @@ HookNtQueryInformationFile(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }
 
     CaptureStackTrace();
@@ -261,8 +294,10 @@ HookNtQueryInformationFile(
         Length,
         _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+    return Status;
 }

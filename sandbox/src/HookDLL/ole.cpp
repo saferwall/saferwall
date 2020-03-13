@@ -4,7 +4,8 @@ extern pfnCoCreateInstanceEx TrueCoCreateInstanceEx;
 extern pfnStringFromCLSID _StringFromCLSID;
 extern pfnCoTaskMemFree _CoTaskMemFree;
 
-HRESULT __stdcall HookCoCreateInstanceEx(
+HRESULT WINAPI
+HookCoCreateInstanceEx(
     _In_ REFCLSID Clsid,
     _In_opt_ IUnknown *punkOuter,
     _In_ DWORD dwClsCtx,
@@ -18,12 +19,17 @@ HRESULT __stdcall HookCoCreateInstanceEx(
     }
 
     OLECHAR *guidString = NULL;
-    HRESULT hResult;
+    HRESULT hResult = 0;
+
     CaptureStackTrace();
+
     _StringFromCLSID(Clsid, &guidString);
     TraceAPI(L"CoCreateInstanceEx(szGuidW: %ws), RETN: 0x%p", guidString, _ReturnAddress());
     _CoTaskMemFree(guidString);
+
     hResult = TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
+
     ReleaseHookGuard();
+
     return hResult;
 }

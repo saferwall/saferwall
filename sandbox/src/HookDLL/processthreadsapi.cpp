@@ -28,17 +28,25 @@ HookNtCreateUserProcess(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtCreateUserProcess(
+            ProcessHandle,
+            ThreadHandle,
+            ProcessDesiredAccess,
+            ThreadDesiredAccess,
+            ProcessObjectAttributes,
+            ThreadObjectAttributes,
+            ProcessFlags,
+            ThreadFlags,
+            ProcessParameters,
+            CreateInfo,
+            AttributeList);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtCreateUserProcess(%ws), RETN: %p", AttributeList->Attributes[0].Value, _ReturnAddress());
 
-    ReleaseHookGuard();
-
-end:
-    return TrueNtCreateUserProcess(
+    NTSTATUS Status = TrueNtCreateUserProcess(
         ProcessHandle,
         ThreadHandle,
         ProcessDesiredAccess,
@@ -50,6 +58,10 @@ end:
         ProcessParameters,
         CreateInfo,
         AttributeList);
+
+    ReleaseHookGuard();
+
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -65,7 +77,15 @@ HookNtCreateThread(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtCreateThread(
+            ThreadHandle,
+            DesiredAccess,
+            ObjectAttributes,
+            ProcessHandle,
+            ClientId,
+            ThreadContext,
+            InitialTeb,
+            CreateSuspended);
     }
 
     CaptureStackTrace();
@@ -77,10 +97,7 @@ HookNtCreateThread(
         CreateSuspended,
         _ReturnAddress());
 
-    ReleaseHookGuard();
-
-end:
-    return TrueNtCreateThread(
+    NTSTATUS Status = TrueNtCreateThread(
         ThreadHandle,
         DesiredAccess,
         ObjectAttributes,
@@ -89,6 +106,10 @@ end:
         ThreadContext,
         InitialTeb,
         CreateSuspended);
+
+    ReleaseHookGuard();
+
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -107,7 +128,18 @@ HookNtCreateThreadEx(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtCreateThreadEx(
+            ThreadHandle,
+            DesiredAccess,
+            ObjectAttributes,
+            ProcessHandle,
+            StartRoutine,
+            Argument,
+            CreateFlags,
+            ZeroBits,
+            StackSize,
+            MaximumStackSize,
+            AttributeList);
     }
 
     CaptureStackTrace();
@@ -120,10 +152,7 @@ HookNtCreateThreadEx(
         CreateFlags,
         _ReturnAddress());
 
-    ReleaseHookGuard();
-
-end:
-    return TrueNtCreateThreadEx(
+    NTSTATUS Status = TrueNtCreateThreadEx(
         ThreadHandle,
         DesiredAccess,
         ObjectAttributes,
@@ -135,6 +164,10 @@ end:
         StackSize,
         MaximumStackSize,
         AttributeList);
+
+    ReleaseHookGuard();
+
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -142,17 +175,18 @@ HookNtSuspendThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCo
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtSuspendThread(ThreadHandle, PreviousSuspendCount);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtSuspendThread(ThreadHandle: %p), RETN: %p", ThreadHandle, _ReturnAddress());
 
+    NTSTATUS Status = TrueNtSuspendThread(ThreadHandle, PreviousSuspendCount);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtSuspendThread(ThreadHandle, PreviousSuspendCount);
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -160,17 +194,18 @@ HookNtResumeThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCou
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtResumeThread(ThreadHandle, PreviousSuspendCount);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"NtResumeThread(ThreadHandle: %p), RETN: %p", ThreadHandle, _ReturnAddress());
 
+    NTSTATUS Status = TrueNtResumeThread(ThreadHandle, PreviousSuspendCount);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtResumeThread(ThreadHandle, PreviousSuspendCount);
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -182,7 +217,7 @@ HookNtOpenProcess(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
     }
 
     CaptureStackTrace();
@@ -193,10 +228,11 @@ HookNtOpenProcess(
         ClientId->UniqueProcess,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
+    return Status;
 }
 
 NTSTATUS NTAPI
@@ -204,7 +240,7 @@ HookNtTerminateProcess(_In_opt_ HANDLE ProcessHandle, _In_ NTSTATUS ExitStatus)
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtTerminateProcess(ProcessHandle, ExitStatus);
     }
 
     CaptureStackTrace();
@@ -215,34 +251,32 @@ HookNtTerminateProcess(_In_opt_ HANDLE ProcessHandle, _In_ NTSTATUS ExitStatus)
         ExitStatus,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtTerminateProcess(ProcessHandle, ExitStatus);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtTerminateProcess(ProcessHandle, ExitStatus);
+    return Status;
 }
 
 NTSTATUS NTAPI
 HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 {
-    //NTSTATUS Status;
-
-
-    if (IsInsideHook())
-    {
-        goto end;
-    }
+    NTSTATUS Status;
 
     CaptureStackTrace();
 
     TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
 
-	/*if (bFirstTime)
+    if (bFirstTime)
     {
+        HANDLE ModuleHandle = NULL;
+        UNICODE_STRING ModulePath;
+
          RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
          Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
          if (Status == STATUS_SUCCESS)
         {
-             
+
             LogMessage(L"Attaching to ole32");
             HookOleAPIs(TRUE);
             LogMessage(L"Hooked OLE");
@@ -257,12 +291,7 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             LogMessage(L"Hooked wininet");
         }
         bFirstTime = FALSE;
-    }*/
+    }
 
-    ReleaseHookGuard();
-
-end:
-
-    return TrueNtContinue(ContextRecord, TestAlert);
-  
+	return TrueNtContinue(ContextRecord, TestAlert);
 }

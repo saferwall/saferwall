@@ -10,7 +10,6 @@ decltype(NtFreeVirtualMemory) *TrueNtFreeVirtualMemory = nullptr;
 decltype(NtMapViewOfSection) *TrueNtMapViewOfSection = nullptr;
 decltype(NtUnmapViewOfSection) *TrueNtUnmapViewOfSection = nullptr;
 
-
 NTSTATUS NTAPI
 HookNtAllocateVirtualMemory(
     _In_ HANDLE ProcessHandle,
@@ -22,7 +21,7 @@ HookNtAllocateVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
     }
 
     CaptureStackTrace();
@@ -34,12 +33,15 @@ HookNtAllocateVirtualMemory(
         Protect,
         _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
+
     ReleaseHookGuard();
-end:
-    return TrueNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtProtectVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _Inout_ PVOID *BaseAddress,
@@ -49,7 +51,7 @@ HookNtProtectVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect);
     }
 
     CaptureStackTrace();
@@ -63,12 +65,14 @@ HookNtProtectVirtualMemory(
         *OldProtect,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect);
+
     ReleaseHookGuard();
-end:
-    return TrueNtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect);
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtQueryVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID BaseAddress,
@@ -82,7 +86,13 @@ HookNtQueryVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtQueryVirtualMemory(
+            ProcessHandle,
+            BaseAddress,
+            MemoryInformationClass,
+            MemoryInformation,
+            MemoryInformationLength,
+            ReturnLength);
     }
 
     CaptureStackTrace();
@@ -95,14 +105,15 @@ HookNtQueryVirtualMemory(
         MemoryInformationLength,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtQueryVirtualMemory(
+        ProcessHandle, BaseAddress, MemoryInformationClass, MemoryInformation, MemoryInformationLength, ReturnLength);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtQueryVirtualMemory(
-        ProcessHandle, BaseAddress, MemoryInformationClass, MemoryInformation, MemoryInformationLength, ReturnLength);
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtReadVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID BaseAddress,
@@ -112,7 +123,7 @@ HookNtReadVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
     }
 
     CaptureStackTrace();
@@ -124,13 +135,14 @@ HookNtReadVirtualMemory(
         BufferSize,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtWriteVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID BaseAddress,
@@ -140,7 +152,7 @@ HookNtWriteVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
     }
 
     CaptureStackTrace();
@@ -153,12 +165,13 @@ HookNtWriteVirtualMemory(
         _ReturnAddress());
 
     ReleaseHookGuard();
-end:
-    return TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
-    ;
+
+    NTSTATUS Status = TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtFreeVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _Inout_ PVOID *BaseAddress,
@@ -167,7 +180,7 @@ HookNtFreeVirtualMemory(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
     }
 
     CaptureStackTrace();
@@ -179,18 +192,19 @@ HookNtFreeVirtualMemory(
         *RegionSize,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
+
     ReleaseHookGuard();
-end:
-    return TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtMapViewOfSection(
     _In_ HANDLE SectionHandle,
     _In_ HANDLE ProcessHandle,
-    _Inout_
-        _At_(*BaseAddress, _Readable_bytes_(*ViewSize) _Writable_bytes_(*ViewSize) _Post_readable_byte_size_(*ViewSize))
-            PVOID *BaseAddress,
+    _Inout_ _At_(*BaseAddress, _Readable_bytes_(*ViewSize) _Writable_bytes_(*ViewSize) _Post_readable_byte_size_(*ViewSize))
+    PVOID *BaseAddress,
     _In_ ULONG_PTR ZeroBits,
     _In_ SIZE_T CommitSize,
     _Inout_opt_ PLARGE_INTEGER SectionOffset,
@@ -199,10 +213,19 @@ HookNtMapViewOfSection(
     _In_ ULONG AllocationType,
     _In_ ULONG Win32Protect)
 {
-
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtMapViewOfSection(
+            SectionHandle,
+            ProcessHandle,
+            BaseAddress,
+            ZeroBits,
+            CommitSize,
+            SectionOffset,
+            ViewSize,
+            InheritDisposition,
+            AllocationType,
+            Win32Protect);
     }
 
     CaptureStackTrace();
@@ -215,10 +238,7 @@ HookNtMapViewOfSection(
         AllocationType,
         _ReturnAddress());
 
-    ReleaseHookGuard();
-
-end:
-    NTSTATUS Status =  TrueNtMapViewOfSection(
+    NTSTATUS Status = TrueNtMapViewOfSection(
         SectionHandle,
         ProcessHandle,
         BaseAddress,
@@ -230,15 +250,17 @@ end:
         AllocationType,
         Win32Protect);
 
-	return Status;
+    ReleaseHookGuard();
+
+    return Status;
 }
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtUnmapViewOfSection(_In_ HANDLE ProcessHandle, _In_opt_ PVOID BaseAddress)
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtUnmapViewOfSection(ProcessHandle, BaseAddress);
     }
 
     CaptureStackTrace();
@@ -249,8 +271,9 @@ HookNtUnmapViewOfSection(_In_ HANDLE ProcessHandle, _In_opt_ PVOID BaseAddress)
         BaseAddress,
         _ReturnAddress());
 
+    NTSTATUS Status = TrueNtUnmapViewOfSection(ProcessHandle, BaseAddress);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtUnmapViewOfSection(ProcessHandle, BaseAddress);
+    return Status;
 }

@@ -3,7 +3,7 @@
 
 decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer = nullptr;
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookRtlDecompressBuffer(
     _In_ USHORT CompressionFormat,
     _Out_writes_bytes_to_(UncompressedBufferSize, *FinalUncompressedSize) PUCHAR UncompressedBuffer,
@@ -14,20 +14,28 @@ HookRtlDecompressBuffer(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueRtlDecompressBuffer(
+            CompressionFormat,
+            UncompressedBuffer,
+            UncompressedBufferSize,
+            CompressedBuffer,
+            CompressedBufferSize,
+            FinalUncompressedSize);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"RtlDecompressBuffer(CompressionFormat: %hu), RETN: 0x%p", _ReturnAddress());
 
-    ReleaseHookGuard();
-end:
-    return TrueRtlDecompressBuffer(
+	NTSTATUS Status = TrueRtlDecompressBuffer(
         CompressionFormat,
         UncompressedBuffer,
         UncompressedBufferSize,
         CompressedBuffer,
         CompressedBufferSize,
         FinalUncompressedSize);
+
+    ReleaseHookGuard();
+
+	return Status;
 }

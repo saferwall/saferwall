@@ -7,31 +7,35 @@ extern pfnInternetConnectW TrueInternetConnectW;
 extern pfnHttpOpenRequestA TrueHttpOpenRequestA;
 extern pfnHttpOpenRequestW TrueHttpOpenRequestW;
 
-HINTERNET __stdcall HookInternetOpenA(
+HINTERNET WINAPI
+HookInternetOpenA(
     _In_opt_ LPCSTR lpszAgent,
     _In_ DWORD dwAccessType,
     _In_opt_ LPCSTR lpszProxy,
     _In_opt_ LPCSTR lpszProxyBypass,
     _In_ DWORD dwFlags)
 {
-/*
-    InternetOpenW -> InternetOpenA.
-*/
+    /*
+        InternetOpenW -> InternetOpenA.
+    */
     if (IsInsideHook())
     {
-        goto end;
+        return TrueInternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
     }
 
     CaptureStackTrace();
 
-    TraceAPI(L"InternetOpenA(Agent: %s), RETN: 0x%p", MultiByteToWide((CHAR*)lpszAgent), _ReturnAddress());
+    TraceAPI(L"InternetOpenA(Agent: %s), RETN: 0x%p", MultiByteToWide((CHAR *)lpszAgent), _ReturnAddress());
+
+    HINTERNET hSession = TrueInternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
 
     ReleaseHookGuard();
-end:
-    return TrueInternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
+
+    return hSession;
 }
 
-HINTERNET __stdcall HookInternetConnectA(
+HINTERNET WINAPI
+HookInternetConnectA(
     _In_ HINTERNET hInternet,
     _In_ LPCSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -43,7 +47,8 @@ HINTERNET __stdcall HookInternetConnectA(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueInternetConnectA(
+            hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
     }
 
     CaptureStackTrace();
@@ -51,15 +56,16 @@ HINTERNET __stdcall HookInternetConnectA(
     TraceAPI(
         L"InternetConnectA(ServerName: %s), RETN: 0x%p", MultiByteToWide((CHAR *)lpszServerName), _ReturnAddress());
 
+    HINTERNET hConnect = TrueInternetConnectA(
+        hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+
     ReleaseHookGuard();
 
-end:
-    return TrueInternetConnectA(
-        hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+    return hConnect;
 }
 
-
-HINTERNET __stdcall HookInternetConnectW(
+HINTERNET WINAPI
+HookInternetConnectW(
     _In_ HINTERNET hInternet,
     _In_ LPCWSTR lpszServerName,
     _In_ INTERNET_PORT nServerPort,
@@ -71,22 +77,24 @@ HINTERNET __stdcall HookInternetConnectW(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueInternetConnectW(
+            hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"InternetConnectW(ServerName: %ws), RETN: 0x%p", lpszServerName, _ReturnAddress());
 
+    HINTERNET hConnect = TrueInternetConnectW(
+        hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+
     ReleaseHookGuard();
 
-end:
-    return TrueInternetConnectW(
-        hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+    return hConnect;
 }
 
-
-HINTERNET __stdcall HookHttpOpenRequestA(
+HINTERNET WINAPI
+HookHttpOpenRequestA(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCSTR lpszVerb,
     _In_opt_ LPCSTR lpszObjectName,
@@ -98,21 +106,24 @@ HINTERNET __stdcall HookHttpOpenRequestA(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueHttpOpenRequestA(
+            hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"HttpOpenRequestA(Method: %s), RETN: 0x%p", MultiByteToWide((CHAR *)lpszVerb), _ReturnAddress());
 
+    HINTERNET hRequest = TrueHttpOpenRequestA(
+        hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+
     ReleaseHookGuard();
 
-end:
-    return TrueHttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+    return hRequest;
 }
 
-
-HINTERNET __stdcall HookHttpOpenRequestW(
+HINTERNET WINAPI
+HookHttpOpenRequestW(
     _In_ HINTERNET hConnect,
     _In_opt_ LPCWSTR lpszVerb,
     _In_opt_ LPCWSTR lpszObjectName,
@@ -124,16 +135,18 @@ HINTERNET __stdcall HookHttpOpenRequestW(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueHttpOpenRequestW(
+            hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
     }
 
     CaptureStackTrace();
 
     TraceAPI(L"HttpOpenRequestW(Method: %ws), RETN: 0x%p", lpszVerb, _ReturnAddress());
 
+    HINTERNET hRequest = TrueHttpOpenRequestW(
+        hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+
     ReleaseHookGuard();
 
-end:
-    return TrueHttpOpenRequestW(
-        hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+    return hRequest;
 }

@@ -8,7 +8,7 @@ decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx = nullptr;
 extern pfn_wcsstr _wcsstr;
 
 NTSTATUS
-WINAPI
+NTAPI
 HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle)
 /*
 - LdrLoadDll
@@ -18,7 +18,7 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
     }
 
     CaptureStackTrace();
@@ -26,38 +26,37 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
     if (DllName && DllName->Buffer)
     {
         TraceAPI(L"LdrLoadDll(%ws), RETN: 0x%p", DllName->Buffer, _ReturnAddress());
+    }
 
+    NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
+
+    if (DllName && DllName->Buffer)
+    {
         if (_wcsstr(DllName->Buffer, L"ole32.dll") != NULL)
         {
-            NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
             if (NT_SUCCESS(Status))
             {
                 LogMessage(L"Enabling OLE hooks ...");
                 HookOleAPIs(TRUE);
-                ReleaseHookGuard();
-                return Status;
             }
         }
         else if (_wcsstr(DllName->Buffer, L"wininet.dll") != NULL)
         {
-            NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
             if (NT_SUCCESS(Status))
             {
                 LogMessage(L"Enabling WinInet hooks ...");
                 HookNetworkAPIs(TRUE);
-                ReleaseHookGuard();
-                return Status;
             }
         }
     }
 
     ReleaseHookGuard();
-end:
-    return TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
+
+    return Status;
 }
 
 NTSTATUS
-WINAPI
+NTAPI
 HookLdrGetProcedureAddressEx(
     PVOID DllHandle,
     PANSI_STRING ProcedureName,
@@ -72,8 +71,9 @@ HookLdrGetProcedureAddressEx(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
     }
+
     CaptureStackTrace();
 
     if (ProcedureName && ProcedureName->Buffer)
@@ -81,13 +81,15 @@ HookLdrGetProcedureAddressEx(
     else
         TraceAPI(L"LdrGetProcedureAddressEx(Ordinal:0x%x), RETN: 0x%p", ProcedureNumber, _ReturnAddress());
 
+    NTSTATUS Status = TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
+
     ReleaseHookGuard();
-end:
-    return TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
+
+    return Status;
 }
 
 NTSTATUS
-WINAPI
+NTAPI
 HookLdrGetDllHandleEx(
     _In_ ULONG Flags,
     _In_opt_ PWSTR DllPath,
@@ -100,7 +102,7 @@ HookLdrGetDllHandleEx(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
     }
 
     CaptureStackTrace();
@@ -110,7 +112,9 @@ HookLdrGetDllHandleEx(
         TraceAPI(L"LdrGetDllHandleEx(%ws), RETN: 0x%p", DllName->Buffer, _ReturnAddress());
     }
 
+    NTSTATUS Status = TrueLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
+
     ReleaseHookGuard();
-end:
-    return TrueLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
+
+    return Status;
 }

@@ -60,7 +60,6 @@ extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
 
-
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
 strlen_fn_t _strlen = nullptr;
@@ -91,7 +90,6 @@ REGHANDLE ProviderHandle;
 #define ATTACH(x) DetAttach(&(PVOID &)True##x, Hook##x, #x)
 #define DETACH(x) DetDetach(&(PVOID &)True##x, Hook##x, #x)
 
-
 typedef struct _STACKTRACE
 {
     //
@@ -104,7 +102,6 @@ typedef struct _STACKTRACE
     //
     ULONGLONG Frames[ANYSIZE_ARRAY];
 } STACKTRACE, *PSTACKTRACE;
-
 
 VOID
 CaptureStackTrace()
@@ -550,70 +547,73 @@ ProcessDetach()
 {
     HookBegingTransation();
 
-    //DETACH(LdrLoadDll);
-    //DETACH(LdrGetProcedureAddressEx);
-    //DETACH(LdrGetDllHandleEx);
+    //
+    // Lib Load APIs.
+    //
+
+    DETACH(LdrLoadDll);
+    DETACH(LdrGetProcedureAddressEx);
+    DETACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
-   /*DETACH(NtCreateFile);
+    DETACH(NtCreateFile);
     DETACH(NtReadFile);
     DETACH(NtWriteFile);
     DETACH(NtDeleteFile);
     DETACH(NtSetInformationFile);
     DETACH(NtQueryDirectoryFile);
-    DETACH(NtQueryInformationFile);*/
+    DETACH(NtQueryInformationFile);
     // DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
     //
 
-    //DETACH(NtOpenKey);
-    //DETACH(NtOpenKeyEx);
-    //DETACH(NtCreateKey);
-    //DETACH(NtQueryValueKey);
-    //DETACH(NtSetValueKey);
-    //DETACH(NtDeleteKey);
-    //DETACH(NtDeleteValueKey);
+    DETACH(NtOpenKey);
+    DETACH(NtOpenKeyEx);
+    DETACH(NtCreateKey);
+    DETACH(NtQueryValueKey);
+    DETACH(NtSetValueKey);
+    DETACH(NtDeleteKey);
+    DETACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    //DETACH(NtOpenProcess);
-    //DETACH(NtTerminateProcess);
-    //DETACH(NtCreateUserProcess);
-    //DETACH(NtCreateThread);
-    //DETACH(NtCreateThreadEx);
-    //DETACH(NtSuspendThread);
-    //DETACH(NtResumeThread);
-    // DETACH(NtContinue);
-
+    DETACH(NtOpenProcess);
+    DETACH(NtTerminateProcess);
+    DETACH(NtCreateUserProcess);
+    DETACH(NtCreateThread);
+    DETACH(NtCreateThreadEx);
+    DETACH(NtSuspendThread);
+    DETACH(NtResumeThread);
+    DETACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    //DETACH(NtQuerySystemInformation);
-    //DETACH(RtlDecompressBuffer);
+    DETACH(NtQuerySystemInformation);
+    DETACH(RtlDecompressBuffer);
     DETACH(NtDelayExecution);
-    //DETACH(NtLoadDriver);
+    DETACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    //DETACH(NtQueryVirtualMemory);
-    //DETACH(NtReadVirtualMemory);
-    //DETACH(NtWriteVirtualMemory);
-    //DETACH(NtFreeVirtualMemory);
-    //DETACH(NtMapViewOfSection);
-    //// DETACH(NtAllocateVirtualMemory);
-    //DETACH(NtUnmapViewOfSection);
-    //DETACH(NtProtectVirtualMemory);
+    DETACH(NtQueryVirtualMemory);
+    DETACH(NtReadVirtualMemory);
+    DETACH(NtWriteVirtualMemory);
+    DETACH(NtFreeVirtualMemory);
+    DETACH(NtMapViewOfSection);
+    DETACH(NtAllocateVirtualMemory);
+    DETACH(NtUnmapViewOfSection);
+    DETACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -635,7 +635,7 @@ HookBegingTransation()
     // Begin a new transaction for attaching detours.
     //
 
-	Status = DetourTransactionBegin();
+    Status = DetourTransactionBegin();
     if (Status != NO_ERROR)
     {
         LogMessage(L"DetourTransactionBegin() failed with %d", Status);
@@ -646,7 +646,7 @@ HookBegingTransation()
     // Enlist a thread for update in the current transaction.
     //
 
-	Status = DetourUpdateThread(NtCurrentThread());
+    Status = DetourUpdateThread(NtCurrentThread());
     if (Status != NO_ERROR)
     {
         LogMessage(L"DetourUpdateThread() failed with %d", Status);
@@ -661,7 +661,7 @@ HookCommitTransaction()
 {
     /*
     Commit the current transaction.
-	*/
+    */
 
     PVOID *ppbFailedPointer = NULL;
 
@@ -680,13 +680,13 @@ HookCommitTransaction()
 VOID
 HookOleAPIs(BOOL Attach)
 {
-	_StringFromCLSID = (pfnStringFromCLSID)GetAPIAddress((PSTR) "StringFromCLSID", (PWSTR)L"ole32.dll");
+    _StringFromCLSID = (pfnStringFromCLSID)GetAPIAddress((PSTR) "StringFromCLSID", (PWSTR)L"ole32.dll");
     if (_StringFromCLSID == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"StringFromCLSID() is NULL");
     }
 
-	_CoTaskMemFree = (pfnCoTaskMemFree)GetAPIAddress((PSTR) "CoTaskMemFree", (PWSTR)L"ole32.dll");
+    _CoTaskMemFree = (pfnCoTaskMemFree)GetAPIAddress((PSTR) "CoTaskMemFree", (PWSTR)L"ole32.dll");
     if (_CoTaskMemFree == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"CoTaskMemFree() is NULL");
@@ -703,7 +703,6 @@ HookOleAPIs(BOOL Attach)
     if (Attach)
     {
         ATTACH(CoCreateInstanceEx);
-        
     }
     else
     {
@@ -722,25 +721,25 @@ HookNetworkAPIs(BOOL Attach)
         EtwEventWriteString(ProviderHandle, 0, 0, L"InternetOpenA() is NULL");
     }
 
-	TrueInternetConnectA = (pfnInternetConnectA)GetAPIAddress((PSTR) "InternetConnectA", (PWSTR)L"wininet.dll");
+    TrueInternetConnectA = (pfnInternetConnectA)GetAPIAddress((PSTR) "InternetConnectA", (PWSTR)L"wininet.dll");
     if (TrueInternetOpenA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"InternetConnectA() is NULL");
     }
 
-	TrueInternetConnectW = (pfnInternetConnectW)GetAPIAddress((PSTR) "InternetConnectW", (PWSTR)L"wininet.dll");
+    TrueInternetConnectW = (pfnInternetConnectW)GetAPIAddress((PSTR) "InternetConnectW", (PWSTR)L"wininet.dll");
     if (TrueInternetOpenA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"InternetConnectW() is NULL");
     }
 
-	TrueHttpOpenRequestA = (pfnHttpOpenRequestA)GetAPIAddress((PSTR) "HttpOpenRequestA", (PWSTR)L"wininet.dll");
+    TrueHttpOpenRequestA = (pfnHttpOpenRequestA)GetAPIAddress((PSTR) "HttpOpenRequestA", (PWSTR)L"wininet.dll");
     if (TrueHttpOpenRequestA == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestA() is NULL");
     }
 
-	TrueHttpOpenRequestW = (pfnHttpOpenRequestW)GetAPIAddress((PSTR) "HttpOpenRequestW", (PWSTR)L"wininet.dll");
+    TrueHttpOpenRequestW = (pfnHttpOpenRequestW)GetAPIAddress((PSTR) "HttpOpenRequestW", (PWSTR)L"wininet.dll");
     if (TrueHttpOpenRequestW == NULL)
     {
         EtwEventWriteString(ProviderHandle, 0, 0, L"HttpOpenRequestW() is NULL");
@@ -779,70 +778,70 @@ HookNtAPIs()
     // Lib Load APIs.
     //
 
-    //ATTACH(LdrLoadDll);
-    //ATTACH(LdrGetProcedureAddressEx);
-    //ATTACH(LdrGetDllHandleEx);
+    ATTACH(LdrLoadDll);
+    ATTACH(LdrGetProcedureAddressEx);
+    ATTACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
-    //ATTACH(NtCreateFile);
-    //ATTACH(NtReadFile);
-    //ATTACH(NtWriteFile);
-    //ATTACH(NtDeleteFile);
-    //ATTACH(NtSetInformationFile);
-    //ATTACH(NtQueryDirectoryFile);
-    //ATTACH(NtQueryInformationFile);
+    ATTACH(NtCreateFile);
+    ATTACH(NtReadFile);
+    ATTACH(NtWriteFile);
+    ATTACH(NtDeleteFile);
+    ATTACH(NtSetInformationFile);
+    ATTACH(NtQueryDirectoryFile);
+    ATTACH(NtQueryInformationFile);
 
     //
     // Registry APIs.
     //
 
     ATTACH(NtOpenKey);
-    //ATTACH(NtOpenKeyEx);
-    //ATTACH(NtCreateKey);
-    //ATTACH(NtQueryValueKey);
-    //ATTACH(NtSetValueKey);
-    //ATTACH(NtDeleteKey);
-    //ATTACH(NtDeleteValueKey);
+    ATTACH(NtOpenKeyEx);
+    ATTACH(NtCreateKey);
+    ATTACH(NtQueryValueKey);
+    ATTACH(NtSetValueKey);
+    ATTACH(NtDeleteKey);
+    ATTACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    //ATTACH(NtOpenProcess);
-    //ATTACH(NtTerminateProcess);
-    //ATTACH(NtCreateUserProcess);
-    //ATTACH(NtCreateThread);
-    //ATTACH(NtCreateThreadEx);
-    //ATTACH(NtSuspendThread);
-    //ATTACH(NtResumeThread);
-    //ATTACH(NtContinue);
+    ATTACH(NtOpenProcess);
+    ATTACH(NtTerminateProcess);
+    ATTACH(NtCreateUserProcess);
+    ATTACH(NtCreateThread);
+    ATTACH(NtCreateThreadEx);
+    ATTACH(NtSuspendThread);
+    ATTACH(NtResumeThread);
+    ATTACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    //ATTACH(NtQuerySystemInformation);
-    //ATTACH(RtlDecompressBuffer);
+    ATTACH(NtQuerySystemInformation);
+    ATTACH(RtlDecompressBuffer);
     ATTACH(NtDelayExecution);
-    //ATTACH(NtLoadDriver);
+    ATTACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-  /*  ATTACH(NtQueryVirtualMemory);
+    ATTACH(NtQueryVirtualMemory);
     ATTACH(NtReadVirtualMemory);
     ATTACH(NtWriteVirtualMemory);
     ATTACH(NtFreeVirtualMemory);
-    ATTACH(NtMapViewOfSection);*/
-    // ATTACH(NtAllocateVirtualMemory);
-    //ATTACH(NtUnmapViewOfSection);
-    //ATTACH(NtProtectVirtualMemory);
+    ATTACH(NtMapViewOfSection);
+    ATTACH(NtAllocateVirtualMemory);
+    ATTACH(NtUnmapViewOfSection);
+    ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
-LogMessage(L"HookNtAPIs End");
+    LogMessage(L"HookNtAPIs End");
 }

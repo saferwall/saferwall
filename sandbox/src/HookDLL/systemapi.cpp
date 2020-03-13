@@ -4,7 +4,7 @@
 decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation = nullptr;
 decltype(NtLoadDriver) *TrueNtLoadDriver = nullptr;
 
-NTSTATUS WINAPI
+NTSTATUS NTAPI
 HookNtQuerySystemInformation(
     _In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
     _Out_writes_bytes_opt_(SystemInformationLength) PVOID SystemInformation,
@@ -13,7 +13,8 @@ HookNtQuerySystemInformation(
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtQuerySystemInformation(
+            SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
     }
 
     CaptureStackTrace();
@@ -25,32 +26,33 @@ HookNtQuerySystemInformation(
         SystemInformationLength,
         _ReturnAddress());
 
+    NTSTATUS Status =
+        TrueNtQuerySystemInformation(SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
+
     ReleaseHookGuard();
 
-end:
-    return TrueNtQuerySystemInformation(
-        SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
+    return Status;
 }
 
-NTSTATUS WINAPI
-HookNtLoadDriver(
-	_In_ PUNICODE_STRING DriverServiceName)
+NTSTATUS NTAPI
+HookNtLoadDriver(_In_ PUNICODE_STRING DriverServiceName)
 {
     if (IsInsideHook())
     {
-        goto end;
+        return TrueNtLoadDriver(DriverServiceName);
     }
 
     CaptureStackTrace();
 
-	if (DriverServiceName && DriverServiceName->Buffer)
-    TraceAPI(
-        L"NtLoadDriver(DriverServiceName: %ws), RETN: %p",
+    if (DriverServiceName && DriverServiceName->Buffer)
+        TraceAPI(
+            L"NtLoadDriver(DriverServiceName: %ws), RETN: %p",
 
-        _ReturnAddress());
+            _ReturnAddress());
+
+    NTSTATUS Status = TrueNtLoadDriver(DriverServiceName);
 
     ReleaseHookGuard();
 
-end:
-    return TrueNtLoadDriver(DriverServiceName);
+    return Status;
 }

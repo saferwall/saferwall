@@ -6,7 +6,7 @@
 // Prototypes 
 // 
 
-NTSTATUS WINAPI HookRtlDecompressBuffer(
+NTSTATUS NTAPI HookRtlDecompressBuffer(
 	_In_ USHORT CompressionFormat,
 	_Out_writes_bytes_to_(UncompressedBufferSize, *FinalUncompressedSize) PUCHAR UncompressedBuffer,
 	_In_ ULONG UncompressedBufferSize,
