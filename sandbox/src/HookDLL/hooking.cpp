@@ -113,7 +113,6 @@ typedef struct _STACKTRACE
 VOID
 CaptureStackTrace()
 {
-    return;
     PCONTEXT InitialContext = NULL;
     // STACKTRACE StackTrace;
     UINT MaxFrames = 50;
@@ -546,13 +545,11 @@ ProcessAttach()
 	//
     gHookInfo = {0};
 
-    //
-    // Attach Native APIs.
-    //
+	HookBegingTransation();
+    ATTACH(NtContinue);
+    HookCommitTransaction();
 
-    HookNtAPIs();
-
-    return TRUE;
+	return TRUE;
 }
 
 BOOL
@@ -624,7 +621,7 @@ ProcessDetach()
     DETACH(NtWriteVirtualMemory);
     DETACH(NtFreeVirtualMemory);
     DETACH(NtMapViewOfSection);
-    DETACH(NtAllocateVirtualMemory);
+    //DETACH(NtAllocateVirtualMemory);
     DETACH(NtUnmapViewOfSection);
     DETACH(NtProtectVirtualMemory);
 
@@ -854,7 +851,7 @@ HookNtAPIs()
     ATTACH(NtCreateThreadEx);
     ATTACH(NtSuspendThread);
     ATTACH(NtResumeThread);
-    ATTACH(NtContinue);
+    //ATTACH(NtContinue);
 
     //
     // System APIs.
@@ -874,7 +871,7 @@ HookNtAPIs()
     ATTACH(NtWriteVirtualMemory);
     ATTACH(NtFreeVirtualMemory);
     ATTACH(NtMapViewOfSection);
-    ATTACH(NtAllocateVirtualMemory);
+    //ATTACH(NtAllocateVirtualMemory);
     ATTACH(NtUnmapViewOfSection);
     ATTACH(NtProtectVirtualMemory);
 

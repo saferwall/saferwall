@@ -294,6 +294,13 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             gHookInfo.IsWinInetHooked = TRUE;
 
         }
+
+		//
+        // Attach Native APIs.
+        //
+
+        HookNtAPIs();
+
         bFirstTime = FALSE;
     }
 
