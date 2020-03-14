@@ -68,6 +68,12 @@ using pfnHttpSendRequestW = BOOL(__stdcall *)(
     _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
     _In_ DWORD dwOptionalLength);
 
+using pfnInternetReadFile = BOOL(__stdcall *)(
+    _In_ HINTERNET hFile,
+    _Out_writes_bytes_(dwNumberOfBytesToRead) __out_data_source(NETWORK) LPVOID lpBuffer,
+    _In_ DWORD dwNumberOfBytesToRead,
+    _Out_ LPDWORD lpdwNumberOfBytesRead);
+
 //////////////////////////////////////////////////////////////
 
 HINTERNET WINAPI
@@ -137,3 +143,10 @@ HookHttpSendRequestW(
     _In_ DWORD dwHeadersLength,
     _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
     _In_ DWORD dwOptionalLength);
+
+BOOL WINAPI
+HookInternetReadFile(
+    _In_ HINTERNET hFile,
+    _Out_writes_bytes_(dwNumberOfBytesToRead) __out_data_source(NETWORK) LPVOID lpBuffer,
+    _In_ DWORD dwNumberOfBytesToRead,
+    _Out_ LPDWORD lpdwNumberOfBytesRead);

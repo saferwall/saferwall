@@ -94,6 +94,15 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 
 ### Network
 
+- InternetOpenA
+- InternetConnectA
+- InternetConnectW
+- HttpOpenRequestA
+- HttpOpenRequestW
+- HttpSendRequestA
+- HttpSendRequestW
+- InternetReadFile
+
 ### Service (to add)
 
 - OpenSCManagerW

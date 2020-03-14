@@ -8,6 +8,7 @@ extern pfnHttpOpenRequestA TrueHttpOpenRequestA;
 extern pfnHttpOpenRequestW TrueHttpOpenRequestW;
 extern pfnHttpSendRequestA TrueHttpSendRequestA;
 extern pfnHttpSendRequestW TrueHttpSendRequestW;
+extern pfnInternetReadFile TrueInternetReadFile;
 
 HINTERNET WINAPI
 HookInternetOpenA(
@@ -195,6 +196,30 @@ HookHttpSendRequestW(
     TraceAPI(L"HttpSendRequestW(hRequest: %p), RETN: 0x%p", hRequest, _ReturnAddress());
 
     BOOL bSend = TrueHttpSendRequestW(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
+
+    ReleaseHookGuard();
+
+    return bSend;
+}
+
+
+BOOL WINAPI
+HookInternetReadFile(
+    _In_ HINTERNET hFile,
+    _Out_writes_bytes_(dwNumberOfBytesToRead) __out_data_source(NETWORK) LPVOID lpBuffer,
+    _In_ DWORD dwNumberOfBytesToRead,
+    _Out_ LPDWORD lpdwNumberOfBytesRead)
+{
+    if (IsInsideHook())
+    {
+        return TrueInternetReadFile(hFile, lpBuffer, dwNumberOfBytesToRead, lpdwNumberOfBytesRead);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(L"InternetReadFile(hFile: %p), RETN: 0x%p", hFile, _ReturnAddress());
+
+    BOOL bSend = TrueInternetReadFile(hFile, lpBuffer, dwNumberOfBytesToRead, lpdwNumberOfBytesRead);
 
     ReleaseHookGuard();
 

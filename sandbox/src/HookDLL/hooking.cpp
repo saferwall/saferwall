@@ -76,6 +76,7 @@ pfnHttpOpenRequestA TrueHttpOpenRequestA = nullptr;
 pfnHttpOpenRequestW TrueHttpOpenRequestW = nullptr;
 pfnHttpSendRequestA TrueHttpSendRequestA = nullptr;
 pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
+pfnInternetReadFile TrueInternetReadFile = nullptr;
 
 CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
 BOOL gInsideHook = FALSE;
@@ -760,6 +761,12 @@ HookNetworkAPIs(BOOL Attach)
         EtwEventWriteString(ProviderHandle, 0, 0, L"HttpSendRequestW() is NULL");
     }
 
+    TrueInternetReadFile = (pfnInternetReadFile)GetAPIAddress((PSTR) "InternetReadFile", (PWSTR)L"wininet.dll");
+    if (TrueHttpOpenRequestW == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"InternetReadFile() is NULL");
+    }
+
     HookBegingTransation();
 
     if (Attach)
@@ -771,6 +778,7 @@ HookNetworkAPIs(BOOL Attach)
         ATTACH(HttpOpenRequestW);
         ATTACH(HttpSendRequestA);
         ATTACH(HttpSendRequestW);
+        ATTACH(InternetReadFile);
     }
     else
     {
@@ -781,6 +789,7 @@ HookNetworkAPIs(BOOL Attach)
         DETACH(HttpOpenRequestW);
         DETACH(HttpSendRequestA);
         DETACH(HttpSendRequestW);
+        DETACH(InternetReadFile);
     }
 
     HookCommitTransaction();
