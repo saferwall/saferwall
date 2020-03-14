@@ -36,6 +36,8 @@ VOID
 HookOleAPIs(BOOL Attach);
 VOID
 HookNetworkAPIs(BOOL Attach);
+VOID
+HookDll(PWCHAR DllName);
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
@@ -50,3 +52,13 @@ using __snwprintf_fn_t = int(__cdecl *)(wchar_t *buffer, size_t count, const wch
 using strlen_fn_t = size_t(__cdecl *)(char const *buffer);
 
 using pfn_wcsstr = wchar_t *(__cdecl *)(wchar_t *_String, wchar_t const *_SubStr);
+
+//
+// Structs
+//
+
+typedef struct HookInfo
+{
+    BOOL IsOleHooked;
+    BOOL IsWinInetHooked;
+} HookInfo;

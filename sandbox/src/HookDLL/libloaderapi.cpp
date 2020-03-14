@@ -6,6 +6,7 @@ decltype(LdrGetProcedureAddressEx) *TrueLdrGetProcedureAddressEx = nullptr;
 decltype(LdrGetDllHandleEx) *TrueLdrGetDllHandleEx = nullptr;
 
 extern pfn_wcsstr _wcsstr;
+extern HookInfo gHookInfo;
 
 NTSTATUS
 NTAPI
@@ -30,23 +31,11 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
 
     NTSTATUS Status = TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
 
-    if (DllName && DllName->Buffer)
+    if (NT_SUCCESS(Status))
     {
-        if (_wcsstr(DllName->Buffer, L"ole32.dll") != NULL)
+        if (DllName && DllName->Buffer)
         {
-            if (NT_SUCCESS(Status))
-            {
-                LogMessage(L"Enabling OLE hooks ...");
-                HookOleAPIs(TRUE);
-            }
-        }
-        else if (_wcsstr(DllName->Buffer, L"wininet.dll") != NULL)
-        {
-            if (NT_SUCCESS(Status))
-            {
-                LogMessage(L"Enabling WinInet hooks ...");
-                HookNetworkAPIs(TRUE);
-            }
+            HookDll(DllName->Buffer);
         }
     }
 

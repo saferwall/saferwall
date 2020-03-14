@@ -78,9 +78,12 @@ pfnHttpSendRequestA TrueHttpSendRequestA = nullptr;
 pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
 pfnInternetReadFile TrueInternetReadFile = nullptr;
 
-CRITICAL_SECTION gDbgHelpLock, gInsideHookLock;
+CRITICAL_SECTION gDbgHelpLock, gInsideHookLock, gHookDllLock;
 BOOL gInsideHook = FALSE;
 DWORD dwTlsIndex;
+
+HookInfo gHookInfo;
+
 
 //
 // ETW provider GUID and global provider handle.
@@ -536,6 +539,12 @@ ProcessAttach()
 
     InitializeCriticalSection(&gDbgHelpLock);
     InitializeCriticalSection(&gInsideHookLock);
+    InitializeCriticalSection(&gHookDllLock);
+
+	//
+	// Initialize Hook Information.
+	//
+    gHookInfo = {0};
 
     //
     // Attach Native APIs.
@@ -872,4 +881,31 @@ HookNtAPIs()
     HookCommitTransaction();
 
     LogMessage(L"HookNtAPIs End");
+}
+
+VOID
+HookDll(PWCHAR DllName)
+{
+    EnterCriticalSection(&gHookDllLock);
+
+    if (_wcsstr(DllName, L"ole32.dll") != NULL)
+    {
+        if (!gHookInfo.IsOleHooked)
+        {
+            LogMessage(L"Enabling OLE hooks ...");
+            HookOleAPIs(TRUE);
+            gHookInfo.IsOleHooked = TRUE;
+        }
+    }
+    else if (_wcsstr(DllName, L"wininet.dll") != NULL)
+    {
+        if (!gHookInfo.IsWinInetHooked)
+        {
+            LogMessage(L"Enabling WinInet hooks ...");
+            HookNetworkAPIs(TRUE);
+            gHookInfo.IsWinInetHooked = TRUE;
+        }
+    }
+
+	LeaveCriticalSection(&gHookDllLock);
 }
