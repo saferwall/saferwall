@@ -84,7 +84,6 @@ DWORD dwTlsIndex;
 
 HookInfo gHookInfo;
 
-
 //
 // ETW provider GUID and global provider handle.
 // GUID:
@@ -110,9 +109,112 @@ typedef struct _STACKTRACE
     ULONGLONG Frames[ANYSIZE_ARRAY];
 } STACKTRACE, *PSTACKTRACE;
 
+PMODULE_INFORMATION_TABLE
+SfwQueryModules(IN PPEB pPeb)
+{
+    ULONG Count = 0;
+    ULONG CurCount = 0;
+    PLIST_ENTRY pEntry = NULL;
+    PLIST_ENTRY pHeadEntry = NULL;
+    PPEB_LDR_DATA pLdrData = NULL;
+    PMODULE_ENTRY CurModule = NULL;
+    PLDR_DATA_TABLE_ENTRY pLdrEntry = NULL;
+    PMODULE_INFORMATION_TABLE pModuleInformationTable = NULL;
+
+    pLdrData = pPeb->Ldr;
+    pHeadEntry = &pLdrData->InMemoryOrderModuleList;
+
+    // Count user modules : iterate through the entire list
+    pEntry = pHeadEntry->Flink;
+    while (pEntry != pHeadEntry)
+    {
+        Count++;
+        pEntry = pEntry->Flink;
+    }
+
+    // Allocate a MODULE_INFORMATION_TABLE
+    pModuleInformationTable =
+        (PMODULE_INFORMATION_TABLE)RtlAllocateHeap(RtlProcessHeap(), 0, sizeof(MODULE_INFORMATION_TABLE));
+    if (!pModuleInformationTable)
+    {
+        LogMessage(L"Cannot allocate a MODULE_INFORMATION_TABLE.");
+        return NULL;
+    }
+
+    // Allocate the correct amount of memory depending of the modules count
+    pModuleInformationTable->Modules =
+        (PMODULE_ENTRY)RtlAllocateHeap(RtlProcessHeap(), 0, Count * sizeof(MODULE_ENTRY));
+    if (!pModuleInformationTable->Modules)
+    {
+        LogMessage(L"Cannot allocate a MODULE_INFORMATION_TABLE.");
+        return NULL;
+    }
+
+    // Fill the basic information of MODULE_INFORMATION_TABLE
+    pModuleInformationTable->ModuleCount = Count;
+
+    // Fill all the modules information in the table
+    pEntry = pHeadEntry->Flink;
+    while (pEntry != pHeadEntry)
+    {
+        // Retrieve the current MODULE_ENTRY
+        CurModule = &pModuleInformationTable->Modules[CurCount++];
+
+        // Retrieve the current LDR_DATA_TABLE_ENTRY
+        pLdrEntry = CONTAINING_RECORD(pEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+
+        // Fill the MODULE_ENTRY with the LDR_DATA_TABLE_ENTRY information
+        RtlCopyMemory(&CurModule->BaseName, &pLdrEntry->BaseDllName, sizeof(CurModule->BaseName));
+        RtlCopyMemory(&CurModule->FullName, &pLdrEntry->FullDllName, sizeof(CurModule->FullName));
+        RtlCopyMemory(&CurModule->SizeOfImage, &pLdrEntry->SizeOfImage, sizeof(CurModule->SizeOfImage));
+        RtlCopyMemory(&CurModule->BaseAddress, &pLdrEntry->DllBase, sizeof(CurModule->BaseAddress));
+        RtlCopyMemory(&CurModule->EntryPoint, &pLdrEntry->EntryPoint, sizeof(CurModule->EntryPoint));
+
+        // Iterate to the next entry
+        pEntry = pEntry->Flink;
+    }
+
+    return pModuleInformationTable;
+}
+
+VOID
+SfwGetExecutableModuleInfo()
+{
+#if defined(_WIN64)
+    PPEB pPeb = (PPEB)__readgsqword(0x60);
+
+#elif defined(_WIN32)
+    PPEB pPeb = (PPEB)__readfsdword(0x30);
+#endif
+
+    // Get all loaded modules infos.
+    PMODULE_INFORMATION_TABLE pModuleInformationTable = SfwQueryModules(pPeb);
+
+    PMODULE_ENTRY CurModule = NULL;
+    for (ULONG Index = 0; Index < pModuleInformationTable->ModuleCount; pModuleInformationTable++)
+    {
+        CurModule = &pModuleInformationTable->Modules[Index++];
+
+        // Look up the executable module name.
+        if (wcscmp(CurModule->FullName.Buffer, pPeb->ProcessParameters->ImagePathName.Buffer) == 0)
+        {
+            gHookInfo.ExecutableModuleStart = (ULONG)CurModule->BaseAddress;
+            gHookInfo.ExecutableModuleEnd = CurModule->SizeOfImage;
+			break;
+		}
+    }
+
+	LogMessage(L"Main module start %p", gHookInfo.ExecutableModuleStart);
+    LogMessage(L"Main module end %p", gHookInfo.ExecutableModuleEnd);
+}
+
 VOID
 CaptureStackTrace()
 {
+    GetStackWalk();
+
+    return;
+
     PCONTEXT InitialContext = NULL;
     // STACKTRACE StackTrace;
     UINT MaxFrames = 50;
@@ -546,14 +648,24 @@ ProcessAttach()
     InitializeCriticalSection(&gInsideHookLock);
     InitializeCriticalSection(&gHookDllLock);
 
-	//
-	// Initialize Hook Information.
-	//
+    //
+    // Initialize Hook Information.
+    //
     gHookInfo = {0};
 
-	HookNtAPIs();
+    //
+    // Get the executable module start / end.
+    //
 
-	return TRUE;
+    SfwGetExecutableModuleInfo();
+
+	//
+	// Hook Native APIs.
+	//
+
+    HookNtAPIs();
+
+    return TRUE;
 }
 
 BOOL
@@ -625,7 +737,7 @@ ProcessDetach()
     DETACH(NtWriteVirtualMemory);
     DETACH(NtFreeVirtualMemory);
     DETACH(NtMapViewOfSection);
-    //DETACH(NtAllocateVirtualMemory);
+    // DETACH(NtAllocateVirtualMemory);
     DETACH(NtUnmapViewOfSection);
     DETACH(NtProtectVirtualMemory);
 
@@ -727,9 +839,9 @@ HookOleAPIs(BOOL Attach)
 
     HookCommitTransaction();
 
-	LogMessage(L"Hooked to ole32 done");
+    LogMessage(L"Hooked to ole32 done");
 
-	gHookInfo.IsOleHooked = TRUE;
+    gHookInfo.IsOleHooked = TRUE;
 }
 
 VOID
@@ -812,9 +924,9 @@ HookNetworkAPIs(BOOL Attach)
 
     HookCommitTransaction();
 
-	LogMessage(L"Attaching to wininet done");
+    LogMessage(L"Attaching to wininet done");
 
-	gHookInfo.IsWinInetHooked = TRUE;
+    gHookInfo.IsWinInetHooked = TRUE;
 }
 
 VOID
@@ -822,7 +934,7 @@ HookNtAPIs()
 {
     LogMessage(L"HookNtAPIs Begin");
 
-	//EnterHookGuard();
+    // EnterHookGuard();
 
     HookBegingTransation();
 
@@ -830,68 +942,68 @@ HookNtAPIs()
     // Lib Load APIs.
     //
 
-    //ATTACH(LdrLoadDll);
-    //ATTACH(LdrGetProcedureAddressEx);
-    //ATTACH(LdrGetDllHandleEx);
+    // ATTACH(LdrLoadDll);
+    // ATTACH(LdrGetProcedureAddressEx);
+    // ATTACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
     ATTACH(NtCreateFile);
-    //ATTACH(NtReadFile);
-    //ATTACH(NtWriteFile);
-    //ATTACH(NtDeleteFile);
-    //ATTACH(NtSetInformationFile);
-    //ATTACH(NtQueryDirectoryFile);
-    //ATTACH(NtQueryInformationFile);
+    // ATTACH(NtReadFile);
+    // ATTACH(NtWriteFile);
+    // ATTACH(NtDeleteFile);
+    // ATTACH(NtSetInformationFile);
+    // ATTACH(NtQueryDirectoryFile);
+    // ATTACH(NtQueryInformationFile);
 
     //
     // Registry APIs.
     //
 
-    //ATTACH(NtOpenKey);
-    //ATTACH(NtOpenKeyEx);
-    //ATTACH(NtCreateKey);
-    //ATTACH(NtQueryValueKey);
-    //ATTACH(NtSetValueKey);
-    //ATTACH(NtDeleteKey);
-    //ATTACH(NtDeleteValueKey);
+    // ATTACH(NtOpenKey);
+    // ATTACH(NtOpenKeyEx);
+    // ATTACH(NtCreateKey);
+    // ATTACH(NtQueryValueKey);
+    // ATTACH(NtSetValueKey);
+    // ATTACH(NtDeleteKey);
+    // ATTACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-   /* ATTACH(NtOpenProcess);
-    ATTACH(NtTerminateProcess);
-    ATTACH(NtCreateUserProcess);
-    ATTACH(NtCreateThread);
-    ATTACH(NtCreateThreadEx);
-    ATTACH(NtSuspendThread);
-    ATTACH(NtResumeThread);*/
-    //ATTACH(NtContinue);
+    /* ATTACH(NtOpenProcess);
+     ATTACH(NtTerminateProcess);
+     ATTACH(NtCreateUserProcess);
+     ATTACH(NtCreateThread);
+     ATTACH(NtCreateThreadEx);
+     ATTACH(NtSuspendThread);
+     ATTACH(NtResumeThread);*/
+    // ATTACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    //ATTACH(NtQuerySystemInformation);
-    //ATTACH(RtlDecompressBuffer);
-    //ATTACH(NtDelayExecution);
-    //ATTACH(NtLoadDriver);
+    // ATTACH(NtQuerySystemInformation);
+    // ATTACH(RtlDecompressBuffer);
+    // ATTACH(NtDelayExecution);
+    // ATTACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    //ATTACH(NtQueryVirtualMemory);
-    //ATTACH(NtReadVirtualMemory);
-    //ATTACH(NtWriteVirtualMemory);
-    //ATTACH(NtFreeVirtualMemory);
-    //ATTACH(NtMapViewOfSection);
-    //ATTACH(NtAllocateVirtualMemory);
-    //ATTACH(NtUnmapViewOfSection);
-    //ATTACH(NtProtectVirtualMemory);
+    // ATTACH(NtQueryVirtualMemory);
+    // ATTACH(NtReadVirtualMemory);
+    // ATTACH(NtWriteVirtualMemory);
+    // ATTACH(NtFreeVirtualMemory);
+    // ATTACH(NtMapViewOfSection);
+    // ATTACH(NtAllocateVirtualMemory);
+    // ATTACH(NtUnmapViewOfSection);
+    // ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -918,5 +1030,54 @@ HookDll(PWCHAR DllName)
         }
     }
 
-	LeaveCriticalSection(&gHookDllLock);
+    LeaveCriticalSection(&gHookDllLock);
+}
+
+VOID
+GetStackWalk()
+
+{
+    //
+    // Capture up to 25 stack frames from the current call stack.  We're going to
+    // skip the first stack frame returned because that's the GetStackWalk function
+    // itself, which we don't care about.
+    //
+
+    PVOID addrs[5] = {0};
+    USHORT frames = RtlCaptureStackBackTrace(3, 5, addrs, NULL);
+
+    //
+    // Allocate a buffer large enough to hold the symbol information on the stack and get
+    // a pointer to the buffer.  We also have to set the size of the symbol structure itself
+    // and the number of bytes reserved for the name.
+    //
+
+    char buffer[sizeof(SYMBOL_INFO) + 1024 * sizeof(WCHAR)];
+    PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
+
+    pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    pSymbol->MaxNameLen = 1024;
+
+    //
+    // Iterate over our frames.
+    //
+
+    HANDLE hProcess = NtCurrentProcess();
+    WCHAR pszFilename[MAX_PATH + 1];
+    DWORD64 displacement = 0;
+    for (ULONG i = 0; i < frames; i++)
+    {
+        DWORD64 address = (DWORD64)addrs[i];
+        if (SymFromAddr(hProcess, address, &displacement, pSymbol))
+        {
+            GetMappedFileNameW(hProcess, (LPVOID)addrs[i], pszFilename, MAX_PATH);
+            LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
+            LogMessage(
+                L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
+                ModuleName,
+                MultiByteToWide(pSymbol->Name),
+                pSymbol->Address,
+                address);
+        }
+    }
 }
