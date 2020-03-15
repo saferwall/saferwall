@@ -27,9 +27,9 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		// with DetourCreateProcessWithDllEx or DetourCreateProcessWithDlls.
 		// As we are mapping the dll from kernel, we don't need to call DetourRestoreAfterWith();
 		// 
-		OutputDebugStringA("HookDLL" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
-                                                                    " DllMain DLL_PROCESS_ATTACH\n");
+
 		ProcessAttach();
+        LogMessage(L"DllMain DLL_PROCESS_ATTACH Done");
 		break;
 
 	case DLL_PROCESS_DETACH:
@@ -39,17 +39,16 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		//
 
 		ProcessDetach();
+        LogMessage(L"DllMain DLL_PROCESS_DETACH Done");
 		break;
 
 
 	case DLL_THREAD_ATTACH:
-		OutputDebugStringA("HookDLL" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
-			" DllMain DLL_THREAD_ATTACH\n");
+		LogMessage(L"DllMain DLL_THREAD_ATTACH");
 		break;
 
 	case DLL_THREAD_DETACH:
-		OutputDebugStringA("HookDLL" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
-			" DllMain DLL_THREAD_DETACH\n");
+        LogMessage(L"DllMain DLL_THREAD_DETACH");
 		break;
 	}
 

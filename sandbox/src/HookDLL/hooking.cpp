@@ -301,9 +301,9 @@ Routine Description:
             implemented entirely in kernel32.dll, whose 64-bit
             version is not loaded into WoW64 processes.
 
-    In our case, we alweays injects DLL of the same architecture
+    In our case, we always injects DLL of the same architecture
     as the process. So it should be safe to use TLS. The TLS
-    allocation should happen before attacking the hooks as TlsAlloc
+    allocation should happen before attaching the hooks as TlsAlloc
     end up calling RtlAllocateHeap() which might be hooked as well.
 
 Return Value:
@@ -323,6 +323,12 @@ VOID
 ReleaseHookGuard()
 {
     TlsSetValue(dwTlsIndex, (LPVOID)FALSE);
+}
+
+VOID
+EnterHookGuard()
+{
+    TlsSetValue(dwTlsIndex, (LPVOID)TRUE);
 }
 
 LONG
@@ -545,9 +551,7 @@ ProcessAttach()
 	//
     gHookInfo = {0};
 
-	HookBegingTransation();
-    ATTACH(NtContinue);
-    HookCommitTransaction();
+	HookNtAPIs();
 
 	return TRUE;
 }
@@ -690,6 +694,8 @@ HookCommitTransaction()
 VOID
 HookOleAPIs(BOOL Attach)
 {
+    LogMessage(L"Attaching to ole32");
+
     _StringFromCLSID = (pfnStringFromCLSID)GetAPIAddress((PSTR) "StringFromCLSID", (PWSTR)L"ole32.dll");
     if (_StringFromCLSID == NULL)
     {
@@ -720,11 +726,17 @@ HookOleAPIs(BOOL Attach)
     }
 
     HookCommitTransaction();
+
+	LogMessage(L"Hooked to ole32 done");
+
+	gHookInfo.IsOleHooked = TRUE;
 }
 
 VOID
 HookNetworkAPIs(BOOL Attach)
 {
+    LogMessage(L"Attaching to wininet");
+
     TrueInternetOpenA = (pfnInternetOpenA)GetAPIAddress((PSTR) "InternetOpenA", (PWSTR)L"wininet.dll");
     if (TrueInternetOpenA == NULL)
     {
@@ -799,6 +811,10 @@ HookNetworkAPIs(BOOL Attach)
     }
 
     HookCommitTransaction();
+
+	LogMessage(L"Attaching to wininet done");
+
+	gHookInfo.IsWinInetHooked = TRUE;
 }
 
 VOID
@@ -806,74 +822,76 @@ HookNtAPIs()
 {
     LogMessage(L"HookNtAPIs Begin");
 
+	//EnterHookGuard();
+
     HookBegingTransation();
 
     //
     // Lib Load APIs.
     //
 
-    ATTACH(LdrLoadDll);
-    ATTACH(LdrGetProcedureAddressEx);
-    ATTACH(LdrGetDllHandleEx);
+    //ATTACH(LdrLoadDll);
+    //ATTACH(LdrGetProcedureAddressEx);
+    //ATTACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
     ATTACH(NtCreateFile);
-    ATTACH(NtReadFile);
-    ATTACH(NtWriteFile);
-    ATTACH(NtDeleteFile);
-    ATTACH(NtSetInformationFile);
-    ATTACH(NtQueryDirectoryFile);
-    ATTACH(NtQueryInformationFile);
+    //ATTACH(NtReadFile);
+    //ATTACH(NtWriteFile);
+    //ATTACH(NtDeleteFile);
+    //ATTACH(NtSetInformationFile);
+    //ATTACH(NtQueryDirectoryFile);
+    //ATTACH(NtQueryInformationFile);
 
     //
     // Registry APIs.
     //
 
-    ATTACH(NtOpenKey);
-    ATTACH(NtOpenKeyEx);
-    ATTACH(NtCreateKey);
-    ATTACH(NtQueryValueKey);
-    ATTACH(NtSetValueKey);
-    ATTACH(NtDeleteKey);
-    ATTACH(NtDeleteValueKey);
+    //ATTACH(NtOpenKey);
+    //ATTACH(NtOpenKeyEx);
+    //ATTACH(NtCreateKey);
+    //ATTACH(NtQueryValueKey);
+    //ATTACH(NtSetValueKey);
+    //ATTACH(NtDeleteKey);
+    //ATTACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    ATTACH(NtOpenProcess);
+   /* ATTACH(NtOpenProcess);
     ATTACH(NtTerminateProcess);
     ATTACH(NtCreateUserProcess);
     ATTACH(NtCreateThread);
     ATTACH(NtCreateThreadEx);
     ATTACH(NtSuspendThread);
-    ATTACH(NtResumeThread);
+    ATTACH(NtResumeThread);*/
     //ATTACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    ATTACH(NtQuerySystemInformation);
-    ATTACH(RtlDecompressBuffer);
-    ATTACH(NtDelayExecution);
-    ATTACH(NtLoadDriver);
+    //ATTACH(NtQuerySystemInformation);
+    //ATTACH(RtlDecompressBuffer);
+    //ATTACH(NtDelayExecution);
+    //ATTACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    ATTACH(NtQueryVirtualMemory);
-    ATTACH(NtReadVirtualMemory);
-    ATTACH(NtWriteVirtualMemory);
-    ATTACH(NtFreeVirtualMemory);
-    ATTACH(NtMapViewOfSection);
+    //ATTACH(NtQueryVirtualMemory);
+    //ATTACH(NtReadVirtualMemory);
+    //ATTACH(NtWriteVirtualMemory);
+    //ATTACH(NtFreeVirtualMemory);
+    //ATTACH(NtMapViewOfSection);
     //ATTACH(NtAllocateVirtualMemory);
-    ATTACH(NtUnmapViewOfSection);
-    ATTACH(NtProtectVirtualMemory);
+    //ATTACH(NtUnmapViewOfSection);
+    //ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -889,18 +907,14 @@ HookDll(PWCHAR DllName)
     {
         if (!gHookInfo.IsOleHooked)
         {
-            LogMessage(L"Enabling OLE hooks ...");
             HookOleAPIs(TRUE);
-            gHookInfo.IsOleHooked = TRUE;
         }
     }
     else if (_wcsstr(DllName, L"wininet.dll") != NULL)
     {
         if (!gHookInfo.IsWinInetHooked)
         {
-            LogMessage(L"Enabling WinInet hooks ...");
             HookNetworkAPIs(TRUE);
-            gHookInfo.IsWinInetHooked = TRUE;
         }
     }
 

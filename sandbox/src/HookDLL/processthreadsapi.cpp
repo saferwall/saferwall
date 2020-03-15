@@ -13,7 +13,6 @@ decltype(NtContinue) *TrueNtContinue = nullptr;
 BOOL bFirstTime = TRUE;
 extern HookInfo gHookInfo;
 
-
 NTSTATUS NTAPI
 HookNtCreateUserProcess(
     _Out_ PHANDLE ProcessHandle,
@@ -265,44 +264,35 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 {
     NTSTATUS Status;
 
-    CaptureStackTrace();
-
-    TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
-
     if (bFirstTime)
     {
         HANDLE ModuleHandle = NULL;
         UNICODE_STRING ModulePath;
 
-         RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
-         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-         if (Status == STATUS_SUCCESS && !gHookInfo.IsOleHooked)
+        RtlInitUnicodeString(&ModulePath, (PWSTR)L"ole32.dll");
+        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        if (Status == STATUS_SUCCESS && !gHookInfo.IsOleHooked)
         {
-            LogMessage(L"Attaching to ole32");
             HookOleAPIs(TRUE);
-            LogMessage(L"Hooked OLE");
-            gHookInfo.IsOleHooked = TRUE;
         }
 
         RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
         if (Status == STATUS_SUCCESS && gHookInfo.IsWinInetHooked)
         {
-            LogMessage(L"Attaching to wininet");
             HookNetworkAPIs(TRUE);
-            LogMessage(L"Hooked wininet");
-            gHookInfo.IsWinInetHooked = TRUE;
-
         }
 
-		//
-        // Attach Native APIs.
-        //
-
-        HookNtAPIs();
-
+        //ReleaseHookGuard();
         bFirstTime = FALSE;
+        Status = TrueNtContinue(ContextRecord, TestAlert);
+        return Status;
     }
 
-	return TrueNtContinue(ContextRecord, TestAlert);
+    CaptureStackTrace();
+
+    TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
+
+    Status =  TrueNtContinue(ContextRecord, TestAlert);
+    return Status;
 }

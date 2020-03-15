@@ -23,6 +23,8 @@ ProcessDetach();
 BOOL
 IsInsideHook();
 VOID
+EnterHookGuard();
+VOID
 ReleaseHookGuard();
 VOID
 CaptureStackTrace();
@@ -38,6 +40,7 @@ VOID
 HookNetworkAPIs(BOOL Attach);
 VOID
 HookDll(PWCHAR DllName);
+
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
