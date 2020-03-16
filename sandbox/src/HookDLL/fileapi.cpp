@@ -27,8 +27,8 @@ HookNtCreateFile(
     - CreateFileA -> CreateFileW
 */
 {
-    if (IsInsideHook())
-    {
+    if (IsInsideHook() || SfwIsCalledFromSystemMemory(4))
+    { 
         return TrueNtCreateFile(
             FileHandle,
             DesiredAccess,
@@ -42,24 +42,28 @@ HookNtCreateFile(
             EaBuffer,
             EaLength);
     }
-
+	 
     CaptureStackTrace();
 
     if (CreateOptions & FILE_DIRECTORY_FILE)
     {
         TraceAPI(
-            L"CreateDirectory(%ws, DesiredAccess:0x%08x, CreateOptions:0x%08x), RETN: %p",
+            L"CreateDirectory(%ws, DesiredAccess:0x%08x, FileAttributes: %lu, ShareAccess: %lu, CreateOptions:0x%08x), RETN: %p",
             ObjectAttributes->ObjectName->Buffer,
             DesiredAccess,
+            FileAttributes,
+            ShareAccess,
             CreateOptions,
             _ReturnAddress());
     }
     else
     {
         TraceAPI(
-            L"NtCreateFile(%ws, DesiredAccess:0x%08x, CreateOptions:0x%08x), RETN: %p",
+            L"NtCreateFile(%ws, DesiredAccess:0x%08x, FileAttributes: %lu, ShareAccess: %lu, CreateOptions:0x%08x), RETN: %p",
             ObjectAttributes->ObjectName->Buffer,
             DesiredAccess,
+            FileAttributes,
+            ShareAccess,
             CreateOptions,
             _ReturnAddress());
     }

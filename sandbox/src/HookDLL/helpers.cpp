@@ -82,3 +82,5 @@ GetNtPathFromHandle(HANDLE Handle, PUNICODE_STRING* ObjectName)
 	*ObjectName = (PUNICODE_STRING)ObjectNameInfo;
     return 0;
 }
+
+

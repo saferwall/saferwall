@@ -200,21 +200,17 @@ SfwGetExecutableModuleInfo()
         {
             gHookInfo.ExecutableModuleStart = (ULONG)CurModule->BaseAddress;
             gHookInfo.ExecutableModuleEnd = CurModule->SizeOfImage;
-			break;
-		}
+            break;
+        }
     }
 
-	LogMessage(L"Main module start %p", gHookInfo.ExecutableModuleStart);
+    LogMessage(L"Main module start %p", gHookInfo.ExecutableModuleStart);
     LogMessage(L"Main module end %p", gHookInfo.ExecutableModuleEnd);
 }
 
 VOID
 CaptureStackTrace()
 {
-    GetStackWalk();
-
-    return;
-
     PCONTEXT InitialContext = NULL;
     // STACKTRACE StackTrace;
     UINT MaxFrames = 50;
@@ -659,9 +655,9 @@ ProcessAttach()
 
     SfwGetExecutableModuleInfo();
 
-	//
-	// Hook Native APIs.
-	//
+    //
+    // Hook Native APIs.
+    //
 
     HookNtAPIs();
 
@@ -677,69 +673,69 @@ ProcessDetach()
     // Lib Load APIs.
     //
 
-    DETACH(LdrLoadDll);
-    DETACH(LdrGetProcedureAddressEx);
-    DETACH(LdrGetDllHandleEx);
+    // DETACH(LdrLoadDll);
+    // DETACH(LdrGetProcedureAddressEx);
+    // DETACH(LdrGetDllHandleEx);
 
     //
     // File APIs.
     //
 
     DETACH(NtCreateFile);
-    DETACH(NtReadFile);
-    DETACH(NtWriteFile);
-    DETACH(NtDeleteFile);
-    DETACH(NtSetInformationFile);
-    DETACH(NtQueryDirectoryFile);
-    DETACH(NtQueryInformationFile);
+    // DETACH(NtReadFile);
+    // DETACH(NtWriteFile);
+    // DETACH(NtDeleteFile);
+    // DETACH(NtSetInformationFile);
+    // DETACH(NtQueryDirectoryFile);
+    // DETACH(NtQueryInformationFile);
     // DETACH(MoveFileWithProgressTransactedW);
 
     //
     // Registry APIs.
     //
 
-    DETACH(NtOpenKey);
-    DETACH(NtOpenKeyEx);
-    DETACH(NtCreateKey);
-    DETACH(NtQueryValueKey);
-    DETACH(NtSetValueKey);
-    DETACH(NtDeleteKey);
-    DETACH(NtDeleteValueKey);
+    // DETACH(NtOpenKey);
+    // DETACH(NtOpenKeyEx);
+    // DETACH(NtCreateKey);
+    // DETACH(NtQueryValueKey);
+    // DETACH(NtSetValueKey);
+    // DETACH(NtDeleteKey);
+    // DETACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
     //
 
-    DETACH(NtOpenProcess);
-    DETACH(NtTerminateProcess);
-    DETACH(NtCreateUserProcess);
-    DETACH(NtCreateThread);
-    DETACH(NtCreateThreadEx);
-    DETACH(NtSuspendThread);
-    DETACH(NtResumeThread);
-    DETACH(NtContinue);
+    // DETACH(NtOpenProcess);
+    // DETACH(NtTerminateProcess);
+    // DETACH(NtCreateUserProcess);
+    // DETACH(NtCreateThread);
+    // DETACH(NtCreateThreadEx);
+    // DETACH(NtSuspendThread);
+    // DETACH(NtResumeThread);
+    // DETACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    DETACH(NtQuerySystemInformation);
-    DETACH(RtlDecompressBuffer);
-    DETACH(NtDelayExecution);
-    DETACH(NtLoadDriver);
+    // DETACH(NtQuerySystemInformation);
+    // DETACH(RtlDecompressBuffer);
+    // DETACH(NtDelayExecution);
+    // DETACH(NtLoadDriver);
 
     //
     // Memory APIs.
     //
 
-    DETACH(NtQueryVirtualMemory);
-    DETACH(NtReadVirtualMemory);
-    DETACH(NtWriteVirtualMemory);
-    DETACH(NtFreeVirtualMemory);
-    DETACH(NtMapViewOfSection);
-    // DETACH(NtAllocateVirtualMemory);
-    DETACH(NtUnmapViewOfSection);
-    DETACH(NtProtectVirtualMemory);
+    // DETACH(NtQueryVirtualMemory);
+    // DETACH(NtReadVirtualMemory);
+    // DETACH(NtWriteVirtualMemory);
+    // DETACH(NtFreeVirtualMemory);
+    // DETACH(NtMapViewOfSection);
+    //// DETACH(NtAllocateVirtualMemory);
+    // DETACH(NtUnmapViewOfSection);
+    // DETACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -962,10 +958,10 @@ HookNtAPIs()
     // Registry APIs.
     //
 
-    // ATTACH(NtOpenKey);
-    // ATTACH(NtOpenKeyEx);
-    // ATTACH(NtCreateKey);
-    // ATTACH(NtQueryValueKey);
+    /*   ATTACH(NtOpenKey);
+       ATTACH(NtOpenKeyEx);
+       ATTACH(NtCreateKey);
+        ATTACH(NtQueryValueKey);*/
     // ATTACH(NtSetValueKey);
     // ATTACH(NtDeleteKey);
     // ATTACH(NtDeleteValueKey);
@@ -1033,51 +1029,27 @@ HookDll(PWCHAR DllName)
     LeaveCriticalSection(&gHookDllLock);
 }
 
-VOID
-GetStackWalk()
-
+BOOL
+SfwIsCalledFromSystemMemory(DWORD FramesToCapture)
 {
     //
-    // Capture up to 25 stack frames from the current call stack.  We're going to
-    // skip the first stack frame returned because that's the GetStackWalk function
-    // itself, which we don't care about.
+    // Capture up to 5 stack frames from the current call stack.
+    // We're going to skip the first two stack frame returned
+    // because that's the SfwIsCalledFromSystemMemory() and the
+    // Hook Handler function itself, which we don't care about.
     //
 
     PVOID addrs[5] = {0};
-    USHORT frames = RtlCaptureStackBackTrace(3, 5, addrs, NULL);
+    USHORT frames = RtlCaptureStackBackTrace(2, FramesToCapture, addrs, NULL);
 
-    //
-    // Allocate a buffer large enough to hold the symbol information on the stack and get
-    // a pointer to the buffer.  We also have to set the size of the symbol structure itself
-    // and the number of bytes reserved for the name.
-    //
-
-    char buffer[sizeof(SYMBOL_INFO) + 1024 * sizeof(WCHAR)];
-    PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-
-    pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-    pSymbol->MaxNameLen = 1024;
-
-    //
-    // Iterate over our frames.
-    //
-
-    HANDLE hProcess = NtCurrentProcess();
-    WCHAR pszFilename[MAX_PATH + 1];
-    DWORD64 displacement = 0;
     for (ULONG i = 0; i < frames; i++)
     {
-        DWORD64 address = (DWORD64)addrs[i];
-        if (SymFromAddr(hProcess, address, &displacement, pSymbol))
+        ULONG CalledFrom = (ULONG)addrs[i];
+        if (CalledFrom >= gHookInfo.ExecutableModuleStart &&
+            CalledFrom <= gHookInfo.ExecutableModuleStart + gHookInfo.ExecutableModuleEnd)
         {
-            GetMappedFileNameW(hProcess, (LPVOID)addrs[i], pszFilename, MAX_PATH);
-            LPCWSTR ModuleName = FindFileName((LPCWSTR)pszFilename);
-            LogMessage(
-                L"Module:%ws, Name:%ws, Address:0x%08llx, Addr:0x%p",
-                ModuleName,
-                MultiByteToWide(pSymbol->Name),
-                pSymbol->Address,
-                address);
+            return FALSE;
         }
     }
+    return TRUE;
 }

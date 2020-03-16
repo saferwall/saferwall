@@ -39,7 +39,7 @@ HookNtOpenKeyEx(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ ULONG OpenOptions)
 {
-    if (IsInsideHook())
+    if (IsInsideHook() || SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes, OpenOptions);
     }
@@ -101,7 +101,7 @@ HookNtQueryValueKey(
     _In_ ULONG Length,
     _Out_ PULONG ResultLength)
 {
-    if (IsInsideHook())
+    if (IsInsideHook() || SfwIsCalledFromSystemMemory(3))
     {
         return TrueNtQueryValueKey(
             KeyHandle, ValueName, KeyValueInformationClass, KeyValueInformation, Length, ResultLength);

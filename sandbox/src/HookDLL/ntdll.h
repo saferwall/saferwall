@@ -23,6 +23,7 @@
 
 //
 // Provides access to the entire Native API.
+//
 
 #include <phnt.h>
 

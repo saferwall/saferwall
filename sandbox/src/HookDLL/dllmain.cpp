@@ -44,11 +44,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 
 	case DLL_THREAD_ATTACH:
-		LogMessage(L"DllMain DLL_THREAD_ATTACH");
+		//LogMessage(L"DllMain DLL_THREAD_ATTACH");
 		break;
 
 	case DLL_THREAD_DETACH:
-        LogMessage(L"DllMain DLL_THREAD_DETACH");
+        //LogMessage(L"DllMain DLL_THREAD_DETACH");
 		break;
 	}
 

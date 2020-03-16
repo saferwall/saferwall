@@ -5,4 +5,4 @@ FindFileName(LPCWSTR pPath);
 WCHAR *
 MultiByteToWide(CHAR *lpMultiByteStr);
 DWORD
-GetNtPathFromHandle(HANDLE Handle, PUNICODE_STRING* ObjectName);
+GetNtPathFromHandle(HANDLE Handle, PUNICODE_STRING *ObjectName);

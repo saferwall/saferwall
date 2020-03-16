@@ -40,8 +40,8 @@ VOID
 HookNetworkAPIs(BOOL Attach);
 VOID
 HookDll(PWCHAR DllName);
-VOID
-GetStackWalk();
+BOOL
+SfwIsCalledFromSystemMemory(DWORD FramesToCapture);
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
