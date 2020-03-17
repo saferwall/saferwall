@@ -278,13 +278,18 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
 
         RtlInitUnicodeString(&ModulePath, (PWSTR)L"wininet.dll");
         Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
-        if (Status == STATUS_SUCCESS && gHookInfo.IsWinInetHooked)
+        if (Status == STATUS_SUCCESS && !gHookInfo.IsWinInetHooked)
         {
             HookNetworkAPIs(TRUE);
         }
 
-        //ReleaseHookGuard();
         bFirstTime = FALSE;
+        Status = TrueNtContinue(ContextRecord, TestAlert);
+        return Status;
+    }
+
+	if (SfwIsCalledFromSystemMemory(1))
+    {
         Status = TrueNtContinue(ContextRecord, TestAlert);
         return Status;
     }

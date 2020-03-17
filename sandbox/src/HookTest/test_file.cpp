@@ -16,7 +16,7 @@ DoFileOps()
     GetRandomDir(szFilePath);
     CreateDirectory(szFilePath, NULL);
 
-    wprintf(L"Calling CreateDirectoryExW\n");
+    wprintf(L"[+] Calling CreateDirectoryExW\n");
     GetRandomDir(szFilePath);
     bResult = CreateDirectoryEx(L"C:\\ProgramData", szFilePath, NULL);
     if (!bResult)
@@ -48,7 +48,7 @@ DoFileOps()
         ErrorExit("MoveFile");
     }
 
-    wprintf(L"Calling DeleteFile\n");
+    wprintf(L"[+] Calling DeleteFile\n");
     bResult = DeleteFile(szDestFilePath);
     if (!bResult)
     {

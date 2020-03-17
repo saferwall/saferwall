@@ -191,7 +191,7 @@ HookNtSetInformationFile(
 */
 {
 
-    if (IsInsideHook())
+    if (IsInsideHook() || SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }

@@ -977,7 +977,7 @@ HookNtAPIs()
      ATTACH(NtCreateThreadEx);
      ATTACH(NtSuspendThread);
      ATTACH(NtResumeThread);*/
-    // ATTACH(NtContinue);
+     ATTACH(NtContinue);
 
     //
     // System APIs.
