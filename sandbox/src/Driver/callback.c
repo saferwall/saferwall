@@ -21,7 +21,7 @@ CreateProcessNotifyRoutine(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _In
             CreateInfo->ImageFileName,
             CreateInfo->FileOpenNameAvailable);
 
-        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"TestHook.exe");
+        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"HookTest.exe");
         if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
         {
             return;

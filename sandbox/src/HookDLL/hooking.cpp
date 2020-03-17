@@ -948,9 +948,9 @@ HookNtAPIs()
 
     ATTACH(NtCreateFile);
     // ATTACH(NtReadFile);
-    // ATTACH(NtWriteFile);
+    ATTACH(NtWriteFile);
     // ATTACH(NtDeleteFile);
-    // ATTACH(NtSetInformationFile);
+     ATTACH(NtSetInformationFile);
     // ATTACH(NtQueryDirectoryFile);
     // ATTACH(NtQueryInformationFile);
 

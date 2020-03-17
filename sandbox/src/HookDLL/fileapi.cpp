@@ -185,12 +185,16 @@ HookNtSetInformationFile(
     _In_reads_bytes_(Length) PVOID FileInformation,
     _In_ ULONG Length,
     _In_ FILE_INFORMATION_CLASS FileInformationClass)
+/*
+	- MoveFile => NtSetInformationFile(10)
+    - DeleteFile => NtSetInformationFile(13)
+*/
 {
+
     if (IsInsideHook())
     {
         return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }
-
     CaptureStackTrace();
 
     TraceAPI(
