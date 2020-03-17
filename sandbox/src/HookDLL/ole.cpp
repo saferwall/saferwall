@@ -13,7 +13,7 @@ HookCoCreateInstanceEx(
     _In_ DWORD dwCount,
     _Inout_updates_(dwCount) MULTI_QI *pResults)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
     {
         return TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
     }

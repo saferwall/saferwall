@@ -78,11 +78,14 @@ pfnHttpSendRequestA TrueHttpSendRequestA = nullptr;
 pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
 pfnInternetReadFile TrueInternetReadFile = nullptr;
 
-CRITICAL_SECTION gDbgHelpLock, gInsideHookLock, gHookDllLock;
+CRITICAL_SECTION gInsideHookLock, gHookDllLock;
 BOOL gInsideHook = FALSE;
 DWORD dwTlsIndex;
-
+extern CRITICAL_SECTION gDbgHelpLock;
 HookInfo gHookInfo;
+
+#define MAX_FRAME 5
+PVOID gFrames[MAX_FRAME];
 
 //
 // ETW provider GUID and global provider handle.
@@ -206,178 +209,6 @@ SfwGetExecutableModuleInfo()
 
     LogMessage(L"Main module start %p", gHookInfo.ExecutableModuleStart);
     LogMessage(L"Main module end %p", gHookInfo.ExecutableModuleEnd);
-}
-
-VOID
-CaptureStackTrace()
-{
-    PCONTEXT InitialContext = NULL;
-    // STACKTRACE StackTrace;
-    UINT MaxFrames = 50;
-    STACKFRAME64 StackFrame;
-    DWORD MachineType = 0;
-    CONTEXT Context = {};
-
-    if (InitialContext == NULL)
-    {
-        //
-        // Use current context.
-        //
-        // N.B. GetThreadContext cannot be used on the current thread.
-        // Capture own context - on i386, there is no API for that.
-        //
-#ifdef _M_IX86
-        ZeroMemory(&Context, sizeof(CONTEXT));
-
-        Context.ContextFlags = CONTEXT_CONTROL;
-
-        //
-        // Those three registers are enough.
-        //
-        __asm {
-		Label:
-			mov[Context.Ebp], ebp;
-			mov[Context.Esp], esp;
-			mov eax, [Label];
-			mov[Context.Eip], eax;
-        }
-#else
-        RtlCaptureContext(&Context);
-#endif
-    }
-    else
-    {
-        CopyMemory(&Context, InitialContext, sizeof(CONTEXT));
-    }
-    //
-    // Set up stack frame.
-    //
-    ZeroMemory(&StackFrame, sizeof(STACKFRAME64));
-
-#ifdef _M_IX86
-    MachineType = IMAGE_FILE_MACHINE_I386;
-    StackFrame.AddrPC.Offset = Context.Eip;
-    StackFrame.AddrPC.Mode = AddrModeFlat;
-    StackFrame.AddrFrame.Offset = Context.Ebp;
-    StackFrame.AddrFrame.Mode = AddrModeFlat;
-    StackFrame.AddrStack.Offset = Context.Esp;
-    StackFrame.AddrStack.Mode = AddrModeFlat;
-#elif _M_X64
-    MachineType = IMAGE_FILE_MACHINE_AMD64;
-    StackFrame.AddrPC.Offset = Context.Rip;
-    StackFrame.AddrPC.Mode = AddrModeFlat;
-    StackFrame.AddrFrame.Offset = Context.Rsp;
-    StackFrame.AddrFrame.Mode = AddrModeFlat;
-    StackFrame.AddrStack.Offset = Context.Rsp;
-    StackFrame.AddrStack.Mode = AddrModeFlat;
-#elif _M_IA64
-    MachineType = IMAGE_FILE_MACHINE_IA64;
-    StackFrame.AddrPC.Offset = Context.StIIP;
-    StackFrame.AddrPC.Mode = AddrModeFlat;
-    StackFrame.AddrFrame.Offset = Context.IntSp;
-    StackFrame.AddrFrame.Mode = AddrModeFlat;
-    StackFrame.AddrBStore.Offset = Context.RsBSP;
-    StackFrame.AddrBStore.Mode = AddrModeFlat;
-    StackFrame.AddrStack.Offset = Context.IntSp;
-    StackFrame.AddrStack.Mode = AddrModeFlat;
-#else
-#    error "Unsupported platform"
-#endif
-
-    //
-    // Allocate a buffer large enough to hold the symbol information on the stack and get
-    // a pointer to the buffer. We also have to set the size of the symbol structure itself
-    // and the number of bytes reserved for the name.
-    //
-
-    char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(WCHAR)];
-    PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-    pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-    pSymbol->MaxNameLen = MAX_SYM_NAME;
-
-    DWORD64 dwDisplacement = 0;
-
-    UINT FrameCount = 0;
-    WCHAR pszFilename[MAX_PATH + 1];
-    WCHAR *ModuleName = NULL;
-    DWORD dwResult = 0;
-
-    //
-    // Dbghelp is is singlethreaded, so acquire a lock.
-    //
-    // Note that the code assumes that
-    // SymInitialize( GetCurrentProcess(), NULL, TRUE ) has
-    // already been called.
-    //
-    EnterCriticalSection(&gDbgHelpLock);
-
-    while (FrameCount < MaxFrames)
-    {
-        if (!StackWalk64(
-                MachineType,
-                NtCurrentProcess(),
-                NtCurrentThread(),
-                &StackFrame,
-                MachineType == IMAGE_FILE_MACHINE_I386 ? NULL : &Context,
-                NULL,
-                SymFunctionTableAccess64,
-                SymGetModuleBase64,
-                NULL))
-        {
-            //
-            // Maybe it failed, maybe we have finished walking the stack.
-            //
-            break;
-        }
-
-        if (StackFrame.AddrPC.Offset != 0)
-        {
-            //
-            // Valid frame.
-            //
-            // StackTrace->Frames[StackTrace->FrameCount++] = StackFrame.AddrPC.Offset;
-            FrameCount++;
-
-            dwResult = GetMappedFileNameW(NtCurrentProcess(), (LPVOID)StackFrame.AddrPC.Offset, pszFilename, MAX_PATH);
-            if (dwResult)
-            {
-                ModuleName = (WCHAR *)FindFileName(pszFilename);
-            }
-            else
-            {
-                ModuleName = (WCHAR *)L"N/A";
-            }
-
-            //
-            // Retrieves symbol information for the specified address.
-            //
-            if (SymFromAddr(NtCurrentProcess(), StackFrame.AddrPC.Offset, &dwDisplacement, pSymbol))
-            {
-                LogMessage(
-                    L"Module: %s, SymbolName:%ws, SymbolAddress:0x%08llx, Offset:0x%p",
-                    ModuleName,
-                    MultiByteToWide(pSymbol->Name),
-                    pSymbol->Address,
-                    StackFrame.AddrPC.Offset);
-            }
-            else
-            {
-                LogMessage(
-                    L"Module: %s, SymbolName:N/A, SymbolAddress: N/A, Offset:0x%p",
-                    ModuleName,
-                    StackFrame.AddrPC.Offset);
-            }
-        }
-        else
-        {
-            //
-            // Base reached.
-            //
-            break;
-        }
-    }
-
-    LeaveCriticalSection(&gDbgHelpLock);
 }
 
 BOOL
@@ -551,25 +382,13 @@ ProcessAttach()
     EtwEventRegister(&ProviderGuid, NULL, NULL, &ProviderHandle);
 
     //
-    // Set up the symbol options so that we can gather information from the current
-    // executable's PDB files, as well as the Microsoft symbol servers.  We also want
-    // to undecorate the symbol names we're returned.  If you want, you can add other
-    // symbol servers or paths via a semi-colon separated list in SymInitialized.
-    //
-
-    if (!SymInitialize(NtCurrentProcess(), NULL, TRUE))
-    {
-        LogMessage(L"SymInitialize returned error : %d", GetLastError());
-        return STATUS_UNSUCCESSFUL;
-    }
-    SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
-
-    //
     // Allocate a TLS index.
     //
 
     if ((dwTlsIndex = TlsAlloc()) == TLS_OUT_OF_INDEXES)
         LogMessage(L"TlsAlloc failed");
+
+	//RtlAllocateHeap(RtlProcessHeap(), 0, MAX_FRAME);
 
     //
     // Save real API addresses.
@@ -930,8 +749,6 @@ HookNtAPIs()
 {
     LogMessage(L"HookNtAPIs Begin");
 
-    // EnterHookGuard();
-
     HookBegingTransation();
 
     //
@@ -950,7 +767,7 @@ HookNtAPIs()
     // ATTACH(NtReadFile);
     ATTACH(NtWriteFile);
     // ATTACH(NtDeleteFile);
-     ATTACH(NtSetInformationFile);
+    ATTACH(NtSetInformationFile);
     // ATTACH(NtQueryDirectoryFile);
     // ATTACH(NtQueryInformationFile);
 
@@ -977,7 +794,7 @@ HookNtAPIs()
      ATTACH(NtCreateThreadEx);
      ATTACH(NtSuspendThread);
      ATTACH(NtResumeThread);*/
-     ATTACH(NtContinue);
+    ATTACH(NtContinue);
 
     //
     // System APIs.
@@ -1039,12 +856,12 @@ SfwIsCalledFromSystemMemory(DWORD FramesToCapture)
     // Hook Handler function itself, which we don't care about.
     //
 
-    PVOID addrs[5] = {0};
-    USHORT frames = RtlCaptureStackBackTrace(2, FramesToCapture, addrs, NULL);
+    RtlZeroMemory(gFrames, MAX_FRAME*sizeof(PVOID));
+    USHORT frames = RtlCaptureStackBackTrace(2, FramesToCapture, gFrames, NULL);
 
     for (ULONG i = 0; i < frames; i++)
     {
-        ULONG CalledFrom = (ULONG)addrs[i];
+        ULONG CalledFrom = (ULONG)gFrames[i];
         if (CalledFrom >= gHookInfo.ExecutableModuleStart &&
             CalledFrom <= gHookInfo.ExecutableModuleStart + gHookInfo.ExecutableModuleEnd)
         {
@@ -1052,4 +869,28 @@ SfwIsCalledFromSystemMemory(DWORD FramesToCapture)
         }
     }
     return TRUE;
+}
+
+NTSTATUS
+SfwSymInit()
+{
+    //
+    // Set up the symbol options so that we can gather information from the current
+    // executable's PDB files, as well as the Microsoft symbol servers.  We also want
+    // to undecorate the symbol names we're returned.  If you want, you can add other
+    // symbol servers or paths via a semi-colon separated list in SymInitialized.
+    //
+
+    if (!SymInitialize(NtCurrentProcess(), NULL, TRUE))
+    {
+        LogMessage(L"SymInitialize returned error : %d", GetLastError());
+        return STATUS_UNSUCCESSFUL;
+    }
+
+    DWORD SymOptions = SymGetOptions();
+    SymOptions |= SYMOPT_LOAD_LINES;
+    SymOptions |= SYMOPT_FAIL_CRITICAL_ERRORS;
+    SymOptions = SymSetOptions(SymOptions);
+
+	return STATUS_SUCCESS;
 }

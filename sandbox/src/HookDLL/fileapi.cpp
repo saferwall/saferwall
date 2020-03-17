@@ -27,7 +27,7 @@ HookNtCreateFile(
     - CreateFileA -> CreateFileW
 */
 {
-    if (IsInsideHook() || SfwIsCalledFromSystemMemory(4))
+    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
     { 
         return TrueNtCreateFile(
             FileHandle,
@@ -191,7 +191,7 @@ HookNtSetInformationFile(
 */
 {
 
-    if (IsInsideHook() || SfwIsCalledFromSystemMemory(5))
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }

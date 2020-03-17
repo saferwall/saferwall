@@ -18,9 +18,10 @@ VOID TraceAPI(PCWSTR Format, ...) {
 	va_list arglist;
 	va_start(arglist, Format);
 	_vsnwprintf(Buffer, RTL_NUMBER_OF(Buffer), Format, arglist);
+    va_end(arglist);
+
 	wcscat(Buffer, L"\n");
 	EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
-	va_end(arglist);
 }
 
 
@@ -30,6 +31,7 @@ VOID LogMessage(PCWSTR Format, ...) {
 	va_list arglist;
 	va_start(arglist, Format);
 	_vsnwprintf(Buffer, RTL_NUMBER_OF(Buffer), Format, arglist);
+    va_end(arglist);
+
 	EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
-	va_end(arglist);
 }

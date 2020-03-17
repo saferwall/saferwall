@@ -283,7 +283,9 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             HookNetworkAPIs(TRUE);
         }
 
+		SfwSymInit();
         bFirstTime = FALSE;
+
         Status = TrueNtContinue(ContextRecord, TestAlert);
         return Status;
     }

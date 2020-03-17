@@ -218,6 +218,7 @@
     <ClInclude Include="ntifs.h" />
     <ClInclude Include="ole.h" />
     <ClInclude Include="processthreadsapi.h" />
+    <ClInclude Include="stackwalk.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="synchapi.h" />
     <ClInclude Include="systemapi.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="ntifs.cpp" />
     <ClCompile Include="ole.cpp" />
     <ClCompile Include="processthreadsapi.cpp" />
+    <ClCompile Include="stackwalk.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

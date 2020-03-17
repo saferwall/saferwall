@@ -58,6 +58,7 @@
 #include "hooking.h"
 #include "logging.h"
 #include "helpers.h"
+#include "stackwalk.h"
 
 //
 // For GetMappedFileNameW and _ReturnAddress.

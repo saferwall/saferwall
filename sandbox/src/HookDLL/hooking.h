@@ -26,8 +26,6 @@ VOID
 EnterHookGuard();
 VOID
 ReleaseHookGuard();
-VOID
-CaptureStackTrace();
 BOOL
 HookBegingTransation();
 BOOL
@@ -42,6 +40,8 @@ VOID
 HookDll(PWCHAR DllName);
 BOOL
 SfwIsCalledFromSystemMemory(DWORD FramesToCapture);
+NTSTATUS
+SfwSymInit();
 
 //
 // Unfortunatelly sprintf-like functions are not exposed

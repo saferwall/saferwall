@@ -72,6 +72,9 @@
     <ClInclude Include="net.h">
       <Filter>Source Files\Hooks\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="stackwalk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -118,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="net.cpp">
       <Filter>Source Files\Hooks\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="stackwalk.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
