@@ -1,7 +1,7 @@
 #include "header.h"
 
 VOID
-DoOleOps()
+TestOleHooks()
 {
     HRESULT hres;
 
@@ -73,8 +73,6 @@ DoOleOps()
         CoUninitialize();
         ErrorExit("pLoc->ConnectServer");
     }
-
-    wprintf(L"Connected to ROOT\\CIMV2 WMI namespace");
 
     // Step 5: --------------------------------------------------
     // Set security levels on the proxy -------------------------

@@ -58,7 +58,7 @@ ReadRegistryKey(HKEY hKey, PWCHAR pSubKey, PWCHAR pValueName)
 }
 
 VOID
-TestRegistry()
+TestRegistryHooks()
 {
     wprintf(L" ========= Testing registry opeations ========= \n\n");
 

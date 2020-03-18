@@ -2,7 +2,7 @@
 
 
 VOID
-DoNetworkOps()
+TestNetworkHooks()
 {
     wprintf(L" ========= Testing network opeations ========= \n\n");
 

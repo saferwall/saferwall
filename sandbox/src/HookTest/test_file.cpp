@@ -1,7 +1,7 @@
 #include "header.h"
 
 VOID
-DoFileOps()
+TestFileHooks()
 {
     WCHAR szFilePath[MAX_PATH] = L"";
     WCHAR szDestFilePath[MAX_PATH] = L"";

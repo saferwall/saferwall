@@ -1,7 +1,7 @@
 #include "header.h"
 
 VOID
-DoLibLoadOps()
+TestLibLoadHooks()
 {
     HMODULE hModule;
 
