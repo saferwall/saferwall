@@ -12,7 +12,7 @@ decltype(NtSetValueKey) *TrueNtSetValueKey = nullptr;
 NTSTATUS NTAPI
 HookNtOpenKey(_Out_ PHANDLE KeyHandle, _In_ ACCESS_MASK DesiredAccess, _In_ POBJECT_ATTRIBUTES ObjectAttributes)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
     }
@@ -39,7 +39,7 @@ HookNtOpenKeyEx(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ ULONG OpenOptions)
 {
-    if (IsInsideHook() || SfwIsCalledFromSystemMemory(5))
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes, OpenOptions);
     }
@@ -69,7 +69,7 @@ HookNtCreateKey(
     _In_ ULONG CreateOptions,
     _Out_opt_ PULONG Disposition)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
     {
         return TrueNtCreateKey(
             KeyHandle, DesiredAccess, ObjectAttributes, TitleIndex, Class, CreateOptions, Disposition);
@@ -100,8 +100,11 @@ HookNtQueryValueKey(
     _Out_writes_bytes_opt_(Length) PVOID KeyValueInformation,
     _In_ ULONG Length,
     _Out_ PULONG ResultLength)
+/*
+	RegQueryValueA -> RegQueryValueExA -> RegQueryValueExW -> NtQueryValueKey
+*/
 {
-    if (IsInsideHook() || SfwIsCalledFromSystemMemory(3))
+    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
     {
         return TrueNtQueryValueKey(
             KeyHandle, ValueName, KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
@@ -167,7 +170,7 @@ HookNtSetValueKey(
     _In_reads_bytes_opt_(DataSize) PVOID Data,
     _In_ ULONG DataSize)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtSetValueKey(KeyHandle, ValueName, TitleIndex, Type, Data, DataSize);
     }

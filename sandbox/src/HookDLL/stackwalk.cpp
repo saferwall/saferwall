@@ -1,6 +1,21 @@
 #include "stdafx.h"
 
+#define SIZE_SYMBOL sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(WCHAR)
+
 CRITICAL_SECTION gDbgHelpLock;
+PVOID gSymbolBuffer;
+
+VOID
+AllocateSpaceSymbol()
+{
+    //
+    // Allocate a buffer large enough to hold the symbol information on the stack and get
+    // a pointer to the buffer. We also have to set the size of the symbol structure itself
+    // and the number of bytes reserved for the name.
+    //
+
+    gSymbolBuffer = RtlAllocateHeap(RtlProcessHeap(), 0, SIZE_SYMBOL);
+}
 
 VOID
 CaptureStackTrace()
@@ -78,14 +93,9 @@ CaptureStackTrace()
 #    error "Unsupported platform"
 #endif
 
-    //
-    // Allocate a buffer large enough to hold the symbol information on the stack and get
-    // a pointer to the buffer. We also have to set the size of the symbol structure itself
-    // and the number of bytes reserved for the name.
-    //
-
-    char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(WCHAR)];
-    PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
+  
+	RtlZeroMemory(gSymbolBuffer, SIZE_SYMBOL);
+	PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)gSymbolBuffer;
     pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
     pSymbol->MaxNameLen = MAX_SYM_NAME;
 

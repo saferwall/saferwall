@@ -2,3 +2,5 @@
 
 VOID
 CaptureStackTrace();
+VOID
+AllocateSpaceSymbol();

@@ -388,7 +388,7 @@ ProcessAttach()
     if ((dwTlsIndex = TlsAlloc()) == TLS_OUT_OF_INDEXES)
         LogMessage(L"TlsAlloc failed");
 
-	//RtlAllocateHeap(RtlProcessHeap(), 0, MAX_FRAME);
+    AllocateSpaceSymbol();
 
     //
     // Save real API addresses.
@@ -755,8 +755,8 @@ HookNtAPIs()
     // Lib Load APIs.
     //
 
-     ATTACH(LdrLoadDll);
-     ATTACH(LdrGetProcedureAddressEx);
+    ATTACH(LdrLoadDll);
+    ATTACH(LdrGetProcedureAddressEx);
     // ATTACH(LdrGetDllHandleEx);
 
     //
@@ -775,13 +775,13 @@ HookNtAPIs()
     // Registry APIs.
     //
 
-    /*   ATTACH(NtOpenKey);
-       ATTACH(NtOpenKeyEx);
-       ATTACH(NtCreateKey);
-        ATTACH(NtQueryValueKey);*/
-    // ATTACH(NtSetValueKey);
-    // ATTACH(NtDeleteKey);
-    // ATTACH(NtDeleteValueKey);
+    ATTACH(NtOpenKey);
+    ATTACH(NtOpenKeyEx);
+    ATTACH(NtCreateKey);
+    ATTACH(NtQueryValueKey);
+    ATTACH(NtSetValueKey);
+    ATTACH(NtDeleteKey);
+    ATTACH(NtDeleteValueKey);
 
     //
     // Process/Thread APIs.
@@ -856,7 +856,7 @@ SfwIsCalledFromSystemMemory(DWORD FramesToCapture)
     // Hook Handler function itself, which we don't care about.
     //
 
-    RtlZeroMemory(gFrames, MAX_FRAME*sizeof(PVOID));
+    RtlZeroMemory(gFrames, MAX_FRAME * sizeof(PVOID));
     USHORT frames = RtlCaptureStackBackTrace(2, FramesToCapture, gFrames, NULL);
 
     for (ULONG i = 0; i < frames; i++)
@@ -892,5 +892,5 @@ SfwSymInit()
     SymOptions |= SYMOPT_FAIL_CRITICAL_ERRORS;
     SymOptions = SymSetOptions(SymOptions);
 
-	return STATUS_SUCCESS;
+    return STATUS_SUCCESS;
 }
