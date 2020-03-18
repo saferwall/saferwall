@@ -73,7 +73,7 @@ GetRandomDir(PWSTR szPathOut)
         ErrorExit("GetTempPath");
     }
     GetRandomString(RandomName, 8);
-    PathCombine(szPathOut, TempPath, RandomName);
+    PathCombineW(szPathOut, TempPath, RandomName);
 }
 
 VOID

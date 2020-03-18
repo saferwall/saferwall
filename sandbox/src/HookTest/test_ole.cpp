@@ -137,7 +137,7 @@ DoOleOps()
 
         // Get the value of the Name property
         hr = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
-        wprintf(L" OS Name : %s\n", vtProp.bstrVal);
+         // wprintf(L" OS Name : %s\n", vtProp.bstrVal);
         VariantClear(&vtProp);
 
         pclsObj->Release();

@@ -755,8 +755,8 @@ HookNtAPIs()
     // Lib Load APIs.
     //
 
-    // ATTACH(LdrLoadDll);
-    // ATTACH(LdrGetProcedureAddressEx);
+     ATTACH(LdrLoadDll);
+     ATTACH(LdrGetProcedureAddressEx);
     // ATTACH(LdrGetDllHandleEx);
 
     //
