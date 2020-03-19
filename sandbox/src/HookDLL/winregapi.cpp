@@ -126,7 +126,7 @@ HookNtQueryValueKey(
 NTSTATUS NTAPI
 HookNtDeleteKey(_In_ HANDLE KeyHandle)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtDeleteKey(KeyHandle);
     }
@@ -145,7 +145,7 @@ HookNtDeleteKey(_In_ HANDLE KeyHandle)
 NTSTATUS NTAPI
 HookNtDeleteValueKey(_In_ HANDLE KeyHandle, _In_ PUNICODE_STRING ValueName)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtDeleteValueKey(KeyHandle, ValueName);
     }

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "fileapi.h"
 
+decltype(NtOpenFile) *TrueNtOpenFile = nullptr;
 decltype(NtCreateFile) *TrueNtCreateFile = nullptr;
 decltype(NtReadFile) *TrueNtReadFile = nullptr;
 decltype(NtWriteFile) *TrueNtWriteFile = nullptr;
@@ -8,6 +9,38 @@ decltype(NtDeleteFile) *TrueNtDeleteFile = nullptr;
 decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
 decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
 decltype(NtQueryInformationFile) *TrueNtQueryInformationFile = nullptr;
+
+NTSTATUS NTAPI
+HookNtOpenFile(
+    _Out_ PHANDLE FileHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _In_ ULONG ShareAccess,
+    _In_ ULONG OpenOptions)
+{
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    {
+        return TrueNtOpenFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess, OpenOptions);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtOpenFile(%ws, DesiredAccess:0x%08x, FileAttributes: %lu, ShareAccess: %lu, OpenOptions:0x%08x), RETN: %p",
+        ObjectAttributes->ObjectName->Buffer,
+        DesiredAccess,
+        ShareAccess,
+        OpenOptions,
+        _ReturnAddress());
+
+    NTSTATUS Status =
+        TrueNtOpenFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess, OpenOptions);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
 
 NTSTATUS NTAPI
 HookNtCreateFile(
@@ -28,7 +61,7 @@ HookNtCreateFile(
 */
 {
     if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
-    { 
+    {
         return TrueNtCreateFile(
             FileHandle,
             DesiredAccess,
@@ -42,7 +75,7 @@ HookNtCreateFile(
             EaBuffer,
             EaLength);
     }
-	 
+
     CaptureStackTrace();
 
     if (CreateOptions & FILE_DIRECTORY_FILE)
@@ -137,7 +170,7 @@ HookNtReadFile(
     - ReadFileEx
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtReadFile(
             FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock, Buffer, Length, ByteOffset, Key);
@@ -186,11 +219,10 @@ HookNtSetInformationFile(
     _In_ ULONG Length,
     _In_ FILE_INFORMATION_CLASS FileInformationClass)
 /*
-	- MoveFile => NtSetInformationFile(10)
+    - MoveFile => NtSetInformationFile(10)
     - DeleteFile => NtSetInformationFile(13)
 */
 {
-
     if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
     {
         return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
