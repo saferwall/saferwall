@@ -128,6 +128,11 @@ func main() {
 		log.Println("Usage: uploader <filepath>")
 		return
 	}
+	filepath := os.Args[1]
+	_, err := os.Stat(filepath)
+    if os.IsNotExist(err) {
+		log.Fatalf("%s does not exist", filepath)
+    }
 
 	// Get credentials.
 	username := os.Getenv("SAFERWALL_AUTH_USERNAME")

@@ -196,19 +196,20 @@ func staticScan(sha256, filePath string, b []byte) result {
 	return res
 }
 
-func parsePE(filePath string) (peparser.File, error) {
+func parsePE(filePath string) (pe peparser.File, err error) {
 
-	pe, err := peparser.Open(filePath)
+	defer func() {
+		if e := recover(); e != nil {
+			log.Printf("PE parser raised an unexpected exception: %v\n", err)
+			err = e.(error)
+		}
+	}()
+
+	pe, err = peparser.Open(filePath)
 	if err != nil {
 		return peparser.File{}, err
 	}
 	defer pe.Close()
-
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("PE parser raised an unexpected exception: %v\n", err)
-		}
-	}()
 
 	err = pe.Parse()
 	return pe, err
