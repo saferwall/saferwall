@@ -21,7 +21,7 @@ HookInternetOpenA(
     /*
         InternetOpenW -> InternetOpenA.
     */
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueInternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
     }
@@ -48,7 +48,7 @@ HookInternetConnectA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueInternetConnectA(
             hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
@@ -78,7 +78,7 @@ HookInternetConnectW(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueInternetConnectW(
             hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
@@ -107,7 +107,7 @@ HookHttpOpenRequestA(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueHttpOpenRequestA(
             hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
@@ -136,7 +136,7 @@ HookHttpOpenRequestW(
     _In_ DWORD dwFlags,
     _In_opt_ DWORD_PTR dwContext)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueHttpOpenRequestW(
             hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
@@ -162,7 +162,7 @@ HookHttpSendRequestA(
     _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
     _In_ DWORD dwOptionalLength)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueHttpSendRequestA(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
     }
@@ -186,7 +186,7 @@ HookHttpSendRequestW(
     _In_reads_bytes_opt_(dwOptionalLength) LPVOID lpOptional,
     _In_ DWORD dwOptionalLength)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueHttpSendRequestW(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength);
     }
@@ -202,7 +202,6 @@ HookHttpSendRequestW(
     return bSend;
 }
 
-
 BOOL WINAPI
 HookInternetReadFile(
     _In_ HINTERNET hFile,
@@ -210,7 +209,7 @@ HookInternetReadFile(
     _In_ DWORD dwNumberOfBytesToRead,
     _Out_ LPDWORD lpdwNumberOfBytesRead)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueInternetReadFile(hFile, lpBuffer, dwNumberOfBytesToRead, lpdwNumberOfBytesRead);
     }

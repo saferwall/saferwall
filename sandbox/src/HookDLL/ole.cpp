@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ole.h"
+
 extern pfnCoCreateInstanceEx TrueCoCreateInstanceEx;
 extern pfnStringFromCLSID _StringFromCLSID;
 extern pfnCoTaskMemFree _CoTaskMemFree;
@@ -13,7 +14,7 @@ HookCoCreateInstanceEx(
     _In_ DWORD dwCount,
     _Inout_updates_(dwCount) MULTI_QI *pResults)
 {
-    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueCoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
     }

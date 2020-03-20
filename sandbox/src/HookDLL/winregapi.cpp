@@ -12,7 +12,7 @@ decltype(NtSetValueKey) *TrueNtSetValueKey = nullptr;
 NTSTATUS NTAPI
 HookNtOpenKey(_Out_ PHANDLE KeyHandle, _In_ ACCESS_MASK DesiredAccess, _In_ POBJECT_ATTRIBUTES ObjectAttributes)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
     }
@@ -39,7 +39,7 @@ HookNtOpenKeyEx(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ ULONG OpenOptions)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes, OpenOptions);
     }
@@ -69,7 +69,7 @@ HookNtCreateKey(
     _In_ ULONG CreateOptions,
     _Out_opt_ PULONG Disposition)
 {
-    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueNtCreateKey(
             KeyHandle, DesiredAccess, ObjectAttributes, TitleIndex, Class, CreateOptions, Disposition);
@@ -101,10 +101,10 @@ HookNtQueryValueKey(
     _In_ ULONG Length,
     _Out_ PULONG ResultLength)
 /*
-	RegQueryValueA -> RegQueryValueExA -> RegQueryValueExW -> NtQueryValueKey
+    RegQueryValueA -> RegQueryValueExA -> RegQueryValueExW -> NtQueryValueKey
 */
 {
-    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueNtQueryValueKey(
             KeyHandle, ValueName, KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
@@ -126,7 +126,7 @@ HookNtQueryValueKey(
 NTSTATUS NTAPI
 HookNtDeleteKey(_In_ HANDLE KeyHandle)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtDeleteKey(KeyHandle);
     }
@@ -145,7 +145,7 @@ HookNtDeleteKey(_In_ HANDLE KeyHandle)
 NTSTATUS NTAPI
 HookNtDeleteValueKey(_In_ HANDLE KeyHandle, _In_ PUNICODE_STRING ValueName)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtDeleteValueKey(KeyHandle, ValueName);
     }
@@ -170,7 +170,7 @@ HookNtSetValueKey(
     _In_reads_bytes_opt_(DataSize) PVOID Data,
     _In_ ULONG DataSize)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtSetValueKey(KeyHandle, ValueName, TitleIndex, Type, Data, DataSize);
     }

@@ -6,7 +6,7 @@ decltype(NtDelayExecution) *TrueNtDelayExecution = nullptr;
 NTSTATUS NTAPI
 HookNtDelayExecution(_In_ BOOLEAN Alertable, _In_opt_ PLARGE_INTEGER DelayInterval)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtDelayExecution(Alertable, DelayInterval);
     }

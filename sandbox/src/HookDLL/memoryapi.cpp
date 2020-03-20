@@ -19,7 +19,7 @@ HookNtAllocateVirtualMemory(
     _In_ ULONG AllocationType,
     _In_ ULONG Protect)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
     }
@@ -27,14 +27,17 @@ HookNtAllocateVirtualMemory(
     CaptureStackTrace();
 
     TraceAPI(
-        L"NtAllocateVirtualMemory(ProcessHandle:0x%p, AllocationType:%lu, Protect:%lu), RETN: 0x%p",
+        L"NtAllocateVirtualMemory(ProcessHandle:0x%p, RegionSize:0x%x, AllocationType:%lu, Protect:%lu), RETN: 0x%p",
         ProcessHandle,
+        *RegionSize,
         AllocationType,
         Protect,
         _ReturnAddress());
 
     NTSTATUS Status =
         TrueNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
+
+	TraceAPI(L"BaseAddress:0x%x, RegionSize:0x%x", *BaseAddress, *RegionSize);
 
     ReleaseHookGuard();
 
@@ -49,7 +52,7 @@ HookNtProtectVirtualMemory(
     _In_ ULONG NewProtect,
     _Out_ PULONG OldProtect)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect);
     }
@@ -84,7 +87,7 @@ HookNtQueryVirtualMemory(
 - VirtualQuery -> VirtualQueryEx -> NtQueryVirtualMemory
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtQueryVirtualMemory(
             ProcessHandle,
@@ -121,7 +124,7 @@ HookNtReadVirtualMemory(
     _In_ SIZE_T BufferSize,
     _Out_opt_ PSIZE_T NumberOfBytesRead)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesRead);
     }
@@ -150,7 +153,7 @@ HookNtWriteVirtualMemory(
     _In_ SIZE_T BufferSize,
     _Out_opt_ PSIZE_T NumberOfBytesWritten)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, BufferSize, NumberOfBytesWritten);
     }
@@ -178,7 +181,7 @@ HookNtFreeVirtualMemory(
     _Inout_ PSIZE_T RegionSize,
     _In_ ULONG FreeType)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
     }
@@ -213,7 +216,7 @@ HookNtMapViewOfSection(
     _In_ ULONG AllocationType,
     _In_ ULONG Win32Protect)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtMapViewOfSection(
             SectionHandle,
@@ -258,7 +261,7 @@ HookNtMapViewOfSection(
 NTSTATUS NTAPI
 HookNtUnmapViewOfSection(_In_ HANDLE ProcessHandle, _In_opt_ PVOID BaseAddress)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtUnmapViewOfSection(ProcessHandle, BaseAddress);
     }

@@ -12,7 +12,7 @@ HookRtlDecompressBuffer(
     _In_ ULONG CompressedBufferSize,
     _Out_ PULONG FinalUncompressedSize)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueRtlDecompressBuffer(
             CompressionFormat,
@@ -27,7 +27,7 @@ HookRtlDecompressBuffer(
 
     TraceAPI(L"RtlDecompressBuffer(CompressionFormat: %hu), RETN: 0x%p", _ReturnAddress());
 
-	NTSTATUS Status = TrueRtlDecompressBuffer(
+    NTSTATUS Status = TrueRtlDecompressBuffer(
         CompressionFormat,
         UncompressedBuffer,
         UncompressedBufferSize,
@@ -37,5 +37,5 @@ HookRtlDecompressBuffer(
 
     ReleaseHookGuard();
 
-	return Status;
+    return Status;
 }

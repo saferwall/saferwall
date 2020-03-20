@@ -38,10 +38,6 @@ VOID
 HookNetworkAPIs(BOOL Attach);
 VOID
 HookDll(PWCHAR DllName);
-BOOL
-SfwIsCalledFromSystemMemory(DWORD FramesToCapture);
-NTSTATUS
-SfwSymInit();
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
@@ -65,25 +61,4 @@ typedef struct HookInfo
 {
     BOOL IsOleHooked;
     BOOL IsWinInetHooked;
-    ULONG ExecutableModuleStart;
-    ULONG ExecutableModuleEnd;
-
 } HookInfo;
-
-// MODULE_ENTRY contains basic information about a module
-typedef struct _MODULE_ENTRY
-{
-    UNICODE_STRING BaseName; // BaseName of the module
-    UNICODE_STRING FullName; // FullName of the module
-    ULONG SizeOfImage;       // Size in bytes of the module
-    PVOID BaseAddress;       // Base address of the module
-    PVOID EntryPoint;        // Entrypoint of the module
-} MODULE_ENTRY, *PMODULE_ENTRY;
-
-// MODULE_INFORMATION_TABLE contains basic information about all the modules of a given process
-typedef struct _MODULE_INFORMATION_TABLE
-{
-    ULONG Pid;             // PID of the process
-    ULONG ModuleCount;     // Modules count for the above pointer
-    PMODULE_ENTRY Modules; // Pointer to 0...* modules
-} MODULE_INFORMATION_TABLE, *PMODULE_INFORMATION_TABLE;

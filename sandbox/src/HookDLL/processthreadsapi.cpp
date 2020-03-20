@@ -27,7 +27,7 @@ HookNtCreateUserProcess(
     _Inout_ PPS_CREATE_INFO CreateInfo,
     _In_opt_ PPS_ATTRIBUTE_LIST AttributeList)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtCreateUserProcess(
             ProcessHandle,
@@ -76,7 +76,7 @@ HookNtCreateThread(
     _In_ PINITIAL_TEB InitialTeb,
     _In_ BOOLEAN CreateSuspended)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtCreateThread(
             ThreadHandle,
@@ -127,7 +127,7 @@ HookNtCreateThreadEx(
     _In_ SIZE_T MaximumStackSize,
     _In_opt_ PPS_ATTRIBUTE_LIST AttributeList)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtCreateThreadEx(
             ThreadHandle,
@@ -174,7 +174,7 @@ HookNtCreateThreadEx(
 NTSTATUS NTAPI
 HookNtSuspendThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCount)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtSuspendThread(ThreadHandle, PreviousSuspendCount);
     }
@@ -193,7 +193,7 @@ HookNtSuspendThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCo
 NTSTATUS NTAPI
 HookNtResumeThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCount)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtResumeThread(ThreadHandle, PreviousSuspendCount);
     }
@@ -216,7 +216,7 @@ HookNtOpenProcess(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_opt_ PCLIENT_ID ClientId)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
     }
@@ -239,7 +239,7 @@ HookNtOpenProcess(
 NTSTATUS NTAPI
 HookNtTerminateProcess(_In_opt_ HANDLE ProcessHandle, _In_ NTSTATUS ExitStatus)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtTerminateProcess(ProcessHandle, ExitStatus);
     }

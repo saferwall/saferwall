@@ -3,6 +3,20 @@
 #define TOTALBYTES 8192
 #define BYTEINCREMENT 4096
 
+VOID
+OpenRegistryKey(PWCHAR pSubKey)
+{
+    DWORD dwRet;
+    HKEY hkResult;
+
+    dwRet = RegOpenKey(HKEY_LOCAL_MACHINE, pSubKey, &hkResult);
+
+    if (dwRet != ERROR_SUCCESS)
+    {
+        ErrorExit("RegOpenKey");
+    }
+}
+
 HKEY
 CreateRegistryKey(PWCHAR pSubKey)
 {
@@ -67,6 +81,10 @@ TestRegistryHooks()
     WCHAR szValueName[MAX_PATH] = L"Thinking Binary";
     WCHAR szValueToWrite[MAX_PATH] = L"there are 10 types of people in this world, "
                                      "those who understand binary and those who dont.";
+    WCHAR szAuoRunKey[MAX_PATH] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+
+	wprintf(L"[+] Calling RegOpenKey\n");
+    OpenRegistryKey(szAuoRunKey);
 
     GetRandomString(pSubKey, 8);
     wcscat_s(pSubKey, MAX_PATH, L"_SFW_TEST");

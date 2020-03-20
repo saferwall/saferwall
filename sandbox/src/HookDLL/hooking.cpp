@@ -56,6 +56,7 @@ extern decltype(NtSuspendThread) *TrueNtSuspendThread;
 extern decltype(NtResumeThread) *TrueNtResumeThread;
 extern decltype(NtContinue) *TrueNtContinue;
 
+extern decltype(NtQueryVolumeInformationFile) *TrueNtQueryVolumeInformationFile;
 extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
@@ -85,8 +86,6 @@ DWORD dwTlsIndex;
 extern CRITICAL_SECTION gDbgHelpLock;
 HookInfo gHookInfo;
 
-#define MAX_FRAME 5
-PVOID gFrames[MAX_FRAME];
 
 //
 // ETW provider GUID and global provider handle.
@@ -100,117 +99,6 @@ REGHANDLE ProviderHandle;
 #define ATTACH(x) DetAttach(&(PVOID &)True##x, Hook##x, #x)
 #define DETACH(x) DetDetach(&(PVOID &)True##x, Hook##x, #x)
 
-typedef struct _STACKTRACE
-{
-    //
-    // Number of frames in Frames array.
-    //
-    UINT FrameCount;
-
-    //
-    // PC-Addresses of frames. Index 0 contains the topmost frame.
-    //
-    ULONGLONG Frames[ANYSIZE_ARRAY];
-} STACKTRACE, *PSTACKTRACE;
-
-PMODULE_INFORMATION_TABLE
-SfwQueryModules(IN PPEB pPeb)
-{
-    ULONG Count = 0;
-    ULONG CurCount = 0;
-    PLIST_ENTRY pEntry = NULL;
-    PLIST_ENTRY pHeadEntry = NULL;
-    PPEB_LDR_DATA pLdrData = NULL;
-    PMODULE_ENTRY CurModule = NULL;
-    PLDR_DATA_TABLE_ENTRY pLdrEntry = NULL;
-    PMODULE_INFORMATION_TABLE pModuleInformationTable = NULL;
-
-    pLdrData = pPeb->Ldr;
-    pHeadEntry = &pLdrData->InMemoryOrderModuleList;
-
-    // Count user modules : iterate through the entire list
-    pEntry = pHeadEntry->Flink;
-    while (pEntry != pHeadEntry)
-    {
-        Count++;
-        pEntry = pEntry->Flink;
-    }
-
-    // Allocate a MODULE_INFORMATION_TABLE
-    pModuleInformationTable =
-        (PMODULE_INFORMATION_TABLE)RtlAllocateHeap(RtlProcessHeap(), 0, sizeof(MODULE_INFORMATION_TABLE));
-    if (!pModuleInformationTable)
-    {
-        LogMessage(L"Cannot allocate a MODULE_INFORMATION_TABLE.");
-        return NULL;
-    }
-
-    // Allocate the correct amount of memory depending of the modules count
-    pModuleInformationTable->Modules =
-        (PMODULE_ENTRY)RtlAllocateHeap(RtlProcessHeap(), 0, Count * sizeof(MODULE_ENTRY));
-    if (!pModuleInformationTable->Modules)
-    {
-        LogMessage(L"Cannot allocate a MODULE_INFORMATION_TABLE.");
-        return NULL;
-    }
-
-    // Fill the basic information of MODULE_INFORMATION_TABLE
-    pModuleInformationTable->ModuleCount = Count;
-
-    // Fill all the modules information in the table
-    pEntry = pHeadEntry->Flink;
-    while (pEntry != pHeadEntry)
-    {
-        // Retrieve the current MODULE_ENTRY
-        CurModule = &pModuleInformationTable->Modules[CurCount++];
-
-        // Retrieve the current LDR_DATA_TABLE_ENTRY
-        pLdrEntry = CONTAINING_RECORD(pEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-
-        // Fill the MODULE_ENTRY with the LDR_DATA_TABLE_ENTRY information
-        RtlCopyMemory(&CurModule->BaseName, &pLdrEntry->BaseDllName, sizeof(CurModule->BaseName));
-        RtlCopyMemory(&CurModule->FullName, &pLdrEntry->FullDllName, sizeof(CurModule->FullName));
-        RtlCopyMemory(&CurModule->SizeOfImage, &pLdrEntry->SizeOfImage, sizeof(CurModule->SizeOfImage));
-        RtlCopyMemory(&CurModule->BaseAddress, &pLdrEntry->DllBase, sizeof(CurModule->BaseAddress));
-        RtlCopyMemory(&CurModule->EntryPoint, &pLdrEntry->EntryPoint, sizeof(CurModule->EntryPoint));
-
-        // Iterate to the next entry
-        pEntry = pEntry->Flink;
-    }
-
-    return pModuleInformationTable;
-}
-
-VOID
-SfwGetExecutableModuleInfo()
-{
-#if defined(_WIN64)
-    PPEB pPeb = (PPEB)__readgsqword(0x60);
-
-#elif defined(_WIN32)
-    PPEB pPeb = (PPEB)__readfsdword(0x30);
-#endif
-
-    // Get all loaded modules infos.
-    PMODULE_INFORMATION_TABLE pModuleInformationTable = SfwQueryModules(pPeb);
-
-    PMODULE_ENTRY CurModule = NULL;
-    for (ULONG Index = 0; Index < pModuleInformationTable->ModuleCount; pModuleInformationTable++)
-    {
-        CurModule = &pModuleInformationTable->Modules[Index++];
-
-        // Look up the executable module name.
-        if (wcscmp(CurModule->FullName.Buffer, pPeb->ProcessParameters->ImagePathName.Buffer) == 0)
-        {
-            gHookInfo.ExecutableModuleStart = (ULONG)CurModule->BaseAddress;
-            gHookInfo.ExecutableModuleEnd = CurModule->SizeOfImage;
-            break;
-        }
-    }
-
-    LogMessage(L"Main module start %p", gHookInfo.ExecutableModuleStart);
-    LogMessage(L"Main module end %p", gHookInfo.ExecutableModuleEnd);
-}
 
 BOOL
 IsInsideHook()
@@ -232,7 +120,7 @@ Routine Description:
             version is not loaded into WoW64 processes.
 
     In our case, we always injects DLL of the same architecture
-    as the process. So it should be safe to use TLS. The TLS
+    as the process. So it should be ok to use TLS. The TLS
     allocation should happen before attaching the hooks as TlsAlloc
     end up calling RtlAllocateHeap() which might be hooked as well.
 
@@ -387,7 +275,10 @@ ProcessAttach()
     //
 
     if ((dwTlsIndex = TlsAlloc()) == TLS_OUT_OF_INDEXES)
-        LogMessage(L"TlsAlloc failed");
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"TlsAlloc() failed");
+        return FALSE;
+    }
 
     AllocateSpaceSymbol();
 
@@ -431,8 +322,10 @@ ProcessAttach()
     TrueNtOpenProcess = NtOpenProcess;
     TrueNtTerminateProcess = NtTerminateProcess;
     TrueNtContinue = NtContinue;
+
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
+    TrueNtQueryVolumeInformationFile = NtQueryVolumeInformationFile;
     TrueNtLoadDriver = NtLoadDriver;
 
     //
@@ -469,12 +362,6 @@ ProcessAttach()
     // Initialize Hook Information.
     //
     gHookInfo = {0};
-
-    //
-    // Get the executable module start / end.
-    //
-
-    SfwGetExecutableModuleInfo();
 
     //
     // Hook Native APIs.
@@ -541,7 +428,8 @@ ProcessDetach()
     // System APIs.
     //
 
-    // DETACH(NtQuerySystemInformation);
+    DETACH(NtQueryVolumeInformationFile);
+    DETACH(NtQuerySystemInformation);
     // DETACH(RtlDecompressBuffer);
     // DETACH(NtDelayExecution);
     // DETACH(NtLoadDriver);
@@ -768,9 +656,9 @@ HookNtAPIs()
 
     ATTACH(NtOpenFile);
     ATTACH(NtCreateFile);
-    ATTACH(NtReadFile);
+    // ATTACH(NtReadFile);
     ATTACH(NtWriteFile);
-    // ATTACH(NtDeleteFile);
+    ATTACH(NtDeleteFile);
     ATTACH(NtSetInformationFile);
     // ATTACH(NtQueryDirectoryFile);
     // ATTACH(NtQueryInformationFile);
@@ -791,23 +679,24 @@ HookNtAPIs()
     // Process/Thread APIs.
     //
 
-    /* ATTACH(NtOpenProcess);
-     ATTACH(NtTerminateProcess);
-     ATTACH(NtCreateUserProcess);
-     ATTACH(NtCreateThread);
-     ATTACH(NtCreateThreadEx);
-     ATTACH(NtSuspendThread);
-     ATTACH(NtResumeThread);*/
+    ATTACH(NtOpenProcess);
+    ATTACH(NtTerminateProcess);
+    ATTACH(NtCreateUserProcess);
+    /*ATTACH(NtCreateThread);
+    ATTACH(NtCreateThreadEx);
+    ATTACH(NtSuspendThread);
+    ATTACH(NtResumeThread);*/
     ATTACH(NtContinue);
 
     //
     // System APIs.
     //
 
-    // ATTACH(NtQuerySystemInformation);
+    ATTACH(NtQuerySystemInformation);
+    ATTACH(NtQueryVolumeInformationFile);
     // ATTACH(RtlDecompressBuffer);
     // ATTACH(NtDelayExecution);
-    // ATTACH(NtLoadDriver);
+     ATTACH(NtLoadDriver);
 
     //
     // Memory APIs.
@@ -818,9 +707,9 @@ HookNtAPIs()
     // ATTACH(NtWriteVirtualMemory);
     // ATTACH(NtFreeVirtualMemory);
     // ATTACH(NtMapViewOfSection);
-    // ATTACH(NtAllocateVirtualMemory);
+    //ATTACH(NtAllocateVirtualMemory);
     // ATTACH(NtUnmapViewOfSection);
-    // ATTACH(NtProtectVirtualMemory);
+    ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
 
@@ -850,51 +739,3 @@ HookDll(PWCHAR DllName)
     LeaveCriticalSection(&gHookDllLock);
 }
 
-BOOL
-SfwIsCalledFromSystemMemory(DWORD FramesToCapture)
-{
-    //
-    // Capture up to 5 stack frames from the current call stack.
-    // We're going to skip the first two stack frame returned
-    // because that's the SfwIsCalledFromSystemMemory() and the
-    // Hook Handler function itself, which we don't care about.
-    //
-
-    RtlZeroMemory(gFrames, MAX_FRAME * sizeof(PVOID));
-    USHORT frames = RtlCaptureStackBackTrace(2, FramesToCapture, gFrames, NULL);
-
-    for (ULONG i = 0; i < frames; i++)
-    {
-        ULONG CalledFrom = (ULONG)gFrames[i];
-        if (CalledFrom >= gHookInfo.ExecutableModuleStart &&
-            CalledFrom <= gHookInfo.ExecutableModuleStart + gHookInfo.ExecutableModuleEnd)
-        {
-            return FALSE;
-        }
-    }
-    return TRUE;
-}
-
-NTSTATUS
-SfwSymInit()
-{
-    //
-    // Set up the symbol options so that we can gather information from the current
-    // executable's PDB files, as well as the Microsoft symbol servers.  We also want
-    // to undecorate the symbol names we're returned.  If you want, you can add other
-    // symbol servers or paths via a semi-colon separated list in SymInitialized.
-    //
-
-    if (!SymInitialize(NtCurrentProcess(), NULL, TRUE))
-    {
-        LogMessage(L"SymInitialize returned error : %d", GetLastError());
-        return STATUS_UNSUCCESSFUL;
-    }
-
-    DWORD SymOptions = SymGetOptions();
-    SymOptions |= SYMOPT_LOAD_LINES;
-    SymOptions |= SYMOPT_FAIL_CRITICAL_ERRORS;
-    SymOptions = SymSetOptions(SymOptions);
-
-    return STATUS_SUCCESS;
-}

@@ -19,7 +19,7 @@ HookNtOpenFile(
     _In_ ULONG ShareAccess,
     _In_ ULONG OpenOptions)
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtOpenFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess, OpenOptions);
     }
@@ -60,7 +60,7 @@ HookNtCreateFile(
     - CreateFileA -> CreateFileW
 */
 {
-    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueNtCreateFile(
             FileHandle,
@@ -135,7 +135,7 @@ HookNtWriteFile(
     - WriteFileEx
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtWriteFile(
             FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);
@@ -170,7 +170,7 @@ HookNtReadFile(
     - ReadFileEx
 */
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtReadFile(
             FileHandle, Event, ApcRoutine, IoStatusBlock, IoStatusBlock, Buffer, Length, ByteOffset, Key);
@@ -195,7 +195,7 @@ HookNtDeleteFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes)
 - NtDeleteFile
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtDeleteFile(ObjectAttributes);
     }
@@ -223,7 +223,7 @@ HookNtSetInformationFile(
     - DeleteFile => NtSetInformationFile(13)
 */
 {
-    if (SfwIsCalledFromSystemMemory(5) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }
@@ -265,7 +265,7 @@ HookNtQueryDirectoryFile(
 - FindNextFileW -> NtQueryDirectoryFile
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtQueryDirectoryFile(
             FileHandle,
@@ -320,7 +320,7 @@ HookNtQueryInformationFile(
 - GetFileSizeEx -> NtQueryInformationFile.
 */
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
     }

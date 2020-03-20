@@ -17,7 +17,7 @@ HookLdrLoadDll(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName
     - LoadLibraryW -> LoadLibraryExW
 */
 {
-    if (SfwIsCalledFromSystemMemory(4) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(4))
     {
         return TrueLdrLoadDll(DllPath, DllCharacteristics, DllName, DllHandle);
     }
@@ -58,7 +58,7 @@ HookLdrGetProcedureAddressEx(
     - LdrGetProcedureAddress
  */
 {
-    if (SfwIsCalledFromSystemMemory(3) || IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(3))
     {
         return TrueLdrGetProcedureAddressEx(DllHandle, ProcedureName, ProcedureNumber, ProcedureAddress, Flags);
     }
@@ -89,7 +89,7 @@ HookLdrGetDllHandleEx(
 - LdrGetDllHandle -> LdrGetDllHandleEx
 */
 {
-    if (IsInsideHook() || SfwIsCalledFromSystemMemory(3))
+    if (SfwIsCalledFromSystemMemory(3))
     {
         return TrueLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
     }

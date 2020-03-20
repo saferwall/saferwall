@@ -2,6 +2,7 @@
 #include "systemapi.h"
 
 decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation = nullptr;
+decltype(NtQueryVolumeInformationFile) *TrueNtQueryVolumeInformationFile = nullptr;
 decltype(NtLoadDriver) *TrueNtLoadDriver = nullptr;
 
 NTSTATUS NTAPI
@@ -11,7 +12,7 @@ HookNtQuerySystemInformation(
     _In_ ULONG SystemInformationLength,
     _Out_opt_ PULONG ReturnLength)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtQuerySystemInformation(
             SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
@@ -35,9 +36,38 @@ HookNtQuerySystemInformation(
 }
 
 NTSTATUS NTAPI
+HookNtQueryVolumeInformationFile(
+    _In_ HANDLE FileHandle,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _Out_writes_bytes_(Length) PVOID FsInformation,
+    _In_ ULONG Length,
+    _In_ FSINFOCLASS FsInformationClass)
+{
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtQueryVolumeInformationFile(FileHandle, IoStatusBlock, FsInformation, Length, FsInformationClass);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtQueryVolumeInformationFile(FileHandle: %p, FsInformationClass:%d), RETN: %p",
+        FileHandle,
+        FsInformationClass,
+        _ReturnAddress());
+
+    NTSTATUS Status =
+        TrueNtQueryVolumeInformationFile(FileHandle, IoStatusBlock, FsInformation, Length, FsInformationClass);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
+
+NTSTATUS NTAPI
 HookNtLoadDriver(_In_ PUNICODE_STRING DriverServiceName)
 {
-    if (IsInsideHook())
+    if (SfwIsCalledFromSystemMemory(5))
     {
         return TrueNtLoadDriver(DriverServiceName);
     }
