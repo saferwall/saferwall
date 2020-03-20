@@ -197,8 +197,9 @@ func (pe *File) parseResourceDirectoryEntry(rva uint32) *ImageResourceDirectoryE
 	return &resource
 }
 
-func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32) (
+func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs []uint32) (
 	ResourceDirectory, error) {
+
 	// Get the resource directory structure, that is, the header
 	// If the table preceding the actual entries
 	resourceDir := ImageResourceDirectory{}
@@ -216,6 +217,10 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32) (
 
 	if baseRVA == 0 {
 		baseRVA = rva
+	}
+
+	if len(dirs) == 0 {
+		dirs = append(dirs, rva)
 	}
 
 	// Advance the RVA to the position immediately following the directory
@@ -264,12 +269,19 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32) (
 			// Instead of raising a PEFormatError this would skip some
 			// reasonable data so we just break.
 			// 9ee4d0a0caf095314fd7041a3e4404dc is the offending sample.
+			if intInSlice(baseRVA + OffsetToDirectory, dirs) {
+				break
+
+			}
+
 			level++
+			dirs= append(dirs, baseRVA + OffsetToDirectory)
 			directoryEntry, _ := pe.doParseResourceDirectory(
 				baseRVA+OffsetToDirectory,
-				size-(rva+baseRVA),
+				size-(rva-baseRVA),
 				baseRVA,
-				level)
+				level,
+				dirs)
 
 			dirEntries = append(dirEntries, ResourceDirectoryEntry{
 				Struct:    *res,
@@ -303,7 +315,8 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32) (
 }
 
 func (pe *File) parseResourceDirectory(rva, size uint32) error {
-	Resources, err := pe.doParseResourceDirectory(rva, size, 0, 0)
+	var dirs []uint32
+	Resources, err := pe.doParseResourceDirectory(rva, size, 0, 0, dirs)
 	pe.Resources = Resources
 	return err
 }
