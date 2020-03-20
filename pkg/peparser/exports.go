@@ -96,7 +96,6 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		return errors.New(errorMsg)
 	}
 	pe.Export.Struct = exportDir
-	pe.Export.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
 
 	// We keep track of the bytes left in the file and use it to set a upper
 	// bound in the number of items that can be read from the different arrays.
@@ -131,6 +130,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	if err != nil {
 		return errors.New(errorMsg)
 	}
+
+	pe.Export.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
 
 	maxFailedEntries := 10
 	var forwarderStr string

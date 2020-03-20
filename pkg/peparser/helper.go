@@ -356,6 +356,16 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+// intInSlice checks weather a uint32 exists in a slice of uint32.
+func intInSlice(a uint32, list []uint32) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // IsDriver returns true if the PE file is a Windows driver.
 func (pe *File)IsDriver() bool {
 
@@ -473,7 +483,7 @@ func (pe *File) PrettyMachineType() string {
 		ImageFileMachineSH4:       "Hitachi SH4",
 		ImageFileMachineSH5:       "Hitachi SH5",
 		ImageFileMachineTHUMB:     "Thumb",
-		ImageFileMachineWCEMIPSV2: "MIPS little-endian WCE v2",
+		ImageFileMachineWCEMIPSv2: "MIPS little-endian WCE v2",
 	}
 
 	return machineType[pe.NtHeader.FileHeader.Machine]

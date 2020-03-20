@@ -48,7 +48,7 @@ const (
 	ImageFileMachineSH4       = uint16(0x1a6)  // Hitachi SH4
 	ImageFileMachineSH5       = uint16(0x1a8)  // Hitachi SH5
 	ImageFileMachineTHUMB     = uint16(0x1c2)  // Thumb
-	ImageFileMachineWCEMIPSV2 = uint16(0x169)  // MIPS little-endian WCE v2
+	ImageFileMachineWCEMIPSv2 = uint16(0x169)  // MIPS little-endian WCE v2
 )
 
 // The Characteristics field contains flags that indicate attributes of the object or image file.
