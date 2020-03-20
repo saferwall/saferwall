@@ -128,10 +128,10 @@ func main() {
 		log.Println("Usage: uploader <filepath>")
 		return
 	}
-	filepath := os.Args[1]
-	_, err := os.Stat(filepath)
+	filePath := os.Args[1]
+	_, err := os.Stat(filePath)
     if os.IsNotExist(err) {
-		log.Fatalf("%s does not exist", filepath)
+		log.Fatalf("%s does not exist", filePath)
     }
 
 	// Get credentials.
@@ -147,7 +147,7 @@ func main() {
 
 	// Walk over directory.
 	fileList := []string{}
-	filepath.Walk(os.Args[1], func(path string, f os.FileInfo, err error) error {
+	filepath.Walk(filePath, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
 			fileList = append(fileList, path)
 		}
@@ -157,5 +157,6 @@ func main() {
 	// Upload files
 	for _, file := range fileList {
 		upload(file, token)
+		time.Sleep(9 * time.Second)
 	}
 }

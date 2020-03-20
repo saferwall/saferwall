@@ -86,8 +86,15 @@ func GetUnicodeStrings(data []byte, n int) []string {
 }
 
 // GetAsmStrings returns list of stacked strings
-// Well this is not finished, need a lot of emhancements
-func GetAsmStrings(x86Code32 []byte) []string {
+// Well this is not finished, need a lot of enhancements.
+func GetAsmStrings(x86Code32 []byte) (result []string) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("Asm string extraction failed: %v\n", err)
+		}
+	}()
+
 	engine, err := gapstone.New(
 		gapstone.CS_ARCH_X86,
 		gapstone.CS_MODE_32,
@@ -102,8 +109,6 @@ func GetAsmStrings(x86Code32 []byte) []string {
 	err = engine.SetOption(gapstone.CS_OPT_DETAIL, gapstone.CS_OPT_ON)
 	check(err)
 
-	var result []string
-
 	// start := time.Now()
 
 	/* iterate over my byte array */
@@ -111,10 +116,6 @@ func GetAsmStrings(x86Code32 []byte) []string {
 		var buffer bytes.Buffer
 		var countConcat = 0
 		if x86Code32[offset] == 0xC7 && (x86Code32[offset+1] == 0x45 || x86Code32[offset+1] == 0x84 || x86Code32[offset+1] == 0x85 || x86Code32[offset+1] == 0x44) {
-
-			if offset == 0x5859 {
-				fmt.Println("YEs")
-			}
 
 			// log.Printf("Found a 0xC7 at offset: 0x%x", offset)
 
@@ -156,7 +157,7 @@ func GetAsmStrings(x86Code32 []byte) []string {
 	}
 
 	// elapsed := time.Since(start)
-	// log.Printf("Binomial took %s", elapsed)
+	// log.Printf("Execution took %s", elapsed)
 
 	return result
 }

@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.2] - 2020-04-01
 ### Added
-- Add a cmd tool to batch uplaod files.
+- Add a cmd tool to batch upload files.
 
 ### Changed
 - Fix phrasing in README from [@bf](https://github.com/bf).
 - Fix bug in pe-parser related to parsing security directory.
+- Fix recover from panic routine in parse-pe in consumer.
+- Improve exception catching in string pkg.
 
 ### Removed
 - 
