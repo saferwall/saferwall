@@ -14,10 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix phrasing in README from [@bf](https://github.com/bf).
 - Fix bug in pe-parser related to parsing security directory.
 - Fix recover from panic routine in parse-pe in consumer.
-- Improve exception catching in string pkg.
-
-### Removed
-- 
+- Add exception catching in strings pkg.
+- Fix resource parsing of malformed pe file with self referencing rsrc entries.
+- Enable Kibana / ElasticSearch / FileBeat in helm deployments.
 
 ## [0.0.1] - 2020-03-09
 ### Added

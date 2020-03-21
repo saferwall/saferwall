@@ -38,15 +38,20 @@ minio:
 
 ####### FILEBEAT #########
 filebeat:
-  enabled: false
+  enabled: true
 
 ####### ELASTIC SEARCH #########
 elasticsearch:
-  enabled: false
+  enabled: true
+  # replicas: 1
+  # minimumMasterNodes: 1
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
 
 ####### KIBANA #########
 kibana:
-  enabled: false
+  enabled: true
 
 ####### COUCHBASE #########
 couchbase-cluster:

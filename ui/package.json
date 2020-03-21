@@ -2,7 +2,7 @@
   "name": "saferwall.com",
   "version": "1.0.0",
   "description": "A hackable malware sandbox for the 21st Century",
-  "author": "saferwall@saferwall.com",
+  "author": "admin@saferwall.com",
   "private": true,
   "scripts": {
     "serve": "npx vue-cli-service serve --port 8081",
