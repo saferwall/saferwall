@@ -61,6 +61,7 @@ extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
 extern decltype(RtlDecompressBuffer) *TrueRtlDecompressBuffer;
 extern decltype(NtDelayExecution) *TrueNtDelayExecution;
 extern decltype(NtLoadDriver) *TrueNtLoadDriver;
+extern decltype(NtDeviceIoControlFile) *TrueNtDeviceIoControlFile;
 
 __vsnwprintf_fn_t _vsnwprintf = nullptr;
 __snwprintf_fn_t _snwprintf = nullptr;
@@ -327,6 +328,7 @@ ProcessAttach()
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
     TrueNtQueryVolumeInformationFile = NtQueryVolumeInformationFile;
     TrueNtLoadDriver = NtLoadDriver;
+    TrueNtDeviceIoControlFile = NtDeviceIoControlFile;
 
     //
     // Resolve the ones not exposed by ntdll.
@@ -433,6 +435,7 @@ ProcessDetach()
     // DETACH(RtlDecompressBuffer);
     // DETACH(NtDelayExecution);
     // DETACH(NtLoadDriver);
+    // DETACH(NtLoadDriver);
 
     //
     // Memory APIs.
@@ -443,7 +446,7 @@ ProcessDetach()
     // DETACH(NtWriteVirtualMemory);
     // DETACH(NtFreeVirtualMemory);
     // DETACH(NtMapViewOfSection);
-    //// DETACH(NtAllocateVirtualMemory);
+    // DETACH(NtAllocateVirtualMemory);
     // DETACH(NtUnmapViewOfSection);
     // DETACH(NtProtectVirtualMemory);
 
@@ -696,7 +699,8 @@ HookNtAPIs()
     ATTACH(NtQueryVolumeInformationFile);
     // ATTACH(RtlDecompressBuffer);
     // ATTACH(NtDelayExecution);
-     ATTACH(NtLoadDriver);
+    ATTACH(NtLoadDriver);
+    //ATTACH(NtDeviceIoControlFile);
 
     //
     // Memory APIs.

@@ -23,6 +23,7 @@ AllocateSpaceSymbol()
 VOID
 CaptureStackTrace()
 {
+	return;
     PCONTEXT InitialContext = NULL;
     // STACKTRACE StackTrace;
     UINT MaxFrames = 50;

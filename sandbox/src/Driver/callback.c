@@ -21,7 +21,7 @@ CreateProcessNotifyRoutine(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _In
             CreateInfo->ImageFileName,
             CreateInfo->FileOpenNameAvailable);
 
-        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"wrar59b3_3398143246.exe");
+        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"wrar59b3_1831105618.exe");
         if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
         {
             return;

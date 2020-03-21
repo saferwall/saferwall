@@ -50,6 +50,7 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 
 ### Files
 
+- NtOpenFile
 - NtCreateFile
 - NtReadFile
 - NtWriteFile
@@ -125,6 +126,9 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 
 - NtQuerySystemInformation
 - NtLoadDriver
+- NtQueryVolumeInformationFile
+- NtDeviceIoControlFile
+
 
 
 ## Apps running inside the VM
