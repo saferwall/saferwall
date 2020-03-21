@@ -93,19 +93,18 @@ func updateDocument(sha256 string, buff []byte) error {
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
 	url := backendEndpoint + sha256
-	log.Infoln("Sending results to ", url)
 
 	body := bytes.NewBuffer(buff)
 	req, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
-		log.Errorf("http.NewRequest() failed with '%s'\n", err)
+		contextLogger.Errorf("http.NewRequest() failed with: %v", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Cookie", "JWTCookie="+backendToken)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Errorf("client.Do() failed with '%s'\n", err)
+		contextLogger.Errorf("client.Do() failed with: %v", err)
 	}
 
 	// check if token is not expired
@@ -114,7 +113,7 @@ func updateDocument(sha256 string, buff []byte) error {
 		req.Header.Set("Cookie", "JWTCookie="+backendToken)
 		resp, err = client.Do(req)
 		if err != nil {
-			log.Errorf("retry: client.Do() failed with '%s'", err)
+			contextLogger.Errorf("retry: client.Do() failed with: %v", err)
 			return err
 		}
 
@@ -126,9 +125,9 @@ func updateDocument(sha256 string, buff []byte) error {
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("ioutil.ReadAll() failed with '%s'\n", err)
+		contextLogger.Errorf("ioutil.ReadAll() failed with: %v", err)
 	}
 
-	log.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
+	contextLogger.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
 	return nil
 }

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add exception catching in strings pkg.
 - Fix resource parsing of malformed pe file with self referencing rsrc entries.
 - Enable Kibana / ElasticSearch / FileBeat in helm deployments.
+- Add ConextLogger in consumer to always log sha256.
 
 ## [0.0.1] - 2020-03-09
 ### Added

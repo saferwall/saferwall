@@ -24,6 +24,7 @@ var (
 	minioClient     *minio.Client
 	backendEndpoint string
 	backendToken    string
+	contextLogger   *log.Entry
 )
 
 // File scan progress status.
@@ -63,7 +64,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	sha256 := string(m.Body)
-	log.Infof("Processing %s", sha256)
+
+	// ALways include sha256 in our context logger.
+	contextLogger = log.WithFields(log.Fields{"sha256": sha256})
+
+	contextLogger.Info("Start processing")
 
 	// set the file status to `processing`
 	res := result{}
@@ -73,14 +78,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Marshell results
 	var buff []byte
 	if buff, err = json.Marshal(res); err != nil {
-		log.Errorln("Failed to get object: ", err)
+		contextLogger.Errorln("Failed to get object: ", err)
 		return err
 	}
 
 	// Update document
 	err = updateDocument(sha256, buff)
 	if err != nil {
-		log.Errorf("Failed to update document for file %s, reason: %s",
+		contextLogger.Errorf("Failed to update document for file %s, reason: %s",
 			sha256, err.Error())
 		return err
 	}
@@ -90,7 +95,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	filePath := path.Join("/samples", sha256)
 	var b []byte
 	if b, err = utils.Download(minioClient, bucketName, filePath, sha256); err != nil {
-		log.Errorf("Failed to download file %s", sha256)
+		contextLogger.Errorf("Failed to download file %s", sha256)
 		return err
 	}
 
@@ -108,15 +113,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Marshell results
 	buff, err = json.Marshal(res)
 	if err != nil {
-		log.Error("Failed to get object, err: ", err)
+		contextLogger.Error("Failed to get object, err: ", err)
 		return err
 	}
 
 	// Update document
 	err = updateDocument(sha256, buff)
 	if err != nil {
-		log.Errorf("Failed to update document for file %s, reason: %s",
-			sha256, err.Error())
+		contextLogger.Errorf("Failed to update document, reason: %s", err.Error())
 		return err
 	}
 

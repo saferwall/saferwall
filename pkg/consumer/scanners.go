@@ -42,7 +42,6 @@ import (
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/net/html"
 )
@@ -85,13 +84,13 @@ func (res *result) parseFile(b []byte, filePath string) {
 		var v interface{}
 		err := xml.Unmarshal(b, &v)
 		if err != nil {
-			log.Printf("XML parser failed: %v", err)
+			contextLogger.Errorf("xml parser failed: %v", err)
 		}
 		res.Tags = append(res.Tags, "xml")
 	case "PE":
 		pe, err := parsePE(filePath)
 		if err != nil {
-			log.Infof("PE parser failed: %v", err)
+			contextLogger.Errorf("pe pkg failed with: %v", err)
 		} else {
 			res.PE = pe
 			if pe.IsEXE() {
@@ -106,7 +105,7 @@ func (res *result) parseFile(b []byte, filePath string) {
 	case "HTML":
 		_, err := html.Parse(bytes.NewReader(b))
 		if err != nil {
-			log.Infof("HTML parser failed: %v", err)
+			contextLogger.Errorf("html parser failed: %v", err)
 		} else {
 			htmlString := strings.ToLower(string(b))
 			if strings.Contains(htmlString, "language=vbscript") {
@@ -115,7 +114,7 @@ func (res *result) parseFile(b []byte, filePath string) {
 		}
 		res.Tags = append(res.Tags, "html")
 	default:
-		log.Infoln("Unknow file format")
+		contextLogger.Warnln("Unknow file format")
 	}
 }
 
@@ -123,7 +122,7 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res := result{}
 	var err error
 
-	// Crypto Pkg
+	// Calculates hashes.
 	r := crypto.HashBytes(b)
 	res.Crc32 = r.Crc32
 	res.Md5 = r.Md5
@@ -131,37 +130,37 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res.Sha256 = r.Sha256
 	res.Sha512 = r.Sha512
 	res.Ssdeep = r.Ssdeep
-	log.Infof("HashBytes success %s", sha256)
+	contextLogger.Info("crypto pkg success")
 
-	// Run exiftool pkg
+	// Get exif metadata.
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
-		log.Error("Failed to scan file with exiftool, err: ", err)
+		contextLogger.Errorf("exiftool pkg failed with: %v", err)
 	}
-	log.Infof("exiftool success %s", sha256)
+	contextLogger.Info("exiftool pkg success")
 
-	// Run TRiD pkg
+	// Get TriD.
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
-		log.Error("Faileds to scan file with trid, err: ", err)
+		contextLogger.Errorf("trid pkg failed with: %v", err)
 	}
-	log.Infof("trid success %s", sha256)
+	contextLogger.Info("trid pkg success")
 
-	// Run Magic Pkg
+	// Get magic.
 	res.Magic, err = magic.Scan(filePath)
 	if err != nil {
-		log.Error("Failed to scan file with magic, err: ", err)
+		contextLogger.Errorf("magic pkg failed with: %v", err)
 	}
-	log.Infof("magic extraction success %s", sha256)
+	contextLogger.Info("magic pkg success")
 
-	// Run Die Pkg
+	// Get DiE
 	res.Packer, err = packer.Scan(filePath)
 	if err != nil {
-		log.Error("Failed to scan file with packer, err: ", err)
+		contextLogger.Errorf("die pkg failed with: %v", err)
 	}
-	log.Infof("packer extraction success %s", sha256)
+	contextLogger.Info("die pkg success")
 
-	// Run strings pkg
+	// Extract strings.
 	n := 10
 	asciiStrings := s.GetASCIIStrings(b, n)
 	wideStrings := s.GetUnicodeStrings(b, n)
@@ -185,7 +184,7 @@ func staticScan(sha256, filePath string, b []byte) result {
 		strResults = append(strResults, stringStruct{"asm", str})
 	}
 	res.Strings = strResults
-	log.Infof("strings success %s", sha256)
+	contextLogger.Info("strings pkg success")
 
 	// Run the parsers
 	res.parseFile(b, filePath)
@@ -200,7 +199,6 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 
 	defer func() {
 		if e := recover(); e != nil {
-			log.Printf("PE parser raised an unexpected exception: %v\n", err)
 			err = e.(error)
 		}
 	}()
@@ -212,6 +210,7 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 	defer pe.Close()
 
 	err = pe.Parse()
+	contextLogger.Info("pe pkg success")
 	return pe, err
 }
 
@@ -224,7 +223,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	// Get a gRPC client scanner instance for a given engine.
 	conn, err := multiav.GetClientConn(address)
 	if err != nil {
-		log.Printf("Failed to get client conn for [%s]: %v", engine, err)
+		contextLogger.Errorf("Failed to get client conn for [%s]: %v", engine, err)
 		c <- multiav.ScanResult{}
 		return
 	}
@@ -237,7 +236,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	filecopyPath := filePath + "-" + engine
 	err = utils.CopyFile(filePath, filecopyPath)
 	if err != nil {
-		log.Errorf("Failed to copy the file for engine %s.", engine)
+		contextLogger.Errorf("Failed to copy the file for engine %s.", engine)
 		c <- multiav.ScanResult{}
 		return
 	}
@@ -273,12 +272,12 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	}
 
 	if err != nil {
-		log.Errorf("Failed to scan file [%s]: %v", engine, err)
+		contextLogger.Errorf("Failed to scan file [%s]: %v", engine, err)
 	}
 	c <- multiav.ScanResult{Output: res.Output, Infected: res.Infected, Update: res.Update}
 
 	if err = utils.DeleteFile(filecopyPath); err != nil {
-		log.Errorf("Failed to delete file path %s.", filecopyPath)
+		contextLogger.Errorf("Failed to delete file path %s.", filecopyPath)
 	}
 }
 
@@ -362,6 +361,6 @@ func multiAvScan(filePath string) map[string]interface{} {
 		}
 	}
 
-	log.Infoln("multiav scan finished")
+	contextLogger.Info("multiav pkg success")
 	return multiavScanResults
 }

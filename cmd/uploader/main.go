@@ -157,6 +157,6 @@ func main() {
 	// Upload files
 	for _, file := range fileList {
 		upload(file, token)
-		time.Sleep(9 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
