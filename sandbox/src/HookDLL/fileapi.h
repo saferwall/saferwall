@@ -93,3 +93,7 @@ HookNtQueryInformationFile(
     _Out_writes_bytes_(Length) PVOID FileInformation,
     _In_ ULONG Length,
     _In_ FILE_INFORMATION_CLASS FileInformationClass);
+
+NTSTATUS
+NTAPI
+HookNtQueryAttributesFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes, _Out_ PFILE_BASIC_INFORMATION FileInformation);

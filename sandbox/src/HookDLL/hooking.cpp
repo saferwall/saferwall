@@ -29,6 +29,7 @@ extern decltype(NtDeleteFile) *TrueNtDeleteFile;
 extern decltype(NtSetInformationFile) *TrueNtSetInformationFile;
 extern decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile;
 extern decltype(NtQueryInformationFile) *TrueNtQueryInformationFile;
+extern decltype(NtQueryAttributesFile) *TrueNtQueryAttributesFile;
 
 extern decltype(NtProtectVirtualMemory) *TrueNtProtectVirtualMemory;
 extern decltype(NtQueryVirtualMemory) *TrueNtQueryVirtualMemory;
@@ -399,6 +400,7 @@ ProcessDetach()
     // DETACH(NtSetInformationFile);
     // DETACH(NtQueryDirectoryFile);
     // DETACH(NtQueryInformationFile);
+    // DETACH(NtQueryAttributesFile);
     // DETACH(MoveFileWithProgressTransactedW);
 
     //
@@ -665,6 +667,7 @@ HookNtAPIs()
     ATTACH(NtSetInformationFile);
     // ATTACH(NtQueryDirectoryFile);
     // ATTACH(NtQueryInformationFile);
+    // ATTACH(NtQueryAttributesFile);
 
     //
     // Registry APIs.

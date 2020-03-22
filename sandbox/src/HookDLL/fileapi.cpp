@@ -9,6 +9,7 @@ decltype(NtDeleteFile) *TrueNtDeleteFile = nullptr;
 decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
 decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
 decltype(NtQueryInformationFile) *TrueNtQueryInformationFile = nullptr;
+decltype(NtQueryAttributesFile) *TrueNtQueryAttributesFile = nullptr;
 
 NTSTATUS NTAPI
 HookNtOpenFile(
@@ -336,6 +337,30 @@ HookNtQueryInformationFile(
 
     NTSTATUS Status =
         TrueNtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
+
+NTSTATUS
+NTAPI
+HookNtQueryAttributesFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes, _Out_ PFILE_BASIC_INFORMATION FileInformation)
+/*
+- GetFileAttributesA -> GetFileAttributesW -> NtQueryAttributesFile
+*/
+{
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtQueryAttributesFile(ObjectAttributes, FileInformation);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtQueryAttributesFile(ObjectName: %ws), RETN: %p", ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
+
+    NTSTATUS Status = TrueNtQueryAttributesFile(ObjectAttributes, FileInformation);
 
     ReleaseHookGuard();
 
