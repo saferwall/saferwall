@@ -937,7 +937,7 @@ func GetActivitiy(c echo.Context) error {
 // GetActivities represents the feed displayed in the landing page.
 func GetActivities(c echo.Context) error {
 
-	// Get all activities from all users whom I am following.
+	// Get all activities from all users.
 	params := make(map[string]interface{}, 1)
 	query := "SELECT `username`, `activities` FROM users " +
 		"ORDER BY activities[*].timestamp DESC LIMIT 100"

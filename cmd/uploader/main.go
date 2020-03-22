@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -17,10 +18,11 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"crypto/sha256"
 )
 
 const (
-	uploadURL = "https://api.saferwall.com/v1/files/"
+	fileURL = "https://api.saferwall.com/v1/files/"
 	authURL   = "https://api.saferwall.com/v1/auth/login/"
 )
 
@@ -28,6 +30,12 @@ func check(e error) {
 	if e != nil {
 		log.Fatal(e)
 	}
+}
+
+func getSha256(b []byte) string {
+	h := sha256.New()
+	h.Write(b)
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func newfileUploadRequest(uri, fieldname, filename string) (*http.Request, error) {
@@ -100,7 +108,7 @@ func login(username, password string) (string, error) {
 func upload(filepath string, authToken string) {
 
 	// Create a new file upload request.
-	request, err := newfileUploadRequest(uploadURL, "file", filepath)
+	request, err := newfileUploadRequest(fileURL, "file", filepath)
 	check(err)
 
 	// Add our auth token.
@@ -120,8 +128,85 @@ func upload(filepath string, authToken string) {
 
 	resp.Body.Close()
 	fmt.Println(body)
-
 }
+
+func rescan(sha256 string, authToken string) error {
+
+	payload, err := json.Marshal(map[string]string{
+		"type": "rescan",
+	})
+	if err != nil {
+		return err
+	}
+
+	url := fileURL + sha256 + "/actions"
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "JWTCookie="+authToken)
+
+	// Perform the http post request.
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	// Read the response.
+	body := &bytes.Buffer{}
+	_, err = body.ReadFrom(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp.Body.Close()
+	fmt.Println(body)
+	return nil
+}
+
+
+func isFileFound(filePath, token string) bool{
+	dat, err := ioutil.ReadFile(filePath)
+	check(err)
+	sha256 := getSha256(dat)
+	
+	url := fileURL + sha256 + "/?fields=status"
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Printf("http.Get() failed with %v", err)
+		return false
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false
+	}
+
+	defer resp.Body.Close()
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("ioutil.ReadAll() failed with: %v", err)
+		return false
+	}
+
+	var file map[string]interface{}
+	if err := json.Unmarshal(jsonBody, &file); err != nil {
+		log.Printf("json.Unmarshal() failed with: %v", err)
+		return false
+	}
+
+	if val, ok := file["status"]; ok {
+		status := val.(float64)
+		if status == 2 {
+			log.Printf("File %s already in DB", sha256)
+			return true
+		}
+	}
+
+	log.Printf("rescanning %s", sha256)
+	rescan(sha256, token)
+	time.Sleep(15 * time.Second)
+	return false
+}
+
 func main() {
 
 	if len(os.Args) != 2 {
@@ -156,7 +241,11 @@ func main() {
 
 	// Upload files
 	for _, file := range fileList {
-		upload(file, token)
-		time.Sleep(10 * time.Second)
+		// Check if we have the file already in our database.
+		found := isFileFound(file, token)
+		if !found {
+			upload(file, token)
+			time.Sleep(15 * time.Second)
+		}
 	}
 }
