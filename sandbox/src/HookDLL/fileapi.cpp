@@ -10,6 +10,7 @@ decltype(NtSetInformationFile) *TrueNtSetInformationFile = nullptr;
 decltype(NtQueryDirectoryFile) *TrueNtQueryDirectoryFile = nullptr;
 decltype(NtQueryInformationFile) *TrueNtQueryInformationFile = nullptr;
 decltype(NtQueryAttributesFile) *TrueNtQueryAttributesFile = nullptr;
+decltype(NtQueryFullAttributesFile) *TrueNtQueryFullAttributesFile = nullptr;
 
 NTSTATUS NTAPI
 HookNtOpenFile(
@@ -361,6 +362,32 @@ HookNtQueryAttributesFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes, _Out_ PFILE_
         L"NtQueryAttributesFile(ObjectName: %ws), RETN: %p", ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
 
     NTSTATUS Status = TrueNtQueryAttributesFile(ObjectAttributes, FileInformation);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
+
+NTSTATUS
+NTAPI
+HookNtQueryFullAttributesFile(
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _Out_ PFILE_NETWORK_OPEN_INFORMATION FileInformation)
+/*
+- GetFileAttributesExA -> GetFileAttributesExW -> NtQueryFullAttributesFile
+*/
+{
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtQueryFullAttributesFile(ObjectAttributes, FileInformation);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtQueryFullAttributesFile(ObjectName: %ws), RETN: %p", ObjectAttributes->ObjectName->Buffer, _ReturnAddress());
+
+    NTSTATUS Status = TrueNtQueryFullAttributesFile(ObjectAttributes, FileInformation);
 
     ReleaseHookGuard();
 

@@ -97,3 +97,10 @@ HookNtQueryInformationFile(
 NTSTATUS
 NTAPI
 HookNtQueryAttributesFile(_In_ POBJECT_ATTRIBUTES ObjectAttributes, _Out_ PFILE_BASIC_INFORMATION FileInformation);
+
+
+NTSTATUS
+NTAPI
+HookNtQueryFullAttributesFile(
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _Out_ PFILE_NETWORK_OPEN_INFORMATION FileInformation);
