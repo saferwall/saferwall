@@ -45,6 +45,16 @@ HookNtCreateThreadEx(
     _In_ SIZE_T MaximumStackSize,
     _In_opt_ PPS_ATTRIBUTE_LIST AttributeList);
 
+
+NTSTATUS
+NTAPI
+HookNtOpenThread(
+    _Out_ PHANDLE ThreadHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_ PCLIENT_ID ClientId);
+
+
 NTSTATUS
 NTAPI
 HookNtOpenProcess(

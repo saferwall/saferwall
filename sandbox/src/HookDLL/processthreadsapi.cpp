@@ -6,6 +6,7 @@ decltype(NtCreateThread) *TrueNtCreateThread = nullptr;
 decltype(NtCreateThreadEx) *TrueNtCreateThreadEx = nullptr;
 decltype(NtResumeThread) *TrueNtResumeThread = nullptr;
 decltype(NtSuspendThread) *TrueNtSuspendThread = nullptr;
+decltype(NtOpenThread) *TrueNtOpenThread = nullptr;
 decltype(NtOpenProcess) *TrueNtOpenProcess = nullptr;
 decltype(NtTerminateProcess) *TrueNtTerminateProcess = nullptr;
 decltype(NtContinue) *TrueNtContinue = nullptr;
@@ -208,6 +209,35 @@ HookNtResumeThread(_In_ HANDLE ThreadHandle, _Out_opt_ PULONG PreviousSuspendCou
 
     return Status;
 }
+
+NTSTATUS
+NTAPI
+HookNtOpenThread(
+    _Out_ PHANDLE ThreadHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_ PCLIENT_ID ClientId)
+{
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtOpenThread(ThreadHandle, DesiredAccess, ObjectAttributes, ClientId);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtOpenThread(DesiredAccess: 0x%x, UniqueProcess:  0x%x), RETN: %p",
+        DesiredAccess,
+        ClientId->UniqueProcess,
+        _ReturnAddress());
+
+    NTSTATUS Status = TrueNtOpenThread(ThreadHandle, DesiredAccess, ObjectAttributes, ClientId);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
+
 
 NTSTATUS NTAPI
 HookNtOpenProcess(

@@ -50,6 +50,7 @@ extern decltype(NtDeleteKey) *TrueNtDeleteKey;
 extern decltype(NtDeleteValueKey) *TrueNtDeleteValueKey;
 
 extern decltype(NtOpenProcess) *TrueNtOpenProcess;
+extern decltype(NtOpenThread) *TrueNtOpenThread;
 extern decltype(NtTerminateProcess) *TrueNtTerminateProcess;
 extern decltype(NtCreateUserProcess) *TrueNtCreateUserProcess;
 extern decltype(NtCreateThread) *TrueNtCreateThread;
@@ -320,6 +321,7 @@ ProcessAttach()
     TrueNtDeleteKey = NtDeleteKey;
     TrueNtDeleteValueKey = NtDeleteValueKey;
     TrueNtCreateUserProcess = NtCreateUserProcess;
+    TrueNtOpenThread = NtOpenThread;
     TrueNtCreateThread = NtCreateThread;
     TrueNtCreateThreadEx = NtCreateThreadEx;
     TrueNtResumeThread = NtResumeThread;
@@ -424,6 +426,7 @@ ProcessDetach()
     //
 
     // DETACH(NtOpenProcess);
+    // DETACH(NtOpenThread);
     // DETACH(NtTerminateProcess);
     // DETACH(NtCreateUserProcess);
     // DETACH(NtCreateThread);
@@ -692,6 +695,7 @@ HookNtAPIs()
     //
 
     ATTACH(NtOpenProcess);
+    //ATTACH(NtOpenThread);
     ATTACH(NtTerminateProcess);
     ATTACH(NtCreateUserProcess);
     /*ATTACH(NtCreateThread);
