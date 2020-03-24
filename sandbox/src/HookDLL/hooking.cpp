@@ -58,6 +58,8 @@ extern decltype(NtCreateThreadEx) *TrueNtCreateThreadEx;
 extern decltype(NtSuspendThread) *TrueNtSuspendThread;
 extern decltype(NtResumeThread) *TrueNtResumeThread;
 extern decltype(NtContinue) *TrueNtContinue;
+extern decltype(NtGetContextThread) *TrueNtGetContextThread;
+extern decltype(NtSetContextThread) *TrueNtSetContextThread;
 
 extern decltype(NtQueryVolumeInformationFile) *TrueNtQueryVolumeInformationFile;
 extern decltype(NtQuerySystemInformation) *TrueNtQuerySystemInformation;
@@ -329,6 +331,8 @@ ProcessAttach()
     TrueNtOpenProcess = NtOpenProcess;
     TrueNtTerminateProcess = NtTerminateProcess;
     TrueNtContinue = NtContinue;
+    TrueNtGetContextThread = NtGetContextThread;
+    TrueNtSetContextThread = NtSetContextThread;
 
     TrueRtlDecompressBuffer = RtlDecompressBuffer;
     TrueNtQuerySystemInformation = NtQuerySystemInformation;
@@ -434,6 +438,8 @@ ProcessDetach()
     // DETACH(NtSuspendThread);
     // DETACH(NtResumeThread);
     // DETACH(NtContinue);
+    // DETACH(NtGetContextThread);
+    // DETACH(NtSetContextThread);
 
     //
     // System APIs.
@@ -443,7 +449,6 @@ ProcessDetach()
     DETACH(NtQuerySystemInformation);
     // DETACH(RtlDecompressBuffer);
     // DETACH(NtDelayExecution);
-    // DETACH(NtLoadDriver);
     // DETACH(NtLoadDriver);
 
     //
@@ -703,6 +708,8 @@ HookNtAPIs()
     ATTACH(NtSuspendThread);
     ATTACH(NtResumeThread);*/
     ATTACH(NtContinue);
+    //ATTACH(NtGetContextThread);
+    //ATTACH(NtSetContextThread);
 
     //
     // System APIs.

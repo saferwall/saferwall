@@ -10,6 +10,9 @@ decltype(NtOpenThread) *TrueNtOpenThread = nullptr;
 decltype(NtOpenProcess) *TrueNtOpenProcess = nullptr;
 decltype(NtTerminateProcess) *TrueNtTerminateProcess = nullptr;
 decltype(NtContinue) *TrueNtContinue = nullptr;
+decltype(NtGetContextThread) *TrueNtGetContextThread = nullptr;
+decltype(NtSetContextThread) *TrueNtSetContextThread = nullptr;
+
 
 BOOL bFirstTime = TRUE;
 extern HookInfo gHookInfo;
@@ -331,5 +334,51 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
     TraceAPI(L"NtContinue(ContextRecord: 0x%p, TestAlert: %d), RETN: %p", ContextRecord, TestAlert, _ReturnAddress());
 
     Status =  TrueNtContinue(ContextRecord, TestAlert);
+    return Status;
+}
+
+NTSTATUS NTAPI
+HookNtGetContextThread(_In_ HANDLE ThreadHandle, _Inout_ PCONTEXT ThreadContext) {
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtGetContextThread(ThreadHandle, ThreadContext);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtGetContextThread(ThreadHandle: 0x%x, ThreadContext:  0x%p), RETN: %p",
+        ThreadHandle,
+        ThreadContext,
+        _ReturnAddress());
+
+    NTSTATUS Status = TrueNtGetContextThread(ThreadHandle, ThreadContext);
+
+    ReleaseHookGuard();
+
+    return Status;
+}
+
+NTSTATUS
+NTAPI
+HookNtSetContextThread(_In_ HANDLE ThreadHandle, _In_ PCONTEXT ThreadContext)
+{
+    if (SfwIsCalledFromSystemMemory(5))
+    {
+        return TrueNtSetContextThread(ThreadHandle, ThreadContext);
+    }
+
+    CaptureStackTrace();
+
+    TraceAPI(
+        L"NtSetContextThread(ThreadHandle: 0x%x, ThreadContext:  0x%p), RETN: %p",
+        ThreadHandle,
+        ThreadContext,
+        _ReturnAddress());
+
+    NTSTATUS Status = TrueNtSetContextThread(ThreadHandle, ThreadContext);
+
+    ReleaseHookGuard();
+
     return Status;
 }
