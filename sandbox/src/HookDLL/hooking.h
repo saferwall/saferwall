@@ -11,6 +11,7 @@
 #include "ntifs.h"
 #include "ole.h"
 #include "net.h"
+#include "winuserapi.h"
 
 //
 // Prototypes
@@ -38,6 +39,8 @@ VOID
 HookNetworkAPIs(BOOL Attach);
 VOID
 HookDll(PWCHAR DllName);
+VOID
+HookWinUserAPIs(BOOL Attach);
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
@@ -61,4 +64,5 @@ typedef struct HookInfo
 {
     BOOL IsOleHooked;
     BOOL IsWinInetHooked;
+    BOOL IsUser32Hooked;
 } HookInfo;

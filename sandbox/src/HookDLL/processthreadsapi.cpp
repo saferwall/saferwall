@@ -316,6 +316,13 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             HookNetworkAPIs(TRUE);
         }
 
+        RtlInitUnicodeString(&ModulePath, (PWSTR)L"user32.dll");
+        Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+        if (Status == STATUS_SUCCESS && !gHookInfo.IsUser32Hooked)
+        {
+            HookWinUserAPIs(TRUE);
+        }
+
 		SfwSymInit();
         bFirstTime = FALSE;
 

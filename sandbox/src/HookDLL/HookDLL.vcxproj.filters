@@ -75,6 +75,9 @@
     <ClInclude Include="stackwalk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="winuserapi.h">
+      <Filter>Source Files\Hooks\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="stackwalk.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="winuserapi.cpp">
+      <Filter>Source Files\Hooks\Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

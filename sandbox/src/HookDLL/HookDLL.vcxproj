@@ -224,6 +224,7 @@
     <ClInclude Include="systemapi.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="winregapi.h" />
+    <ClInclude Include="winuserapi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -247,6 +248,7 @@
     <ClCompile Include="synchapi.cpp" />
     <ClCompile Include="systemapi.cpp" />
     <ClCompile Include="winregapi.cpp" />
+    <ClCompile Include="winuserapi.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

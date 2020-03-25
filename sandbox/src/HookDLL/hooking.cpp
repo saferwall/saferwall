@@ -86,6 +86,8 @@ pfnHttpSendRequestA TrueHttpSendRequestA = nullptr;
 pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
 pfnInternetReadFile TrueInternetReadFile = nullptr;
 
+pfnSetWindowsHookExW TrueSetWindowsHookExW = nullptr;
+
 CRITICAL_SECTION gInsideHookLock, gHookDllLock;
 BOOL gInsideHook = FALSE;
 DWORD dwTlsIndex;
@@ -653,6 +655,35 @@ HookNetworkAPIs(BOOL Attach)
 }
 
 VOID
+HookWinUserAPIs(BOOL Attach)
+{
+    LogMessage(L"Attaching to user32");
+
+    TrueSetWindowsHookExW = (pfnSetWindowsHookExW)GetAPIAddress((PSTR) "SetWindowsHookExW", (PWSTR)L"user32.dll");
+    if (TrueSetWindowsHookExW == NULL)
+    {
+        EtwEventWriteString(ProviderHandle, 0, 0, L"SetWindowsHookExW() is NULL");
+    }
+
+    HookBegingTransation();
+
+    if (Attach)
+    {
+        ATTACH(SetWindowsHookExW);
+    }
+    else
+    {
+        DETACH(SetWindowsHookExW);
+    }
+
+    HookCommitTransaction();
+
+    LogMessage(L"Hooked to user32 done");
+
+    gHookInfo.IsUser32Hooked = TRUE;
+}
+
+VOID
 HookNtAPIs()
 {
     LogMessage(L"HookNtAPIs Begin");
@@ -757,6 +788,14 @@ HookDll(PWCHAR DllName)
         if (!gHookInfo.IsWinInetHooked)
         {
             HookNetworkAPIs(TRUE);
+        }
+    }
+
+    else if (_wcsstr(DllName, L"user32.dll") != NULL)
+    {
+        if (!gHookInfo.IsUser32Hooked)
+        {
+            HookWinUserAPIs(TRUE);
         }
     }
 
