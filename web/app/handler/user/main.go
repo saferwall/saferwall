@@ -888,7 +888,7 @@ func Actions(c echo.Context) error {
 	})
 }
 
-// GetActivitiy represents the feed displayed in the landing page.
+// GetActivitiy represents the feed displayed in the landing page for registered users.
 func GetActivitiy(c echo.Context) error {
 
 	// get path param
@@ -939,8 +939,10 @@ func GetActivities(c echo.Context) error {
 
 	// Get all activities from all users.
 	params := make(map[string]interface{}, 1)
+	params["user"] = viper.GetString("app.admin_user")
 	query := "SELECT `username`, `activities` FROM users " +
-		"ORDER BY activities[*].timestamp DESC LIMIT 100"
+		"WHERE `username` != $user " + 
+		"ORDER BY activities[*].timestamp DESC LIMIT 50"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})

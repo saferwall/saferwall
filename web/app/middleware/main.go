@@ -52,9 +52,7 @@ func RequireJSON(next echo.HandlerFunc) echo.HandlerFunc {
 func Init(e *echo.Echo) {
 
 	// logging
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: `[${time_rfc3339}]  ${status}  ${method} ${host}${path} ${latency_human}` + "\n",
-	}))
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 
 	// cors
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
