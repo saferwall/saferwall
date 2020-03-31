@@ -39,6 +39,32 @@ minio:
 ####### FILEBEAT #########
 filebeat:
   enabled: true
+  filebeatConfig:
+    filebeat.yml: |-
+      filebeat.autodiscover:
+        providers:
+          - type: kubernetes
+            in_cluster: true
+            templates:
+              - condition:
+                  or:
+                    - equals:
+                        kubernetes.container.name: backend
+                    - equals:
+                        kubernetes.container.name: consumer
+                config:
+                  - type: docker
+                    containers.ids:
+                      - "${data.kubernetes.container.id}"
+                    json.add_error_key: true
+                    processors:
+                      - add_kubernetes_metadata: ~
+      processors:
+        - add_cloud_metadata: ~
+        - add_docker_metadata: ~ 
+      output.elasticsearch:
+        host: '${NODE_NAME}'
+        hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
 
 ####### ELASTIC SEARCH #########
 elasticsearch:

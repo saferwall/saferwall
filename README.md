@@ -11,7 +11,7 @@ It aims for the following goals:
 - Hunting platform to find new malwares.
 - Quality ensurance for signature before releasing.
 
-<p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="700px" height="auto"></p>
+<p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="auto" height="auto"></p>
 
 ## Features
 
@@ -44,6 +44,8 @@ Steps:
 3. Install it: `make saferwall`.
 4. The AVs requires licenses, that is why the containers are not publicly avaibable. Rename the `example.env` to `.env` and fill the credentials according to which AVs you want to have. Also, put licenses under `build/data` and run: `make build`.
 5. Edit the deployments/values.yaml to match your needs.
+6. Logs are found elasticsearch:
+<p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="auto" height="auto"></p>
 
 ## Built with:
 
