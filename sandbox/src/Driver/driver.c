@@ -27,7 +27,9 @@ Return Value:
     UNICODE_STRING ntUnicodeString;     // NT Device Name "\Device\SIOCTL"
     UNICODE_STRING ntWin32NameString;   // Win32 Name "\DosDevices\IoctlTest"
     BOOLEAN SymLinkCreated = FALSE;
-    BOOLEAN CreateProcessCallbackCreate = FALSE;
+    BOOLEAN CreateProcessCallbackCreated = FALSE;
+    BOOLEAN LoadImageCallbackCreated = FALSE;
+    BOOLEAN CreateThreadCallbackCreated = FALSE;
 
     RtlInitUnicodeString(&ntUnicodeString, NT_DEVICE_NAME);
 
@@ -93,6 +95,7 @@ Return Value:
     //
 
     ntStatus = PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutine, FALSE);
+
     if (!NT_SUCCESS(ntStatus))
     {
         if (ntStatus == STATUS_ACCESS_DENIED)
@@ -112,7 +115,7 @@ Return Value:
         // PsSetCreateProcessNotifyRoutineEx(2) returned 0x%x\n", ntStatus);
         goto Exit;
     }
-    CreateProcessCallbackCreate = TRUE;
+    CreateProcessCallbackCreated = TRUE;
 
     //
     // Registers an image load notification callback.
@@ -125,6 +128,21 @@ Return Value:
         LOG_ERROR("Unable to add image load notification routine");
         goto Exit;
     }
+    LoadImageCallbackCreated = TRUE;
+
+    //
+    // Registers a thread motification callback that notifies us
+    // when a new thread is created and when such a thread is deleted.
+    //
+
+    ntStatus = PsSetCreateThreadNotifyRoutine(&CreateThreadNotifyRoutine);
+
+    if (!NT_SUCCESS(ntStatus))
+    {
+        LOG_ERROR("Unable to add crate thread notification routine");
+        goto Exit;
+    }
+    CreateThreadCallbackCreated = TRUE;
 
 Exit:
 
@@ -134,17 +152,25 @@ Exit:
         // Delete everything that this routine has allocated.
         //
 
-        ntStatus = PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
-        _ASSERT(ntStatus == STATUS_SUCCESS);
-
-        if (CreateProcessCallbackCreate == TRUE)
+        if (CreateProcessCallbackCreated)
         {
             ntStatus = PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutine, TRUE);
             _ASSERT(ntStatus == STATUS_SUCCESS);
-            CreateProcessCallbackCreate = FALSE;
         }
 
-        if (SymLinkCreated == TRUE)
+        if (LoadImageCallbackCreated)
+        {
+            ntStatus = PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
+            _ASSERT(ntStatus == STATUS_SUCCESS);
+        }
+
+        if (CreateThreadCallbackCreated)
+        {
+            ntStatus = PsSetCreateProcessNotifyRoutine(CreateThreadNotifyRoutine, TRUE);
+            _ASSERT(ntStatus == STATUS_SUCCESS);
+        }
+
+        if (SymLinkCreated)
         {
             IoDeleteSymbolicLink(&ntWin32NameString);
         }
@@ -203,16 +229,19 @@ Return Value:
     //
     // Removes the LoadImageNotifyRoutine.
     //
+
     PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
 
     //
     // Removes the CreateProcessNotifyRoutine.
     //
+
     PsSetCreateProcessNotifyRoutineEx(&CreateProcessNotifyRoutine, TRUE);
 
     //
     // Release memory of all injection-info entries.
     //
+
     InjDestroy();
 }
 

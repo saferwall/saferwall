@@ -420,10 +420,10 @@ ProcessDetach()
     //
 
     // DETACH(NtOpenKey);
-    // DETACH(NtOpenKeyEx);
-    // DETACH(NtCreateKey);
-    // DETACH(NtQueryValueKey);
-    // DETACH(NtSetValueKey);
+     DETACH(NtOpenKeyEx);
+     DETACH(NtCreateKey);
+     DETACH(NtQueryValueKey);
+     DETACH(NtSetValueKey);
     // DETACH(NtDeleteKey);
     // DETACH(NtDeleteValueKey);
 
@@ -633,7 +633,7 @@ HookNetworkAPIs(BOOL Attach)
         ATTACH(HttpOpenRequestW);
         ATTACH(HttpSendRequestA);
         ATTACH(HttpSendRequestW);
-        ATTACH(InternetReadFile);
+        //ATTACH(InternetReadFile);
     }
     else
     {
@@ -708,10 +708,10 @@ HookNtAPIs()
     ATTACH(NtWriteFile);
     ATTACH(NtDeleteFile);
     ATTACH(NtSetInformationFile);
-    // ATTACH(NtQueryDirectoryFile);
-    // ATTACH(NtQueryInformationFile);
-    // ATTACH(NtQueryAttributesFile);
-    // ATTACH(NtQueryFullAttributesFile);
+    ATTACH(NtQueryDirectoryFile);
+    ATTACH(NtQueryInformationFile);
+    //ATTACH(NtQueryAttributesFile);
+    //ATTACH(NtQueryFullAttributesFile);
 
 
     //
@@ -762,7 +762,7 @@ HookNtAPIs()
     // ATTACH(NtWriteVirtualMemory);
     // ATTACH(NtFreeVirtualMemory);
     // ATTACH(NtMapViewOfSection);
-    //ATTACH(NtAllocateVirtualMemory);
+    // ATTACH(NtAllocateVirtualMemory);
     // ATTACH(NtUnmapViewOfSection);
     ATTACH(NtProtectVirtualMemory);
 

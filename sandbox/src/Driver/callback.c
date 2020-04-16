@@ -21,7 +21,7 @@ CreateProcessNotifyRoutine(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _In
             CreateInfo->ImageFileName,
             CreateInfo->FileOpenNameAvailable);
 
-        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"wrar59b3_1831105618.exe");
+        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"lidule.exe");
         if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
         {
             return;
@@ -173,4 +173,22 @@ LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 
         InjectionInfo->IsInjected = TRUE;
     }
+}
+
+VOID NTAPI
+CreateThreadNotifyRoutine(HANDLE ProcessId, HANDLE ThreadId, BOOLEAN Create)
+{
+    if (Create)
+    {
+
+		HANDLE CurrentProcessId = PsGetCurrentProcessId();
+
+		if (CurrentProcessId != ProcessId)
+        {
+            LOG_INFO("Thread injection");
+		}
+
+        LOG_INFO(
+            "CreateThreadNotifyRoutine: (ProcessId 0x%p, ThreadId 0x%p) created", (PVOID)ProcessId, (PVOID)ThreadId);
+	}
 }

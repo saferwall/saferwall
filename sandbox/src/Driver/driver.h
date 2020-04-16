@@ -36,3 +36,6 @@ CreateProcessNotifyRoutine(
 
 VOID NTAPI
 LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo);
+
+VOID NTAPI
+CreateThreadNotifyRoutine(HANDLE ProcessId, HANDLE ThreadId, BOOLEAN Create);
