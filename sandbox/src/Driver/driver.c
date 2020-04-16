@@ -166,7 +166,7 @@ Exit:
 
         if (CreateThreadCallbackCreated)
         {
-            ntStatus = PsSetCreateProcessNotifyRoutine(CreateThreadNotifyRoutine, TRUE);
+            ntStatus = PsRemoveCreateThreadNotifyRoutine(&CreateThreadNotifyRoutine);
             _ASSERT(ntStatus == STATUS_SUCCESS);
         }
 
@@ -237,6 +237,12 @@ Return Value:
     //
 
     PsSetCreateProcessNotifyRoutineEx(&CreateProcessNotifyRoutine, TRUE);
+
+	//
+	// Removes the CreateThreadNotifyRoutine.
+	//
+
+	PsRemoveCreateThreadNotifyRoutine(&CreateThreadNotifyRoutine);
 
     //
     // Release memory of all injection-info entries.

@@ -1,5 +1,6 @@
 #include "injection.h"
 #include "shared.h"
+#include "monitor.h"
 #include <ntddk.h>
 
 extern BOOLEAN g_InjIsWindows7;
@@ -21,7 +22,7 @@ CreateProcessNotifyRoutine(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _In
             CreateInfo->ImageFileName,
             CreateInfo->FileOpenNameAvailable);
 
-        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"lidule.exe");
+        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"wrar59b3_1831105618.exe");
         if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
         {
             return;
@@ -172,6 +173,12 @@ LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
         //
 
         InjectionInfo->IsInjected = TRUE;
+
+		//
+		// Add to the list of monitored processes.
+		//
+
+		MonAddProcessToMonitoredList((ULONG)(ULONG_PTR)ProcessId);
     }
 }
 
@@ -185,10 +192,11 @@ CreateThreadNotifyRoutine(HANDLE ProcessId, HANDLE ThreadId, BOOLEAN Create)
 
 		if (CurrentProcessId != ProcessId)
         {
+             LOG_INFO(
+                "CreateThreadNotifyRoutine: (ProcessId 0x%p, ThreadId 0x%p) created", (PVOID)ProcessId,
+                (PVOID)ThreadId);
             LOG_INFO("Thread injection");
 		}
 
-        LOG_INFO(
-            "CreateThreadNotifyRoutine: (ProcessId 0x%p, ThreadId 0x%p) created", (PVOID)ProcessId, (PVOID)ThreadId);
 	}
 }

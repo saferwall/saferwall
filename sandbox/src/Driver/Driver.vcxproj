@@ -168,11 +168,13 @@
     <ClCompile Include="driver.c" />
     <ClCompile Include="helpers.c" />
     <ClCompile Include="injection.c" />
+    <ClCompile Include="monitor.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="injection.h" />
+    <ClInclude Include="monitor.h" />
     <ClInclude Include="shared.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
