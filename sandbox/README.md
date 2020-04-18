@@ -1,43 +1,40 @@
 # Introduction
 
 Saferwall's sandbox is a tool written in C focused primarly in analyzing malware.
-
-## Motivation
-
-The current implementation is targetting Windows OS for the moment.
+The current implementation is targetting Windows OS for the momen, specifically Windows 7 x64.
 
 ## Architecture
 
 - Driver:
-    - Intercept newly created process / modules, and inject a DLL via APC.
+    - Intercept newly created process / modules, and inject a DLL via APC..
 - DLL:
+	- Copy the original page of the API.
     - Performs inling hooking using Windows Detours library.
-- Hypervisor:
-    - KVM hiding user mode hooks using EPT shadowing.
-    - Usage of EPTP switching VMFUNC to avoid traping all VM-Exit to the host but handle them inside our driving running in the guest.
-
-1. Modify KVM to enable VE ( EPTP swicthing )
-2. Create EPTs indentity mapping (All access, RW, Execute only)
-3. IDT needs to be shadowed
-4. Driver inside the guest hook IDT VE exception, handle EPT inside the guest.
-
-Before the DLL do the inline hook, you need to make a copy of the page.
-
-- On process start:
-	- Wait untill requires DLLs are loaded.
-	- Inject DLL via APC
-	- Before you inline hook, you need 
-	- From Kernel, get VA for
-	- VMCALL (code_page, data_page)
-
+    - Send ioctl with code_page and data_page to be hooked.
+- Hypervisor (modded KVM):
+    - Use EPT techniques to hide user mode hooks.
+    - Use EPTP switching VMFUNC to avoid traping all VM-Exit, handle them inside our driver running in the guest instead.
+		1. Modify KVM to enable VE ( EPTP switching )
+		2. Shadow the IDT, and provide original copy in `sidt`.
+		3. Handle EPT violations inside the guest (in IDT VE exception vector)
+	- Hook page:
+		- allocate code_page and data_page.
+		- Update EPT mapping for the 3 EPT pointers and invept.
+	- IDT #VE:
+		- Handle EPT violation.
+		- if violation happens because of bad access and in a page we are hooking:
+			- vmfunc to WR EPT if read|write violation
+			- vmfunc to EXEC EPT if exec violation
 
 ## Features
 
-- Invisible hooks and resistent to anti-sandbox tricks.
+- Invisible hooks.
 - Track child processes and follows code injection.
+- Resistent to anti-sandbox detection techniques.
 - User simulater running inside the guest.
 - Extract all files writen to disk.
-- Unpack the file and fix its IAT.
+- Memory dumps/unpacking.
+- Fix IAT for PE dumps.
 
 
 ## Hooked APIs
@@ -128,8 +125,6 @@ Before the DLL do the inline hook, you need to make a copy of the page.
 - NtLoadDriver
 - NtQueryVolumeInformationFile
 - NtDeviceIoControlFile
-
-
 
 ## Apps running inside the VM
 
