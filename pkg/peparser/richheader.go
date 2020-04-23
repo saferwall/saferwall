@@ -48,7 +48,7 @@ type RichHeader struct {
 func (pe *File) ParseRichHeader() error {
 
 	rh := RichHeader{}
-	fileHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	fileHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + uint32(binary.Size(pe.NtHeader))
 	richSigOffset := bytes.Index(pe.data[:fileHeaderOffset], []byte(RichSignature))
 
 	// For example, .NET executable files do not use the MSVC linker and these

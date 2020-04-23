@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	"fmt"
 
 	// "encoding/hex"
 	// "github.com/donutloop/toolkit/debugutil"
@@ -20,35 +20,40 @@ func parse(filename string) {
 		return
 	}
 
-    defer func() { //catch or finally
-        if err := recover(); err != nil { //catch
-            fmt.Fprintf(os.Stderr, "Exception: %v\n", err)
-        }
-    }()
-	
-	err = pe.Parse()
-	if err != nil  {
-		if err != peparser.ErrDOSMagicNotFound && 
-			err != peparser.ErrInvalidPESize &&
-			err != peparser.ErrImageOS2SignatureFound {
-			fmt.Printf("\nError while parsing %s\n", filename)
-			fmt.Println(err)
-
+	defer func() { //catch or finally
+		if err := recover(); err != nil { //catch
+			fmt.Fprintf(os.Stderr, "%s, Exception: %v\n", filename, err)
 		}
+	}()
+
+	// Parse the DOS header.
+	err = pe.ParseDOSHeader()
+	if err != nil {
+		fmt.Println(filename, err)
 	}
 
-	if err == nil {
-		if pe.IsDLL() {
-			log.Print("File is DLL")
-		}
-		if pe.IsDriver() {
-			log.Print("File is Driver")
-		}
-		if pe.IsEXE() {
-			log.Print("File is Exe")
-		}
-	}
+	// err = pe.Parse()
+	// if err != nil  {
+	// 	if err != peparser.ErrDOSMagicNotFound &&
+	// 		err != peparser.ErrInvalidPESize &&
+	// 		err != peparser.ErrImageOS2SignatureFound {
+	// 		fmt.Printf("\nError while parsing %s\n", filename)
+	// 		fmt.Println(err)
 
+	// 	}
+	// }
+
+	// if err == nil {
+	// 	if pe.IsDLL() {
+	// 		log.Print("File is DLL")
+	// 	}
+	// 	if pe.IsDriver() {
+	// 		log.Print("File is Driver")
+	// 	}
+	// 	if pe.IsEXE() {
+	// 		log.Print("File is Exe")
+	// 	}
+	// }
 
 	// if len(pe.Anomalies) > 0 {
 	// 	fmt.Printf("Anomalies found while parsing %s\n", filename)
@@ -90,7 +95,6 @@ func parse(filename string) {
 
 }
 
-
 func main() {
 	var searchDir string
 
@@ -110,7 +114,10 @@ func main() {
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && !strings.Contains(path, "Fonts") {
+		if !f.IsDir() && !strings.HasSuffix(path, ".xml") && 
+			!strings.HasSuffix(path, ".bat")  && !strings.HasSuffix(path, ".js") && 
+			!strings.HasSuffix(path, ".chm")  && !strings.HasSuffix(path, ".jar") && 
+			!strings.HasSuffix(path, ".cmd")  && !strings.HasSuffix(path, ".ps1"){
 			fileList = append(fileList, path)
 		}
 		return nil

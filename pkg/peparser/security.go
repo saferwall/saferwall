@@ -86,7 +86,7 @@ func (pe *File) Authentihash() []byte {
 	// the checksum address, as specified in Optional Header Windows-Specific
 	// Fields.
 	start := uint32(0)
-	optionalHeaderOffset := pe.DosHeader.Elfanew + uint32(binary.Size(pe.NtHeader))
+	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + uint32(binary.Size(pe.NtHeader))
 	checksumOffset := optionalHeaderOffset + 64
 	h.Write(pe.data[start:checksumOffset])
 
