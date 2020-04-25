@@ -234,7 +234,7 @@ type ImageSectionHeader struct {
 func (pe *File) ParseSectionHeader() (err error) {
 
 	// get the first section offset.
-	optionalHeaderOffset := pe.DosHeader.Elfanew + 4 + uint32(binary.Size(pe.NtHeader.FileHeader))
+	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 + uint32(binary.Size(pe.NtHeader.FileHeader))
 	offset := optionalHeaderOffset + uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
 
 	sectionHeader := ImageSectionHeader{}

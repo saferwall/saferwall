@@ -11,62 +11,62 @@ import (
 
 // ImageDosHeader represents the DOS stub of a PE.
 type ImageDosHeader struct {
-	// Magic number
-	Emagic uint16 `json:"magic"`
+	// Magic number.
+	Magic uint16
 
-	// Bytes on last page of file
-	Ecblp uint16 `json:"bytesOnLastPageOfFile"`
+	// Bytes on last page of file.
+	BytesOnLastPageOfFile uint16
 
-	// Pages in file
-	Ecp uint16 `json:"pagesInFile"`
+	// Pages in file.
+	PagesInFile uint16
 
-	// Relocations
-	Ecrlc uint16 `json:"relocations"`
+	// Relocations.
+	Relocations uint16
 
-	// Size of header in paragraphs
-	Ecparhdr uint16 `json:"headerSizeInParagraphs"`
+	// Size of header in paragraphs.
+	SizeOfHeader uint16
 
-	// Minimum extra paragraphs needed
-	Eminalloc uint16 `json:"minExtraParagraphsNeeded"`
+	// Minimum extra paragraphs needed.
+	MinExtraParagraphsNeeded uint16
 
-	// Maximum extra paragraphs needed
-	Emaxalloc uint16 `json:"maxExtraParagraphsNeeded"`
+	// Maximum extra paragraphs needed.
+	MaxExtraParagraphsNeeded uint16
 
-	// Initial (relative) SS value
-	Ess uint16 `json:"initialSS"`
+	// Initial (relative) SS value.
+	InitialSS uint16
 
-	// Initial SP value
-	Esp uint16 `json:"initialSP"`
+	// Initial SP value.
+	InitialSP uint16
 
-	// Checksum
-	Ecsum uint16 `json:"checksum"`
+	// Checksum.
+	Checksum uint16
 
-	// Initial IP value
-	Eip uint16 `json:"initialIP"`
+	// Initial IP value.
+	InitialIP uint16
 
-	// Initial (relative) CS value
-	Ecs uint16 `json:"initialCS"`
+	// Initial (relative) CS value.
+	InitialCS uint16
 
-	// File address of relocation table
-	Elfarlc uint16 `json:"fileAddressOfRelocationTable"`
+	// File address of relocation table.
+	AddressOfRelocationTable uint16
 
-	// Overlay number
-	Eovno uint16 `json:"overlayNumber"`
+	// Overlay number.
+	OverlayNumber uint16
 
-	// Reserved words
-	Eres [4]uint16 `json:"reservedWords4"`
+	// Reserved words.
+	ReservedWords1 [4]uint16
 
-	// OEM identifier (for e_oeminfo)
-	Eoemid uint16 `json:"OEMIdentifier"`
+	// OEM identifier.
+	OEMIdentifier uint16
 
-	// OEM information; e_oemid specific
-	Eoeminfo uint16 `json:"OEMInformation"`
+	// OEM information.
+	OEMInformation uint16
 
-	// Reserved words
-	Eres2 [10]uint16 `json:"reservedWords10"`
+	// Reserved words.
+	ReservedWords2 [10]uint16
 
-	// File address of new exe header
-	Elfanew uint32 `json:"fileAddressOfNewEXEHeader"`
+	// File address of new exe header (Elfanew).
+	AddressOfNewEXEHeader uint32
 }
 
 // ParseDOSHeader parses the DOS header stub. Every PE file begins with a small
@@ -85,8 +85,8 @@ func (pe *File) ParseDOSHeader() (err error) {
 
 	// it can be ZM on an (non-PE) EXE.
 	// These executables still work under XP via ntvdm.
-	if pe.DosHeader.Emagic != ImageDOSSignature &&
-		pe.DosHeader.Emagic != ImageDOSZMSignature {
+	if pe.DosHeader.Magic != ImageDOSSignature &&
+		pe.DosHeader.Magic != ImageDOSZMSignature {
 		return ErrDOSMagicNotFound
 	}
 
@@ -94,8 +94,8 @@ func (pe *File) ParseDOSHeader() (err error) {
 	// DOS header to turn the EXE into a PE. It is is a relative offset to the
 	// NT Headers. It can't be null (signatures would overlap).
 	// Can be 4 at minimum.
-	if pe.DosHeader.Elfanew < 4 ||
-		pe.DosHeader.Elfanew > uint32(len(pe.data)) {
+	if pe.DosHeader.AddressOfNewEXEHeader < 4 ||
+		pe.DosHeader.AddressOfNewEXEHeader > uint32(len(pe.data)) {
 		return ErrInvalidElfanewValue
 	}
 
