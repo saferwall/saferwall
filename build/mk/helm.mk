@@ -25,4 +25,3 @@ helm-release:		## Install Helm release
 
 helm-upgrade:		## Upgrade a given release
 	helm upgrade $(RELEASE_NAME) saferwall
-	
