@@ -29,6 +29,7 @@ import (
 	"github.com/saferwall/saferwall/web/app/handler/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 type stringStruct struct {
@@ -71,6 +72,8 @@ type File struct {
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
 	Comments        []Comment              `json:"comments,omitempty"`
+	PE      		peparser.File          `json:"pe,omitempty"`
+
 }
 
 // Response JSON
