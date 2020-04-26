@@ -90,6 +90,12 @@ func (pe *File) Parse() error {
 		return err
 	}
 
+	// Parse the Rich header.
+	pe.ParseRichHeader()
+	if err != nil {
+		return err
+	}
+
 	// Parse the NT header.
 	err = pe.ParseNTHeader()
 	if err != nil {
