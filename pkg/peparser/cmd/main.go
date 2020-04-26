@@ -11,9 +11,18 @@ import (
 	// "github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
+	"github.com/saferwall/saferwall/pkg/peparser/pedumper"
 )
 
+func dump(filename string) {
+	err := pedumper.Dump(filename)
+	if err != nil {
+		fmt.Println(filename, err)
+	}
+}
+
 func parse(filename string) {
+	fmt.Println("Processing: ", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		// log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -26,22 +35,10 @@ func parse(filename string) {
 		}
 	}()
 
-	// Parse the DOS header.
-	err = pe.ParseDOSHeader()
+	err = pe.Parse()
 	if err != nil {
 		fmt.Println(filename, err)
 	}
-
-	// err = pe.Parse()
-	// if err != nil  {
-	// 	if err != peparser.ErrDOSMagicNotFound &&
-	// 		err != peparser.ErrInvalidPESize &&
-	// 		err != peparser.ErrImageOS2SignatureFound {
-	// 		fmt.Printf("\nError while parsing %s\n", filename)
-	// 		fmt.Println(err)
-
-	// 	}
-	// }
 
 	// if err == nil {
 	// 	if pe.IsDLL() {
@@ -114,10 +111,10 @@ func main() {
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && !strings.HasSuffix(path, ".xml") && 
-			!strings.HasSuffix(path, ".bat")  && !strings.HasSuffix(path, ".js") && 
-			!strings.HasSuffix(path, ".chm")  && !strings.HasSuffix(path, ".jar") && 
-			!strings.HasSuffix(path, ".cmd")  && !strings.HasSuffix(path, ".ps1"){
+		if !f.IsDir() && !strings.HasSuffix(path, ".xml") &&
+			!strings.HasSuffix(path, ".bat") && !strings.HasSuffix(path, ".js") &&
+			!strings.HasSuffix(path, ".chm") && !strings.HasSuffix(path, ".jar") &&
+			!strings.HasSuffix(path, ".cmd") && !strings.HasSuffix(path, ".ps1") {
 			fileList = append(fileList, path)
 		}
 		return nil

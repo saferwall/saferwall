@@ -83,7 +83,7 @@ func (pe *File) ParseDOSHeader() (err error) {
 		return err
 	}
 
-	// it can be ZM on an (non-PE) EXE.
+	// It can be ZM on an (non-PE) EXE.
 	// These executables still work under XP via ntvdm.
 	if pe.DosHeader.Magic != ImageDOSSignature &&
 		pe.DosHeader.Magic != ImageDOSZMSignature {

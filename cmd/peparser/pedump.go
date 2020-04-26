@@ -1,4 +1,3 @@
-
 // Copyright 2020 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
@@ -6,36 +5,35 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"path/filepath"
-	"encoding/json"
-	"bytes"
 )
 
 var (
-	all        bool
-	verbose        bool
-	dosHeader      bool
-	richHeader      bool
-	ntHeader     bool
-	directories    bool
-	sections       bool
+	all         bool
+	verbose     bool
+	dosHeader   bool
+	richHeader  bool
+	ntHeader    bool
+	directories bool
+	sections    bool
 )
-
 
 func prettyPrint(buff []byte) string {
 	var prettyJSON bytes.Buffer
 	error := json.Indent(&prettyJSON, buff, "", "\t")
-    if error != nil {
-        log.Println("JSON parse error: ", error)
-        return string(buff)
-    }
+	if error != nil {
+		log.Println("JSON parse error: ", error)
+		return string(buff)
+	}
 
-    return string(prettyJSON.Bytes())
+	return string(prettyJSON.Bytes())
 }
 
 func isDirectory(path string) bool {
@@ -74,14 +72,20 @@ func parsePE(filename string, cmd *cobra.Command) {
 		fmt.Println(prettyPrint(ntHeader))
 	}
 
+	wantSections, _ := cmd.Flags().GetBool("sections")
+	if wantSections {
+		sectionsHeaders, _ := json.Marshal(pe.Sections)
+		fmt.Println(prettyPrint(sectionsHeaders))
+	}
+
 	wantAll, _ := cmd.Flags().GetBool("all")
 	if wantAll {
 		dosHeader, _ := json.Marshal(pe.DosHeader)
 		ntHeader, _ := json.Marshal(pe.NtHeader)
-		sections, _ := json.Marshal(pe.Sections)
+		sectionsHeaders, _ := json.Marshal(pe.Sections)
 		fmt.Println(prettyPrint(dosHeader))
 		fmt.Println(prettyPrint(ntHeader))
-		fmt.Println(prettyPrint(sections))
+		fmt.Println(prettyPrint(sectionsHeaders))
 	}
 
 }
@@ -94,8 +98,8 @@ func parse(cmd *cobra.Command, args []string) {
 		parsePE(filePath, cmd)
 
 	} else {
-	// filePath points to a directory,
-	// walk recursively through all files.
+		// filePath points to a directory,
+		// walk recursively through all files.
 		fileList := []string{}
 		filepath.Walk(filePath, func(path string, f os.FileInfo, err error) error {
 			if !isDirectory(path) {
@@ -103,13 +107,12 @@ func parse(cmd *cobra.Command, args []string) {
 			}
 			return nil
 		})
-	
+
 		for _, file := range fileList {
 			parsePE(file, cmd)
 		}
 	}
 }
-
 
 func main() {
 
@@ -117,7 +120,7 @@ func main() {
 		Use:   "pedumper",
 		Short: "A Portable Executable file parser",
 		Long:  "A PE-Parser built for speed and malware-analysis in mind by Saferwall",
-		Run:   func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
 		},
 	}
 
@@ -135,7 +138,7 @@ func main() {
 		Short: "Parses the file",
 		Long:  "Parses the Portable Executable file",
 		Args:  cobra.MinimumNArgs(1),
-		Run: parse,
+		Run:   parse,
 	}
 
 	// Init root command.
