@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 )
 
 const (
@@ -643,7 +642,6 @@ func (pe *File) ParseRichHeader() error {
 	// For example, .NET executable files do not use the MSVC linker and these
 	// executables do not contain a detectable Rich Header.
 	if richSigOffset < 0 {
-		log.Print("Rich header not found")
 		return nil
 	}
 

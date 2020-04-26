@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,18 +13,21 @@ import (
 	// "github.com/donutloop/toolkit/debugutil"
 
 	peparser "github.com/saferwall/saferwall/pkg/peparser"
-	"github.com/saferwall/saferwall/pkg/peparser/pedumper"
 )
 
-func dump(filename string) {
-	err := pedumper.Dump(filename)
-	if err != nil {
-		fmt.Println(filename, err)
+func prettyPrint(buff []byte) string {
+	var prettyJSON bytes.Buffer
+	error := json.Indent(&prettyJSON, buff, "", "\t")
+	if error != nil {
+		log.Println("JSON parse error: ", error)
+		return string(buff)
 	}
+
+	return string(prettyJSON.Bytes())
 }
 
 func parse(filename string) {
-	fmt.Println("Processing: ", filename)
+	// fmt.Println("Processing: ", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		// log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -36,10 +41,24 @@ func parse(filename string) {
 	}()
 
 	err = pe.Parse()
-	if err != nil {
+	if err != nil && 
+		err != peparser.ErrImageOS2SignatureFound &&
+		err != peparser.ErrDOSMagicNotFound &&
+		err != peparser.ErrInvalidElfanewValue {
 		fmt.Println(filename, err)
 	}
 
+	// if err == peparser.ErrDOSMagicNotFound {
+	// 	if strings.Contains(filename, "Windows 10 x64") && 
+	// 		strings.HasSuffix(filename, ".dll"){
+	// 		// os.Remove(filename)
+	// 	}
+	// }
+
+	// var buff []byte
+	// buff, err = json.Marshal(pe)
+	// fmt.Print(prettyPrint(buff))
+	pe.Close()
 	// if err == nil {
 	// 	if pe.IsDLL() {
 	// 		log.Print("File is DLL")
@@ -62,12 +81,8 @@ func parse(filename string) {
 	// 	fmt.Println(s.NameString(), pe.PrettySectionFlags(s.Characteristics))
 	// }
 
-	// fmt.Println()
 	// fmt.Println(hex.EncodeToString(pe.Authentihash()))
 	// pe.GetAnomalies()
-	// fmt.Println(debugutil.PrettySprint(pe.DosHeader))
-	// fmt.Println(debugutil.PrettySprint(pe.NtHeader))
-	// fmt.Println(debugutil.PrettySprint(pe.FileHeader))
 	// fmt.Println(pe.PrettyImageFileCharacteristics())
 	// fmt.Println(pe.PrettyDllCharacteristics())
 	// fmt.Println(pe.Checksum())
@@ -87,8 +102,6 @@ func parse(filename string) {
 	// 	log.Println("=============================================")
 
 	// }
-
-	pe.Close()
 
 }
 
