@@ -256,7 +256,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 	sort.Sort(byVirtualAddress(pe.Sections))
 
 	// There could be a problem if there are no raw data sections
-	// greater than 0
+	// greater than 0.
 	// fc91013eb72529da005110a3403541b6 example
 	// Should this throw an exception in the minimum header offset
 	// can't be found?
