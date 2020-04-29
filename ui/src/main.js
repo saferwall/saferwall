@@ -18,6 +18,7 @@ import axios from "axios"
 import VueCookies from "vue-cookies"
 import VueAWN from "vue-awesome-notifications"
 import VueLodash from 'vue-lodash'
+import TreeView from "vue-json-tree-view"
 
 // Google Analytics
 import VueGtag from "vue-gtag";
@@ -48,16 +49,14 @@ const options = {
 
 
 Vue.use(VueAWN, options)
-
 Vue.use(VueLodash)
-
 Vue.use(VueGtag, {
   config: { id: "UA-111524273-1" },
   appName: 'SaferWall',
 }, router);
-
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
+Vue.use(TreeView)
 
 
 Vue.prototype.$clipboard = (function (window, document, navigator) {

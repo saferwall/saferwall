@@ -21,6 +21,7 @@
     "vue-bulma-progress-tracker": "git+https://github.com/mrassili/progress-tracker.git",
     "vue-cookies": "^1.6.0",
     "vue-gtag": "^1.1.2",
+    "vue-json-tree-view": "^2.1.6",
     "vue-lodash": "^2.0.2",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.1.3",

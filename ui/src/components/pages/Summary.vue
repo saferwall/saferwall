@@ -37,7 +37,7 @@ export default {
       )
         return {}
         
-      return this._.omit(this.fileData.data, ["multiav", "strings", "status"])
+      return this._.omit(this.fileData, ["multiav", "strings", "status"])
     },
   },
 }

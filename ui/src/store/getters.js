@@ -19,16 +19,21 @@ export default {
   },
   getComments: state => {
     if (Object.entries(state.fileData).length === 0 && state.fileData.constructor === Object) return []
-    return state.fileData.data.comments ? state.fileData.data.comments : []
+    return state.fileData.comments ? state.fileData.comments : []
   },
   getNbComments: state => {
     if (Object.entries(state.fileData).length === 0 && state.fileData.constructor === Object) return 0
-    return state.fileData.data.comments ? state.fileData.data.comments.length : 0
+    return state.fileData.comments ? state.fileData.comments.length : 0
   },
   getAvatar: state => {
     return state.userData.avatar
   },
   getFollowing: state => {
-    return state.userData.following?state.userData.following:[]
+    return state.userData.following ? state.userData.following : []
+  },
+  isPE: state => {
+    if (Object.entries(state.fileData).length === 0)
+      return false
+    return state.fileData.magic.substring(0, 2) === "PE"
   }
 }

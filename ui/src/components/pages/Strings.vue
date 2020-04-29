@@ -85,6 +85,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import { mapGetters } from "vuex"
 
@@ -93,7 +94,6 @@ export default {
     return {
       start: 0,
       limit: 10,
-      filteredStrings: [],
       encodingSorted: "",
       valueSorted: "",
       valueSearched: "",
@@ -110,18 +110,17 @@ export default {
       )
         return []
 
-      var str = this.fileData.data.strings
+      var str = this.fileData.strings
       str.forEach((s) => (s.show = true))
       return str
     },
     filteredStringsToShow: function() {
       return this.filteredStrings.filter((string) => string.show)
     },
+    filteredStrings: function(){
+      return this.strings.slice(this.start, this.limit)
+    }
   },
-  mounted() {
-    this.filteredStrings = this.strings.slice(this.start, this.limit)
-  },
-
   methods: {
     sortTable(key, column) {
       if (column === "encoding") {
@@ -194,6 +193,7 @@ export default {
   },
 }
 </script>
+
 <style lang="scss" scoped>
 .head-title {
   float: left;
@@ -205,6 +205,9 @@ thead tr {
   display: table;
   width: 100%;
   table-layout: fixed;
+}
+td{
+  word-wrap: break-word;
 }
 
 .sort-icons {
