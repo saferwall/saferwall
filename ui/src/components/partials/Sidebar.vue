@@ -41,7 +41,10 @@
             }"
             :key="index"
           >
-            <router-link :to="child.path">
+            <router-link
+              :to="showButton(child.title) ? child.path : ''"
+              :class="{ disabled: !showButton(child.title) }"
+            >
               {{ child.title }}
             </router-link>
           </li>
@@ -69,7 +72,7 @@ export default {
           active: false,
           icon: "ion-stats-bars",
           children: [
-            // { title: "PE", slug: "pe" },
+            { title: "PE", slug: "pe" },
             {
               title: "Strings",
               slug: "strings",
@@ -102,7 +105,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getHashContext", "getNbComments", "getLoggedIn"]),
+    ...mapGetters(["getHashContext", "getNbComments", "getLoggedIn", "isPE"]),
     menuItems: function() {
       const hash = this.getHashContext
       return this.menu.map(({ slug, children, ...item }) => ({
@@ -150,8 +153,9 @@ export default {
       }
     },
     showButton(name) {
-      if (name !== "Comments") return true
-      if (name === "Comments" && this.getHashContext !== '') return true
+      if (name !== "Comments" && name !== "PE") return true
+      else if (name === "Comments" && this.getHashContext !== "") return true
+      else if (name === "PE" && this.isPE) return true
       else return false
     },
   },
@@ -210,6 +214,11 @@ aside.sidebar {
       &.active {
         height: auto;
         margin: 0 0 0.75em 0.75em;
+      }
+      .disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+        text-decoration: none;
       }
     }
 

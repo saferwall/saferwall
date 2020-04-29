@@ -20,17 +20,11 @@ import { mapGetters } from "vuex"
 
 export default {
   props: ["hash"],
-  data() {
-    return {
-      liked: false,
-    }
-  },
   computed: {
     ...mapGetters({ likes: "getLikes" }),
-  },
-  watch: {
-    hash: function(val) {
-      this.liked = this.likes.includes(val)
+    liked: function() {
+      if (!this.likes) return false
+      return this.likes.includes(this.hash)
     },
   },
   methods: {
@@ -57,9 +51,6 @@ export default {
           this.$awn.alert("An Error Occured, try again")
         })
     },
-  },
-  mounted() {
-    this.liked = this.likes.includes(this.hash)
   },
 }
 </script>
