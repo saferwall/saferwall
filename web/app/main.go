@@ -237,35 +237,34 @@ func initOSClient() *minio.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	bucketName := SamplesSpaceBucket
-	err = client.MakeBucket(bucketName, location)
-	if err != nil {
-		// Check to see if we already own this bucket (which happens if you run this twice)
-		exists, err := client.BucketExists(bucketName)
-		if err == nil && exists {
-			log.Printf("We already own %s", bucketName)
-		} else {
-			log.Fatalln(err)
-		}
-	} else {
-		log.Printf("Successfully created %s", bucketName)
-	}
-	
-	bucketName = AvatarSpaceBucket
-	err = client.MakeBucket(bucketName, location)
-	if err != nil {
-		// Check to see if we already own this bucket (which happens if you run this twice)
-		exists, err := client.BucketExists(bucketName)
-		if err == nil && exists {
-			log.Printf("We already own %s", bucketName)
-		} else {
-			log.Fatalln(err)
-		}
-	} else {
-		log.Printf("Successfully created %s", bucketName)
-	}
 	log.Infoln("Got Object Storage client instance")
+
+	found, err := client.BucketExists(SamplesSpaceBucket)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !found {
+		err = client.MakeBucket(SamplesSpaceBucket, location)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	} else {
+		log.Printf("Bucket %s exists already", SamplesSpaceBucket)
+	}
+
+	found, err = client.BucketExists(AvatarSpaceBucket)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !found {
+		err = client.MakeBucket(AvatarSpaceBucket, location)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	} else {
+		log.Printf("Bucket %s exists already", AvatarSpaceBucket)
+	}
+
 	return client
 }
 

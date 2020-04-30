@@ -24,7 +24,7 @@ helm-create:		## Create a Helm deployment.
 
 helm-release:		## Install Helm release.
 	cd  $(ROOT_DIR)/deployments \
-		&& helm install saferwall MERCURY
+		&& helm install saferwall --generate-name
 
 helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(RELEASE_NAME) saferwall
