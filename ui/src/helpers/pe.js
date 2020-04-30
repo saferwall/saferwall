@@ -1,6 +1,6 @@
 // Convert hex to an ascii string.
 function hex2a(hexx) {
-    var hex = hexx.toString(); //force conversion
+    var hex = hexx.toString(); // force conversion
     var str = '';
     for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
         str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
@@ -575,27 +575,36 @@ function prodIdToStr(prodId) {
 // prodIdToVsVersion retrieves the Visual Studio version from product id.
 // list from: https://github.com/kirschju/richheader
 function prodIdToVsVersion(prodId) {
-    if (prodId > 0x010e || prodID < 0)
+    if (prodId > 0x010e || prodId < 0)
         return ""
-    if (prodId >= 0x00fd && prodID < (0x010e + 1))
+    if (prodId >= 0x00fd && prodId < (0x010e + 1))
         return "Visual Studio 2015 14.00"
-    if (prodId >= 0x00eb && prodID < 0x00fd)
+    if (prodId >= 0x00eb && prodId < 0x00fd)
         return "Visual Studio 2013 12.10"
-    if (prodId >= 0x00d9 && prodID < 0x00eb)
+    if (prodId >= 0x00d9 && prodId < 0x00eb)
         return "Visual Studio 2013 12.00"
-    if (prodId >= 0x00c7 && prodID < 0x00d9)
+    if (prodId >= 0x00c7 && prodId < 0x00d9)
         return "Visual Studio 2012 11.00"
-    if (prodId >= 0x00b5 && prodID < 0x00c7)
+    if (prodId >= 0x00b5 && prodId < 0x00c7)
         return "Visual Studio 2010 10.10"
-    if (prodId >= 0x0098 && prodID < 0x00b5)
+    if (prodId >= 0x0098 && prodId < 0x00b5)
         return "Visual Studio 2010 10.00"
-    if (prodId >= 0x0083 && prodID < 0x0098)
+    if (prodId >= 0x0083 && prodId < 0x0098)
         return "Visual Studio 2008 09.00"
-    if (prodId >= 0x006d && prodID < 0x0083)
+    if (prodId >= 0x006d && prodId < 0x0083)
         return "Visual Studio 2005 08.00"
-    if (prodId >= 0x005a && prodID < 0x006d)
+    if (prodId >= 0x005a && prodId < 0x006d)
         return "Visual Studio 2003 07.10"
-    if (prodId == 1)
+    if (prodId === 1)
         return "Visual Studio"
     return ""
+}
+
+export {
+    hex2a,
+    reverse,
+    dec2Hex,
+    dec2HexString,
+    prodIdToStr,
+    prodIdToVsVersion
 }
