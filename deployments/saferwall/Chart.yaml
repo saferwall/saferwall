@@ -2,8 +2,8 @@ apiVersion: v2
 name: saferwall
 description: A hackable malware sandbox for the 21st Century
 type: application
-version: 0.0.1
-appVersion: 0.0.1
+version: 0.0.2
+appVersion: 0.0.2
 home: https://www.saferwall.com/
 sources:
     - https://github.com/saferwall/saferwall
@@ -12,7 +12,7 @@ maintainers:
       email: admin@saferwall.com
 dependencies:
     - name: minio
-      version: 4.0.1
+      version: 5.0.24
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: minio.enabled
     - name: couchbase-operator
@@ -24,26 +24,30 @@ dependencies:
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-cluster.enabled
     - name: efs-provisioner
-      version: 0.8.0
+      version: 0.11.0
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: efs-provisioner.enabled
     - name: cert-manager
-      version: 0.12.0
+      version: 0.14.3
       repository: https://charts.jetstack.io
       condition: cert-manager.enabled
     - name: nginx-ingress
-      version: 1.29.2
+      version: 1.36.3
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: nginx-ingress.enabled
     - name: filebeat
-      version: 7.5.2
+      version: 7.6.2
       repository: https://helm.elastic.co
       condition: filebeat.enabled
     - name: elasticsearch
-      version: 7.5.2
+      version: 7.6.2
       repository: https://helm.elastic.co
       condition: elasticsearch.enabled
     - name: kibana
-      version: 7.5.2
+      version: 7.6.2
       repository: https://helm.elastic.co
-      condition: kibana.enabled  
+      condition: kibana.enabled
+    - name: prometheus-operator
+      version: 8.13.3
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      condition: prometheus-operator.enabled
