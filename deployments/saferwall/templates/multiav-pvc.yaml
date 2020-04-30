@@ -4,9 +4,9 @@ apiVersion: v1
 metadata:
   name: {{ include "saferwall.fullname" . }}-samples
   annotations:
-    volume.beta.kubernetes.io/storage-class: efs
+    volume.beta.kubernetes.io/storage-class: aws-efs
 spec:
-  storageClassName: efs
+  storageClassName: aws-efs
   accessModes:
     - ReadWriteMany
   resources:
