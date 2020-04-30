@@ -36,7 +36,7 @@ spec:
             path: /var/lib/kubelet/seccomp
         - name: profiles
           configMap:
-            name: seccomp-profile
+            name: {{ include "saferwall.multiav.fullname" . }}-seccomp-profile
 {{- end }}
 
 ---
