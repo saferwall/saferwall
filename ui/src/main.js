@@ -18,6 +18,7 @@ import axios from "axios"
 import VueCookies from "vue-cookies"
 import VueAWN from "vue-awesome-notifications"
 import VueLodash from 'vue-lodash'
+import TreeView from "vue-json-tree-view"
 
 // Google Analytics
 import VueGtag from "vue-gtag";
@@ -55,6 +56,7 @@ Vue.use(VueGtag, {
 }, router);
 Vue.use(Vuelidate)
 Vue.use(VueCookies)
+Vue.use(TreeView)
 
 
 Vue.prototype.$clipboard = (function (window, document, navigator) {
