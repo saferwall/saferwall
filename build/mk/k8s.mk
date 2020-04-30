@@ -124,3 +124,6 @@ k8s-kube-capacity: 	## Install kube-capacity
 		&& tar zxvf kube-capacity_0.4.0_Linux_x86_64.tar.gz \
 		&& sudo mv kube-capacity /usr/local/bin \
 		&& kube-capacity
+
+k8s-delete-all-objects: ## Delete all objects
+	kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all

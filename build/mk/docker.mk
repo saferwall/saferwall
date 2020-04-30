@@ -48,22 +48,22 @@ docker-install:		## install docker
 	sudo apt-get install docker-ce -y
 
 docker-stop-all:		## Stop all containers
-	docker stop $$(docker ps -a -q)
+	sudo docker stop $$(sudo docker ps -a -q)
 
 docker-rm-all:			## Delete all containers
 	sudo docker rm $$(sudo docker ps -a -q)
 
 docker-rm-images:		## Delete all images
-	docker rmi $$(docker images -q) -f
+	sudo docker rmi $$(sudo docker images -q) -f
 
 docker-rm-dangling:		## Delete all dangling images
-	docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f
+	sudo docker images --quiet --filter=dangling=true | sudo xargs --no-run-if-empty docker rmi -f
 
 docker-rm-image-tags:	## Delete all tags from image
-	docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f $(REPO)/$(IMG):{}
+	sudo docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f $(REPO)/$(IMG):{}
 
 docker-get-ip:			## Get container IP addr
-	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
+	sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
 
 docker-daemon-restart:	## Restart docker daemon & reload config
 	sudo systemctl daemon-reload

@@ -1,27 +1,30 @@
-HELM_VERSION = 3.1.2
+HELM_VERSION = 3.2.0
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz 
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
-helm-install:		## Install Helm
+helm-install:		## Install Helm.
 	wget $(HELM_URL)
 	tar zxvf $(HELM_ZIP)
 	sudo mv linux-amd64/helm /usr/local/bin/helm
 	rm -f $(HELM_ZIP)
 	helm version
 
-helm-init:			## Init Helm repo
+helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-	# Make sure we get the latest list of charts
+	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
+	helm repo add elastic https://helm.elastic.co
+	helm repo add jetstack https://charts.jetstack.io
+	# Update your local Helm chart repository cache.
 	helm repo update
 
-helm-create:		## Create a helm deployment
-	cd  $(ROOT_DIR)/deployments \
+helm-create:		## Create a Helm deployment.
+	cd $(ROOT_DIR)/deployments \
 		&& helm create saferwall \ 
 		&& helm ls
 
-helm-release:		## Install Helm release
+helm-release:		## Install Helm release.
 	cd  $(ROOT_DIR)/deployments \
-		&& helm install saferwall --generate-name
+		&& helm install saferwall MERCURY
 
-helm-upgrade:		## Upgrade a given release
+helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(RELEASE_NAME) saferwall
