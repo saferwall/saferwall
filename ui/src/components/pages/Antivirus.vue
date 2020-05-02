@@ -133,10 +133,10 @@ export default {
   computed: {
     ...mapGetters({ fileData: "getFileData" }),
     Scans: function() {
-      if (this.fileData === {} || !this.fileData) return {}
+      if (Object.entries(this.fileData).length === 0) return {}
 
-      var _firstScan = this.fileData.data.multiav.first_scan
-      var _lastScan = this.fileData.data.multiav.last_scan
+      var _firstScan = this.fileData.multiav.first_scan
+      var _lastScan = this.fileData.multiav.last_scan
 
       Object.keys(_firstScan).forEach((key) => {
         _firstScan[key].showCopy = false

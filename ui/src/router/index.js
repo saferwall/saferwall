@@ -13,6 +13,8 @@ import ForgotPassword from "@/components/pages/ForgotPassword"
 import ResetPassword from "@/components/pages/ResetPassword"
 import Profile from "@/components/pages/Profile"
 import Settings from "@/components/pages/Settings"
+import Pe from "@/components/pages/Pe"
+
 import store from "../store/index"
 import routes from '../../config/routes'
 
@@ -89,6 +91,14 @@ const router = new Router({
       component: Strings,
       meta: {
         title: ROUTES.STRINGS.meta.title
+      },
+    },
+    {
+      path: ROUTES.PE.path + ":hash",
+      name: ROUTES.PE.name,
+      component: Pe,
+      meta: {
+        title: ROUTES.PE.meta.title
       },
     },
     {

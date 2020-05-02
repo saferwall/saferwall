@@ -49,6 +49,13 @@ module.exports = {
       title: "Strings"
     },
   },
+  PE: {
+    path: "/pe/",
+    name: "PE",
+    meta: {
+      title: "PE"
+    },
+  },
   LOGIN: {
     path: "/login/",
     name: "login",

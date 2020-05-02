@@ -28,7 +28,7 @@ export default {
   updateFileData: (context, hash) => {
     Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + hash)
       .then((res) => {
-        context.commit('setFileData', res)
+        context.commit('setFileData', res.data)
       })
       .catch(() => {
         Vue.prototype.$awn.alert(
