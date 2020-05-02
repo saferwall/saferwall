@@ -1,6 +1,6 @@
 <template>
-  <div class="container" v-if="sectionName === 'DosHeader'">
-    <table class="table is-striped is-narrow">
+  <div class="container" v-if="sectionName === 'dos_header'">
+    <table class="table is-striped ">
       <thead>
         <tr>
           <th>Member</th>
@@ -10,9 +10,14 @@
       </thead>
       <tbody>
         <tr v-for="(item, index) in Object.entries(data)" :key="index">
-          <th class="member">{{ item[0] }}</th>
+          <th class="member">{{ _.startCase(item[0]) }}</th>
           <td class="value">
-            {{ toHex(item[1]) }}
+            <span class="parent">
+              <span>
+                {{ toHex(item[1]) }}
+              </span>
+              <copy :content="toHex(item[1])" />
+            </span>
           </td>
           <td class="comment">
             {{ getComment(item[0], item[1]) }}
@@ -25,9 +30,13 @@
 
 <script>
 import { dec2HexString, reverse, hex2a, dec2Hex } from "@/helpers/pe"
+import Copy from "@/components/elements/Copy"
 
 export default {
   props: ["data", "sectionName"],
+  components: {
+    copy: Copy,
+  },
   data() {
     return {}
   },
@@ -45,7 +54,6 @@ export default {
       switch (name) {
         case "Magic":
         case "AddressOfNewEXEHeader":
-          console.log(value)
           return reverse(hex2a(dec2Hex(value)))
         default:
           return ""
@@ -56,10 +64,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-td {
-  vertical-align: middle;
-}
-.member {
-  width: max-content;
+.table {
+  width: 100%;
+  td {
+    vertical-align: middle;
+    &.value {
+      .parent {
+        position: relative;
+        .copy {
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        &:hover {
+          .copy {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
 }
 </style>

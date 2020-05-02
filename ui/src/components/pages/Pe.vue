@@ -8,7 +8,6 @@
             class="bt"
             :class="{
               active: selectedSection === index,
-              grey: index % 2 === 0,
             }"
             v-for="(section, index) in sections"
             :key="index"
@@ -20,7 +19,10 @@
           </div>
         </div>
         <div class="column values">
-          <dataDisplayer :data="pe[sections[selectedSection]]" :sectionName="sections[selectedSection]"/>
+          <dataDisplayer
+            :data="pe[sections[selectedSection]]"
+            :sectionName="sections[selectedSection]"
+          />
         </div>
       </div>
     </div>
@@ -32,7 +34,7 @@ import dataDisplayer from "../elements/pe/dataDisplayer"
 import { mapGetters } from "vuex"
 
 export default {
-  components:{
+  components: {
     dataDisplayer,
   },
   data() {
@@ -70,7 +72,6 @@ export default {
 <style lang="scss" scoped>
 .tile {
   padding-bottom: 1em;
-  width: 60%;
   margin: auto;
   .title {
     margin-bottom: 20px;
@@ -91,6 +92,7 @@ export default {
 
         .button {
           background-color: transparent;
+          font-weight: 600;
           width: 200px;
           justify-content: left;
           width: 10em;
@@ -116,10 +118,6 @@ export default {
         }
       }
 
-      .grey {
-        background-color: #f7f7f7;
-      }
-
       .bt:hover {
         button {
           color: #00d1b2;
@@ -130,7 +128,7 @@ export default {
         }
       }
     }
-    .values{
+    .values {
       margin-left: 2rem;
     }
   }
