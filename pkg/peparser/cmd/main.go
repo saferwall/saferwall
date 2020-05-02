@@ -27,7 +27,7 @@ func prettyPrint(buff []byte) string {
 }
 
 func parse(filename string) {
-	// fmt.Println("Processing: ", filename)
+	fmt.Println("Processing: ", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		// log.Printf("Error while opening file: %s, reason: %s", filename, err)
@@ -55,9 +55,9 @@ func parse(filename string) {
 	// 	}
 	// }
 
-	// var buff []byte
-	// buff, err = json.Marshal(pe)
-	// fmt.Print(prettyPrint(buff))
+	var buff []byte
+	buff, err = json.Marshal(pe)
+	fmt.Print(prettyPrint(buff))
 	pe.Close()
 	// if err == nil {
 	// 	if pe.IsDLL() {

@@ -86,6 +86,6 @@ func (pe *File) parseCLRHeaderDirectory(rva, size uint32) error {
 		return err
 	}
 
-	pe.CLRHeader = clrHeader
+	pe.CLRHeader = &clrHeader
 	return nil
 }

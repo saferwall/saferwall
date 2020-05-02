@@ -15,30 +15,29 @@ import (
 
 // A File represents an open PE file.
 type File struct {
-	DosHeader    ImageDosHeader
-	NtHeader     ImageNtHeader
-	Sections     []ImageSectionHeader
-	Imports      []Import
-	Export      Export
-	Debugs       []DebugEntry
-	Relocations  []Relocation
-	Resources    ResourceDirectory
-	TLS          TLSDirectory
-	LoadConfig   interface{}
-	Exceptions   []Exception
-	Certificates Certificate
-	DelayImports []DelayImport
-	BoundImports []BoundImportDescriptorData
-	GlobalPtr    uint32
-	RichHeader   RichHeader
-	CLRHeader    ImageCOR20Header
-
+	DosHeader    ImageDosHeader `json:"dos_header,omitempty"`
+	RichHeader   RichHeader `json:"rich_header,omitempty"`
+	NtHeader     ImageNtHeader `json:"nt_header,omitempty"`
+	Sections     []ImageSectionHeader `json:"sections,omitempty"`
+	Imports      []Import `json:"imports,omitempty"`
+	Export      Export `json:"exports,omitempty"`
+	Debugs       []DebugEntry `json:"debug,omitempty"`
+	Relocations  []Relocation `json:"reloc,omitempty"`
+	Resources    ResourceDirectory `json:"resource,omitempty"`
+	TLS          TLSDirectory `json:"tls,omitempty"`
+	LoadConfig   interface{} `json:"loadcfg,omitempty"`
+	Exceptions   []Exception `json:"exceptions,omitempty"`
+	Certificates Certificate `json:"cert,omitempty"`
+	DelayImports []DelayImport `json:"delay,omitempty"`
+	BoundImports []BoundImportDescriptorData `json:"bound,omitempty"`
+	GlobalPtr    uint32 `json:"globalptr,omitempty"`
+	CLRHeader  *ImageCOR20Header `json:"clr_header,omitempty"`
 	Header    []byte
 	data      mmap.MMap
 	closer    io.Closer
 	Is64      bool
 	Is32      bool
-	Anomalies []string
+	Anomalies []string `json:"anomalies,omitempty"`
 	size      uint32
 	f         *os.File
 }
