@@ -13,7 +13,7 @@
             :key="index"
           >
             <button class="button is-light" @click="selectedSection = index">
-              {{ section }}
+              {{ _.startCase(section) }}
             </button>
             <hr />
           </div>
@@ -82,8 +82,6 @@ export default {
       display: grid;
       width: max-content;
       height: max-content;
-      text-align: left;
-
       .bt {
         display: inline-flex;
         height: 35px;
@@ -92,9 +90,9 @@ export default {
 
         .button {
           background-color: transparent;
-          font-weight: 600;
+          font-size: medium;
           width: 200px;
-          justify-content: left;
+          justify-content: right;
           width: 10em;
         }
         hr {
@@ -108,7 +106,6 @@ export default {
       }
 
       .active {
-        background-color: rgba(0, 215, 211, 0.1) !important;
         button {
           color: #00d1b2;
           font-weight: 600;
