@@ -91,7 +91,8 @@ export default {
         .button {
           background-color: transparent;
           font-size: medium;
-          width: 200px;
+          font-weight: 300;
+          width: 300px;
           justify-content: right;
           width: 10em;
         }
@@ -100,7 +101,7 @@ export default {
           border: none;
           display: block;
           height: 35px;
-          width: 2px;
+          width: 1px;
           margin: 0;
         }
       }
@@ -112,6 +113,7 @@ export default {
         }
         hr {
           background-color: #00d1b2;
+          width: 1.5px;
         }
       }
 
