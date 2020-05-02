@@ -91,7 +91,7 @@ export default {
         .button {
           background-color: transparent;
           font-size: medium;
-          font-weight: 300;
+          font-weight: 500;
           width: 300px;
           justify-content: right;
           width: 10em;
