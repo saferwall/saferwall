@@ -10,7 +10,7 @@ import (
 	"path"
 	"path/filepath"
 
-	nsq "github.com/bitly/go-nsq"
+	nsq "github.com/nsqio/go-nsq"
 	"github.com/matcornic/hermes/v2"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/saferwall/saferwall/pkg/utils"

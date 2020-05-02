@@ -73,7 +73,6 @@ type File struct {
 	Status          int                    `json:"status,omitempty"`
 	Comments        []Comment              `json:"comments,omitempty"`
 	PE      		peparser.File          `json:"pe,omitempty"`
-
 }
 
 // Response JSON
