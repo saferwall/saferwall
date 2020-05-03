@@ -746,6 +746,15 @@ function subsystem2String(subsystem) {
   return "?"
 }
 
+function magic2String(magic) {
+  switch(magic) {
+    case 0x10b: return "PE32";
+    case 0x20b: return "PE32+";
+    case 0x107: return "ROM";
+    default: return "?";
+  }
+}
+
 export {
   hex2a,
   reverse,
@@ -757,5 +766,6 @@ export {
   unixtime2Human,
   fileCharacteristics2String,
   dllCharacteristics2String,
-  subsystem2String
+  subsystem2String,
+  magic2String
 }
