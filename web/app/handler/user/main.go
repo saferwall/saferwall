@@ -264,11 +264,8 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 // DeleteAllUsers will empty users bucket
 func DeleteAllUsers() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	mgr, err := db.Cluster.Buckets()
-	if err != nil {
-		log.Errorf("Failed to create bucket manager %v", err)
-	}
-	err = mgr.FlushBucket("users", nil)
+	mgr := db.Cluster.Buckets()
+	err := mgr.FlushBucket("users", nil)
 	if err != nil {
 		log.Errorf("Failed to flush bucket manager %v", err)
 	}
@@ -306,7 +303,11 @@ func GetAllUsers(fields []string) ([]User, error) {
 	var retValues []User
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next(&row) {
+	for rows.Next() {
+		err := rows.Row(&row)
+		if err != nil {
+			log.Println(err)
+		}
 		row.Password = ""
 		retValues = append(retValues, row)
 		row = User{}
@@ -928,7 +929,11 @@ func GetActivitiy(c echo.Context) error {
 	var row interface{}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next(&row) {
+	for rows.Next() {
+		err := rows.Row(&row)
+		if err != nil {
+			log.Println(err)
+		}
 		activities = append(activities, row)
 	}
 	return c.JSON(http.StatusOK, activities)
@@ -958,7 +963,11 @@ func GetActivities(c echo.Context) error {
 	var row interface{}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next(&row) {
+	for rows.Next() {
+		err := rows.Row(&row)
+		if err != nil {
+			log.Println(err)
+		}
 		activities = append(activities, row)
 	}
 	return c.JSON(http.StatusOK, activities)

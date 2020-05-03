@@ -163,8 +163,8 @@ github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1 h1:0ijn2JFThOejq+EEdA5+c/Fx3vvKkBHCN6p6PTdosh8=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1/go.mod h1:TBN1cZXPGz9JwipoK6DLoqQb2U/UY38Z34NJlqRLgnQ=
-github.com/saferwall/saferwall/pkg/peparser v0.0.1 h1:xDsk4u9jQ7MJeCRUIdfji8foamxen60UaCZS65ax8i0=
-github.com/saferwall/saferwall/pkg/peparser v0.0.1/go.mod h1:mIp27PyGsZduVa5mM5E0AKlSMQT+Lw0THhFf+M2PVcM=
+github.com/saferwall/saferwall/pkg/peparser v0.0.2 h1:dj4U3El2CQxwk3i25t446PdwLKVWHZ+2zzhBJQ5jFdM=
+github.com/saferwall/saferwall/pkg/peparser v0.0.2/go.mod h1:mIp27PyGsZduVa5mM5E0AKlSMQT+Lw0THhFf+M2PVcM=
 github.com/saferwall/saferwall/pkg/utils v0.0.1/go.mod h1:JuJN2uLw7LUVhn4MO6yG4X4q+8mErr0VU3ZX0QJ0n+A=
 github.com/saferwall/saferwall/pkg/utils v0.0.3 h1:yS0rJj5r2v7ehmPsMY6PbXvCEWolrRwb3AN/5l04KrM=
 github.com/saferwall/saferwall/pkg/utils v0.0.3/go.mod h1:ITc1BmRUmcus7WPPHbScdsQHXF8zHPCugqYK/N9NT04=
@@ -266,6 +266,7 @@ golang.org/x/sys v0.0.0-20190422165155-953cdadca894/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191009170203-06d7bd2c5f4f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae h1:/WDfKMnPU+m5M4xB+6x4kaepxRw6jWvR5iDRdvjHgy8=
 golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f h1:gWF768j/LaZugp8dyS4UwsslYCYz9XgFxvlgsn0n9H8=
 golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
