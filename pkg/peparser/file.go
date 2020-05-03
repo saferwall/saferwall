@@ -15,29 +15,29 @@ import (
 
 // A File represents an open PE file.
 type File struct {
-	DosHeader    ImageDosHeader `json:"dos_header,omitempty"`
-	RichHeader   RichHeader `json:"rich_header,omitempty"`
-	NtHeader     ImageNtHeader `json:"nt_header,omitempty"`
-	Sections     []ImageSectionHeader `json:"sections,omitempty"`
-	Imports      []Import `json:"imports,omitempty"`
-	Export      Export `json:"exports,omitempty"`
-	Debugs       []DebugEntry `json:"debug,omitempty"`
-	Relocations  []Relocation `json:"reloc,omitempty"`
-	Resources    ResourceDirectory `json:"resource,omitempty"`
-	TLS          TLSDirectory `json:"tls,omitempty"`
-	LoadConfig   interface{} `json:"loadcfg,omitempty"`
-	Exceptions   []Exception `json:"exceptions,omitempty"`
-	Certificates Certificate `json:"cert,omitempty"`
-	DelayImports []DelayImport `json:"delay,omitempty"`
-	BoundImports []BoundImportDescriptorData `json:"bound,omitempty"`
-	GlobalPtr    uint32 `json:"globalptr,omitempty"`
-	CLRHeader  *ImageCOR20Header `json:"clr_header,omitempty"`
+	DosHeader    ImageDosHeader `json:",omitempty"`
+	RichHeader   RichHeader `json:",omitempty"`
+	NtHeader     ImageNtHeader `json:",omitempty"`
+	Sections     []ImageSectionHeader `json:",omitempty"`
+	Imports      []Import `json:",omitempty"`
+	Export      Export `json:",omitempty"`
+	Debugs       []DebugEntry `json:",omitempty"`
+	Relocations  []Relocation `json:",omitempty"`
+	Resources    ResourceDirectory `json:",omitempty"`
+	TLS          TLSDirectory `json:",omitempty"`
+	LoadConfig   interface{} `json:",omitempty"`
+	Exceptions   []Exception `json:",omitempty"`
+	Certificates Certificate `json:",omitempty"`
+	DelayImports []DelayImport `json:",omitempty"`
+	BoundImports []BoundImportDescriptorData `json:",omitempty"`
+	GlobalPtr    uint32 `json:",omitempty"`
+	CLRHeader  *ImageCOR20Header `json:",omitempty"`
 	Header    []byte
 	data      mmap.MMap
 	closer    io.Closer
 	Is64      bool
 	Is32      bool
-	Anomalies []string `json:"anomalies,omitempty"`
+	Anomalies []string `json:",omitempty"`
 	size      uint32
 	f         *os.File
 }
@@ -108,7 +108,7 @@ func (pe *File) Parse() error {
 	}
 
 	// Parse the Data Directory entries.
-	err = pe.ParseDataDirectories()
+	// err = pe.ParseDataDirectories()
 	return err
 }
 

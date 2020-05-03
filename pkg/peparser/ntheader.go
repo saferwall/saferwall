@@ -313,16 +313,16 @@ func (pe *File) ParseNTHeader() (err error) {
 	signature := binary.LittleEndian.Uint32(pe.data[ntHeaderOffset:])
 
 	// Probe for PE signature.
-	if signature & 0xFFFF == ImageOS2Signature {
+	if signature&0xFFFF == ImageOS2Signature {
 		return ErrImageOS2SignatureFound
 	}
-	if signature & 0xFFFF == ImageOS2LESignature {
+	if signature&0xFFFF == ImageOS2LESignature {
 		return ErrImageOS2LESignatureFound
 	}
-	if signature & 0xFFFF == ImageVXDignature {
+	if signature&0xFFFF == ImageVXDignature {
 		return ErrImageVXDSignatureFound
 	}
-	if signature & 0xFFFF== ImageTESignature {
+	if signature&0xFFFF == ImageTESignature {
 		return ErrImageTESignatureFound
 	}
 
@@ -351,11 +351,11 @@ func (pe *File) ParseNTHeader() (err error) {
 	oh64 := ImageOptionalHeader64{}
 
 	optHeaderOffset := ntHeaderOffset +
-	 uint32(binary.Size(pe.NtHeader.FileHeader) + 4)
+		uint32(binary.Size(pe.NtHeader.FileHeader)+4)
 	magic := binary.LittleEndian.Uint16(pe.data[optHeaderOffset:])
 
 	// Probes for PE32/PE32+ optional header magic.
-	if magic != ImageNtOptionalHeader32Magic && 
+	if magic != ImageNtOptionalHeader32Magic &&
 		magic != ImageNtOptionalHeader64Magic {
 		return ErrImageNtOptionalHeaderMagicNotFound
 	}
@@ -382,7 +382,6 @@ func (pe *File) ParseNTHeader() (err error) {
 		pe.NtHeader.OptionalHeader = oh32
 	}
 
-
 	// ImageBase should be multiple of 10000h.
 	if pe.Is64 && oh64.ImageBase%0x10000 != 0 {
 		return ErrImageBaseNotAligned
@@ -395,14 +394,148 @@ func (pe *File) ParseNTHeader() (err error) {
 	// ImageBase + SizeOfImage < 80000000h for PE32.
 	if (pe.Is32 && oh32.ImageBase+oh32.SizeOfImage >= 0x80000000) || (pe.Is64 &&
 		oh64.ImageBase+uint64(oh64.SizeOfImage) >= 0xffff080000000000) {
-		pe.Anomalies = append(pe.Anomalies,  AnoImageBaseOverflow)
+		pe.Anomalies = append(pe.Anomalies, AnoImageBaseOverflow)
 	}
 
 	// SizeOfImage must be a multiple of the section alignment.
-	if (pe.Is32 && oh32.SizeOfImage%oh32.SectionAlignment != 0) || 
-		(pe.Is64 && oh64.SizeOfImage%oh64.SectionAlignment != 0){
+	if (pe.Is32 && oh32.SizeOfImage%oh32.SectionAlignment != 0) ||
+		(pe.Is64 && oh64.SizeOfImage%oh64.SectionAlignment != 0) {
 		return ErrInvalidSizeOfImage
 	}
 
 	return nil
+}
+
+// PrettyMachineType returns the string representations
+// of the `Machine` field of  the IMAGE_FILE_HEADER.
+func (pe *File) PrettyMachineType() string {
+	machineType := map[uint16]string{
+		ImageFileMachineUnknown:   "Unknown",
+		ImageFileMachineAM33:      "Matsushita AM33",
+		ImageFileMachineAMD64:     "x64",
+		ImageFileMachineARM:       "ARM little endian",
+		ImageFileMachineARM64:     "ARM64 little endian",
+		ImageFileMachineARMNT:     "ARM Thumb-2 little endian",
+		ImageFileMachineEBC:       "EFI byte code",
+		ImageFileMachineI386:      "Intel 386 or later / compatible processors",
+		ImageFileMachineIA64:      "Intel Itanium processor family",
+		ImageFileMachineM32R:      "Mitsubishi M32R little endian",
+		ImageFileMachineMIPS16:    "MIPS16",
+		ImageFileMachineMIPSFPU:   "MIPS with FPU",
+		ImageFileMachineMIPSFPU16: "MIPS16 with FPU",
+		ImageFileMachinePowerPC:   "Power PC little endian",
+		ImageFileMachinePowerPCFP: "Power PC with floating point support",
+		ImageFileMachineR4000:     "MIPS little endian",
+		ImageFileMachineRISCV32:   "RISC-V 32-bit address space",
+		ImageFileMachineRISCV64:   "RISC-V 64-bit address space",
+		ImageFileMachineRISCV128:  "RISC-V 128-bit address space",
+		ImageFileMachineSH3:       "Hitachi SH3",
+		ImageFileMachineSH3DSP:    "Hitachi SH3 DSP",
+		ImageFileMachineSH4:       "Hitachi SH4",
+		ImageFileMachineSH5:       "Hitachi SH5",
+		ImageFileMachineTHUMB:     "Thumb",
+		ImageFileMachineWCEMIPSv2: "MIPS little-endian WCE v2",
+	}
+
+	return machineType[pe.NtHeader.FileHeader.Machine]
+}
+
+// PrettyImageFileCharacteristics returns the string representations
+// of the `Characteristics` field of  the IMAGE_FILE_HEADER.
+func (pe *File) PrettyImageFileCharacteristics() []string {
+	var values []string
+	fileHeaderCharacteristics := map[uint16]string{
+		ImageFileRelocsStripped:       "RelocsStripped",
+		ImageFileExecutableImage:      "ExecutableImage",
+		ImageFileLineNumsStripped:     "LineNumsStripped",
+		ImageFileLocalSymsStripped:    "LocalSymsStripped",
+		ImageFileAgressibeWsTrim:      "AgressibeWsTrim",
+		ImageFileLargeAddressAware:    "LargeAddressAware",
+		ImageFileBytesReservedLow:     "BytesReservedLow",
+		ImageFile32BitMachine:         "32BitMachine",
+		ImageFileDebugStripped:        "DebugStripped",
+		ImageFileRemovableRunFromSwap: "RemovableRunFromSwap",
+		ImageFileSystem:               "FileSystem",
+		ImageFileDLL:                  "DLL",
+		ImageFileUpSystemOnly:         "UpSystemOnly",
+		ImageFileBytesReservedHigh:    "BytesReservedHigh",
+	}
+
+	for k, s := range fileHeaderCharacteristics {
+		if k&pe.NtHeader.FileHeader.Characteristics != 0 {
+			values = append(values, s)
+		}
+	}
+	return values
+}
+
+// PrettyDllCharacteristics returns the string representations
+// of the `DllCharacteristics` field of ImageOptionalHeader.
+func (pe *File) PrettyDllCharacteristics() []string {
+	var values []string
+	var characteristics uint16
+
+	if pe.Is64 {
+		characteristics =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).DllCharacteristics
+	} else {
+		characteristics =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).DllCharacteristics
+	}
+
+	imgDllCharacteristics := map[uint16]string{
+		ImageDllCharacteristicsHighEntropyVA:        "HighEntropyVA",
+		ImageDllCharacteristicsDynamicBase:          "DynamicBase",
+		ImageDllCharacteristicsForceIntegrity:       "ForceIntegrity",
+		ImageDllCharacteristicsNXCompact:            "NXCompact",
+		ImageDllCharacteristicsNoIsolation:          "NoIsolation",
+		ImageDllCharacteristicsNoSEH:                "NoSEH",
+		ImageDllCharacteristicsNoBind:               "NoBind",
+		ImageDllCharacteristicsAppContainer:         "AppContainer",
+		ImageDllCharacteristicsWdmDriver:            "WdmDriver",
+		ImageDllCharacteristicsGuardCF:              "GuardCF",
+		ImageDllCharacteristicsTerminalServiceAware: "TerminalServiceAware",
+	}
+
+	for k, s := range imgDllCharacteristics {
+		if k&characteristics != 0 {
+			values = append(values, s)
+		}
+	}
+
+	return values
+}
+
+// PrettySubsystem returns the string representations
+// of the `Subsystem` field of ImageOptionalHeader.
+func (pe *File) PrettySubsystem() string {
+
+	var subsystem uint16
+
+	if pe.Is64 {
+		subsystem =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).Subsystem
+	} else {
+		subsystem =
+			pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).Subsystem
+	}
+
+	subsystemMap := map[uint16]string{
+		ImageSubsystemUnknown:                "Unknown",
+		ImageSubsystemNative:                 "Native",
+		ImageSubsystemWindowsGUI:             "Windows GUI",
+		ImageSubsystemWindowsCUI:             "Windows CUI",
+		ImageSubsystemOS2CUI:                 "OS/2 character",
+		ImageSubsystemPosixCUI:               "POSIX character",
+		ImageSubsystemNativeWindows:          "Native Win9x driver",
+		ImageSubsystemWindowsCEGUI:           "Windows CE GUI",
+		ImageSubsystemEFIApplication:         "EFI Application",
+		ImageSubsystemEFIBootServiceDriver:   "EFI Boot Service Driver",
+		ImageSubsystemEFIRuntimeDriver:       "EFI ROM image",
+		ImageSubsystemEFIRom:                 "EFI ROM image",
+		ImageSubsystemXBOX:                   "XBOX",
+		ImageSubsystemWindowsBootApplication: "Windows boot application",
+	}
+
+	return subsystemMap[subsystem]
 }
