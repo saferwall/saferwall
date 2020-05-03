@@ -1,6 +1,6 @@
 <template>
-  <div class="container" v-if="sectionName === 'dos_header'">
-    <table class="table is-striped ">
+  <div class="container" v-if="sectionName === 'DosHeader'">
+    <table class="table is-narrow ">
       <thead>
         <tr>
           <th>Member</th>
@@ -53,7 +53,6 @@ export default {
     getComment: function(name, value) {
       switch (name) {
         case "Magic":
-        case "AddressOfNewEXEHeader":
           return reverse(hex2a(dec2Hex(value)))
         default:
           return ""

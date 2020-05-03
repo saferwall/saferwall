@@ -691,6 +691,61 @@ function fileCharacteristics2String(characteristics) {
   return values;
 }
 
+function dllCharacteristics2String(characteristics) {
+  var dllCharacteristics = {
+    0x0001: "Reserved 0x1",
+    0x0002: "Reserved 0x2",
+    0x0004: "Reserved 0x4",
+    0x0008: "Reserved 0x8",
+    0x0020: "High Entropy VA",
+    0x0040: "Dynamic Base",
+    0x0080: "Code Integrity checks are enforced",
+    0x0100: "NX compatible",
+    0x0200: "No isolation",
+    0x0400: "No SEH",
+    0x0800: "Do not bind the image",
+    0x1000: "Must execute in an AppContainer",
+    0x2000: "WDM driveR",
+    0x4000: "Supports Control Flow Guard",
+    0x8000: "Terminal Server aware",
+  };
+
+  var values = [];
+
+  for (var k in dllCharacteristics) {
+    if (k & characteristics) {
+      values.push(dllCharacteristics[k]);
+    }
+  }
+
+  return values;
+}
+
+function subsystem2String(subsystem) {
+  var subsystemMap = {
+    0: "Unknown",
+    1: "Native",
+    2: "Windows GUI",
+    3: "Windows CUI",
+    5: "OS/2 character",
+    7: "POSIX character",
+    8: "Native Win9x driver",
+    9: "Windows CE GUI",
+    10: "EFI Application",
+    11: "EFI Boot Service Driver",
+    12: "EFI ROM image",
+    13: "EFI ROM image",
+    14: "XBOX",
+    15: "Windows boot application",
+  };
+
+  if ( subsystem in subsystemMap) {
+    return subsystemMap[subsystem];
+  } 
+  
+  return "?"
+}
+
 export {
   hex2a,
   reverse,
@@ -700,5 +755,7 @@ export {
   prodIdToVsVersion,
   machine2String,
   unixtime2Human,
-  fileCharacteristics2String
+  fileCharacteristics2String,
+  dllCharacteristics2String,
+  subsystem2String
 }
