@@ -739,15 +739,70 @@ function subsystem2String(subsystem) {
     15: "Windows boot application",
   };
 
-  if ( subsystem in subsystemMap) {
+  if (subsystem in subsystemMap) {
     return subsystemMap[subsystem];
-  } 
-  
+  }
+
   return "?"
 }
 
+function sectionFlag2String(flag) {
+  var sectionFlagMap = {
+    0x00000000: "Reserved 1",
+    0x00000001: "Reserved 2",
+    0x00000002: "Reserved 3",
+    0x00000004: "Reserved 4",
+    0x00000008: "No Padding",
+    0x00000010: "Reserved 5",
+    0x00000020: "Contains Code",
+    0x00000040: "Initialized Data",
+    0x00000080: "Uninitialized Data",
+    0x00000100: "Linker Other",
+    0x00000200: "Linker Info",
+    0x00000400: "Reserved 6",
+    0x00000800: "Linker Remove",
+    0x00001000: "Linked COMPDAT",
+    0x00008000: "GP Referenced",
+    0x00020000: "Purgeable",
+    0x00040000: "Locked",
+    0x00080000: "Preload",
+    0x00100000: "Align 1 Bytes",
+    0x00200000: "Align 2 Bytes",
+    0x00300000: "Align 4 Bytes",
+    0x00400000: "Align 8 Bytes",
+    0x00500000: "Align 16 Bytes",
+    0x00600000: "Align 32 Bytes",
+    0x00700000: "Align 64 Bytes",
+    0x00800000: "Align 128 Bytes",
+    0x00900000: "Align 265 Bytes",
+    0x00a00000: "Align 512 Bytes",
+    0x00b00000: "Align 1024 Bytes",
+    0x00c00000: "Align 2048 Bytes",
+    0x00d00000: "Align 4096 Bytes",
+    0x00e00000: "Align 8192 Bytes",
+    0x01000000: "Extended Reloc",
+    0x02000000: "Discardable",
+    0x04000000: "Not Cached",
+    0x08000000: "Not Paged",
+    0x10000000: "Shared",
+    0x20000000: "Executable",
+    0x40000000: "Readable",
+    0x80000000: "Writable",
+  };
+
+  var values = [];
+
+  for (var k in sectionFlagMap) {
+    if (k & flag) {
+      values.push(sectionFlagMap[k]);
+    }
+  }
+
+  return values;
+}
+
 function magic2String(magic) {
-  switch(magic) {
+  switch (magic) {
     case 0x10b: return "PE32";
     case 0x20b: return "PE32+";
     case 0x107: return "ROM";
@@ -767,5 +822,6 @@ export {
   fileCharacteristics2String,
   dllCharacteristics2String,
   subsystem2String,
-  magic2String
+  magic2String,
+  sectionFlag2String,
 }
