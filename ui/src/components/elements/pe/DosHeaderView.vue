@@ -1,6 +1,6 @@
 <template>
-  <div class="container" v-if="sectionName === 'DosHeader'">
-    <table class="table is-narrow ">
+  <div class="container">
+    <table class="table is-striped ">
       <thead>
         <tr>
           <th>Member</th>
@@ -33,7 +33,7 @@ import { dec2HexString, reverse, hex2a, dec2Hex } from "@/helpers/pe"
 import Copy from "@/components/elements/Copy"
 
 export default {
-  props: ["data", "sectionName"],
+  props: ["data"],
   components: {
     copy: Copy,
   },
