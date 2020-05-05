@@ -288,7 +288,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 	return nil
 }
 
-// NameString returns string represntation of a ImageSectionHeader.Name field.
+// NameString returns string representation of a ImageSectionHeader.Name field.
 func (section *ImageSectionHeader) NameString() string {
 	return fmt.Sprintf("%s", section.Name)
 }
@@ -383,4 +383,62 @@ func (s byPointerToRawData) Len() int      { return len(s) }
 func (s byPointerToRawData) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s byPointerToRawData) Less(i, j int) bool {
 	return s[i].PointerToRawData < s[j].PointerToRawData
+}
+
+
+// PrettySectionFlags returns the string representations of the
+// `Flags` field of section header.
+func (pe *File) PrettySectionFlags(curSectionFlag uint32) []string {
+	var values []string
+
+	sectionFlags := map[uint32]string{
+		ImageScnReserved1:            "Reserved1",
+		ImageScnReserved2:            "Reserved2",
+		ImageScnReserved3:            "Reserved3",
+		ImageScnReserved4:            "Reserved4",
+		ImageScnTypeNoPad:            "No Padd",
+		ImageScnReserved5:            "Reserved5",
+		ImageScnCntCode:              "Contains Code",
+		ImageScnCntInitializedData:   "Initialized Data",
+		ImageScnCntUninitializedData: "Uninitialized Data",
+		ImageScnLnkOther:             "Lnk Other",
+		ImageScnLnkInfo:              "Lnk Info",
+		ImageScnReserved6:            "Reserved6",
+		ImageScnLnkRemove:            "LnkRemove",
+		ImageScnLnkComdat:            "LnkComdat",
+		ImageScnGpRel:                "GpReferenced",
+		ImageScnMemPurgeable:         "Purgeable",
+		ImageScnMemLocked:            "Locked",
+		ImageScnMemPreload:           "Preload",
+		ImageScnAlign1Bytes:          "Align1Bytes",
+		ImageScnAlign2Bytes:          "Align2Bytes",
+		ImageScnAlign4Bytes:          "Align4Bytes",
+		ImageScnAlign8Bytes:          "Align8Bytes",
+		ImageScnAlign16Bytes:         "Align16Bytes",
+		ImageScnAlign32Bytes:         "Align32Bytes",
+		ImageScnAlign64Bytes:         "Align64Bytes",
+		ImageScnAlign128Bytes:        "Align128Bytes",
+		ImageScnAlign256Bytes:        "Align265Bytes",
+		ImageScnAlign512Bytes:        "Align512Bytes",
+		ImageScnAlign1024Bytes:       "Align1024Bytes",
+		ImageScnAlign2048Bytes:       "Align2048Bytes",
+		ImageScnAlign4096Bytes:       "Align4096Bytes",
+		ImageScnAlign8192Bytes:       "Align8192Bytes",
+		ImageScnLnkMRelocOvfl:        "ExtendedReloc",
+		ImageScnMemDiscardable:       "Discardable",
+		ImageScnMemNotCached:         "NotCached",
+		ImageScnMemNotPaged:          "NotPaged",
+		ImageScnMemShared:            "Shared",
+		ImageScnMemExecute:           "Executable",
+		ImageScnMemRead:              "Readable",
+		ImageScnMemWrite:             "Writable",
+	}
+
+	for k, s := range sectionFlags {
+		if k&curSectionFlag != 0 {
+			values = append(values, s)
+		}
+	}
+
+	return values
 }
