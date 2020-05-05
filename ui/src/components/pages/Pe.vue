@@ -19,10 +19,13 @@
           </div>
         </div>
         <div class="column values">
-          <dataDisplayer
+          <DosHeaderView
+            v-if="sections[selectedSection] === 'DosHeader'"
             :data="pe[sections[selectedSection]]"
-            :sectionName="sections[selectedSection]"
           />
+          <RichHeaderView 
+          v-if="sections[selectedSection] === 'RichHeader'"
+            :data="pe[sections[selectedSection]].CompIDs"/>
         </div>
       </div>
     </div>
@@ -30,16 +33,18 @@
 </template>
 
 <script>
-import dataDisplayer from "../elements/pe/dataDisplayer"
+import DosHeaderView from "../elements/pe/DosHeaderView"
+import RichHeaderView from "../elements/pe/RichHeaderView"
 import { mapGetters } from "vuex"
 
 export default {
   components: {
-    dataDisplayer,
+    DosHeaderView,
+    RichHeaderView,
   },
   data() {
     return {
-      selectedSection: 0,
+      selectedSection: 1,
     }
   },
   computed: {
@@ -91,7 +96,7 @@ export default {
         .button {
           background-color: transparent;
           font-size: medium;
-          font-weight: 500;
+          font-weight: 400;
           width: 300px;
           justify-content: right;
           width: 10em;
