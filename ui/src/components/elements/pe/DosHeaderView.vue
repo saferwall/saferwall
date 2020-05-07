@@ -33,7 +33,7 @@ import { dec2HexString, reverse, hex2a, dec2Hex } from "@/helpers/pe"
 import Copy from "@/components/elements/Copy"
 
 export default {
-  props: ["data"],
+  props: ["data", "signature"],
   components: {
     copy: Copy,
   },
@@ -53,8 +53,9 @@ export default {
     getComment: function(name, value) {
       switch (name) {
         case "Magic":
-        case "AddressOfNewEXEHeader":
           return reverse(hex2a(dec2Hex(value)))
+        case "AddressOfNewEXEHeader":
+          return reverse(hex2a(dec2Hex(this.signature)))
         default:
           return ""
       }
