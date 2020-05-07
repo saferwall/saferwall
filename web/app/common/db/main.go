@@ -34,13 +34,11 @@ func Connect() {
 	// gocb.SetLogger(gocb.DefaultStdioLogger())
 
 	/* Authenticate cluster */
-	username := viper.GetString("db.username")
-	password := viper.GetString("db.password")
+	cbUsername := viper.GetString("db.username")
+	cbPassword := viper.GetString("db.password")
 	opts := gocb.ClusterOptions{
-		Authenticator: gocb.PasswordAuthenticator{
-			username,
-			password,
-		},
+		Username: cbUsername,
+		Password: cbPassword,
 	}
 
 	/* Init our cluster */
@@ -51,8 +49,8 @@ func Connect() {
 	}
 
 	// get a bucket reference over users
-	UsersBucket = cluster.Bucket("users", &gocb.BucketOptions{})
-	FilesBucket = cluster.Bucket("files", &gocb.BucketOptions{})
+	UsersBucket = cluster.Bucket("users")
+	FilesBucket = cluster.Bucket("files")
 
 	// get a collection reference
 	UsersCollection = UsersBucket.DefaultCollection()
@@ -61,20 +59,19 @@ func Connect() {
 	Cluster = cluster
 
 	/* Create primary indexs */
-	qm, err := cluster.QueryIndexes()
-
-	err = qm.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{
+	mgr := cluster.QueryIndexes()
+	err = mgr.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{
 		IgnoreIfExists: true,
 	})
 	if err != nil {
-		log.Errorf("Failed to create an index over users bucket, reason: %s", err.Error())
+		log.Errorf("Failed to create an index over users bucket, reason: %v", err)
 	}
 
-	err = qm.CreatePrimaryIndex("files", &gocb.CreatePrimaryQueryIndexOptions{
+	err = mgr.CreatePrimaryIndex("files", &gocb.CreatePrimaryQueryIndexOptions{
 		IgnoreIfExists: true,
 	})
 	if err != nil {
-		log.Errorf("Failed to create an index over files bucket, reason: %s", err.Error())
+		log.Errorf("Failed to create an index over files bucket, reason: %v", err)
 	}
 
 	log.Infoln("Connected to couchbase")

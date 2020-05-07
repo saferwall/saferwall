@@ -16,7 +16,9 @@ const (
 	SigASPack        = "ASPack"
 	SigASProtect     = "ASProtect"
 	SigPECompact     = "PECompact"
+	SigVMProtect	 = "VMProtect"
 	SigEnigma        = "ENIGMA"
+	SigArmadillo     = "Armadillo"
 	SigGCC           = "gcc"
 	SigMSVC          = "Microsoft Visual C/C++"
 	SigMSVB          = "Microsoft Visual Basic"
@@ -42,16 +44,18 @@ func (f *result) getTags() error {
 		tags = append(tags, "innosetup")
 	} else if strings.Contains(packer, SigUPX) {
 		tags = append(tags, "upx")
-	} else if strings.Contains(packer, SigUPX) {
-		tags = append(tags, "upx")
 	} else if strings.Contains(packer, SigASPack) {
 		tags = append(tags, "aspack")
 	} else if strings.Contains(packer, SigASProtect) {
 		tags = append(tags, "asprotect")
 	} else if strings.Contains(packer, SigPECompact) {
 		tags = append(tags, "pecompact")
-	} else if strings.Contains(packer, SigPECompact) {
+	} else if strings.Contains(packer, SigVMProtect) {
+		tags = append(tags, "vmprotect")
+	} else if strings.Contains(packer, SigEnigma) {
 		tags = append(tags, "enigma")
+	} else if strings.Contains(packer, SigArmadillo) {
+		tags = append(tags, "armadillo")
 	} else if strings.Contains(packer, SigSmartAssembly) {
 		tags = append(tags, "smart-assembly")
 	} else if strings.Contains(packer, SigMSVC) {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/kjk/betterguid"
 	"io/ioutil"
@@ -22,6 +23,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v6"
 	"github.com/saferwall/saferwall/pkg/crypto"
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
 	u "github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/web/app"
 	"github.com/saferwall/saferwall/web/app/common/db"
@@ -29,7 +31,6 @@ import (
 	"github.com/saferwall/saferwall/web/app/handler/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
-	peparser "github.com/saferwall/saferwall/pkg/peparser"
 )
 
 type stringStruct struct {
@@ -72,8 +73,7 @@ type File struct {
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
 	Comments        []Comment              `json:"comments,omitempty"`
-	PE      		peparser.File          `json:"pe,omitempty"`
-
+	PE              *peparser.File          `json:"pe,omitempty"`
 }
 
 // Response JSON
@@ -157,7 +157,11 @@ func GetAllFiles(fields []string) ([]File, error) {
 	var retValues []File
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next(&row) {
+	for rows.Next() {
+		err := rows.Row(&row)
+		if err != nil {
+			log.Println(err)
+		}
 		retValues = append(retValues, row)
 		row = File{}
 	}
@@ -263,12 +267,19 @@ func GetFile(c echo.Context) error {
 		return c.JSON(http.StatusOK, file)
 	} else {
 		file, err := GetFileBySHA256(sha256)
-		if err != nil && gocb.IsKeyNotFoundError(err) {
-			return c.JSON(http.StatusNotFound, Response{
-				Message:     err.Error(),
-				Description: "File was not found in our database",
-				Sha256:      sha256,
-			})
+		if err != nil {
+			if errors.Is(err, gocb.ErrDocumentNotFound) {
+				return c.JSON(http.StatusNotFound, Response{
+					Message:     err.Error(),
+					Description: "File was not found in our database",
+					Sha256:      sha256,
+				})
+			} else {
+				return c.JSON(http.StatusInternalServerError, Response{
+					Message: err.Error(),
+					Sha256:  sha256,
+				})
+			}
 		}
 		return c.JSON(http.StatusOK, file)
 	}
@@ -347,11 +358,8 @@ func DeleteFile(c echo.Context) error {
 // deleteAllFiles will empty files bucket
 func deleteAllFiles() {
 	// Keep in mind that you must have flushing enabled in the buckets configuration.
-	mgr, err := db.Cluster.Buckets()
-	if err != nil {
-		log.Errorf("Failed to create bucket manager %v", err)
-	}
-	err = mgr.FlushBucket("files", nil)
+	mgr := db.Cluster.Buckets()
+	err := mgr.FlushBucket("files", nil)
 	if err != nil {
 		log.Errorf("Failed to flush bucket manager %v", err)
 	}
@@ -442,7 +450,7 @@ func PostFiles(c echo.Context) error {
 
 	// Have we seen this file before
 	fileDocument, err := GetFileBySHA256(sha256)
-	if err != nil && !gocb.IsKeyNotFoundError(err) {
+	if err != nil && !errors.Is(err, gocb.ErrDocumentNotFound) {
 		return c.JSON(http.StatusInternalServerError, Response{
 			Message:     "Something unexpected happened",
 			Description: err.Error(),
@@ -450,7 +458,7 @@ func PostFiles(c echo.Context) error {
 		})
 	}
 
-	if gocb.IsKeyNotFoundError(err) {
+	if errors.Is(err, gocb.ErrDocumentNotFound) {
 		// Upload the sample to the object storage.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -624,12 +632,20 @@ func Actions(c echo.Context) error {
 	}
 
 	_, err = GetFileBySHA256(sha256)
-	if err != nil && gocb.IsKeyNotFoundError(err) {
-		return c.JSON(http.StatusNotFound, Response{
-			Message:     err.Error(),
-			Description: "File was not found in our database",
-			Sha256:      sha256,
-		})
+	if err != nil {
+		if errors.Is(err, gocb.ErrDocumentNotFound) {
+			return c.JSON(http.StatusNotFound, Response{
+				Message:     err.Error(),
+				Description: "File was not found in our database",
+				Sha256:      sha256,
+			})
+		} else {
+			return c.JSON(http.StatusInternalServerError, Response{
+				Message:     err.Error(),
+				Description: "Internal server error",
+				Sha256:      sha256,
+			})
+		}
 	}
 
 	switch actionType {

@@ -55,7 +55,7 @@ const (
 const (
 	ImageFileRelocsStripped       = 0x0001 // Relocation info stripped from file.
 	ImageFileExecutableImage      = 0x0002 // File is executable  (i.e. no unresolved external references).
-	ImageFileLineNumsStripped     = 0x0004 // Line nunbers stripped from file.
+	ImageFileLineNumsStripped     = 0x0004 // Line numbers stripped from file.
 	ImageFileLocalSymsStripped    = 0x0008 // Local symbols stripped from file.
 	ImageFileAgressibeWsTrim      = 0x0010 // Aggressively trim working set
 	ImageFileLargeAddressAware    = 0x0020 // App can handle >2gb addresses

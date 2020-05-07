@@ -17,13 +17,14 @@ go-build:	## Compile packages and dependencies
 go-test:	## Test packages
 	go test -v $(GOPKG)
 
+GO_VERSION = 1.14
 go-setup:	## Download and install go
-	curl -O https://dl.google.com/go/go1.13.linux-amd64.tar.gz
-	tar -xvf go1.13.linux-amd64.tar.gz
+	curl -O https://dl.google.com/go/go$(GO_VERSION).linux-amd64.tar.gz
+	tar -xvf go$(GO_VERSION).linux-amd64.tar.gz
 	sudo rm -rf /usr/local/go
 	sudo mv go /usr/local/
 	mkdir -p ~/go
-	rm go1.13.linux-amd64.tar.gz
+	rm go$(GO_VERSION).linux-amd64.tar.gz
 
 go-govendor: ## Install govendor
 	go get -u github.com/derekparker/delve/cmd/dlv

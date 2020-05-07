@@ -33,7 +33,7 @@ ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
-	sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-release-av:		## Release an AV inside a docker contrainer.
 	$(eval DOCKER_BUILD_ARGS := "")
@@ -53,14 +53,14 @@ ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
-	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.1 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-build-av-go:	## Build the AV with the gRPC server
-	sudo make docker-build IMG=go$(AV_VENDOR) VERSION=0.0.1 \
+	sudo make docker-build IMG=go$(AV_VENDOR) VERSION=0.0.2 \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
 
 multiav-release-av-go:	## Release the AV with the gRPC server
-	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.1 \
+	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.2 \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
