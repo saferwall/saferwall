@@ -66,12 +66,12 @@
 <script>
 import {
   dec2HexString,
-  machine2String,
+  magic2String,
   unixtime2Human,
   fileCharacteristics2String,
-  reverse,
-  hex2a,
-  dec2Hex,
+  subsystem2String,
+  dllCharacteristics2String,
+  machine2String
 } from "@/helpers/pe"
 // import Copy from "@/components/elements/Copy"
 
@@ -197,14 +197,14 @@ export default {
     },
     getDescription: function(key, value) {
       switch (key) {
+        case "Magic":
+          return magic2String(value)
         case "Machine":
           return machine2String(value)
         case "Timestamp":
           return unixtime2Human(value)
         case "Characteristics":
           return this._.join(fileCharacteristics2String(value), ", ")
-        case "Magic":
-          return reverse(hex2a(dec2Hex(value)))
         case "SizeOfOptionalHeader":
         case "Size Of Code":
         case "Size Of Initialized Data":
@@ -218,6 +218,10 @@ export default {
         case "Size Of Heap Reserve":
         case "Size Of Heap Commit":
           return this.getSize(value)
+        case "Subsystem":
+          return subsystem2String(value)
+        case "Dll Characteristics": 
+        return this._.join(dllCharacteristics2String(value), ', ')
         default:
           return ""
       }
