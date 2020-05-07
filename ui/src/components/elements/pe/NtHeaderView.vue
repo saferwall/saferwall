@@ -109,37 +109,11 @@ export default {
       const data = this.data.OptionalHeader
       return [
         { type: "single", Magic: data.Magic },
-        { type: "single", Subsystem: data.Subsystem },
-        { type: "single", "Dll Characteristics": data.DllCharacteristics },
-        { type: "single", CheckSum: data.CheckSum },
-        { type: "single", "Address Of Entry Point": data.AddressOfEntryPoint },
         {
           type: "multiple",
           "Major Linker Version": data.MajorLinkerVersion,
           "Minor Linker Version": data.MinorLinkerVersion,
         },
-        {
-          type: "multiple",
-          "Major Image Version": data.MajorImageVersion,
-          "Minor Image Version": data.MinorImageVersion,
-        },
-        {
-          type: "multiple",
-          "Major Operating System Version": data.MajorOperatingSystemVersion,
-          "Minor Operating System Version": data.MinorOperatingSystemVersion,
-        },
-        {
-          type: "multiple",
-          "Major Subsystem Version": data.MajorSubsystemVersion,
-          "Minor Subsystem Version": data.MinorSubsystemVersion,
-        },
-        { type: "single", "Win32 Version Value": data.Win32VersionValue },
-        {
-          type: "multiple",
-          ImageBase: data.ImageBase,
-          "Size Of Image": data.SizeOfImage,
-        },
-        { type: "single", "Size Of Headers": data.SizeOfHeaders },
         {
           type: "multiple",
           "Base Of Code": data.BaseOfCode,
@@ -150,11 +124,37 @@ export default {
           "Size Of Initialized Data": data.SizeOfInitializedData,
           "Size Of Uninitialized Data": data.SizeOfUninitializedData,
         },
+        { type: "single", "Address Of Entry Point": data.AddressOfEntryPoint },
+        {
+          type: "multiple",
+          ImageBase: data.ImageBase,
+          "Size Of Image": data.SizeOfImage,
+        },
         {
           type: "multiple",
           "Section Alignment": data.SectionAlignment,
           "File Alignment": data.FileAlignment,
         },
+        {
+          type: "multiple",
+          "Major Operating System Version": data.MajorOperatingSystemVersion,
+          "Minor Operating System Version": data.MinorOperatingSystemVersion,
+        },
+        {
+          type: "multiple",
+          "Major Image Version": data.MajorImageVersion,
+          "Minor Image Version": data.MinorImageVersion,
+        },
+        {
+          type: "multiple",
+          "Major Subsystem Version": data.MajorSubsystemVersion,
+          "Minor Subsystem Version": data.MinorSubsystemVersion,
+        },
+        { type: "single", "Win32 Version Value": data.Win32VersionValue },
+        { type: "single", "Size Of Headers": data.SizeOfHeaders },
+        { type: "single", CheckSum: data.CheckSum },
+        { type: "single", Subsystem: data.Subsystem },
+        { type: "single", "Dll Characteristics": data.DllCharacteristics },
         {
           type: "multiple",
           "Size Of Stack Reserve": data.SizeOfStackReserve,
