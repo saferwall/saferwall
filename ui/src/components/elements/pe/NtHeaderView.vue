@@ -17,7 +17,12 @@
             <div class="section_field_value">
               {{ toHex(Object.values(line)[1]) }}
             </div>
-            <div class="section_field_description">
+            <div
+              class="section_field_description"
+              :class="{
+                dllChar: Object.keys(line)[1] === 'Dll Characteristics',
+              }"
+            >
               {{ getDescription(Object.keys(line)[1], Object.values(line)[1]) }}
             </div>
           </div>
@@ -52,9 +57,11 @@
         <div class="single">
           <div class="section_field_name">{{ getDirectoryName(index) }}</div>
           <div class="section_field_value">
+            <span class="label">rva:</span>
             {{ toHex(dir["VirtualAddress"]) }}
           </div>
           <div class="section_field_description">
+            <span class="label">size:</span>
             {{ toHex(dir["Size"]) }}
           </div>
         </div>
@@ -65,13 +72,13 @@
 
 <script>
 import {
-  dec2HexString,
+  dec2Hex,
   magic2String,
   unixtime2Human,
   fileCharacteristics2String,
   subsystem2String,
   dllCharacteristics2String,
-  machine2String
+  machine2String,
 } from "@/helpers/pe"
 // import Copy from "@/components/elements/Copy"
 
@@ -108,64 +115,76 @@ export default {
     optionalHeader: function() {
       const data = this.data.OptionalHeader
       return [
-        { type: "single", Magic: data.Magic },
         {
           type: "multiple",
+          Magic: data.Magic,
           "Major Linker Version": data.MajorLinkerVersion,
+        },
+        {
+          type: "multiple",
+          Subsystem: data.Subsystem,
           "Minor Linker Version": data.MinorLinkerVersion,
         },
         {
           type: "multiple",
-          "Base Of Code": data.BaseOfCode,
-          "Size Of Code": data.SizeOfCode,
+          "Address Of Entry Point": data.AddressOfEntryPoint,
+          "Major Operating System Version": data.MajorOperatingSystemVersion,
         },
-        {
-          type: "multiple",
-          "Size Of Initialized Data": data.SizeOfInitializedData,
-          "Size Of Uninitialized Data": data.SizeOfUninitializedData,
-        },
-        { type: "single", "Address Of Entry Point": data.AddressOfEntryPoint },
         {
           type: "multiple",
           ImageBase: data.ImageBase,
-          "Size Of Image": data.SizeOfImage,
-        },
-        {
-          type: "multiple",
-          "Section Alignment": data.SectionAlignment,
-          "File Alignment": data.FileAlignment,
-        },
-        {
-          type: "multiple",
-          "Major Operating System Version": data.MajorOperatingSystemVersion,
           "Minor Operating System Version": data.MinorOperatingSystemVersion,
         },
         {
           type: "multiple",
+          CheckSum: data.CheckSum,
           "Major Image Version": data.MajorImageVersion,
+        },
+        {
+          type: "multiple",
+          "Section Alignment": data.SectionAlignment,
           "Minor Image Version": data.MinorImageVersion,
         },
         {
           type: "multiple",
+          "File Alignment": data.FileAlignment,
           "Major Subsystem Version": data.MajorSubsystemVersion,
-          "Minor Subsystem Version": data.MinorSubsystemVersion,
         },
-        { type: "single", "Win32 Version Value": data.Win32VersionValue },
-        { type: "single", "Size Of Headers": data.SizeOfHeaders },
-        { type: "single", CheckSum: data.CheckSum },
-        { type: "single", Subsystem: data.Subsystem },
-        { type: "single", "Dll Characteristics": data.DllCharacteristics },
         {
           type: "multiple",
+          "Base Of Code": data.BaseOfCode,
+          "Minor Subsystem Version": data.MinorSubsystemVersion,
+        },
+        {
+          type: "multiple",
+          "Size Of Code": data.SizeOfCode,
+          "Win32 Version Value": data.Win32VersionValue,
+        },
+        {
+          type: "multiple",
+          "Size Of Image": data.SizeOfImage,
           "Size Of Stack Reserve": data.SizeOfStackReserve,
+        },
+        {
+          type: "multiple",
+          "Size Of Headers": data.SizeOfHeaders,
+          "Size Of Heap Reserve": data.SizeOfHeapReserve,
+        },
+        {
+          type: "multiple",
+          "Size Of Initialized Data": data.SizeOfInitializedData,
           "Size Of Stack Commit": data.SizeOfStackCommit,
         },
         {
           type: "multiple",
-          "Size Of Heap Reserve": data.SizeOfHeapReserve,
+          "Size Of Uninitialized Data": data.SizeOfUninitializedData,
           "Size Of Heap Commit": data.SizeOfHeapCommit,
         },
-        { type: "single", LoaderFlags: data.LoaderFlags },
+        {
+          type: "multiple",
+          "Dll Characteristics": data.DllCharacteristics,
+          LoaderFlags: data.LoaderFlags,
+        },
         { type: "single", "Number Of Rva And Sizes": data.NumberOfRvaAndSizes },
       ]
     },
@@ -182,13 +201,9 @@ export default {
   },
   methods: {
     toHex: function(value) {
-      if (Array.isArray(value)) {
-        var tmpArray = []
-        for (var index in value) {
-          tmpArray.push(dec2HexString(value[index]))
-        }
-        return tmpArray
-      } else return dec2HexString(value)
+      var hex = String(dec2Hex(value))
+      hex = this._.padStart(hex, 9, "0")
+      return "0x" + hex
     },
     getSize: function(value) {
       if (value >= 1000000) return (value / 1000000).toFixed(2) + " MB"
@@ -220,8 +235,8 @@ export default {
           return this.getSize(value)
         case "Subsystem":
           return subsystem2String(value)
-        case "Dll Characteristics": 
-        return this._.join(dllCharacteristics2String(value), ', ')
+        case "Dll Characteristics":
+          return this._.join(dllCharacteristics2String(value), ", ")
         default:
           return ""
       }
@@ -275,6 +290,9 @@ export default {
   }
   .section_content {
     padding: 0.2rem;
+    .label {
+      font-weight: 600;
+    }
     .multiple {
       display: flex;
       .first_field,
@@ -286,12 +304,17 @@ export default {
           font-weight: 500;
         }
         .section_field_value {
+          display: flex;
           width: 10rem;
           text-align: right;
         }
         .section_field_description {
+          display: flex;
           margin-left: 1rem;
-          width: 20rem;
+          width: 30rem;
+          &.dllChar {
+            color: purple;
+          }
         }
       }
     }
@@ -303,12 +326,14 @@ export default {
         font-weight: 500;
       }
       .section_field_value {
+        display: flex;
         width: 10rem;
         text-align: right;
       }
       .section_field_description {
+        display: flex;
         margin-left: 1rem;
-        width: 20rem;
+        width: 30rem;
       }
     }
   }
