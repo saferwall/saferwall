@@ -22,10 +22,14 @@
           <DosHeaderView
             v-if="sections[selectedSection] === 'DosHeader'"
             :data="pe[sections[selectedSection]]"
+            :signature="pe['NtHeader'].Signature"
           />
           <RichHeaderView 
           v-if="sections[selectedSection] === 'RichHeader'"
             :data="pe[sections[selectedSection]].CompIDs"/>
+          <NtHeaderView 
+          v-if="sections[selectedSection] === 'NtHeader'"
+            :data="pe[sections[selectedSection]]"/>
         </div>
       </div>
     </div>
@@ -35,16 +39,18 @@
 <script>
 import DosHeaderView from "../elements/pe/DosHeaderView"
 import RichHeaderView from "../elements/pe/RichHeaderView"
+import NtHeaderView from "../elements/pe/NtHeaderView"
 import { mapGetters } from "vuex"
 
 export default {
   components: {
     DosHeaderView,
     RichHeaderView,
+    NtHeaderView
   },
   data() {
     return {
-      selectedSection: 1,
+      selectedSection: 2,
     }
   },
   computed: {
