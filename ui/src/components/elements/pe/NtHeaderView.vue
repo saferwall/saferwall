@@ -15,34 +15,100 @@
           <div class="first_field">
             <div class="section_field_name">{{ Object.keys(line)[1] }}</div>
             <div class="section_field_value">
-              {{ toHex(Object.values(line)[1]) }}
+              <span class="parent">
+                <span>
+                  {{ toHex(Object.values(line)[1]) }}
+                </span>
+                <copy :content="toHex(Object.values(line)[1])" />
+              </span>
             </div>
             <div
               class="section_field_description"
               :class="{
-                dllChar: Object.keys(line)[1] === 'Dll Characteristics',
+                purple:
+                  Object.keys(line)[1] === 'Dll Characteristics' ||
+                  Object.keys(line)[1] === 'Characteristics',
               }"
             >
-              {{ getDescription(Object.keys(line)[1], Object.values(line)[1]) }}
+              <span class="parent">
+                <span>
+                  {{
+                    getDescription(Object.keys(line)[1], Object.values(line)[1])
+                  }}
+                </span>
+                <copy
+                  v-if="
+                    getDescription(Object.keys(line)[1], Object.values(line)[1])
+                  "
+                  :content="
+                    getDescription(Object.keys(line)[1], Object.values(line)[1])
+                  "
+                />
+              </span>
             </div>
           </div>
           <div class="second_field">
             <div class="section_field_name">{{ Object.keys(line)[2] }}</div>
             <div class="section_field_value">
-              {{ toHex(Object.values(line)[2]) }}
+              <span class="parent">
+                <span>
+                  {{ toHex(Object.values(line)[2]) }}
+                </span>
+                <copy :content="toHex(Object.values(line)[2])" />
+              </span>
             </div>
             <div class="section_field_description">
-              {{ getDescription(Object.keys(line)[2], Object.values(line)[2]) }}
+              <span class="parent">
+                <span>
+                  {{
+                    getDescription(Object.keys(line)[2], Object.values(line)[2])
+                  }}
+                </span>
+                <copy
+                  v-if="
+                    getDescription(Object.keys(line)[2], Object.values(line)[2])
+                  "
+                  :content="
+                    getDescription(Object.keys(line)[2], Object.values(line)[2])
+                  "
+                />
+              </span>
             </div>
           </div>
         </div>
         <div class="single" v-else>
           <div class="section_field_name">{{ Object.keys(line)[1] }}</div>
           <div class="section_field_value">
-            {{ toHex(Object.values(line)[1]) }}
+            <span class="parent">
+              <span>
+                {{ toHex(Object.values(line)[1]) }}
+              </span>
+              <copy :content="toHex(Object.values(line)[1])" />
+            </span>
           </div>
-          <div class="section_field_description">
-            {{ getDescription(Object.keys(line)[1], Object.values(line)[1]) }}
+          <div
+            class="section_field_description"
+            :class="{
+              purple:
+                Object.keys(line)[1] === 'Dll Characteristics' ||
+                Object.keys(line)[1] === 'Characteristics',
+            }"
+          >
+            <span class="parent">
+              <span>
+                {{
+                  getDescription(Object.keys(line)[1], Object.values(line)[1])
+                }}
+              </span>
+              <copy
+                v-if="
+                  getDescription(Object.keys(line)[1], Object.values(line)[1])
+                "
+                :content="
+                  getDescription(Object.keys(line)[1], Object.values(line)[1])
+                "
+              />
+            </span>
           </div>
         </div>
       </div>
@@ -58,11 +124,21 @@
           <div class="section_field_name">{{ getDirectoryName(index) }}</div>
           <div class="section_field_value">
             <span class="label">rva:</span>
-            {{ toHex(dir["VirtualAddress"]) }}
+            <span class="parent">
+              <span>
+                {{ toHex(dir["VirtualAddress"]) }}
+              </span>
+              <copy :content="toHex(dir['VirtualAddress'])" />
+            </span>
           </div>
           <div class="section_field_description">
             <span class="label">size:</span>
-            {{ toHex(dir["Size"]) }}
+            <span class="parent">
+              <span>
+                {{ toHex(dir["Size"]) }}
+              </span>
+              <copy :content="toHex(dir['Size'])" />
+            </span>
           </div>
         </div>
       </div>
@@ -72,7 +148,7 @@
 
 <script>
 import {
-  dec2Hex,
+  dec2HexString,
   magic2String,
   unixtime2Human,
   fileCharacteristics2String,
@@ -80,12 +156,12 @@ import {
   dllCharacteristics2String,
   machine2String,
 } from "@/helpers/pe"
-// import Copy from "@/components/elements/Copy"
+import Copy from "@/components/elements/Copy"
 
 export default {
   props: ["data"],
   components: {
-    // copy: Copy,
+    copy: Copy,
   },
   computed: {
     fileHeader: function() {
@@ -201,9 +277,7 @@ export default {
   },
   methods: {
     toHex: function(value) {
-      var hex = String(dec2Hex(value))
-      hex = this._.padStart(hex, 9, "0")
-      return "0x" + hex
+      return dec2HexString(value)
     },
     getSize: function(value) {
       if (value >= 1000000) return (value / 1000000).toFixed(2) + " MB"
@@ -274,7 +348,7 @@ export default {
         case 14:
           return "COM Runtime Descriptor"
         case 15:
-          return "#15"
+          return "Reserved"
       }
     },
   },
@@ -292,6 +366,10 @@ export default {
     padding: 0.2rem;
     .label {
       font-weight: 600;
+      margin-right: 0.3rem;
+    }
+    .purple {
+      color: purple;
     }
     .multiple {
       display: flex;
@@ -307,13 +385,20 @@ export default {
           display: flex;
           width: 10rem;
           text-align: right;
+          &:hover {
+            .copy {
+              opacity: 1;
+            }
+          }
         }
         .section_field_description {
           display: flex;
           margin-left: 1rem;
           width: 30rem;
-          &.dllChar {
-            color: purple;
+          &:hover {
+            .copy {
+              opacity: 1;
+            }
           }
         }
       }
@@ -329,12 +414,28 @@ export default {
         display: flex;
         width: 10rem;
         text-align: right;
+        &:hover {
+          .copy {
+            opacity: 1;
+          }
+        }
       }
       .section_field_description {
         display: flex;
         margin-left: 1rem;
-        width: 30rem;
+        &:hover {
+          .copy {
+            opacity: 1;
+          }
+        }
       }
+    }
+  }
+  .parent {
+    position: relative;
+    .copy {
+      opacity: 0;
+      transition: opacity 0.2s;
     }
   }
 }
