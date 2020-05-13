@@ -30,6 +30,9 @@
           <NtHeaderView 
           v-if="sections[selectedSection] === 'NtHeader'"
             :data="pe[sections[selectedSection]]"/>
+          <SectionsView 
+          v-if="sections[selectedSection] === 'Sections'"
+            :data="pe[sections[selectedSection]]"/>
         </div>
       </div>
     </div>
@@ -40,17 +43,19 @@
 import DosHeaderView from "../elements/pe/DosHeaderView"
 import RichHeaderView from "../elements/pe/RichHeaderView"
 import NtHeaderView from "../elements/pe/NtHeaderView"
+import SectionsView from "../elements/pe/SectionsView"
 import { mapGetters } from "vuex"
 
 export default {
   components: {
     DosHeaderView,
     RichHeaderView,
-    NtHeaderView
+    NtHeaderView,
+    SectionsView
   },
   data() {
     return {
-      selectedSection: 2,
+      selectedSection: 0,
     }
   },
   computed: {
