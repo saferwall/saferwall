@@ -397,10 +397,11 @@ func (pe *File) ParseNTHeader() (err error) {
 		pe.Anomalies = append(pe.Anomalies, AnoImageBaseOverflow)
 	}
 
-	// SizeOfImage must be a multiple of the section alignment.
+	// The msdn states that SizeOfImage must be a multiple of the section 
+	// alignment. This is not true though. Adding it as anomaly.
 	if (pe.Is32 && oh32.SizeOfImage%oh32.SectionAlignment != 0) ||
 		(pe.Is64 && oh64.SizeOfImage%oh64.SectionAlignment != 0) {
-		return ErrInvalidSizeOfImage
+		pe.Anomalies = append(pe.Anomalies, AnoInvalidSizeOfImage)
 	}
 
 	return nil

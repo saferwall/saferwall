@@ -33,44 +33,51 @@ var (
 	ErrDOSMagicNotFound = errors.New("DOS Header magic not found")
 
 	// ErrInvalidElfanewValue is returned when e_lfanew is larger than file size.
-	ErrInvalidElfanewValue = errors.New("Invalid e_lfanew value, probably not a PE file")
+	ErrInvalidElfanewValue = errors.New(
+		"Invalid e_lfanew value, probably not a PE file")
 
 	// ErrImageOS2SignatureFound is returned when signature is for a NE file.
-	ErrImageOS2SignatureFound = errors.New("Not a valid PE signature. Probably a NE file")
+	ErrImageOS2SignatureFound = errors.New(
+		"Not a valid PE signature. Probably a NE file")
 
 	// ErrImageOS2LESignatureFound is returned when signature is for a LE file.
-	ErrImageOS2LESignatureFound = errors.New("Not a valid PE signature. Probably an LE file")
+	ErrImageOS2LESignatureFound = errors.New(
+		"Not a valid PE signature. Probably an LE file")
 
 	// ErrImageVXDSignatureFound is returned when signature is for a NX file.
-	ErrImageVXDSignatureFound = errors.New("Not a valid PE signature. Probably an LX file")
+	ErrImageVXDSignatureFound = errors.New(
+		"Not a valid PE signature. Probably an LX file")
 
 	// ErrImageTESignatureFound is returned when signature is for a TE file.
-	ErrImageTESignatureFound = errors.New("Not a valid PE signature. Probably a TE file")
+	ErrImageTESignatureFound = errors.New(
+		"Not a valid PE signature. Probably a TE file")
 
 	// ErrImageNtSignatureNotFound is returned when PE magic signature is not found.
-	ErrImageNtSignatureNotFound = errors.New("Not a valid PE signature. Magic not found")
+	ErrImageNtSignatureNotFound = errors.New(
+		"Not a valid PE signature. Magic not found")
 
 	// ErrImageNtOptionalHeaderMagicNotFound is returned when optional header
 	// magic is different from PE32/PE32+.
-	ErrImageNtOptionalHeaderMagicNotFound = errors.New(`Not a valid PE signature.
-	 Optional Header magic not found`)
+	ErrImageNtOptionalHeaderMagicNotFound = errors.New(
+		"Not a valid PE signature. Optional Header magic not found")
 
-	// ErrImageBaseNotAligned is reported when the image base is not aligned to 64 K.
-	ErrImageBaseNotAligned = errors.New("Corrupt PE file. Image base not aligned to 64 K")
+	// ErrImageBaseNotAligned is reported when the image base is not aligned to 64K.
+	ErrImageBaseNotAligned = errors.New(
+		"Corrupt PE file. Image base not aligned to 64 K")
 
 	// AnoImageBaseOverflow is reported when the image base + SizeOfImage is
 	// larger than 80000000h/FFFF080000000000h in PE32/P32+.
-	AnoImageBaseOverflow = "Image base is overflow"
+	AnoImageBaseOverflow = "Image base beyong allowed address"
 
 	// ErrInvalidSectionFileAlignment is reported when section alignment is less than a
 	// PAGE_SIZE and section alignement != file alignment.
-	ErrInvalidSectionFileAlignment = errors.New(`Corrupt PE file. Section alignment
-	 is less than a PAGE_SIZE and section alignement != file alignment`)
+	ErrInvalidSectionFileAlignment = errors.New("Corrupt PE file. Section " + 
+	"alignment is less than a PAGE_SIZE and section alignement != file alignment")
 
-	// ErrInvalidSizeOfImage is reported when SizeOfImage is nota multiple of
+	// AnoInvalidSizeOfImage is reported when SizeOfImage is not multiple of
 	// SectionAlignment.
-	ErrInvalidSizeOfImage = errors.New(`Invalid SizeOfImage value, should be
-	 multiple of SectionAlignment`)
+	AnoInvalidSizeOfImage = "Invalid SizeOfImage value, should be multiple " +
+	 "of SectionAlignment"
 )
 
 // Max returns the larger of x or y.
