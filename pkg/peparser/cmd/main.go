@@ -56,9 +56,9 @@ func parse(filename string) {
 	// 	}
 	// }
 
-	var buff []byte
-	buff, err = json.Marshal(pe.RichHeader)
-	fmt.Print(prettyPrint(buff))
+	// var buff []byte
+	// buff, err = json.Marshal(pe.RichHeader)
+	// fmt.Print(prettyPrint(buff))
 	pe.Close()
 	// if err == nil {
 	// 	if pe.IsDLL() {

@@ -7,7 +7,6 @@ package pe
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 )
 
 const (
@@ -16,6 +15,15 @@ const (
 
 	// RichSignature ('0x68636952' as dword) is where the rich header struct ends.
 	RichSignature = "Rich"
+
+	// AnoDansSigNotFound is reported when rich header signature was found, but
+	AnoDansSigNotFound = "Rich Header found, but could not locate DanS " +
+		"signature"
+
+	// AnoPaddingDwordNotZero is repoted when rich header signature leading
+	// padding DWORDs are not equal to 0.
+	AnoPaddingDwordNotZero = "Rich header found: 3 leading padding DWORDs " +
+		"not found after DanS signature"
 )
 
 // CompID represents the `@comp.id` structure.
@@ -41,9 +49,10 @@ type CompID struct {
 // The data between the magic values encodes the ‘bill of materials’ that were
 // collected by the linker to produce the binary.
 type RichHeader struct {
-	XorKey  uint32
-	CompIDs []CompID
-	Raw     []byte
+	XorKey     uint32
+	CompIDs    []CompID
+	DansOffset int
+	Raw        []byte
 }
 
 // ParseRichHeader parses the rich header struct.
@@ -59,7 +68,7 @@ func (pe *File) ParseRichHeader() error {
 		return nil
 	}
 
-	// the DWORD following the "Rich" sequence is the XOR key stored by and
+	// The DWORD following the "Rich" sequence is the XOR key stored by and
 	// calculated by the linker. It is actually a checksum of the DOS header with
 	// the e_lfanew zeroed out, and additionally includes the values of the
 	// unencrypted "Rich" array. Using a checksum with encryption will not only
@@ -75,7 +84,8 @@ func (pe *File) ParseRichHeader() error {
 	// until the sequence `DanS` is decrypted.
 	var decRichHeader []uint32
 	dansSigOffset := -1
-	for it := 0; it < 0x100; it += 4 {
+	estimatedBeginDans := richSigOffset - 4 - binary.Size(ImageDosHeader{})
+	for it := 0; it < estimatedBeginDans; it += 4 {
 		buff := binary.LittleEndian.Uint32(pe.data[richSigOffset-4-it:])
 		res := buff ^ rh.XorKey
 		if res == DansSignature {
@@ -88,7 +98,8 @@ func (pe *File) ParseRichHeader() error {
 
 	// Probe we successfuly found the `DanS` magic.
 	if dansSigOffset == -1 {
-		return errors.New("Rich Header Found, but could not locate DanS Signature")
+		pe.Anomalies = append(pe.Anomalies, AnoDansSigNotFound)
+		return nil
 	}
 
 	// Anomaly check: dansSigOffset is usually found in offset 0x80.
@@ -96,9 +107,10 @@ func (pe *File) ParseRichHeader() error {
 		pe.Anomalies = append(pe.Anomalies, AnoDanSMagicOffset)
 	}
 
+	rh.DansOffset = dansSigOffset
 	rh.Raw = pe.data[dansSigOffset : richSigOffset+8]
 
-	// reverse the decrypted rich header
+	// Reverse the decrypted rich header
 	for i, j := 0, len(decRichHeader)-1; i < j; i, j = i+1, j-1 {
 		decRichHeader[i], decRichHeader[j] = decRichHeader[j], decRichHeader[i]
 	}
@@ -108,13 +120,21 @@ func (pe *File) ParseRichHeader() error {
 	// (paragraph) boundary, so the 3 leading padding DWORDs can be safely
 	// skipped as not belonging to the data.
 	if decRichHeader[0] != 0 || decRichHeader[1] != 0 || decRichHeader[2] != 0 {
-		return errors.New("Rich header: 3 leading padding DWORDs not not found")
+		pe.Anomalies = append(pe.Anomalies, AnoPaddingDwordNotZero)
 	}
 
 	// The array stores entries that are 8-bytes each, broken into 3 members.
 	// Each entry represents either a tool that was employed as part of building
 	// the executable or a statistic.
-	lenCompIDs := len(decRichHeader)
+	// The @compid struct should be multiple of 8 (bytes), some malformed pe
+	// files have incorrect number of entries.
+	var lenCompIDs int
+	if (len(decRichHeader)-3)%2 != 0 {
+		lenCompIDs = len(decRichHeader) - 1
+	} else {
+		lenCompIDs = len(decRichHeader)
+	}
+
 	for i := 3; i < lenCompIDs; i += 2 {
 		cid := CompID{}
 		compid := make([]byte, binary.Size(cid))
@@ -126,12 +146,45 @@ func (pe *File) ParseRichHeader() error {
 			return err
 		}
 		cid.Unmasked = binary.LittleEndian.Uint32(compid)
-
 		rh.CompIDs = append(rh.CompIDs, cid)
 	}
 
 	pe.RichHeader = rh
+
+	checksum := pe.RichHeaderChecksum()
+	if checksum != rh.XorKey {
+		pe.Anomalies = append(pe.Anomalies, "Invalid rich header checksum")
+	}
 	return nil
+}
+
+// RichHeaderChecksum calculate the Rich Header checksum.
+func (pe *File) RichHeaderChecksum() uint32 {
+
+	checksum := uint32(pe.RichHeader.DansOffset)
+
+	// First, calculate the sum of the DOS header bytes each rotated left the
+	// number of times their position relative to the start of the DOS header e.g.
+	// second byte is rotated left 2x using rol operation.
+	for i := 0; i < pe.RichHeader.DansOffset; i++ {
+		// skip over dos e_lfanew field at offset 0x3C
+		if i >= 0x3C && i < 0x40 {
+			continue
+		}
+		b := uint32(pe.data[i])
+		checksum += ((b << (i % 32)) | (b >> (32 - (i % 32))) & 0xff)
+		checksum &= 0xFFFFFFFF
+	}
+
+	// Next, take summation of each Rich header entry by combining its ProductId
+	// and BuildNumber into a single 32 bit number and rotating by its count.
+	for _, compid := range pe.RichHeader.CompIDs {
+		checksum += (compid.Unmasked << (compid.Count % 32) | 
+			compid.Unmasked >> ( 32 - (compid.Count % 32)))
+		checksum &= 0xFFFFFFFF
+	}
+
+	return checksum
 }
 
 // ProdIDtoStr mapps product ids to MS internal names.

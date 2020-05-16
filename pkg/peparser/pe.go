@@ -76,10 +76,10 @@ const (
 	ImageSubsystemNative                 = 1  // Device drivers and native Windows processes
 	ImageSubsystemWindowsGUI             = 2  // The Windows graphical user interface (GUI) subsystem.
 	ImageSubsystemWindowsCUI             = 3  // The Windows character subsystem
-	ImageSubsystemOS2CUI              = 5  // The OS/2 character subsystem.
+	ImageSubsystemOS2CUI                 = 5  // The OS/2 character subsystem.
 	ImageSubsystemPosixCUI               = 7  // The Posix character subsystem.
 	ImageSubsystemNativeWindows          = 8  // Native Win9x driver
-	ImageSubsystemWindowsCEGUI             = 9  // Windows CE
+	ImageSubsystemWindowsCEGUI           = 9  // Windows CE
 	ImageSubsystemEFIApplication         = 10 // An Extensible Firmware Interface (EFI) application
 	ImageSubsystemEFIBootServiceDriver   = 11 // An EFI driver with boot services
 	ImageSubsystemEFIRuntimeDriver       = 12 // An EFI driver with run-time services
