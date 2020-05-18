@@ -99,5 +99,11 @@ func (pe *File) ParseDOSHeader() (err error) {
 		return ErrInvalidElfanewValue
 	}
 
+	// tiny pe has a e_lfanew of 4, which means the NT Headers is overlapping
+	// the DOS Header.
+	if pe.DosHeader.AddressOfNewEXEHeader <= 0x3c {
+		pe.Anomalies = append(pe.Anomalies, AnoPEHeaderOverlapDOSHeader)
+	}
+
 	return nil
 }

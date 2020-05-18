@@ -12,6 +12,10 @@ import (
 // Anomalies found in a PE
 var (
 
+	// AnoPEHeaderOverlapDOSHeader is reported when the PE headers overlaps with
+	// the DOS header.
+	AnoPEHeaderOverlapDOSHeader = "PE Header overlaps with DOS header"
+
 	// AnoPETimeStampNull is reported when the file header timestamp is 0.
 	AnoPETimeStampNull = "File Header timestamp set to 0"
 
