@@ -234,20 +234,76 @@ type ImageSectionHeader struct {
 func (pe *File) ParseSectionHeader() (err error) {
 
 	// get the first section offset.
-	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 + uint32(binary.Size(pe.NtHeader.FileHeader))
-	offset := optionalHeaderOffset + uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
+	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 + 
+		uint32(binary.Size(pe.NtHeader.FileHeader))
+	offset := optionalHeaderOffset + 
+		uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
 
-	sectionHeader := ImageSectionHeader{}
-	sectionCount := pe.NtHeader.FileHeader.NumberOfSections
-	sectionSize := uint32(binary.Size(sectionHeader))
-	for i := uint16(0); i < sectionCount; i++ {
+	// Track invalid/suspicous values while parsing sections.
+	maxErr := 3
+	
+	section := ImageSectionHeader{}
+	numberOfSections := pe.NtHeader.FileHeader.NumberOfSections
+	sectionSize := uint32(binary.Size(section))
+
+	for i := uint16(0); i < numberOfSections; i++ {
 		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
-		err = binary.Read(buf, binary.LittleEndian, &sectionHeader)
+		err = binary.Read(buf, binary.LittleEndian, &section)
 		if err != nil {
 			return err
 		}
 
-		pe.Sections = append(pe.Sections, sectionHeader)
+		countErr := 0
+		if (ImageSectionHeader{}) == section  {
+			pe.Anomalies = append(pe.Anomalies, "Section `" +
+			section.NameString() + "` Contents are null-bytes")
+			countErr++
+		}
+
+		if section.SizeOfRawData+section.PointerToRawData > pe.size {
+			pe.Anomalies = append(pe.Anomalies, "Section `" +
+			 section.NameString() + "` SizeOfRawData is larger than file")
+			 countErr++
+		}
+
+		if pe.adjustFileAlignment(section.PointerToRawData) > pe.size {
+			pe.Anomalies = append(pe.Anomalies, "Section `" + 
+			 section.NameString() + "` PointerToRawData points beyond the " +
+			 "end of the file")
+			 countErr++
+		}
+
+		if section.VirtualSize > 0x10000000 {
+			pe.Anomalies = append(pe.Anomalies, "Section `" + 
+			section.NameString() + "` VirtualSize is extremely large > 256MiB") 
+			countErr++
+		}
+
+		if pe.adjustSectionAlignment(section.VirtualAddress) > 0x10000000 {
+			pe.Anomalies = append(pe.Anomalies, "Section `" + 
+			section.NameString() + "` VirtualAddress is beyond 0x10000000") 
+			countErr++
+		}
+
+		var fileAlignment uint32
+		switch pe.Is64 {
+		case true:
+			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).FileAlignment
+		case false:
+			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
+		}
+		if fileAlignment != 0 && section.PointerToRawData % fileAlignment != 0 {
+			pe.Anomalies = append(
+				pe.Anomalies, "Section `" + section.NameString() + 
+			"` PointerToRawData is not multiple of FileAlignment")
+			countErr++
+		}
+
+		if countErr >= maxErr {
+			break
+		}
+
+		pe.Sections = append(pe.Sections, section)
 		offset += sectionSize
 	}
 
@@ -255,20 +311,19 @@ func (pe *File) ParseSectionHeader() (err error) {
 	// for potentially overlapping sections in badly constructed PEs.
 	sort.Sort(byVirtualAddress(pe.Sections))
 
-	// There could be a problem if there are no raw data sections
-	// greater than 0.
-	// fc91013eb72529da005110a3403541b6 example
-	// Should this throw an exception in the minimum header offset
-	// can't be found?
 	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
 		offset += sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
 	}
 
+	// There could be a problem if there are no raw data sections
+	// greater than 0. Example: fc91013eb72529da005110a3403541b6 
+	// Should this throw an exception in the minimum header offset
+	// can't be found?
 	var rawDataPointers []uint32
-	for _, s := range pe.Sections {
-		if s.PointerToRawData > 0 {
-			rawDataPointers = append(rawDataPointers,
-				pe.adjustFileAlignment(s.PointerToRawData))
+	for _, sec := range pe.Sections {
+		if sec.PointerToRawData > 0 {
+			rawDataPointers = append(
+				rawDataPointers, pe.adjustFileAlignment(sec.PointerToRawData))
 		}
 	}
 
@@ -282,7 +337,9 @@ func (pe *File) ParseSectionHeader() (err error) {
 	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
 		pe.Header = pe.data[:offset]
 	} else {
-		pe.Header = pe.data[:lowestSectionOffset]
+		if lowestSectionOffset <= pe.size {
+			pe.Header = pe.data[:lowestSectionOffset]
+		}
 	}
 
 	return nil
