@@ -48,6 +48,9 @@ func parse(filename string) {
 		err != peparser.ErrImageNtSignatureNotFound &&
 		err != peparser.ErrImageNtOptionalHeaderMagicNotFound &&
 		err != peparser.ErrImageBaseNotAligned &&
+		err != peparser.ErrImageOS2LESignatureFound &&
+		err != peparser.ErrImageVXDSignatureFound && 
+		err != peparser.ErrInvalidPESize &&
 		err != peparser.ErrInvalidElfanewValue {
 		fmt.Println(filename, err, pe.Anomalies)
 	}

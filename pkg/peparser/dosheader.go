@@ -95,7 +95,7 @@ func (pe *File) ParseDOSHeader() (err error) {
 	// NT Headers. It can't be null (signatures would overlap).
 	// Can be 4 at minimum.
 	if pe.DosHeader.AddressOfNewEXEHeader < 4 ||
-		pe.DosHeader.AddressOfNewEXEHeader > uint32(len(pe.data)) {
+		pe.DosHeader.AddressOfNewEXEHeader > pe.size {
 		return ErrInvalidElfanewValue
 	}
 
