@@ -96,7 +96,7 @@ export default {
 }
 .sections_header {
   display: inline-flex;
-  padding: 0.5rem;
+  padding: 0.2rem;
   .sections_header_field {
     text-align: left;
     width: 15rem;
@@ -104,7 +104,7 @@ export default {
   }
 }
 .section {
-  padding: 0.5rem;
+  padding: 0.2rem;
   .section_content {
     display: inline-flex;
     .section_field {

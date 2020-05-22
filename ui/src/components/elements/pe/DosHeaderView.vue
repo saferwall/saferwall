@@ -95,7 +95,7 @@ export default {
 }
 .sections_header {
   display: inline-flex;
-  padding: 0.5rem;
+  padding: 0.2rem;
   .sections_header_field {
     text-align: left;
     margin-right: 1rem;
@@ -104,12 +104,12 @@ export default {
       width: 25rem;
     }
     &.value {
-      width: 60rem;
+      width: 35rem;
     }
   }
 }
 .section {
-  padding: 0.5rem;
+  padding: 0.2rem;
   .section_content {
     display: inline-flex;
     .section_field {
@@ -120,7 +120,7 @@ export default {
         font-weight: 600;
       }
       &.value {
-        width: 60rem;
+        width: 35rem;
       }
       &:hover {
         .copy {
