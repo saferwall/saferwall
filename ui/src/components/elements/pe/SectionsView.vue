@@ -3,32 +3,16 @@
     <div class="sections_header">
       <div
         class="sections_header_field"
-        :class="{
-          Name: label === 'Name',
-          VirtualSize: label === 'VirtualSize',
-          VirtualAddress: label === 'VirtualAddress',
-          SizeOfRawData: label === 'SizeOfRawData',
-          NumberOfLineNumbers: label === 'NumberOfLineNumbers',
-          PointerToRawData: label === 'PointerToRawData',
-        }"
         v-for="(label, index) in labels"
         :key="index"
       >
-        {{ label }}
+        {{ _.startCase(label) }}
       </div>
     </div>
     <div class="section" v-for="(section, sec_index) in data" :key="sec_index">
       <div class="section_content">
         <div
           class="section_field"
-          :class="{
-            Name: key === 'Name',
-            VirtualSize: key === 'VirtualSize',
-            VirtualAddress: key === 'VirtualAddress',
-            SizeOfRawData: key === 'SizeOfRawData',
-            NumberOfLineNumbers: key === 'NumberOfLineNumbers',
-            PointerToRawData: key === 'PointerToRawData',
-          }"
           v-for="([key, value], third_index) in Object.entries(section)"
           :key="third_index"
         >
@@ -104,22 +88,6 @@ export default {
       }
     }
   }
-}
-.Name,
-.VirtualSize {
-  width: 6rem !important;
-}
-.VirtualAddress {
-  width: 7rem !important;
-}
-.SizeOfRawData {
-  width: 8rem !important;
-}
-.NumberOfLineNumbers {
-  margin-right: 1.5rem !important;
-}
-.PointerToRawData {
-  width: 9rem !important;
 }
 .parent {
   position: relative;
