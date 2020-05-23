@@ -1,30 +1,53 @@
 <template>
   <div class="container">
-    <table class="table is-striped ">
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Value</th>
-          <th>Comment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in Object.entries(data)" :key="index">
-          <th class="member">{{ _.startCase(item[0]) }}</th>
-          <td class="value">
-            <span class="parent">
-              <span>
-                {{ toHex(item[1]) }}
-              </span>
-              <copy :content="toHex(item[1])" />
+    <div class="sections_header">
+      <div
+        class="sections_header_field member"
+      >
+        {{ _.startCase(labels[0]) }}
+      </div>
+      <div
+        class="sections_header_field value"
+      >
+        {{ _.startCase(labels[1]) }}
+      </div>
+      <div
+        class="sections_header_field comment"
+      >
+        {{ _.startCase(labels[2]) }}
+      </div>
+    </div>
+    <div
+      class="section"
+      v-for="(section, sec_index) in Object.entries(data)"
+      :key="sec_index"
+    >
+      <div class="section_content">
+        <div class="section_field member">
+          <span class="parent">
+            <span>
+              {{ _.startCase(section[0]) }}
             </span>
-          </td>
-          <td class="comment">
-            {{ getComment(item[0], item[1]) }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </span>
+        </div>
+        <div class="section_field value">
+          <span class="parent">
+            <span>
+              {{ toHex(section[1]) }}
+            </span>
+            <copy :content="toHex(section[1])" />
+          </span>
+        </div>
+        <div class="section_field comment">
+          <span class="parent">
+            <span>
+              {{ getComment(section[0], section[1]) }}
+            </span>
+            <copy :content="getComment(section[0], section[1])" />
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -38,7 +61,9 @@ export default {
     copy: Copy,
   },
   data() {
-    return {}
+    return {
+      labels: ["Member", "Value", "Comment"],
+    }
   },
   methods: {
     toHex: function(value) {
@@ -65,24 +90,51 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.table {
-  width: 100%;
-  td {
-    vertical-align: middle;
+.container {
+  overflow: hidden;
+}
+.sections_header {
+  display: inline-flex;
+  padding: 0.2rem;
+  .sections_header_field {
+    text-align: left;
+    margin-right: 1rem;
+    font-weight: 600;
+    &.member {
+      width: 25rem;
+    }
     &.value {
-      .parent {
-        position: relative;
+      width: 35rem;
+    }
+  }
+}
+.section {
+  padding: 0.2rem;
+  .section_content {
+    display: inline-flex;
+    .section_field {
+      text-align: left;
+      margin-right: 1rem;
+      &.member {
+        width: 25rem;
+        font-weight: 600;
+      }
+      &.value {
+        width: 35rem;
+      }
+      &:hover {
         .copy {
-          opacity: 0;
-          transition: opacity 0.2s;
-        }
-        &:hover {
-          .copy {
-            opacity: 1;
-          }
+          opacity: 1;
         }
       }
     }
+  }
+}
+.parent {
+  position: relative;
+  .copy {
+    opacity: 0;
+    transition: opacity 0.2s;
   }
 }
 </style>

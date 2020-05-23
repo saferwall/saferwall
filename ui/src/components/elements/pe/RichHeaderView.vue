@@ -1,60 +1,58 @@
 <template>
   <div class="container">
-    <table class="table is-striped ">
-      <thead>
-        <tr>
-          <th>MinorCV</th>
-          <th>ProdId</th>
-          <th>Count</th>
-          <th>MS Internal Name</th>
-          <th>Visual Studio Version</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in data" :key="index">
-          <td class="MinorCV">
-            <span class="parent">
-              <span>
-                {{ toHex(item["MinorCV"]) }}
-              </span>
-              <copy :content="toHex(item['MinorCV'])" />
+    <div class="sections_header">
+      <div
+        class="sections_header_field"
+        v-for="(label, index) in labels"
+        :key="index"
+      >
+        {{ _.startCase(label) }}
+      </div>
+    </div>
+    <div class="section" v-for="(section, sec_index) in data" :key="sec_index">
+      <div class="section_content">
+        <div class="section_field">
+          <span class="parent">
+            <span>
+              {{ toHex(section["MinorCV"]) }}
             </span>
-          </td>
-          <td class="ProdId">
-            <span class="parent">
-              <span>
-                {{ toHex(item["ProdID"]) }}
-              </span>
-              <copy :content="toHex(item['ProdID'])" />
+            <copy :content="toHex(section['MinorCV'])" />
+          </span>
+        </div>
+        <div class="section_field">
+          <span class="parent">
+            <span>
+              {{ toHex(section['ProdID']) }}
             </span>
-          </td>
-          <td class="Count">
-            <span class="parent">
-              <span>
-                {{ item["Count"] }}
-              </span>
-              <copy :content="item['Count']" />
+            <copy :content="toHex(section['ProdID'])" />
+          </span>
+        </div>
+        <div class="section_field">
+          <span class="parent">
+            <span>
+              {{ section["Count"] }}
             </span>
-          </td>
-          <td class="MSInternalName">
-            <span class="parent">
-              <span>
-                {{ getMsInternalName(item["ProdID"]) }}
-              </span>
-              <copy :content="getMsInternalName(item['ProdID'])" />
+            <copy :content="section['Count']" />
+          </span>
+        </div>
+        <div class="section_field">
+          <span class="parent">
+            <span>
+              {{ getMsInternalName(section['ProdID']) }}
             </span>
-          </td>
-          <td class="VSVersion">
-            <span class="parent">
-              <span>
-                {{ getVsVersion(item["ProdID"]) }}
-              </span>
-              <copy :content="getVsVersion(item['ProdID'])" />
+            <copy :content="getMsInternalName(section['ProdID'])" />
+          </span>
+        </div>
+        <div class="section_field">
+          <span class="parent">
+            <span>
+              {{ getVsVersion(section['ProdID']) }}
             </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <copy :content="getVsVersion(section['ProdID'])" />
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -66,6 +64,17 @@ export default {
   props: ["data"],
   components: {
     copy: Copy,
+  },
+  data() {
+    return {
+      labels: [
+        "MinorCV",
+        "ProdId",
+        "Count",
+        "MS Internal Name",
+        "Visual Studio Version",
+      ],
+    }
   },
   methods: {
     toHex: function(dec) {
@@ -82,22 +91,38 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.table {
-  width: 100%;
-  td {
-    vertical-align: middle;
-    .parent {
-      position: relative;
-      .copy {
-        opacity: 0;
-        transition: opacity 0.2s;
-      }
+.container {
+  overflow: hidden;
+}
+.sections_header {
+  display: inline-flex;
+  padding: 0.2rem;
+  .sections_header_field {
+    text-align: left;
+    width: 15rem;
+    font-weight: 600;
+  }
+}
+.section {
+  padding: 0.2rem;
+  .section_content {
+    display: inline-flex;
+    .section_field {
+      text-align: left;
+      width: 15rem;
       &:hover {
         .copy {
           opacity: 1;
         }
       }
     }
+  }
+}
+.parent {
+  position: relative;
+  .copy {
+    opacity: 0;
+    transition: opacity 0.2s;
   }
 }
 </style>
