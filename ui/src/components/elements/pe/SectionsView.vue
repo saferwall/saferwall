@@ -5,6 +5,7 @@
         class="sections_header_field"
         v-for="(label, index) in labels"
         :key="index"
+        :class="{ name: label === 'Name' }"
       >
         {{ _.startCase(label) }}
       </div>
@@ -15,6 +16,7 @@
           class="section_field"
           v-for="([key, value], third_index) in Object.entries(section)"
           :key="third_index"
+          :class="{ name: key === 'Name' }"
         >
           <span class="parent">
             <span>
@@ -69,8 +71,10 @@ export default {
   .sections_header_field {
     text-align: left;
     width: 10rem;
-    margin-right: 1rem;
     font-weight: 600;
+    &.name {
+      width: 6rem;
+    }
   }
 }
 .section {
@@ -80,7 +84,9 @@ export default {
     .section_field {
       text-align: left;
       width: 10rem;
-      margin-right: 1rem;
+      &.name {
+        width: 6rem;
+      }
       &:hover {
         .copy {
           opacity: 1;
