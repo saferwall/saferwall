@@ -319,7 +319,7 @@ func (pe *File) ParseNTHeader() (err error) {
 	if signature&0xFFFF == ImageOS2LESignature {
 		return ErrImageOS2LESignatureFound
 	}
-	if signature&0xFFFF == ImageVXDignature {
+	if signature&0xFFFF == ImageVXDSignature {
 		return ErrImageVXDSignatureFound
 	}
 	if signature&0xFFFF == ImageTESignature {

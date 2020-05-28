@@ -34,7 +34,7 @@ var (
 
 	// ErrInvalidElfanewValue is returned when e_lfanew is larger than file size.
 	ErrInvalidElfanewValue = errors.New(
-		"Invalid e_lfanew value, probably not a PE file")
+		"Invalid e_lfanew value. Probably not a PE file")
 
 	// ErrImageOS2SignatureFound is returned when signature is for a NE file.
 	ErrImageOS2SignatureFound = errors.New(
@@ -44,7 +44,7 @@ var (
 	ErrImageOS2LESignatureFound = errors.New(
 		"Not a valid PE signature. Probably an LE file")
 
-	// ErrImageVXDSignatureFound is returned when signature is for a NX file.
+	// ErrImageVXDSignatureFound is returned when signature is for a LX file.
 	ErrImageVXDSignatureFound = errors.New(
 		"Not a valid PE signature. Probably an LX file")
 
@@ -524,4 +524,12 @@ func (pe *File) Checksum() uint32 {
 	checksum += int(pe.size)
 
 	return uint32(checksum)
+}
+
+// ReadUint32 read a uint32 from a buffer.
+func ReadUint32 (buff []byte, offset uint32) (uint32, error) {
+	if offset > uint32(len(buff)) {
+		return binary.LittleEndian.Uint32(buff[offset:]), nil
+	}
+	return 0, errors.New("")
 }

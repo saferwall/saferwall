@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,6 +25,14 @@ func prettyPrint(buff []byte) string {
 	return string(prettyJSON.Bytes())
 }
 
+func printAnomalies(anomalies []string) {
+	log.Printf("Anomalies: \n")
+	for _, ano := range anomalies {
+		log.Printf("         - %s\n", ano)
+	}
+}
+
+
 func parse(filename string) {
 
 	// fmt.Println("Processing: ", filename)
@@ -37,7 +44,12 @@ func parse(filename string) {
 
 	defer func() { //catch or finally
 		if err := recover(); err != nil { //catch
-			fmt.Fprintf(os.Stderr, "%s, Exception: %v\n", filename, err)
+			log.Printf("%s\n", filename)
+			log.Printf("Exception: %v\n", err)
+			if len(pe.Anomalies) > 0 {
+				printAnomalies(pe.Anomalies)
+			}
+			log.Println("==============================================================================")
 		}
 	}()
 
@@ -48,8 +60,16 @@ func parse(filename string) {
 		err != peparser.ErrImageNtSignatureNotFound &&
 		err != peparser.ErrImageNtOptionalHeaderMagicNotFound &&
 		err != peparser.ErrImageBaseNotAligned &&
+		err != peparser.ErrImageOS2LESignatureFound &&
+		err != peparser.ErrImageVXDSignatureFound && 
+		err != peparser.ErrInvalidPESize &&
 		err != peparser.ErrInvalidElfanewValue {
-		fmt.Println(filename, err, pe.Anomalies)
+		log.Printf("%s\n", filename)
+		log.Printf("Error: %v\n", err)
+		if len(pe.Anomalies) > 0 {
+			printAnomalies(pe.Anomalies)
+		}
+		log.Println("=====================================================================")
 	}
 
 	// if err == peparser.ErrDOSMagicNotFound {
