@@ -22,7 +22,8 @@ const (
 	maxAddressSpread     = uint32(0x8000000)
 	addressMask32        = uint32(0x7fffffff)
 	addressMask64        = uint64(0x7fffffffffffffff)
-	maxDllLength 		 = 0x200
+	maxDllLength         = 0x200
+	maxImportNameLength  = 0x200
 )
 
 var (
@@ -36,6 +37,10 @@ var (
 	// AnoManyRepeatedEntries is reported when import directory contains many
 	// entries have the same RVA.
 	AnoManyRepeatedEntries = "Import directory contains many repeated entries"
+
+	// AnoAddressOfDataBeyondLimits is reported when Thunk AddressOfData goes
+	// beyond limites.
+	AnoAddressOfDataBeyondLimits = "Thunk AddressOfData beyond limits"
 )
 
 // ImageImportDescriptor describes the remainder of the import information.
@@ -67,7 +72,7 @@ type ImageImportDescriptor struct {
 
 // ImageThunkData32 corresponds to one imported function from the executable.
 // The entries are an array of 32-bit numbers for PE32 or an array of 64-bit
-// numbers for PE32+. The ends of both arrays are indicated by an 
+// numbers for PE32+. The ends of both arrays are indicated by an
 // IMAGE_THUNK_DATA element with a value of zero.
 // The IMAGE_THUNK_DATA union is a DWORD with these interpretations:
 // DWORD Function;       // Memory address of the imported function
@@ -88,23 +93,24 @@ type ImportFunction struct {
 	// An ASCII string that contains the name to import. This is the string that
 	// must be matched to the public name in the DLL. This string is case
 	// sensitive and terminated by a null byte.
-	Name      string
+	Name string
 
 	// An index into the export name pointer table. A match is attempted first
 	// with this value. If it fails, a binary search is performed on the DLL's
 	// export name pointer table.
-	Hint      uint16
+	Hint uint16
 
-	// If this bit is true, import by ordinal. Otherwise, import by name.
+	// If this is true, import by ordinal. Otherwise, import by name.
 	ByOrdinal bool
 
 	// A 16-bit ordinal number. This field is used only if the Ordinal/Name Flag
 	// bit field is 1 (import by ordinal). Bits 30-15 or 62-15 must be 0.
-	Ordinal   uint32
+	Ordinal uint32
 
-	Bound     uint32
+	// Name Thunk Value (OFT)
+	OriginalThunkValue   uint64
 
-	ThunkRVA uint32
+	// Address Thunk Value (FT)
 	ThunkValue uint64
 }
 
@@ -124,7 +130,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		importDescSize := uint32(binary.Size(importDesc))
 		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+importDescSize])
 		err := binary.Read(buf, binary.LittleEndian, &importDesc)
-		
+
 		// If the RVA is invalid all would blow up. Some EXEs seem to be
 		// specially nasty and have an invalid RVA.
 		if err != nil {
@@ -181,7 +187,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 }
 
 func (pe *File) getImportTable32(rva uint32, maxLen uint32,
-	 isOldDelayImport bool) ([]*ImageThunkData32, error) {
+	isOldDelayImport bool) ([]*ImageThunkData32, error) {
 
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData32)
@@ -206,7 +212,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
 		if repeatedAddress >= maxRepeatedAddresses {
-			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
+			if !stringInSlice(AnoManyRepeatedEntries, pe.Anomalies) {
 				pe.Anomalies = append(pe.Anomalies, AnoManyRepeatedEntries)
 			}
 		}
@@ -222,9 +228,9 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 
 		// In its original incarnation in Visual C++ 6.0, all ImgDelayDescr
 		// fields containing addresses used virtual addresses, rather than RVAs.
-		// That is, they contained actual addresses where the delayload data 
+		// That is, they contained actual addresses where the delayload data
 		// could be found. These fields are DWORDs, the size of a pointer on the x86.
-		// Now fast-forward to IA-64 support. All of a sudden, 4 bytes isn't 
+		// Now fast-forward to IA-64 support. All of a sudden, 4 bytes isn't
 		// enough to hold a complete address. At this point, Microsoft did the
 		// correct thing and changed the fields containing addresses to RVAs.
 		offset := uint32(0)
@@ -239,7 +245,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 			offset = pe.getOffsetFromRva(rva)
 			if offset == ^uint32(0) {
 				return []*ImageThunkData32{}, nil
-			}	
+			}
 		}
 
 		// Read the image thunk data.
@@ -273,7 +279,9 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 			// but its value is beyond 2^16, we will assume it's a
 			// corrupted and ignore it altogether
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
-				pe.Anomalies = append(pe.Anomalies, "Thunk AddressOfData beyond limits")
+				if !stringInSlice(AnoAddressOfDataBeyondLimits, pe.Anomalies) {
+					pe.Anomalies = append(pe.Anomalies, AnoAddressOfDataBeyondLimits)
+				}
 			}
 		} else {
 			// and if it looks like it should be an RVA keep track of the RVAs seen
@@ -303,7 +311,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 }
 
 func (pe *File) getImportTable64(rva uint32, maxLen uint32,
-	 isOldDelayImport bool) ([]*ImageThunkData64, error) {
+	isOldDelayImport bool) ([]*ImageThunkData64, error) {
 
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData64)
@@ -324,8 +332,8 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 		// if we see too many times the same entry we assume it could be
 		// a table containing bogus data (with malicious intent or otherwise)
 		if repeatedAddress >= uint64(maxRepeatedAddresses) {
-			if !stringInSlice(ErrExportManyRepeatedEntries, pe.Anomalies) {
-			pe.Anomalies = append(pe.Anomalies, AnoManyRepeatedEntries)
+			if !stringInSlice(AnoManyRepeatedEntries, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoManyRepeatedEntries)
 			}
 		}
 
@@ -340,9 +348,9 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 
 		// In its original incarnation in Visual C++ 6.0, all ImgDelayDescr
 		// fields containing addresses used virtual addresses, rather than RVAs.
-		// That is, they contained actual addresses where the delayload data 
+		// That is, they contained actual addresses where the delayload data
 		// could be found. These fields are DWORDs, the size of a pointer on the x86.
-		// Now fast-forward to IA-64 support. All of a sudden, 4 bytes isn't 
+		// Now fast-forward to IA-64 support. All of a sudden, 4 bytes isn't
 		// enough to hold a complete address. At this point, Microsoft did the
 		// correct thing and changed the fields containing addresses to RVAs.
 		offset := uint32(0)
@@ -357,7 +365,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 			offset = pe.getOffsetFromRva(rva)
 			if offset == ^uint32(0) {
 				return []*ImageThunkData64{}, nil
-			}	
+			}
 		}
 
 		// Read the image thunk data.
@@ -392,7 +400,9 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 			// but its value is beyond 2^16, we will assume it's a
 			// corrupted and ignore it altogether
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
-				return []*ImageThunkData64{}, errors.New("Thunk AddressOfData beyond limits")
+				if !stringInSlice(AnoAddressOfDataBeyondLimits, pe.Anomalies) {
+					pe.Anomalies = append(pe.Anomalies, AnoAddressOfDataBeyondLimits)
+				}
 			}
 			// and if it looks like it should be an RVA
 		} else {
@@ -482,23 +492,30 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 			} else {
 				imp.ByOrdinal = false
 				if isOldDelayImport {
-					table[idx].AddressOfData -= pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase  
+					table[idx].AddressOfData -=
+						pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
 				}
-				imp.ThunkValue = uint64(table[idx].AddressOfData & addressMask32)
-				data, err := pe.getData(table[idx].AddressOfData&addressMask32, 2)
-				if err != nil {
-					return []*ImportFunction{}, err
+
+				// Original Thunk
+				if uint32(len(ilt)) != 0 {
+					imp.OriginalThunkValue = uint64(ilt[idx].AddressOfData & addressMask32)
 				}
-				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2, 0x200)
+
+				// Thunk
+				if uint32(len(iat)) != 0 {
+					imp.ThunkValue = uint64(iat[idx].AddressOfData & addressMask32)
+				}
+
+				// Thunk
+				hintNameTableRva := table[idx].AddressOfData & addressMask32
+				off := pe.getOffsetFromRva(hintNameTableRva)
+				imp.Hint = binary.LittleEndian.Uint16(pe.data[off:])
+				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2,
+					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}
 			}
-		}
-
-		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
-			imp.Bound = iat[idx].AddressOfData
 		}
 
 		// This file bfe97192e8107d52dd7b4010d12b2924 has an invalid table built
@@ -588,24 +605,31 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 			} else {
 				imp.ByOrdinal = false
 				if isOldDelayImport {
-					table[idx].AddressOfData -= pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase  
+					table[idx].AddressOfData -=
+						pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
 				}
-				imp.ThunkValue = table[idx].AddressOfData & addressMask64
-				data, err := pe.getData(uint32(table[idx].AddressOfData&addressMask64), 2)
-				if err != nil {
-					return []*ImportFunction{}, err
+
+				// Original Thunk
+				if uint32(len(ilt)) != 0 {
+					imp.OriginalThunkValue = ilt[idx].AddressOfData & addressMask64
 				}
-				imp.Hint = binary.LittleEndian.Uint16(data)
-				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData+2), maxLen)
+
+				// Thunk
+				if uint32(len(iat)) != 0 {
+					imp.ThunkValue = iat[idx].AddressOfData & addressMask64
+				}
+
+				hintNameTableRva := table[idx].AddressOfData & addressMask64
+				off := pe.getOffsetFromRva(uint32(hintNameTableRva))
+				imp.Hint = binary.LittleEndian.Uint16(pe.data[off:])
+				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData+2),
+					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
 				}
 			}
 		}
 
-		if len(iat) > 0 && len(ilt) > 0 && ilt[idx].AddressOfData != iat[idx].AddressOfData {
-			imp.Bound = uint32(iat[idx].AddressOfData)
-		}
 
 		// This file bfe97192e8107d52dd7b4010d12b2924 has an invalid table built
 		// in a way that it's parseable but contains invalid entries that lead

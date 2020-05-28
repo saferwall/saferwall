@@ -230,18 +230,18 @@ type ImageSectionHeader struct {
 
 // ParseSectionHeader parses the PE section headers.
 // Each row of the section table is, in effect, a section header. This table
-// immediately follows the optional header, if any. 
+// immediately follows the optional header, if any.
 func (pe *File) ParseSectionHeader() (err error) {
 
 	// get the first section offset.
-	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 + 
+	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 +
 		uint32(binary.Size(pe.NtHeader.FileHeader))
-	offset := optionalHeaderOffset + 
+	offset := optionalHeaderOffset +
 		uint32(pe.NtHeader.FileHeader.SizeOfOptionalHeader)
 
 	// Track invalid/suspicous values while parsing sections.
 	maxErr := 3
-	
+
 	section := ImageSectionHeader{}
 	numberOfSections := pe.NtHeader.FileHeader.NumberOfSections
 	sectionSize := uint32(binary.Size(section))
@@ -254,34 +254,34 @@ func (pe *File) ParseSectionHeader() (err error) {
 		}
 
 		countErr := 0
-		if (ImageSectionHeader{}) == section  {
-			pe.Anomalies = append(pe.Anomalies, "Section `" +
-			section.NameString() + "` Contents are null-bytes")
+		if (ImageSectionHeader{}) == section {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+
+				section.NameString()+"` Contents are null-bytes")
 			countErr++
 		}
 
 		if section.SizeOfRawData+section.PointerToRawData > pe.size {
-			pe.Anomalies = append(pe.Anomalies, "Section `" +
-			 section.NameString() + "` SizeOfRawData is larger than file")
-			 countErr++
+			pe.Anomalies = append(pe.Anomalies, "Section `"+
+				section.NameString()+"` SizeOfRawData is larger than file")
+			countErr++
 		}
 
 		if pe.adjustFileAlignment(section.PointerToRawData) > pe.size {
-			pe.Anomalies = append(pe.Anomalies, "Section `" + 
-			 section.NameString() + "` PointerToRawData points beyond the " +
-			 "end of the file")
-			 countErr++
+			pe.Anomalies = append(pe.Anomalies, "Section `"+
+				section.NameString()+"` PointerToRawData points beyond the "+
+				"end of the file")
+			countErr++
 		}
 
 		if section.VirtualSize > 0x10000000 {
-			pe.Anomalies = append(pe.Anomalies, "Section `" + 
-			section.NameString() + "` VirtualSize is extremely large > 256MiB") 
+			pe.Anomalies = append(pe.Anomalies, "Section `"+
+				section.NameString()+"` VirtualSize is extremely large > 256MiB")
 			countErr++
 		}
 
 		if pe.adjustSectionAlignment(section.VirtualAddress) > 0x10000000 {
-			pe.Anomalies = append(pe.Anomalies, "Section `" + 
-			section.NameString() + "` VirtualAddress is beyond 0x10000000") 
+			pe.Anomalies = append(pe.Anomalies, "Section `"+
+				section.NameString()+"` VirtualAddress is beyond 0x10000000")
 			countErr++
 		}
 
@@ -292,10 +292,10 @@ func (pe *File) ParseSectionHeader() (err error) {
 		case false:
 			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
 		}
-		if fileAlignment != 0 && section.PointerToRawData % fileAlignment != 0 {
+		if fileAlignment != 0 && section.PointerToRawData%fileAlignment != 0 {
 			pe.Anomalies = append(
-				pe.Anomalies, "Section `" + section.NameString() + 
-			"` PointerToRawData is not multiple of FileAlignment")
+				pe.Anomalies, "Section `"+section.NameString()+
+					"` PointerToRawData is not multiple of FileAlignment")
 			countErr++
 		}
 
@@ -316,7 +316,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 	}
 
 	// There could be a problem if there are no raw data sections
-	// greater than 0. Example: fc91013eb72529da005110a3403541b6 
+	// greater than 0. Example: fc91013eb72529da005110a3403541b6
 	// Should this throw an exception in the minimum header offset
 	// can't be found?
 	var rawDataPointers []uint32
@@ -408,7 +408,7 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	}
 
 	var end uint32
-	if start != 0 {
+	if length != 0 {
 		end = offset + length
 	} else {
 		end = offset + section.SizeOfRawData
@@ -417,7 +417,8 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	// PointerToRawData is not adjusted here as we might want to read any
 	// possible extra bytes that might get cut off by aligning the start (and
 	// hence cutting something off the end)
-	if end > section.PointerToRawData+section.SizeOfRawData {
+	if end > section.PointerToRawData+section.SizeOfRawData &&
+		section.PointerToRawData + section.SizeOfRawData > offset {
 		end = section.PointerToRawData + section.SizeOfRawData
 	}
 
@@ -441,7 +442,6 @@ func (s byPointerToRawData) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s byPointerToRawData) Less(i, j int) bool {
 	return s[i].PointerToRawData < s[j].PointerToRawData
 }
-
 
 // PrettySectionFlags returns the string representations of the
 // `Flags` field of section header.
