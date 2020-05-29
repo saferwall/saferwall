@@ -108,7 +108,7 @@ func (pe *File) Parse() error {
 	}
 
 	// Parse the Data Directory entries.
-	// err = pe.ParseDataDirectories()
+	err = pe.ParseDataDirectories()
 	return err
 }
 
