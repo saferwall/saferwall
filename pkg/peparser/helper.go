@@ -5,10 +5,10 @@
 package pe
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"log"
-	"bytes"
 	"strings"
 )
 
@@ -72,13 +72,13 @@ var (
 
 	// ErrInvalidSectionFileAlignment is reported when section alignment is less than a
 	// PAGE_SIZE and section alignement != file alignment.
-	ErrInvalidSectionFileAlignment = errors.New("Corrupt PE file. Section " + 
-	"alignment is less than a PAGE_SIZE and section alignement != file alignment")
+	ErrInvalidSectionFileAlignment = errors.New("Corrupt PE file. Section " +
+		"alignment is less than a PAGE_SIZE and section alignement != file alignment")
 
 	// AnoInvalidSizeOfImage is reported when SizeOfImage is not multiple of
 	// SectionAlignment.
 	AnoInvalidSizeOfImage = "Invalid SizeOfImage value, should be multiple " +
-	 "of SectionAlignment"
+		"of SectionAlignment"
 
 	// ErrOutsideBoundary is reported when attempting to read an address beyond
 	// file image limits.
@@ -381,7 +381,7 @@ func intInSlice(a uint32, list []uint32) bool {
 }
 
 // IsDriver returns true if the PE file is a Windows driver.
-func (pe *File)IsDriver() bool {
+func (pe *File) IsDriver() bool {
 
 	// Checking that the ImageBase field of the OptionalHeader is above or
 	// equal to 0x80000000 (that is, whether it lies in the upper 2GB of
@@ -390,7 +390,7 @@ func (pe *File)IsDriver() bool {
 	// ImageBase trick to get relocated could be incorrectly assumed to be
 	// drivers.
 
-	// Checking if any section characteristics have the IMAGE_SCN_MEM_NOT_PAGED 
+	// Checking if any section characteristics have the IMAGE_SCN_MEM_NOT_PAGED
 	// flag set is not reliable either.
 
 	// If the import directory was not parsed (fast_load = True); do it now.
@@ -407,15 +407,15 @@ func (pe *File)IsDriver() bool {
 	// DIRECTORY_ENTRY_IMPORT will now exist, although it may be empty.
 	// If it imports from "ntoskrnl.exe" or other kernel components it should
 	// be a driver.
-	systemDLLs := []string {"ntoskrnl.exe", "hal.dll", "ndis.sys",
-	 "bootvid.dll", "kdcom.dll"}
+	systemDLLs := []string{"ntoskrnl.exe", "hal.dll", "ndis.sys",
+		"bootvid.dll", "kdcom.dll"}
 	for _, dll := range pe.Imports {
 		if stringInSlice(strings.ToLower(dll.Name), systemDLLs) {
 			return true
 		}
 	}
 
-	// If still we couldn't tell, check common driver section with combinaison 
+	// If still we couldn't tell, check common driver section with combinaison
 	// of IMAGE_SUBSYSTEM_NATIVE or IMAGE_SUBSYSTEM_NATIVE_WINDOWS.
 	subsystem := uint16(0)
 	oh32 := ImageOptionalHeader32{}
@@ -428,13 +428,13 @@ func (pe *File)IsDriver() bool {
 		oh32 = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32)
 		subsystem = oh32.Subsystem
 	}
-	commonDriverSectionNames := []string {"page", "paged", "nonpage", "init"}
+	commonDriverSectionNames := []string{"page", "paged", "nonpage", "init"}
 	for _, section := range pe.Sections {
 		s := strings.ToLower(section.NameString())
 		s = strings.Replace(s, "\x00", "", -1)
-		if stringInSlice(s, commonDriverSectionNames) && 
-			(subsystem & ImageSubsystemNativeWindows != 0 || 
-				subsystem & ImageSubsystemNative != 0 ) { 
+		if stringInSlice(s, commonDriverSectionNames) &&
+			(subsystem&ImageSubsystemNativeWindows != 0 ||
+				subsystem&ImageSubsystemNative != 0) {
 			return true
 		}
 
@@ -444,16 +444,15 @@ func (pe *File)IsDriver() bool {
 }
 
 // IsDLL returns true if the PE file is a standard DLL.
-func (pe *File)IsDLL() bool {
-	if pe.NtHeader.FileHeader.Characteristics & ImageFileDLL != 0 {
+func (pe *File) IsDLL() bool {
+	if pe.NtHeader.FileHeader.Characteristics&ImageFileDLL != 0 {
 		return true
 	}
 	return false
 }
 
-
 // IsEXE returns true if the PE file is a standard executable.
-func (pe *File)IsEXE() bool {
+func (pe *File) IsEXE() bool {
 
 	// Returns true only if the file has the IMAGE_FILE_EXECUTABLE_IMAGE flag set
 	// and the IMAGE_FILE_DLL not set and the file does not appear to be a driver either.
@@ -461,7 +460,7 @@ func (pe *File)IsEXE() bool {
 		return false
 	}
 
-	if pe.NtHeader.FileHeader.Characteristics & ImageFileExecutableImage == 0 {
+	if pe.NtHeader.FileHeader.Characteristics&ImageFileExecutableImage == 0 {
 		return false
 	}
 
@@ -534,21 +533,30 @@ func (pe *File) Checksum() uint32 {
 }
 
 // ReadUint32 read a uint32 from a buffer.
-func ReadUint32 (buff []byte, offset uint32) (uint32, error) {
-	if offset > uint32(len(buff)) {
-		return binary.LittleEndian.Uint32(buff[offset:]), nil
+func (pe *File) ReadUint32(offset uint32) (uint32, error) {
+	if offset > pe.size + 4 {
+		return 0, ErrOutsideBoundary
 	}
-	return 0, errors.New("")
+
+	return binary.LittleEndian.Uint32(pe.data[offset:]), nil
 }
 
+// ReadUint16 read a uint32 from a buffer.
+func (pe *File) ReadUint16(offset uint32) (uint16, error) {
+	if offset > pe.size + 2 {
+		return 0, ErrOutsideBoundary
+	}
+
+	return binary.LittleEndian.Uint16(pe.data[offset:]), nil
+}
 
 func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error) {
 	// Boundary check
-	if offset >= pe.size || offset + size > pe.size {
+	if offset >= pe.size || offset+size > pe.size {
 		return ErrOutsideBoundary
 	}
 
-	buf := bytes.NewReader(pe.data[offset : offset + size])
+	buf := bytes.NewReader(pe.data[offset : offset+size])
 	err = binary.Read(buf, binary.LittleEndian, iface)
 	if err != nil {
 		return err

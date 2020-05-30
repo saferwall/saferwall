@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/binary"
 	"encoding/hex"
@@ -206,6 +205,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 	if rva == 0 {
 		return []*ImageThunkData32{}, nil
 	}
+
 	for {
 		if rva >= startRVA+maxLen {
 			log.Println("Error parsing the import table. Entries go beyond bounds.")
@@ -255,7 +255,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 		thunk := ImageThunkData32{}
 		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			// log.Printf("Error parsing the import table. " + 
+			// log.Printf("Error parsing the import table. " +
 			// 	"Invalid data at RVA: 0x%x", rva)
 			return []*ImageThunkData32{}, nil
 		}
@@ -325,6 +325,11 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 	addressesOfData := make(map[uint64]bool)
 
 	startRVA := rva
+
+	if rva == 0 {
+		return []*ImageThunkData64{}, nil
+	}
+
 	for {
 		if rva >= startRVA+maxLen {
 			log.Println("Error parsing the import table. Entries go beyond bounds.")
@@ -374,7 +379,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 		thunk := ImageThunkData64{}
 		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			// log.Printf("Error parsing the import table. " + 
+			// log.Printf("Error parsing the import table. " +
 			// 	"Invalid data at RVA: 0x%x", rva)
 			return []*ImageThunkData64{}, nil
 		}
@@ -509,7 +514,10 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 				// Thunk
 				hintNameTableRva := table[idx].AddressOfData & addressMask32
 				off := pe.getOffsetFromRva(hintNameTableRva)
-				imp.Hint = binary.LittleEndian.Uint16(pe.data[off:])
+				imp.Hint, err = pe.ReadUint16(off)
+				if err != nil {
+					imp.Hint = ^uint16(0) 
+				}
 				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2,
 					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
