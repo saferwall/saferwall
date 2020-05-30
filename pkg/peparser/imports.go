@@ -252,16 +252,15 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 		}
 
 		// Read the image thunk data.
-		thunk := &ImageThunkData32{}
-		buf := bytes.NewReader(pe.data[offset : offset+size])
-		err := binary.Read(buf, binary.LittleEndian, thunk)
+		thunk := ImageThunkData32{}
+		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			msg := fmt.Sprintf(`Error parsing the import table. 
-				Invalid data at RVA: 0x%x`, rva)
-			return []*ImageThunkData32{}, errors.New(msg)
+			// log.Printf("Error parsing the import table. " + 
+			// 	"Invalid data at RVA: 0x%x", rva)
+			return []*ImageThunkData32{}, nil
 		}
 
-		if *thunk == (ImageThunkData32{}) {
+		if thunk == (ImageThunkData32{}) {
 			break
 		}
 
@@ -306,8 +305,8 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 			}
 		}
 
-		thunkTable[rva] = thunk
-		retVal = append(retVal, thunk)
+		thunkTable[rva] = &thunk
+		retVal = append(retVal, &thunk)
 		rva += size
 	}
 	return retVal, nil
@@ -373,12 +372,11 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 
 		// Read the image thunk data.
 		thunk := ImageThunkData64{}
-		buf := bytes.NewReader(pe.data[offset : offset+size])
-		err := binary.Read(buf, binary.LittleEndian, &thunk)
+		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			msg := fmt.Sprintf(`Error parsing the import table. 
-				Invalid data at RVA: 0x%x`, rva)
-			return []*ImageThunkData64{}, errors.New(msg)
+			// log.Printf("Error parsing the import table. " + 
+			// 	"Invalid data at RVA: 0x%x", rva)
+			return []*ImageThunkData64{}, nil
 		}
 
 		if thunk == (ImageThunkData64{}) {
@@ -454,13 +452,13 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 		}
 	}
 
-	// Import Lookup Table. Contains ordinals or pointers to strings.
+	// Import Lookup Table (OFT). Contains ordinals or pointers to strings.
 	ilt, err := pe.getImportTable32(OriginalFirstThunk, maxLen, isOldDelayImport)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
 
-	// Import Address Table. May have identical content to ILT if PE file is
+	// Import Address Table (FT). May have identical content to ILT if PE file is
 	// not bound. It will contain the address of the imported symbols once
 	// the binary is loaded or if it is already bound.
 	iat, err := pe.getImportTable32(FirstThunk, maxLen, isOldDelayImport)
@@ -537,7 +535,8 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 		// Although if we see 1000 invalid entries and no legit ones, we abort.
 		if imp.Name == "*invalid*" {
 			if numInvalid > 1000 && numInvalid == idx {
-				return []*ImportFunction{}, errors.New("Too many invalid names, aborting parsing")
+				return []*ImportFunction{}, errors.New(
+					`Too many invalid names, aborting parsing`)
 			}
 			numInvalid++
 			continue
@@ -648,7 +647,8 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 		// Although if we see 1000 invalid entries and no legit ones, we abort.
 		if imp.Name == "*invalid*" {
 			if numInvalid > 1000 && numInvalid == idx {
-				return []*ImportFunction{}, errors.New("Too many invalid names, aborting parsing")
+				return []*ImportFunction{}, errors.New(
+					`Too many invalid names, aborting parsing`)
 			}
 			numInvalid++
 			continue
