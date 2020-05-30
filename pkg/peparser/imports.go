@@ -132,8 +132,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		importDesc := ImageImportDescriptor{}
 		fileOffset := pe.getOffsetFromRva(rva)
 		importDescSize := uint32(binary.Size(importDesc))
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+importDescSize])
-		err := binary.Read(buf, binary.LittleEndian, &importDesc)
+		err := pe.structUnpack(&importDesc, fileOffset, importDescSize)
 
 		// If the RVA is invalid all would blow up. Some EXEs seem to be
 		// specially nasty and have an invalid RVA.

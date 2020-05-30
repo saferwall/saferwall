@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"log"
+	"bytes"
 	"strings"
 )
 
@@ -78,6 +79,10 @@ var (
 	// SectionAlignment.
 	AnoInvalidSizeOfImage = "Invalid SizeOfImage value, should be multiple " +
 	 "of SectionAlignment"
+
+	// ErrOutsideBoundary is reported when attempting to read an address beyond
+	// file image limits.
+	ErrOutsideBoundary = errors.New("Reading data outside boundary")
 )
 
 // Max returns the larger of x or y.
@@ -190,7 +195,6 @@ func (pe *File) getOffsetFromRva(rva uint32) uint32 {
 		if rva < uint32(len(pe.data)) {
 			return rva
 		}
-		log.Println("Data at RVA can't be fetched. Corrupt header?")
 		return ^uint32(0)
 	}
 	sectionAlignment := pe.adjustSectionAlignment(section.VirtualAddress)
@@ -238,7 +242,10 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 
 	section := pe.getSectionByRva(rva)
 	if section == nil {
-		s := pe.getStringFromData(0, []byte(pe.data[rva:rva+maxLen]))
+		if rva > pe.size {
+			return ""
+		}
+		s := pe.getStringFromData(0, pe.data[rva:rva+maxLen])
 		return string(s)
 	}
 	s := pe.getStringFromData(0, section.Data(rva, maxLen, pe))
@@ -532,4 +539,19 @@ func ReadUint32 (buff []byte, offset uint32) (uint32, error) {
 		return binary.LittleEndian.Uint32(buff[offset:]), nil
 	}
 	return 0, errors.New("")
+}
+
+
+func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error) {
+	// Boundary check
+	if offset >= pe.size || offset + size > pe.size {
+		return ErrOutsideBoundary
+	}
+
+	buf := bytes.NewReader(pe.data[offset : offset + size])
+	err = binary.Read(buf, binary.LittleEndian, iface)
+	if err != nil {
+		return err
+	}
+	return nil
 }
