@@ -1,19 +1,13 @@
 <template>
   <div class="container">
     <div class="sections_header">
-      <div
-        class="sections_header_field member"
-      >
+      <div class="sections_header_field member">
         {{ _.startCase(labels[0]) }}
       </div>
-      <div
-        class="sections_header_field value"
-      >
+      <div class="sections_header_field value">
         {{ _.startCase(labels[1]) }}
       </div>
-      <div
-        class="sections_header_field comment"
-      >
+      <div class="sections_header_field comment">
         {{ _.startCase(labels[2]) }}
       </div>
     </div>
@@ -117,7 +111,7 @@ export default {
       margin-right: 1rem;
       &.member {
         width: 25rem;
-        font-weight: 600;
+        font-weight: 500;
       }
       &.value {
         width: 35rem;
