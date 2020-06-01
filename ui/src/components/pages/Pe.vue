@@ -33,6 +33,9 @@
           <SectionsView 
           v-if="sections[selectedSection] === 'Sections'"
             :data="pe[sections[selectedSection]]"/>
+          <Imports 
+          v-if="sections[selectedSection] === 'Imports'"
+            :data="pe[sections[selectedSection]]"/>
         </div>
       </div>
     </div>
@@ -44,6 +47,7 @@ import DosHeaderView from "../elements/pe/DosHeaderView"
 import RichHeaderView from "../elements/pe/RichHeaderView"
 import NtHeaderView from "../elements/pe/NtHeaderView"
 import SectionsView from "../elements/pe/SectionsView"
+import Imports from "../elements/pe/Imports"
 import { mapGetters } from "vuex"
 
 export default {
@@ -51,7 +55,8 @@ export default {
     DosHeaderView,
     RichHeaderView,
     NtHeaderView,
-    SectionsView
+    SectionsView,
+    Imports
   },
   data() {
     return {

@@ -438,5 +438,8 @@ export default {
       transition: opacity 0.2s;
     }
   }
+  .label{
+    margin-bottom: 0;
+  }
 }
 </style>
