@@ -13,7 +13,7 @@
     </div>
     <div
       class="section"
-      v-for="(section, sec_index) in Object.entries(data)"
+      v-for="(section, sec_index) in Object.entries(data.Struct)"
       :key="sec_index"
     >
       <div class="section_content">
@@ -42,17 +42,20 @@
         </div>
       </div>
     </div>
+    <ExportFunctions :data="data.Functions"/>
   </div>
 </template>
 
 <script>
-import { dec2HexString, reverse, hex2a, dec2Hex } from "@/helpers/pe"
+import { dec2HexString, unixtime2Human } from "@/helpers/pe"
 import Copy from "@/components/elements/Copy"
+import ExportFunctions from "./Export_functions"
 
 export default {
-  props: ["data", "signature"],
+  props: ["data"],
   components: {
     copy: Copy,
+    ExportFunctions
   },
   data() {
     return {
@@ -61,20 +64,14 @@ export default {
   },
   methods: {
     toHex: function(value) {
-      if (Array.isArray(value)) {
-        var tmpArray = []
-        for (var index in value) {
-          tmpArray.push(dec2HexString(value[index]))
-        }
-        return tmpArray
-      } else return dec2HexString(value)
+        return dec2HexString(value)
     },
     getComment: function(name, value) {
       switch (name) {
-        case "Magic":
-          return reverse(hex2a(dec2Hex(value)))
-        case "AddressOfNewEXEHeader":
-          return reverse(hex2a(dec2Hex(this.signature)))
+        case "TimeDateStamp":
+          return unixtime2Human(value)
+        case "Name":
+          return this.data.Name
         default:
           return ""
       }
@@ -98,7 +95,7 @@ export default {
       width: 25rem;
     }
     &.value {
-      width: 35rem;
+      width: 25rem;
     }
   }
 }
@@ -114,7 +111,7 @@ export default {
         font-weight: 500;
       }
       &.value {
-        width: 35rem;
+        width: 25rem;
       }
       &:hover {
         .copy {

@@ -36,6 +36,9 @@
           <Imports 
           v-if="sections[selectedSection] === 'Imports'"
             :data="pe[sections[selectedSection]]"/>
+          <Export 
+          v-if="sections[selectedSection] === 'Export'"
+            :data="pe[sections[selectedSection]]"/>
         </div>
       </div>
     </div>
@@ -48,6 +51,7 @@ import RichHeaderView from "../elements/pe/RichHeaderView"
 import NtHeaderView from "../elements/pe/NtHeaderView"
 import SectionsView from "../elements/pe/SectionsView"
 import Imports from "../elements/pe/Imports"
+import Export from "../elements/pe/Export"
 import { mapGetters } from "vuex"
 
 export default {
@@ -56,7 +60,8 @@ export default {
     RichHeaderView,
     NtHeaderView,
     SectionsView,
-    Imports
+    Imports,
+    Export
   },
   data() {
     return {

@@ -1,6 +1,5 @@
 <template>
   <div class="container" v-if="this.data">
-    <div class="section_title">Functions</div>
     <div class="sections_header">
       <div class="sections_header_field" v-for="label in labels" :key="label">
         {{ _.startCase(label) }}
@@ -38,27 +37,19 @@ export default {
   components: {
     copy: Copy,
   },
+  data() {
+    return {
+      labels: ["Ordinal", "FunctionRVA", "Name"],
+    }
+  },
   computed: {
-    byOrdinal: function() {
-      if (this.data) return this.data[0]["ByOrdinal"]
-      else return false
-    },
-    labels: function() {
-      if (this.data) {
-        var labelsTmp = Object.keys(this.data[0])
-        if (!this.byOrdinal) return this._.without(labelsTmp, "ByOrdinal", "Ordinal")
-        else return this._.without(labelsTmp, "ByOrdinal")
-      }
-      return []
-    },
     filteredData: function() {
-      if (!this.byOrdinal) {
-        return this._.map(this.data, (obj) => {
-          return this._.omit(obj, ["ByOrdinal", "Ordinal"])
-        })
-      }
-      return this._.map(this.data, (obj) => {
-        return this._.omit(obj, ["ByOrdinal"])
+      return this._.map(this.data, (data) => {
+        return {
+          Ordinal: data.Ordinal,
+          FunctionRVA: data.FunctionRVA,
+          Name: data.Name,
+        }
       })
     },
   },
@@ -87,9 +78,6 @@ export default {
     text-align: left;
     width: 17rem;
     font-weight: 600;
-    &.name {
-      width: 6rem;
-    }
   }
 }
 .section {
@@ -99,9 +87,6 @@ export default {
     .section_field {
       text-align: left;
       width: 17rem;
-      &.name {
-        width: 6rem;
-      }
       &:hover {
         .copy {
           opacity: 1;
