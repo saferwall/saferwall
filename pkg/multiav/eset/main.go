@@ -59,6 +59,9 @@ func ScanFile(filePath string) (Result, error) {
 	det = strings.TrimPrefix(det, "a variant of ")
 	det = strings.TrimSuffix(det, "  potentially unwanted application")
 	det = strings.TrimSuffix(det, "  potentially unsafe application")
+	det = strings.TrimSuffix(det, " trojan")
+	det = strings.TrimSuffix(det, " Constructor")
+	det = strings.TrimSuffix(det, " worm")
 
 	res.Infected = true
 	res.Output = det
