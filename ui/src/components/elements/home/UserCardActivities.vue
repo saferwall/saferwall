@@ -9,10 +9,10 @@
     <div class="media-content">
       <div class="content">
         <strong @click="goToProfile" id="username">{{
-          this.userData.name ? this.userData.name : this.username
+          this.userData.username
         }}</strong>
         &nbsp;
-        <small>@{{ this.username }}</small>
+        <small>@{{ this.userData.username }}</small>
       </div>
     </div>
     <div class="btn">
@@ -30,38 +30,17 @@
 
 <script>
 export default {
-  props: ["username"],
+  props: ["userData"],
   data() {
     return {
-      userData: {},
       followed: false,
       self: false,
     }
   },
   methods: {
-    getUserData() {
-      this.$http
-        .get(this.$api_endpoints.USERS + this.username + "?fields=name")
-        .then((res) => {
-          this.$http
-            .get(this.$api_endpoints.USERS + this.username + "/avatar", {
-              responseType: "arraybuffer",
-            })
-            .then((secRes) => {
-              var data = {
-                name: res.data.name,
-                avatar: Buffer.from(secRes.data, "binary").toString("base64"),
-              }
-              this.userData = data
-            })
-        })
-        .catch(() => {
-          this.$awn.alert("An Error Occured While fetshing the user data")
-        })
-    },
     followUnfollow: function() {
       this.$http
-        .post(this.$api_endpoints.USERS + this.username + "/actions/", {
+        .post(this.$api_endpoints.USERS + this.userData.username + "/actions/", {
           type: this.followed ? "unfollow" : "follow",
         })
         .then(() => {
@@ -72,12 +51,11 @@ export default {
     goToProfile: function() {
       this.$router.push({
         name: "profile",
-        params: { user: this.username },
+        params: { user: this.userData.username },
       })
     },
   },
   mounted() {
-    this.getUserData()
     if (this.$store.getters.getFollowing.includes(this.userData.username))
       this.followed = true
     if (this.username === this.$store.getters.getUsername) this.self = true

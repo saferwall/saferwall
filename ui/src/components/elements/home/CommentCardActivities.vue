@@ -1,9 +1,9 @@
 <template>
   <div class="level tile">
     <div class="level-left">
-      <div id="hash" @click="showFile">{{ data.sha256 }}</div>
+      <div id="hash" @click="showFile">{{ data.content.sha256 }}</div>
       <div class="level-item">
-        <span id="comment_body" v-html="data.body"></span>
+        <span id="comment_body" v-html="data.content.body"></span>
       </div>
     </div>
     <div v-if="this.$store.getters.getLoggedIn">
@@ -29,13 +29,13 @@ export default {
   },
   watch: {
     data: function() {
-      if (this.$store.getters.getLikes.includes(this.hash)) this.liked = true
+      if (this.$store.getters.getLikes.includes(this.data.content.sha256)) this.liked = true
     },
   },
   methods: {
     likeUnlike: function() {
       this.$http
-        .post(`${this.$api_endpoints.FILES}${this.data.sha256}/actions/`, {
+        .post(`${this.$api_endpoints.FILES}${this.data.content.sha256}/actions/`, {
           type: this.liked ? "unlike" : "like",
         })
         .then(() => {
@@ -47,8 +47,8 @@ export default {
         })
     },
     showFile: function() {
-      this.$store.dispatch("updateHash", this.data.sha256)
-      this.$router.push(this.$routes.SUMMARY.path + this.data.sha256)
+      this.$store.dispatch("updateHash", this.data.content.sha256)
+      this.$router.push(this.$routes.SUMMARY.path + this.data.content.sha256)
     },
   },
 }

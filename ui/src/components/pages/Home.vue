@@ -14,6 +14,11 @@
       <ActivityCard
         :activity="activity"
         :userData="getUserDataPerActivity(activity.username)"
+        :secondUser="
+          activity.content.user
+            ? getUserDataPerActivity(activity.content.user)
+            : null
+        "
         v-for="(activity, index) in activitiesToShow"
         :key="index"
       />
@@ -31,7 +36,7 @@ export default {
   },
   data() {
     return {
-      loged: false,
+      logged: false,
       activities: [],
       usersData: [],
       actToShowCount: 0,
@@ -43,34 +48,33 @@ export default {
     },
   },
   methods: {
-    getLoggedInActivities: function() {
+    getActivities: function() {
+      const url = this.logged
+        ? this.$api_endpoints.USERS +
+          this.$store.getters.getUsername +
+          "/activities"
+        : this.$api_endpoints.USERS + "activities"
       this.$http
-        .get(
-          this.$api_endpoints.USERS +
-            this.$store.getters.getUsername +
-            "/activities",
-        )
+        .get(url)
         .then((res) => {
-          this.formatActivities(res.data)
+          // getting users data
+          var users = this._.uniq(
+            this._.flatten(
+              this._.map(res.data, (activity) => {
+                if (activity.content.user)
+                  return [activity.username, activity.content.user]
+                return [activity.username]
+              }),
+            ),
+          )
+          for (var user of users) {
+            this.getUserData(user)
+          }
+
+          this.activities = res.data
+          this.orderActivities()
         })
         .catch(() => this.$awn.alert("Error Occured While getting activities"))
-    },
-    getLoggedOffActivities: function() {
-      this.$http
-        .get(this.$api_endpoints.USERS + "activities")
-        .then((res) => this.formatActivities(res.data))
-        .catch(() => this.$awn.alert("Error Occured While getting activities"))
-    },
-    formatActivities: function(activities) {
-      for (var index in activities) {
-        this.getUserData(activities[index].username)
-        for (var index2 in activities[index].activities) {
-          activities[index].activities[index2].username =
-            activities[index].username
-          this.activities.push(activities[index].activities[index2])
-        }
-      }
-      this.orderActivities()
     },
     orderActivities: function() {
       this.activities.sort((a, b) => {
@@ -112,12 +116,11 @@ export default {
   },
   mounted() {
     if (this.$store.getters.getLoggedIn) {
-      this.loged = true
-      this.getLoggedInActivities()
+      this.logged = true
     } else {
-      this.getLoggedOffActivities()
-      this.loged = false
+      this.logged = false
     }
+    this.getActivities()
     this.actToShowCount = 10
     this.scroll()
   },
