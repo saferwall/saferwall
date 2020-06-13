@@ -2,24 +2,27 @@
   <div class="level tile">
     <div class="data">
       <p id="hash" @click="showFile">
-        {{ this.hash }}
+        {{ data.content.sha256 }}
       </p>
       <p class="info">
         <span id="tags">
           <i class="icon fas fa-tags"></i>
           Tags:
-          <span v-if="!fileData.tags">none</span>
+          <span v-if="!data.tags">none</span>
           <span
+            v-else
             class="tag is-link is-normal"
+            :class="{ redTag: isAntivirusTag(tag[0]) }"
             id="tag"
-            v-for="tag in fileData.tags"
-            :key="tag"
-            >{{ tag }}</span
+            v-for="tag in tags"
+            :key="tag[1]"
           >
+            {{ tag[1] }}
+          </span>
         </span>
         <span id="Av">
           <i class="icon fas fa-shield-alt"></i>
-          Antivirus: {{ fileData.AvDetectionCount }}/12
+          Antivirus: {{ data.av_count }}/12
         </span>
       </p>
     </div>
@@ -38,24 +41,39 @@
 
 <script>
 export default {
-  props: ["hash"],
+  props: ["data"],
   data() {
     return {
       liked: false,
-      fileData: {},
     }
   },
   watch: {
-    hash: function() {
-      if (this.$store.getters.getLikes.includes(this.hash)) this.liked = true
+    data: function() {
+      if (this.$store.getters.getLikes.includes(this.data.content.sha256))
+        this.liked = true
+    },
+  },
+  computed: {
+    tags: function() {
+      var tags = []
+      if (!this.data.tags) return null
+      for (var tag of Object.entries(this.data.tags)) {
+        for (var value of tag[1]) {
+          tags.push([tag[0], value])
+        }
+      }
+      return tags
     },
   },
   methods: {
     likeUnlike: function() {
       this.$http
-        .post(`${this.$api_endpoints.FILES}${this.hash}/actions/`, {
-          type: this.liked ? "unlike" : "like",
-        })
+        .post(
+          `${this.$api_endpoints.FILES}${this.data.content.sha256}/actions/`,
+          {
+            type: this.liked ? "unlike" : "like",
+          },
+        )
         .then(() => {
           this.liked = !this.liked
           this.$store.dispatch("updateLikes")
@@ -65,32 +83,26 @@ export default {
         })
     },
     showFile: function() {
-      this.$store.dispatch("updateHash", this.hash)
-      this.$router.push(this.$routes.SUMMARY.path + this.hash)
+      this.$store.dispatch("updateHash", this.data.content.sha256)
+      this.$router.push(this.$routes.SUMMARY.path + this.data.content.sha256)
     },
-    getAvDetectionCount: function(scans) {
-      var count = 0
-      for (const av of Object.values(scans)) {
-        if (av.infected) count++
-      }
-      return count
+    isAntivirusTag: function(tag) {
+      const antivirusList = [
+        "eset",
+        "fsecure",
+        "avira",
+        "bitdefender",
+        "kaspersky",
+        "symantec",
+        "sophos",
+        "windefender",
+        "clamav",
+        "comodo",
+        "avast",
+        "mcafee",
+      ]
+      return antivirusList.includes(tag)
     },
-    getFileData: function() {
-      this.$http
-        .get(
-          this.$api_endpoints.FILES + this.hash + "?fields=sha256,tags,multiav",
-        )
-        .then((res) => {
-          res.data.AvDetectionCount = this.getAvDetectionCount(
-            res.data.multiav.last_scan,
-          )
-          this.fileData = res.data
-        })
-        .catch()
-    },
-  },
-  mounted() {
-    this.getFileData()
   },
 }
 </script>
@@ -118,6 +130,9 @@ export default {
       margin-right: 0.2em;
       color: white;
       font-weight: 600;
+    }
+    .redTag {
+      background-color: #f14668;
     }
     #Av {
       padding-left: 0.5em;

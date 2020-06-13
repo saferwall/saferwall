@@ -31,16 +31,16 @@
       </div>
       <div v-if="activity.content && userData">
         <div class="content" v-if="this.activity.type === 'submit'">
-          <FileCard :hash="activity.content.sha256" />
+          <FileCard :data="activity" />
         </div>
         <div class="content" v-if="this.activity.type === 'like'">
-          <FileCard :hash="activity.content.sha256" />
+          <FileCard :data="activity" />
         </div>
         <div class="content" v-if="this.activity.type === 'follow'">
-          <UserCard :username="activity.content.user" />
+          <UserCard :userData="secondUser"/>
         </div>
         <div class="content" v-if="this.activity.type === 'comment'">
-          <CommentCard :data="activity.content" />
+          <CommentCard :data="activity" />
         </div>
       </div>
     </div>
@@ -60,7 +60,7 @@ import FileCard from "./FileCardActivities"
 import CommentCard from "./CommentCardActivities"
 
 export default {
-  props: ["activity", "userData"],
+  props: ["activity", "userData", "secondUser"],
   components: {
     UserCard,
     FileCard,
