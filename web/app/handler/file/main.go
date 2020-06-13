@@ -64,7 +64,7 @@ type File struct {
 	Size            int64                  `json:"size,omitempty"`
 	Exif            map[string]string      `json:"exif,omitempty"`
 	TriD            []string               `json:"trid,omitempty"`
-	Tags            []string               `json:"tags,omitempty"`
+	Tags            map[string]interface{} `json:"tags,omitempty"`
 	Packer          []string               `json:"packer,omitempty"`
 	FirstSubmission *time.Time             `json:"first_submission,omitempty"`
 	LastSubmission  *time.Time             `json:"last_submission,omitempty"`
@@ -73,7 +73,8 @@ type File struct {
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
 	Comments        []Comment              `json:"comments,omitempty"`
-	PE              *peparser.File          `json:"pe,omitempty"`
+	PE              *peparser.File         `json:"pe,omitempty"`
+	Type            string                 `json:"type,omitempty"`
 }
 
 // Response JSON
@@ -398,8 +399,6 @@ func PostFiles(c echo.Context) error {
 			"verbose_msg": "Username does not exists"})
 	}
 
-	log.Infoln("New file uploaded by", username)
-
 	// Source
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -432,7 +431,6 @@ func PostFiles(c echo.Context) error {
 
 	// Get the size
 	size := fileHeader.Size
-	log.Infoln("File size: ", size)
 
 	// Read the content
 	fileContents, err := ioutil.ReadAll(file)
@@ -446,7 +444,6 @@ func PostFiles(c echo.Context) error {
 	}
 
 	sha256 := crypto.GetSha256(fileContents)
-	log.Infoln("File hash: ", sha256)
 
 	// Have we seen this file before
 	fileDocument, err := GetFileBySHA256(sha256)
