@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="FSecure Linux Security in a docker container"
 
 # Vars
@@ -36,4 +36,3 @@ RUN /opt/f-secure/fsav/bin/fsav --virus-action1=report --suspected-action1=repor
 # Clean up
 RUN rm -rf $FSECURE_TMP \
 	&& rm -rf /var/lib/apt/lists/*
-
