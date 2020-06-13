@@ -95,24 +95,25 @@ func (f *result) getTags() error {
 	f.Tags["packer"] = tags
 
 	// Multi AV tags
-	avMap := f.MultiAV["last_scan"].(map[string]multiav.ScanResult)
-	for engine, result := range avMap {
+	avMap := f.MultiAV["last_scan"].(map[string]interface{})
+	for engine, res := range avMap {
+		result := res.(multiav.ScanResult)
 		if result.Infected {
 			switch engine {
 			case "eset":
 				parsedDetection := avlabel.ParseEset(result.Output)
 				if len(parsedDetection) > 0 {
-					f.Tags["eset"] = parsedDetection["Family"]
+					f.Tags["eset"] = []string{parsedDetection["Family"]}
 				}
 			case "windefender":
 				parsedDetection := avlabel.ParseWindefender(result.Output)
 				if len(parsedDetection) > 0 {
-					f.Tags["eset"] = parsedDetection["Family"]
+					f.Tags["eset"] = []string{parsedDetection["Family"]}
 				}
 			case "avira":
 				parsedDetection := avlabel.ParseAvira(result.Output)
 				if len(parsedDetection) > 0 {
-					f.Tags["avira"] = parsedDetection["Family"]
+					f.Tags["avira"] = []string{parsedDetection["Family"]}
 				}
 			}
 		}
