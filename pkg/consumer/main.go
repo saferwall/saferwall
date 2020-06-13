@@ -107,6 +107,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res.MultiAV = map[string]interface{}{}
 	res.MultiAV["last_scan"] = multiavScanResults
 
+	// extract tags
+	res.getTags()
+
 	// analysis finished
 	res.Status = finished
 

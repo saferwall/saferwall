@@ -5,8 +5,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/xml"
 	"strings"
 
 	"github.com/saferwall/saferwall/pkg/crypto"
@@ -43,7 +41,6 @@ import (
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/spf13/viper"
-	"golang.org/x/net/html"
 )
 
 type stringStruct struct {
@@ -51,68 +48,48 @@ type stringStruct struct {
 	Value    string `json:"value"`
 }
 type result struct {
-	Crc32   string                 `json:"crc32,omitempty"`
 	Md5     string                 `json:"md5,omitempty"`
 	Sha1    string                 `json:"sha1,omitempty"`
 	Sha256  string                 `json:"sha256,omitempty"`
 	Sha512  string                 `json:"sha512,omitempty"`
 	Ssdeep  string                 `json:"ssdeep,omitempty"`
+	Crc32   string                 `json:"crc32,omitempty"`
+	Magic   string                 `json:"magic,omitempty"`
 	Exif    map[string]string      `json:"exif,omitempty"`
 	TriD    []string               `json:"trid,omitempty"`
-	Tags    []string               `json:"tags,omitempty"`
+	Tags    map[string]interface{} `json:"tags,omitempty"`
 	Packer  []string               `json:"packer,omitempty"`
-	Magic   string                 `json:"magic,omitempty"`
 	Strings []stringStruct         `json:"strings,omitempty"`
 	MultiAV map[string]interface{} `json:"multiav,omitempty"`
 	Status  int                    `json:"status,omitempty"`
 	PE      peparser.File          `json:"pe,omitempty"`
+	Type    string                 `json:"type,omitempty"`
 }
 
 func (res *result) parseFile(b []byte, filePath string) {
-	// Using linux file magic, run the correct parser.
+	// Get the file type using linux magic utility.
 	magic := res.Magic
-	if strings.Contains(magic, "PE32") {
-		magic = "PE"
-	} else if strings.Contains(magic, "XML") {
-		magic = "XML"
-	} else if strings.Contains(magic, "HTML") {
-		magic = "HTML"
+	if strings.HasPrefix(magic, "PE32") {
+		res.Type = "pe"
+	} else if strings.HasPrefix(magic, "XML") {
+		res.Type = "xml"
+	} else if strings.HasPrefix(magic, "HTML") {
+		res.Type = "html"
+	} else if strings.HasPrefix(magic, "ELF") {
+		res.Type = "elf"
+	} else if strings.HasPrefix(magic, "Macromedia Flash") {
+		res.Type = "swf"
 	}
 
-	switch magic {
-	case "XML":
-		var v interface{}
-		err := xml.Unmarshal(b, &v)
-		if err != nil {
-			contextLogger.Errorf("xml parser failed: %v", err)
-		}
-		res.Tags = append(res.Tags, "xml")
-	case "PE":
+	// Parse it accrording to its type.
+	switch res.Type {
+	case "pe":
 		pe, err := parsePE(filePath)
 		if err != nil {
-			contextLogger.Errorf("pe pkg failed with: %v", err)
+			contextLogger.Errorf("pe parser failed: %v", err)
 		} else {
 			res.PE = pe
-			if pe.IsEXE() {
-				res.Tags = append(res.Tags, "exe")
-			} else if pe.IsDriver() {
-				res.Tags = append(res.Tags, "sys")
-			} else if pe.IsDLL() {
-				res.Tags = append(res.Tags, "dll")
-			}
 		}
-		res.Tags = append(res.Tags, "pe")
-	case "HTML":
-		_, err := html.Parse(bytes.NewReader(b))
-		if err != nil {
-			contextLogger.Errorf("html parser failed: %v", err)
-		} else {
-			htmlString := strings.ToLower(string(b))
-			if strings.Contains(htmlString, "language=vbscript") {
-				res.Tags = append(res.Tags, "vba")
-			}
-		}
-		res.Tags = append(res.Tags, "html")
 	default:
 		contextLogger.Warnln("Unknow file format")
 	}
@@ -188,9 +165,6 @@ func staticScan(sha256, filePath string, b []byte) result {
 
 	// Run the parsers
 	res.parseFile(b, filePath)
-
-	// Extract tags
-	res.getTags()
 
 	return res
 }

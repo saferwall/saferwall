@@ -3,6 +3,7 @@ module github.com/saferwall/saferwall
 go 1.14
 
 require (
+	github.com/aws/aws-sdk-go v1.32.1
 	github.com/bitly/go-nsq v1.0.7
 	github.com/bnagy/gapstone v0.0.0-20190828052830-ede92aaeaba7
 	github.com/fatih/color v1.9.0
@@ -25,6 +26,6 @@ require (
 	github.com/spf13/viper v1.6.3
 	github.com/stoewer/go-strcase v1.2.0
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // indirect
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
 	google.golang.org/grpc v1.21.0
 )
