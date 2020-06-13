@@ -37,7 +37,7 @@
     },
     "tags": {
       "description": "Tags",
-      "type": "array"
+      "type": "object"
     },
     "submissions": {
       "description": "File upload history",
@@ -222,6 +222,10 @@
     "status": {
       "description": "status of file analysis",
       "type": "integer"
+    },
+    "type": {
+      "description": "File format type",
+      "type": "string"
     }
   },
   "additionalProperties": false

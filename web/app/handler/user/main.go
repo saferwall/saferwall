@@ -889,7 +889,7 @@ func Actions(c echo.Context) error {
 	})
 }
 
-// GetActivitiy represents the feed displayed in the landing page for registered users.
+// GetActivitiy represents the feed displayed in the landing page for logged in users.
 func GetActivitiy(c echo.Context) error {
 
 	// get path param
@@ -905,15 +905,24 @@ func GetActivitiy(c echo.Context) error {
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
-	query := "SELECT `username`, `activities` " +
-		"FROM users WHERE `username` IN " +
+	query := 
+		"SELECT t1.*, f.tags, array_count(array_flatten(array i.infected " +
+		"for i in OBJECT_VALUES(f.multiav.last_scan) when i.infected=true end, 1)) as av_count " +
+		"FROM ( " +
+		"SELECT u.`username`, `activity`.* " +
+		"FROM `users` u " +
+		"UNNEST `activities` AS activity " +
+		"WHERE u.`username` IN " +
 		"(SELECT RAW u1.`following` FROM users u1 " +
-		"WHERE u1.username=$user)[0] UNION " +
-		"SELECT username, activities " +
-		"FROM users u " +
-		"WHERE ANY activity IN u.activities " +
-		"SATISFIES activity.type = 'follow' AND " +
-		"activity.content.`user` =$user END"
+		"WHERE u1.username= $user)[0] " +
+		") t1  " +
+		"LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
+		"WHERE f.status == 2 " +
+		"UNION " +
+		"SELECT u.`username`,  `activity`.* " +
+		"FROM `users` u " +
+		"UNNEST `activities` AS activity " +
+		"WHERE activity.`type` == 'follow' AND activity.`content`.`user` == $user"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
@@ -939,15 +948,23 @@ func GetActivitiy(c echo.Context) error {
 	return c.JSON(http.StatusOK, activities)
 }
 
-// GetActivities represents the feed displayed in the landing page.
+// GetActivities represents the feed displayed in the landing page for anonymous users.
 func GetActivities(c echo.Context) error {
 
 	// Get all activities from all users.
 	params := make(map[string]interface{}, 1)
 	params["user"] = viper.GetString("app.admin_user")
-	query := "SELECT `username`, `activities` FROM users " +
-		"WHERE `username` != $user " + 
-		"ORDER BY activities[*].timestamp DESC LIMIT 50"
+	query := "SELECT t1.*, f.tags, " +
+			"array_count(array_flatten(array i.infected for i " + 
+			"in OBJECT_VALUES(f.multiav.last_scan) when " +
+			"i.infected=true end, 1)) as av_count " +
+			"FROM (SELECT u.`username`, `activity`.* " +
+			"FROM `users` u " +
+			"UNNEST `activities` AS activity " +
+			"WHERE u.`username` != $user AND u.`activities` IS NOT NULL " +
+			"ORDER BY activity.timestamp DESC LIMIT 30 " +
+			") t1 LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
+			"WHERE f.status == 2"
 
 	// Execute Query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
