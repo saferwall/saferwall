@@ -56,13 +56,13 @@ func ScanFile(filePath string) (Result, error) {
 
 	// Clean up detection name
 	det := l[1]
-	det = strings.TrimPrefix(det, "a variant of ")
-	det = strings.TrimSuffix(det, "  potentially unwanted application")
-	det = strings.TrimSuffix(det, "  potentially unsafe application")
+	det = strings.TrimPrefix(det, "a variant of")
+	det = strings.TrimSuffix(det, "potentially unwanted application")
+	det = strings.TrimSuffix(det, "potentially unsafe application")
 	det = strings.TrimSuffix(det, " trojan")
 	det = strings.TrimSuffix(det, " Constructor")
 	det = strings.TrimSuffix(det, " worm")
-
+	det = strings.TrimSpace(det)
 	res.Infected = true
 	res.Output = det
 	return res, nil
