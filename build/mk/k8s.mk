@@ -6,6 +6,18 @@ k8s-kubectl-install:		## Install kubectl
 	sudo apt-get install -y kubectl
 	kubectl version
 
+KUBECTX_URL=https://github.com/ahmetb/kubectx/releases/download/v0.9.0/kubectx_v0.9.0_linux_x86_64.tar.gz
+KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v0.9.0/kubens_v0.9.0_linux_x86_64.tar.gz
+k8s-kubectx-install:		## Install kubectx/kubens
+	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
+	tar zxvf /tmp/kubectx.tar.gz -C /tmp
+	sudo mv /tmp/kubectx /usr/local/bin/
+	chmod +x /usr/local/bin/kubectx
+	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
+	tar zxvf /tmp/kubens.tar.gz -C /tmp
+	sudo mv /tmp/kubens /usr/local/bin/
+	chmod +x /usr/local/bin/kubens
+
 k8s-minikube-install:		## Install minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 	chmod +x minikube
