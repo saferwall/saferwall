@@ -36,7 +36,7 @@ export default {
           this.fileData.constructor === Object)
       )
         return {}
-        
+
       return this._.omit(this.fileData, ["multiav", "strings", "status"])
     },
   },
@@ -120,6 +120,10 @@ export default {
       opacity: 0;
     }
 
+    &.redTag {
+      background-color: #f14668;
+    }
+
     &:hover {
       span {
         opacity: 0.35;
@@ -130,11 +134,11 @@ export default {
     }
   }
 }
-.tile.is-parent{
+.tile.is-parent {
   padding: 0;
   margin-bottom: 10px;
 }
 .tile.is-child {
-    margin-right: 18px !important;
+  margin-right: 18px !important;
 }
 </style>
