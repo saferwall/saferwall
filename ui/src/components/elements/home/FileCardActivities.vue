@@ -59,10 +59,10 @@ export default {
       if (!this.data.tags) return null
       for (var tag of Object.entries(this.data.tags)) {
         for (var value of tag[1]) {
-          tags.push([tag[0], value])
+          tags.push([tag[0], value.toLowerCase()])
         }
       }
-      return tags
+      return this._.uniqWith(tags, (x, y) => x[1] === y[1])
     },
   },
   methods: {
