@@ -5,6 +5,27 @@
       <div class="level-item">
         <span id="comment_body" v-html="data.content.body"></span>
       </div>
+      <p class="info">
+        <span id="tags">
+          <i class="icon fas fa-tags"></i>
+          Tags:
+          <span v-if="!data.tags">none</span>
+          <span
+            v-else
+            class="tag is-link is-normal"
+            :class="{ redTag: isAntivirusTag(tag[0]) }"
+            id="tag"
+            v-for="tag in tags"
+            :key="tag[1]"
+          >
+            {{ tag[1] }}
+          </span>
+        </span>
+        <span id="Av">
+          <i class="icon fas fa-shield-alt"></i>
+          Antivirus: {{ data.av_count }}/12
+        </span>
+      </p>
     </div>
     <div v-if="this.$store.getters.getLoggedIn">
       <button class="button" :class="{ active: liked }" @click="likeUnlike">
@@ -29,15 +50,31 @@ export default {
   },
   watch: {
     data: function() {
-      if (this.$store.getters.getLikes.includes(this.data.content.sha256)) this.liked = true
+      if (this.$store.getters.getLikes.includes(this.data.content.sha256))
+        this.liked = true
+    },
+  },
+  computed: {
+    tags: function() {
+      var tags = []
+      if (!this.data.tags) return null
+      for (var tag of Object.entries(this.data.tags)) {
+        for (var value of tag[1]) {
+          tags.push([tag[0], value.toLowerCase()])
+        }
+      }
+      return this._.uniqWith(tags, (x, y) => x[1] === y[1])
     },
   },
   methods: {
     likeUnlike: function() {
       this.$http
-        .post(`${this.$api_endpoints.FILES}${this.data.content.sha256}/actions/`, {
-          type: this.liked ? "unlike" : "like",
-        })
+        .post(
+          `${this.$api_endpoints.FILES}${this.data.content.sha256}/actions/`,
+          {
+            type: this.liked ? "unlike" : "like",
+          },
+        )
         .then(() => {
           this.liked = !this.liked
           this.$store.dispatch("updateLikes")
@@ -49,6 +86,23 @@ export default {
     showFile: function() {
       this.$store.dispatch("updateHash", this.data.content.sha256)
       this.$router.push(this.$routes.SUMMARY.path + this.data.content.sha256)
+    },
+    isAntivirusTag: function(tag) {
+      const antivirusList = [
+        "eset",
+        "fsecure",
+        "avira",
+        "bitdefender",
+        "kaspersky",
+        "symantec",
+        "sophos",
+        "windefender",
+        "clamav",
+        "comodo",
+        "avast",
+        "mcafee",
+      ]
+      return antivirusList.includes(tag)
     },
   },
 }
@@ -88,6 +142,23 @@ export default {
       span {
         color: white;
       }
+    }
+  }
+  .info {
+    margin-top: 0.5rem;
+    svg {
+      vertical-align: bottom;
+    }
+    #tag {
+      margin-right: 0.2em;
+      color: white;
+      font-weight: 600;
+    }
+    .redTag {
+      background-color: #f14668;
+    }
+    #Av {
+      padding-left: 0.5em;
     }
   }
 }
