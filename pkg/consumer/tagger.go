@@ -92,7 +92,9 @@ func (f *result) getTags() error {
 			}
 		}
 	}
-	f.Tags["packer"] = tags
+	if tags != nil {
+		f.Tags["packer"] = tags
+	}
 
 	// Multi AV tags
 	avMap := f.MultiAV["last_scan"].(map[string]interface{})

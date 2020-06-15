@@ -55,6 +55,7 @@ type result struct {
 	Ssdeep  string                 `json:"ssdeep,omitempty"`
 	Crc32   string                 `json:"crc32,omitempty"`
 	Magic   string                 `json:"magic,omitempty"`
+	Size    int64                  `json:"size,omitempty"`
 	Exif    map[string]string      `json:"exif,omitempty"`
 	TriD    []string               `json:"trid,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
@@ -87,9 +88,9 @@ func (res *result) parseFile(b []byte, filePath string) {
 		pe, err := parsePE(filePath)
 		if err != nil {
 			contextLogger.Errorf("pe parser failed: %v", err)
-		} else {
-			res.PE = pe
 		}
+		
+		res.PE = pe
 	default:
 		contextLogger.Warnln("Unknow file format")
 	}
@@ -98,6 +99,9 @@ func (res *result) parseFile(b []byte, filePath string) {
 func staticScan(sha256, filePath string, b []byte) result {
 	res := result{}
 	var err error
+
+	// Size
+	res.Size = int64(len(b))
 
 	// Calculates hashes.
 	r := crypto.HashBytes(b)
