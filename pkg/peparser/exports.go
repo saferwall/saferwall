@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -90,8 +89,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	errorMsg := fmt.Sprintf("Error parsing export directory at RVA: 0x%x", rva)
 
 	fileOffset := pe.getOffsetFromRva(rva)
-	buf := bytes.NewReader(pe.data[fileOffset : fileOffset+size])
-	err := binary.Read(buf, binary.LittleEndian, &exportDir)
+	err := pe.structUnpack(&exportDir, fileOffset, size)
 	if err != nil {
 		return errors.New(errorMsg)
 	}
