@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/binary"
 	"encoding/hex"
@@ -27,10 +26,6 @@ const (
 )
 
 var (
-	// AnoNullImportTable is reported when the ILT or the IAT are empty.
-	AnoNullImportTable = "Damaged Import Table information. ILT and/or IAT" +
-		" appear to be broken"
-
 	// AnoInvalidThunkAddressOfData is reported when thunk address is too spread out.
 	AnoInvalidThunkAddressOfData = "Thunk Address Of Data too spread out"
 
@@ -41,6 +36,14 @@ var (
 	// AnoAddressOfDataBeyondLimits is reported when Thunk AddressOfData goes
 	// beyond limites.
 	AnoAddressOfDataBeyondLimits = "Thunk AddressOfData beyond limits"
+
+	// AnoImportNoNameNoOrdinal is reported when an import entry does not have
+	// a name neither an oridinal, most probably malformed data.
+	AnoImportNoNameNoOrdinal = "Must have either an ordinal or a name in an import"
+
+	// ErrDamagedImportTable is reported when the IAT and ILT table length is 0.
+	ErrDamagedImportTable = errors.New(
+		"Damaged Import Table information. ILT and/or IAT appear to be broken")
 )
 
 // ImageImportDescriptor describes the remainder of the import information.
@@ -108,7 +111,7 @@ type ImportFunction struct {
 	Ordinal uint32
 
 	// Name Thunk Value (OFT)
-	OriginalThunkValue   uint64
+	OriginalThunkValue uint64
 
 	// Address Thunk Value (FT)
 	ThunkValue uint64
@@ -128,8 +131,7 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 		importDesc := ImageImportDescriptor{}
 		fileOffset := pe.getOffsetFromRva(rva)
 		importDescSize := uint32(binary.Size(importDesc))
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+importDescSize])
-		err := binary.Read(buf, binary.LittleEndian, &importDesc)
+		err := pe.structUnpack(&importDesc, fileOffset, importDescSize)
 
 		// If the RVA is invalid all would blow up. Some EXEs seem to be
 		// specially nasty and have an invalid RVA.
@@ -203,6 +205,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 	if rva == 0 {
 		return []*ImageThunkData32{}, nil
 	}
+
 	for {
 		if rva >= startRVA+maxLen {
 			log.Println("Error parsing the import table. Entries go beyond bounds.")
@@ -250,12 +253,11 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 
 		// Read the image thunk data.
 		thunk := ImageThunkData32{}
-		buf := bytes.NewReader(pe.data[offset : offset+size])
-		err := binary.Read(buf, binary.LittleEndian, &thunk)
+		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			msg := fmt.Sprintf(`Error parsing the import table. 
-				Invalid data at RVA: 0x%x`, rva)
-			return []*ImageThunkData32{}, errors.New(msg)
+			// log.Printf("Error parsing the import table. " +
+			// 	"Invalid data at RVA: 0x%x", rva)
+			return []*ImageThunkData32{}, nil
 		}
 
 		if thunk == (ImageThunkData32{}) {
@@ -323,6 +325,11 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 	addressesOfData := make(map[uint64]bool)
 
 	startRVA := rva
+
+	if rva == 0 {
+		return []*ImageThunkData64{}, nil
+	}
+
 	for {
 		if rva >= startRVA+maxLen {
 			log.Println("Error parsing the import table. Entries go beyond bounds.")
@@ -370,12 +377,11 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 
 		// Read the image thunk data.
 		thunk := ImageThunkData64{}
-		buf := bytes.NewReader(pe.data[offset : offset+size])
-		err := binary.Read(buf, binary.LittleEndian, &thunk)
+		err := pe.structUnpack(&thunk, offset, size)
 		if err != nil {
-			msg := fmt.Sprintf(`Error parsing the import table. 
-				Invalid data at RVA: 0x%x`, rva)
-			return []*ImageThunkData64{}, errors.New(msg)
+			// log.Printf("Error parsing the import table. " +
+			// 	"Invalid data at RVA: 0x%x", rva)
+			return []*ImageThunkData64{}, nil
 		}
 
 		if thunk == (ImageThunkData64{}) {
@@ -451,13 +457,13 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 		}
 	}
 
-	// Import Lookup Table. Contains ordinals or pointers to strings.
+	// Import Lookup Table (OFT). Contains ordinals or pointers to strings.
 	ilt, err := pe.getImportTable32(OriginalFirstThunk, maxLen, isOldDelayImport)
 	if err != nil {
 		return []*ImportFunction{}, err
 	}
 
-	// Import Address Table. May have identical content to ILT if PE file is
+	// Import Address Table (FT). May have identical content to ILT if PE file is
 	// not bound. It will contain the address of the imported symbols once
 	// the binary is loaded or if it is already bound.
 	iat, err := pe.getImportTable32(FirstThunk, maxLen, isOldDelayImport)
@@ -467,8 +473,7 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 
 	// Some DLLs has IAT or ILT with nil type.
 	if len(iat) == 0 && len(ilt) == 0 {
-		pe.Anomalies = append(pe.Anomalies, AnoNullImportTable)
-		return []*ImportFunction{}, nil
+		return []*ImportFunction{}, ErrDamagedImportTable
 	}
 
 	var table []*ImageThunkData32
@@ -509,7 +514,10 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 				// Thunk
 				hintNameTableRva := table[idx].AddressOfData & addressMask32
 				off := pe.getOffsetFromRva(hintNameTableRva)
-				imp.Hint = binary.LittleEndian.Uint16(pe.data[off:])
+				imp.Hint, err = pe.ReadUint16(off)
+				if err != nil {
+					imp.Hint = ^uint16(0) 
+				}
 				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2,
 					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
@@ -525,22 +533,24 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 		// entries are found in the middle of a table the parsing will be aborted.
 		hasName := len(imp.Name) > 0
 		if imp.Ordinal == 0 && !hasName {
-			return []*ImportFunction{}, errors.New("Must have either an ordinal or a name in an import")
+			if !stringInSlice(AnoImportNoNameNoOrdinal, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoImportNoNameNoOrdinal)
+			}
 		}
+
 		// Some PEs appear to interleave valid and invalid imports. Instead of
 		// aborting the parsing altogether we will simply skip the invalid entries.
 		// Although if we see 1000 invalid entries and no legit ones, we abort.
 		if imp.Name == "*invalid*" {
 			if numInvalid > 1000 && numInvalid == idx {
-				return []*ImportFunction{}, errors.New("Too many invalid names, aborting parsing")
+				return []*ImportFunction{}, errors.New(
+					`Too many invalid names, aborting parsing`)
 			}
 			numInvalid++
 			continue
 		}
 
-		if imp.Ordinal > 0 || hasName {
-			importedFunctions = append(importedFunctions, &imp)
-		}
+		importedFunctions = append(importedFunctions, &imp)
 	}
 
 	return importedFunctions, nil
@@ -580,8 +590,7 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 
 	// Would crash if IAT or ILT had nil type
 	if len(iat) == 0 && len(ilt) == 0 {
-		return []*ImportFunction{}, errors.New(
-			"Damaged Import Table information. ILT and/or IAT appear to be broken")
+		return []*ImportFunction{}, ErrDamagedImportTable
 	}
 
 	var table []*ImageThunkData64
@@ -630,7 +639,6 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 			}
 		}
 
-
 		// This file bfe97192e8107d52dd7b4010d12b2924 has an invalid table built
 		// in a way that it's parseable but contains invalid entries that lead
 		// pefile to take extremely long amounts of time to parse. It also leads
@@ -638,22 +646,23 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 		// entries are found in the middle of a table the parsing will be aborted.
 		hasName := len(imp.Name) > 0
 		if imp.Ordinal == 0 && !hasName {
-			return []*ImportFunction{}, errors.New("Must have either an ordinal or a name in an import")
+			if !stringInSlice(AnoImportNoNameNoOrdinal, pe.Anomalies) {
+				pe.Anomalies = append(pe.Anomalies, AnoImportNoNameNoOrdinal)
+			}
 		}
 		// Some PEs appear to interleave valid and invalid imports. Instead of
 		// aborting the parsing altogether we will simply skip the invalid entries.
 		// Although if we see 1000 invalid entries and no legit ones, we abort.
 		if imp.Name == "*invalid*" {
 			if numInvalid > 1000 && numInvalid == idx {
-				return []*ImportFunction{}, errors.New("Too many invalid names, aborting parsing")
+				return []*ImportFunction{}, errors.New(
+					`Too many invalid names, aborting parsing`)
 			}
 			numInvalid++
 			continue
 		}
 
-		if imp.Ordinal > 0 || hasName {
-			importedFunctions = append(importedFunctions, &imp)
-		}
+		importedFunctions = append(importedFunctions, &imp)
 	}
 
 	return importedFunctions, nil
