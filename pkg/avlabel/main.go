@@ -25,7 +25,8 @@ func getParams(regEx, url string) (paramsMap map[string]string) {
 // ParseWindefender parse.
 func ParseWindefender (detection string) map[string]string {
 	// Backdoor:Win32/Beastdoor.DQ
-	params := getParams(`^(?P<Category>[a-zA-Z]{1,20})\:(?P<Platform>[\w]{1,10})\/(?P<Family>[a-zA-Z]{1,20})\.?`, detection)
+	// Exploit:O97M/CVE-2017-11882.M
+	params := getParams(`^(?P<Category>[a-zA-Z]{1,20})\:(?P<Platform>[a-zA-Z0-9]{1,20})\/(?P<Family>[a-zA-Z0-9-]{1,20})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
 	return params
 }
 
@@ -57,6 +58,7 @@ func ParseAvira (detection string) map[string]string {
 	}
 
 	// HEUR/AGEN.1012588, Linux/Mirai.bonb, KIT/Exploit-M-022.B
-	params = getParams(`^(?P<Category>[a-zA-Z0-9]{2,10})\/(?P<Family>[a-zA-Z0-9]{1,20})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
+	// EXP/CVE-2017-11882.Gen
+	params = getParams(`^(?P<Category>[a-zA-Z0-9]{2,10})\/(?P<Family>[a-zA-Z0-9-]{1,20})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
 	return params
 }

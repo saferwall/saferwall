@@ -75,7 +75,9 @@ func (f *result) getTags() error {
 		tags = append(tags, "swf")
 	}
 
-	f.Tags[f.Type] = tags
+	if tags != nil {
+		f.Tags[f.Type] = tags
+	}
 
 	// Packers/Protector/Compilers/Installers tags
 	tags = nil
