@@ -245,7 +245,12 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 		if rva > pe.size {
 			return ""
 		}
-		s := pe.getStringFromData(0, pe.data[rva:rva+maxLen])
+
+		end := rva+maxLen
+		if maxLen > pe.size {
+			end = pe.size
+		}
+		s := pe.getStringFromData(0, pe.data[rva:end])
 		return string(s)
 	}
 	s := pe.getStringFromData(0, section.Data(rva, maxLen, pe))
@@ -254,12 +259,18 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 
 // getStringFromData returns ASCII string from within the data.
 func (pe *File) getStringFromData(offset uint32, data []byte) []byte {
-	if offset > uint32(len(data)) {
+
+	dataSize := uint32(len(data))
+	if dataSize == 0 {
+		return nil
+	}
+
+	if offset > dataSize {
 		return nil
 	}
 
 	end := offset
-	for end < uint32(len(data)) {
+	for end < dataSize {
 		if data[end] == 0 {
 			break
 		}
@@ -287,11 +298,10 @@ func (pe *File) getData(rva, length uint32) ([]byte, error) {
 			return pe.Header[rva:end], nil
 		}
 
-		// Before we give up we check whether the file might
-		// contain the data anyway. There are cases of PE files
-		// without sections that rely on windows loading the first
-		// 8291 bytes into memory and assume the data will be there
-		// A functional file with these characteristics is:
+		// Before we give up we check whether the file might contain the data
+		// anyway. There are cases of PE files without sections that rely on
+		// windows loading the first 8291 bytes into memory and assume the data
+		// will be there. A functional file with these characteristics is:
 		// MD5: 0008892cdfbc3bda5ce047c565e52295
 		// SHA-1: c7116b9ff950f86af256defb95b5d4859d4752a9
 
@@ -327,6 +337,10 @@ func (pe *File) adjustFileAlignment(va uint32) uint32 {
 	}
 
 	// round it to 0x200 if not power of 2.
+	// According to https://github.com/corkami/docs/blob/master/PE/PE.md
+	// if PointerToRawData is less that 0x200 it's rounded to zero. Loading the
+	// test filein a debugger it's easy to verify that the PointerToRawData
+	// value of 1 is rounded to zero. Hence we reproduce the behavior
 	return (va / 0x200) * 0x200
 
 }
@@ -353,7 +367,6 @@ func (pe *File) adjustSectionAlignment(va uint32) uint32 {
 
 	// 0x200 is the minimum valid FileAlignment according to the documentation
 	// although ntoskrnl.exe has an alignment of 0x80 in some Windows versions
-
 	if sectionAlignment != 0 && va%sectionAlignment != 0 {
 		return sectionAlignment * (va / sectionAlignment)
 	}
@@ -534,7 +547,7 @@ func (pe *File) Checksum() uint32 {
 
 // ReadUint32 read a uint32 from a buffer.
 func (pe *File) ReadUint32(offset uint32) (uint32, error) {
-	if offset > pe.size + 4 {
+	if offset > pe.size+4 {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -543,7 +556,7 @@ func (pe *File) ReadUint32(offset uint32) (uint32, error) {
 
 // ReadUint16 read a uint32 from a buffer.
 func (pe *File) ReadUint16(offset uint32) (uint16, error) {
-	if offset > pe.size + 2 {
+	if offset > pe.size+2 {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -552,7 +565,14 @@ func (pe *File) ReadUint16(offset uint32) (uint16, error) {
 
 func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error) {
 	// Boundary check
-	if offset >= pe.size || offset+size > pe.size {
+	totalSize := offset + size
+
+	// Integer overflow
+	if (totalSize > offset) != (size > 0) {
+		return ErrOutsideBoundary
+	}
+
+	if offset >= pe.size || totalSize > pe.size {
 		return ErrOutsideBoundary
 	}
 

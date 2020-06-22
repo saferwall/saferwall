@@ -18,6 +18,8 @@ const (
 var (
 	ErrExportMaxOrdEntries       = "Export directory contains more than max ordinal entries"
 	ErrExportManyRepeatedEntries = "Export directory contains many repeated entries"
+	AnoNullNumberOfFunctions = "Export directory contains zero number of functions"
+	AnoNullAddressOfFunctions = "Export directory contains zero address of functions"
 )
 
 // ImageExportDirectory represents the IMAGE_EXPORT_DIRECTORY structure.
@@ -49,11 +51,11 @@ type ImageExportDirectory struct {
 	// The number of entries in the export address table.
 	NumberOfFunctions uint32
 
-	// The number of entries in the name pointer table.
-	// This is also the number of entries in the ordinal table.
+	// The number of entries in the name pointer table. This is also the number
+	// of entries in the ordinal table.
 	NumberOfNames uint32
 
-	//The address of the export address table, relative to the image base.
+	// The address of the export address table, relative to the image base.
 	AddressOfFunctions uint32
 
 	// The address of the export name pointer table, relative to the image base.
@@ -82,6 +84,19 @@ type Export struct {
 	Name      string
 }
 
+// A few notes learned from `Corkami` about parsing export directory:
+// - like many data directories, Exports' size are not necessary, except for
+// forwarding.
+// - Characteristics, TimeDateStamp, MajorVersion and MinorVersion are not necessary.
+// the export name is not necessary, and can be anything.
+// - AddressOfNames is lexicographically-ordered.
+// - export names can have any value (even null or more than 65536 characters
+// long, with unprintable characters), just null terminated.
+// - an EXE can have exports (no need of relocation nor DLL flag), and can use
+// them normally
+// - exports can be not used for execution, but for documenting the internal code
+// - numbers of functions will be different from number of names when the file 
+// is exporting some functions by ordinal.
 func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	// Define some vars.
@@ -89,7 +104,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	errorMsg := fmt.Sprintf("Error parsing export directory at RVA: 0x%x", rva)
 
 	fileOffset := pe.getOffsetFromRva(rva)
-	err := pe.structUnpack(&exportDir, fileOffset, size)
+	exportDirSize := uint32(binary.Size(exportDir))
+	err := pe.structUnpack(&exportDir, fileOffset, exportDirSize)
 	if err != nil {
 		return errors.New(errorMsg)
 	}
@@ -105,6 +121,13 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	// Some DLLs have null number of functions.
 	if exportDir.NumberOfFunctions == 0 {
+		pe.Anomalies = append(pe.Anomalies, AnoNullNumberOfFunctions)
+		return nil
+	}
+
+	// Some DLLs have null address of functions.
+	if exportDir.AddressOfFunctions == 0 {
+		pe.Anomalies = append(pe.Anomalies, AnoNullAddressOfFunctions)
 		return nil
 	}
 
@@ -224,8 +247,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 
 	if parsingFailed {
-		log.Printf(`RVA AddressOfNames in the export directory points to an
-		 invalid address: 0x%x`, exportDir.AddressOfNames)
+		log.Printf("RVA AddressOfNames in the export directory points to an " + 
+		 "invalid address: 0x%x", exportDir.AddressOfNames)
 	}
 
 	maxFailedEntries = 10

@@ -198,17 +198,15 @@ type ImageSectionHeader struct {
 	// a section contains only uninitialized data, this field should be zero.
 	SizeOfRawData uint32
 
-	// The file pointer to the beginning of relocation entries for the section.
-	// This is set to zero for executable images or if there are no relocations.
+	// The file pointer to the first page of the section within the COFF file.
+	// For executable images, this must be a multiple of FileAlignment from the
+	// optional header. For object files, the value should be aligned on a 
+	// 4-byte boundary for best performance. When a section contains only 
+	// uninitialized data, this field should be zero.
 	PointerToRawData uint32
 
-	// The size of the section (for object files) or the size of the initialized
-	// data on disk (for image files). For executable images, this must be a
-	// multiple of FileAlignment from the optional header. If this is less than
-	// VirtualSize, the remainder of the section is zero-filled. Because the
-	// SizeOfRawData field is rounded but the VirtualSize field is not, it is
-	// possible for SizeOfRawData to be greater than VirtualSize as well. When a
-	// section contains only uninitialized data, this field should be zero.
+	// The file pointer to the beginning of relocation entries for the section.
+	// This is set to zero for executable images or if there are no relocations.
 	PointerToRelocations uint32
 
 	// The file pointer to the beginning of line-number entries for the section.
@@ -290,7 +288,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 		case true:
 			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).FileAlignment
 		case false:
-			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).SectionAlignment
+			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
 		}
 		if fileAlignment != 0 && section.PointerToRawData%fileAlignment != 0 {
 			pe.Anomalies = append(
@@ -335,7 +333,9 @@ func (pe *File) ParseSectionHeader() (err error) {
 	}
 
 	if lowestSectionOffset == 0 || lowestSectionOffset < offset {
-		pe.Header = pe.data[:offset]
+		if offset <= pe.size {
+			pe.Header = pe.data[:offset]
+		}
 	} else {
 		if lowestSectionOffset <= pe.size {
 			pe.Header = pe.data[:lowestSectionOffset]
@@ -407,6 +407,10 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 		offset = (start - virtualAddressAdj) + pointerToRawDataAdj
 	}
 
+	if offset > pe.size {
+		return nil
+	}
+
 	var end uint32
 	if length != 0 {
 		end = offset + length
@@ -420,6 +424,10 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	if end > section.PointerToRawData+section.SizeOfRawData &&
 		section.PointerToRawData + section.SizeOfRawData > offset {
 		end = section.PointerToRawData + section.SizeOfRawData
+	}
+
+	if end > pe.size {
+		end = pe.size
 	}
 
 	return pe.data[offset:end]
