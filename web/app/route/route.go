@@ -53,6 +53,7 @@ func New() *echo.Echo {
 	e.GET("/v1/files/:sha256/", file.GetFile)
 	e.PUT("/v1/files/:sha256/", file.PutFile, m.RequireLogin, m.RequireJSON)
 	e.DELETE("/v1/files/:sha256/", file.DeleteFile, m.RequireLogin, auth.IsAdmin)
+	e.POST("/v1/files/:sha256/scan/", file.ScanFileFromObjectStorage, m.RequireLogin, auth.IsAdmin)
 
 	// handle comments
 	e.POST("/v1/files/:sha256/comments/", file.PostComment, m.RequireLogin, m.RequireJSON)

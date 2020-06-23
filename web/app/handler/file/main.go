@@ -865,3 +865,92 @@ func DeleteComment(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"verbose_msg": "Comment was deleted"})
 }
+
+// ScanFileFromObjectStorage scans which was pushed to object
+// storage directly.
+func ScanFileFromObjectStorage(c echo.Context) error {
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	username := claims["name"].(string)
+
+	// Get user infos.
+	_, err := user.GetByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"verbose_msg": "Username does not exists"})
+	}
+
+	sha256 := c.Param("sha256")
+
+	// Fetch the object
+	reader, err := app.MinioClient.GetObject(
+		app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	defer reader.Close()
+
+	objInfo, err := reader.Stat()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, err.Error())
+	}
+
+	// Check file size
+	if objInfo.Size > app.MaxFileSize {
+		return c.JSON(http.StatusRequestEntityTooLarge, Response{
+			Message:     "File too large",
+			Description: "The maximum allowed is 64MB",
+			Filename:    sha256,
+		})
+	}
+
+	b := make([]byte, objInfo.Size)
+	reader.Read(b)
+	calculatedSha256 := crypto.GetSha256(b)
+	if sha256 != calculatedSha256 {
+		log.Errorf("Given sha256 %s <> from object sha256: %s", sha256, calculatedSha256)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "given sha diferent from object sha",
+			Description: "Internal error",
+			Filename:    sha256,
+		})
+	}
+
+	// Save to DB
+	now := time.Now().UTC()
+	newFile := File{
+		Sha256:          sha256,
+		FirstSubmission: &now,
+		LastSubmission:  &now,
+		Size:            objInfo.Size,
+		Status:          queued,
+	}
+
+	// Create new submission
+	s := submission{
+		Date:     &now,
+		Filename: sha256,
+		Source:   "api",
+		Country:  c.Request().Header.Get("X-Geoip-Country"),
+	}
+	newFile.Submissions = append(newFile.Submissions, s)
+	newFile.Save()
+
+	// Push it to NSQ
+	err = app.NsqProducer.Publish("scan", []byte(sha256))
+	if err != nil {
+		log.Error("Failed to publish to NSQ, err: ", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Publish failed",
+			Description: "Internal error",
+			Sha256:      sha256,
+		})
+	}
+
+	// All went fine
+	return c.JSON(http.StatusCreated, Response{
+		Sha256:      sha256,
+		Message:     "ok",
+		Description: "File queued successfully for analysis",
+	})
+}
