@@ -91,8 +91,6 @@ func (res *result) parseFile(b []byte, filePath string) {
 		}
 		
 		res.PE = pe
-	default:
-		contextLogger.Warnln("Unknow file format")
 	}
 }
 
@@ -181,12 +179,14 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 		}
 	}()
 
+	// Open the file and prepare it to be parsed.
 	pe, err = peparser.Open(filePath)
 	if err != nil {
 		return peparser.File{}, err
 	}
 	defer pe.Close()
 
+	// Do the actual parsing
 	err = pe.Parse()
 	contextLogger.Info("pe pkg success")
 	return pe, err

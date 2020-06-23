@@ -406,11 +406,6 @@ func (pe *File) IsDriver() bool {
 	// Checking if any section characteristics have the IMAGE_SCN_MEM_NOT_PAGED
 	// flag set is not reliable either.
 
-	// If the import directory was not parsed (fast_load = True); do it now.
-	if len(pe.Imports) == 0 {
-		pe.ParseDataDirectories()
-	}
-
 	// If there's still no import directory (the PE doesn't have one or it's
 	// malformed), give up.
 	if len(pe.Imports) == 0 {
