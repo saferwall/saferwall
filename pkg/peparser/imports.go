@@ -276,11 +276,11 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 			break
 		}
 
-		// If the entry looks like could be an ordinal.
 		if thunk.AddressOfData&imageOrdinalFlag32 > 0 {
-			// but its value is beyond 2^16, we will assume it's a
-			// corrupted and ignore it altogether
+			// If the entry looks like could be an ordinal.
 			if thunk.AddressOfData&0x7fffffff > 0xffff {
+				// but its value is beyond 2^16, we will assume it's a
+				// corrupted and ignore it altogether
 				if !stringInSlice(AnoAddressOfDataBeyondLimits, pe.Anomalies) {
 					pe.Anomalies = append(pe.Anomalies, AnoAddressOfDataBeyondLimits)
 				}
@@ -502,12 +502,12 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 				}
 
 				// Original Thunk
-				if uint32(len(ilt)) != 0 {
+				if uint32(len(ilt)) > idx {
 					imp.OriginalThunkValue = uint64(ilt[idx].AddressOfData & addressMask32)
 				}
 
 				// Thunk
-				if uint32(len(iat)) != 0 {
+				if uint32(len(iat)) > idx {
 					imp.ThunkValue = uint64(iat[idx].AddressOfData & addressMask32)
 				}
 
@@ -619,12 +619,12 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 				}
 
 				// Original Thunk
-				if uint32(len(ilt)) != 0 {
+				if uint32(len(ilt)) > idx {
 					imp.OriginalThunkValue = ilt[idx].AddressOfData & addressMask64
 				}
 
 				// Thunk
-				if uint32(len(iat)) != 0 {
+				if uint32(len(iat)) > idx {
 					imp.ThunkValue = iat[idx].AddressOfData & addressMask64
 				}
 
