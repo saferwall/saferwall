@@ -10,44 +10,56 @@ import (
 )
 
 const (
-	// ImageGuardCfInstrumented - Module performs control flow integrity checks
-	// using system-supplied support.
+
+	// The GuardFlags field contains a combination of one or more of the
+	// following flags and subfields:
+
+	// ImageGuardCfInstrumented indicates that the module performs control flow
+	// integrity checks using system-supplied support.
 	ImageGuardCfInstrumented = 0x00000100
 
-	// ImageGuardCfWInstrumented - Module performs control flow and write
-	// integrity checks.
+	// ImageGuardCfWInstrumented indicates that the module performs control
+	// flow and write integrity checks.
 	ImageGuardCfWInstrumented = 0x00000200
 
-	// ImageGuardCfFunctionTablePresent - Module contains valid control flow
-	// target metadata.
+	// ImageGuardCfFunctionTablePresent indicates that the module contains
+	// valid control flow target metadata.
 	ImageGuardCfFunctionTablePresent = 0x00000400
 
-	// ImageGuardSecurityCookieUnused - Module does not make use of the /GS
-	// security cookie.
+	// ImageGuardSecurityCookieUnused indicates that the module does not make
+	// use of the /GS security cookie.
 	ImageGuardSecurityCookieUnused = 0x00000800
 
-	// ImageGuardProtectDelayloadIAT - Module supports read only delay load IAT.
+	// ImageGuardProtectDelayloadIAT indicates that the module supports read
+	// only delay load IAT.
 	ImageGuardProtectDelayloadIAT = 0x00001000
 
-	// ImageGuardDelayloadIATInItsOwnSection - Delayload import table in its own
-	// .didat section (with nothing else in it) that can be freely reprotected.
+	// ImageGuardDelayloadIATInItsOwnSection indicates that the Delayload
+	// import table in its own .didat section (with nothing else in it) that
+	// can be freely reprotected.
 	ImageGuardDelayloadIATInItsOwnSection = 0x00002000
 
-	// ImageGuardCfExportSuppressionInfoPresent - Module contains suppressed
-	// export information. This also infers that the address taken IAT table is
-	// also present in the load config.
+	// ImageGuardCfExportSuppressionInfoPresent indicates that the module
+	// contains suppressed export information. This also infers that the
+	// address taken IAT table is also present in the load config.
 	ImageGuardCfExportSuppressionInfoPresent = 0x00004000
 
-	// ImageGuardCfEnableExportSuppression - Module enables suppression of exports.
+	// ImageGuardCfEnableExportSuppression indicates that the module enables
+	// suppression of exports.
 	ImageGuardCfEnableExportSuppression = 0x00008000
 
-	// ImageGuardCfLongjumpTablePresent - Module contains longjmp target information.
+	// ImageGuardCfLongjumpTablePresent indicates that the module contains
+	// longjmp target information.
 	ImageGuardCfLongjumpTablePresent = 0x00010000
 
-	// ImageGuardCfFnctionTableSizeMask - Mask for the subfield that contains
-	// the stride of Control Flow Guard function table entries (that is, the
-	// additional count of bytes per table entry).
+	// ImageGuardCfFnctionTableSizeMask indicates that the mask for the
+	// subfield that contains the stride of Control Flow Guard function table
+	// entries (that is, the additional count of bytes per table entry).
 	ImageGuardCfFnctionTableSizeMask = 0xF0000000
+
+	// ImageGuardCfFnctionTableSizeShift indicates the shift to right-justify
+	// Guard CF function table stride.
+	ImageGuardCfFnctionTableSizeShift = 28
 )
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
@@ -1132,35 +1144,6 @@ type ImageLoadConfigDirectory64 struct {
 	GuardXFGTableDispatchFunctionPointer     uint64
 }
 
-// PrintLoadConfigStruct will print size of each load config struct.
-func PrintLoadConfigStruct() {
-	fmt.Printf("ImageLoadConfigDirectory32v1 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v1{}))
-	fmt.Printf("ImageLoadConfigDirectory32v2 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v2{}))
-	fmt.Printf("ImageLoadConfigDirectory32v3 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v3{}))
-	fmt.Printf("ImageLoadConfigDirectory32v4 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v4{}))
-	fmt.Printf("ImageLoadConfigDirectory32v5 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v5{}))
-	fmt.Printf("ImageLoadConfigDirectory32v6 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v6{}))
-	fmt.Printf("ImageLoadConfigDirectory32v7 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v7{}))
-	fmt.Printf("ImageLoadConfigDirectory32v8 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v8{}))
-	fmt.Printf("ImageLoadConfigDirectory32v9 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v9{}))
-	fmt.Printf("ImageLoadConfigDirectory32v10 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v10{}))
-	fmt.Printf("ImageLoadConfigDirectory32v11 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v11{}))
-	fmt.Printf("ImageLoadConfigDirectory32v12 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v12{}))
-
-	fmt.Printf("ImageLoadConfigDirectory64v2 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v2{}))
-	fmt.Printf("ImageLoadConfigDirectory64v3 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v3{}))
-	fmt.Printf("ImageLoadConfigDirectory64v4 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v4{}))
-	fmt.Printf("ImageLoadConfigDirectory64v5 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v5{}))
-	fmt.Printf("ImageLoadConfigDirectory64v6 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v6{}))
-	fmt.Printf("ImageLoadConfigDirectory64v7 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v7{}))
-	fmt.Printf("ImageLoadConfigDirectory64v8 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v8{}))
-	fmt.Printf("ImageLoadConfigDirectory64v9 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v9{}))
-	fmt.Printf("ImageLoadConfigDirectory64v10 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v10{}))
-	fmt.Printf("ImageLoadConfigDirectory64v11 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v11{}))
-	fmt.Printf("ImageLoadConfigDirectory64v12 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v12{}))
-
-}
-
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
 // used in very limited cases in the Windows NT operating system itself to
 // describe various features too difficult or too large to describe in the file
@@ -1302,4 +1285,56 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 
 	pe.LoadConfig = loadCfg
 	return nil
+}
+
+// PrintLoadConfigStruct will print size of each load config struct.
+func PrintLoadConfigStruct() {
+	fmt.Printf("ImageLoadConfigDirectory32v1 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v1{}))
+	fmt.Printf("ImageLoadConfigDirectory32v2 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v2{}))
+	fmt.Printf("ImageLoadConfigDirectory32v3 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v3{}))
+	fmt.Printf("ImageLoadConfigDirectory32v4 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v4{}))
+	fmt.Printf("ImageLoadConfigDirectory32v5 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v5{}))
+	fmt.Printf("ImageLoadConfigDirectory32v6 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v6{}))
+	fmt.Printf("ImageLoadConfigDirectory32v7 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v7{}))
+	fmt.Printf("ImageLoadConfigDirectory32v8 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v8{}))
+	fmt.Printf("ImageLoadConfigDirectory32v9 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v9{}))
+	fmt.Printf("ImageLoadConfigDirectory32v10 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v10{}))
+	fmt.Printf("ImageLoadConfigDirectory32v11 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v11{}))
+	fmt.Printf("ImageLoadConfigDirectory32v12 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory32v12{}))
+
+	fmt.Printf("ImageLoadConfigDirectory64v2 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v2{}))
+	fmt.Printf("ImageLoadConfigDirectory64v3 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v3{}))
+	fmt.Printf("ImageLoadConfigDirectory64v4 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v4{}))
+	fmt.Printf("ImageLoadConfigDirectory64v5 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v5{}))
+	fmt.Printf("ImageLoadConfigDirectory64v6 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v6{}))
+	fmt.Printf("ImageLoadConfigDirectory64v7 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v7{}))
+	fmt.Printf("ImageLoadConfigDirectory64v8 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v8{}))
+	fmt.Printf("ImageLoadConfigDirectory64v9 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v9{}))
+	fmt.Printf("ImageLoadConfigDirectory64v10 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v10{}))
+	fmt.Printf("ImageLoadConfigDirectory64v11 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v11{}))
+	fmt.Printf("ImageLoadConfigDirectory64v12 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v12{}))
+
+}
+
+// StringifyGuardFlags returns list of strings which describes the GuardFlags.
+func StringifyGuardFlags(flags uint32) []string {
+	var values []string
+	guardFlagMap := map[uint32]string{
+		ImageGuardCfInstrumented:                 "Instrumented",
+		ImageGuardCfWInstrumented:                "WriteInstrumented",
+		ImageGuardCfFunctionTablePresent:         "TargetMetadata",
+		ImageGuardSecurityCookieUnused:           "SecurityCookieUnused",
+		ImageGuardProtectDelayloadIAT:            "DelayloadIAT",
+		ImageGuardDelayloadIATInItsOwnSection:    "DelayloadIATInItsOwnSection",
+		ImageGuardCfExportSuppressionInfoPresent: "ExportSuppressionInfoPresent",
+		ImageGuardCfEnableExportSuppression:      "EnableExportSuppression",
+		ImageGuardCfLongjumpTablePresent:         "LongjumpTablePresent",
+	}
+
+	for k, s := range guardFlagMap {
+		if k&flags != 0 {
+			values = append(values, s)
+		}
+	}
+	return values
 }
