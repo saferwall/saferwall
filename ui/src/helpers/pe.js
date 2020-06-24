@@ -801,6 +801,30 @@ function sectionFlag2String(flag) {
   return values;
 }
 
+function GuardFlags2String(flags) {
+  var GuardFlagsMap = {
+    0x100: "Instrumented",
+    0x200: "WriteInstrumented",
+    0x400: "TargetMetadata",
+    0x800: "SecurityCookieUnused",
+    0x1000: "DelayloadIAT",
+    0x2000: "DelayloadIATInItsOwnSection",
+    0x4000: "ExportSuppressionInfoPresent",
+    0x8000: "EnableExportSuppression",
+    0x10000: "LongjumpTablePresent",
+  };
+
+  var values = [];
+
+  for (var k in GuardFlagsMap) {
+    if (k & flags) {
+      values.push(GuardFlagsMap[k]);
+    }
+  }
+
+  return values;
+}
+
 function magic2String(magic) {
   switch (magic) {
     case 0x10b: return "PE32";
