@@ -7,6 +7,7 @@ package pe
 import (
 	"encoding/binary"
 	"fmt"
+	"reflect"
 )
 
 const (
@@ -61,6 +62,12 @@ const (
 	// Guard CF function table stride.
 	ImageGuardCfFnctionTableSizeShift = 28
 )
+
+type LoadConfig struct {
+	LoadCfgStruct interface{}
+	SEH           []uint32
+	GFIDS         []uint32
+}
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
 type ImageLoadConfigCodeIntegrity struct {
@@ -1283,7 +1290,20 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 		return err
 	}
 
-	pe.LoadConfig = loadCfg
+
+	pe.LoadConfig.LoadCfgStruct = loadCfg
+
+	// Get SEH handlers.
+	if pe.Is32 {
+		handlers := pe.getSEHHandlers()
+		pe.LoadConfig.SEH = handlers
+		fmt.Print(handlers)
+	}
+	
+
+	// Control Flow Guard Function Targets.
+	pe.LoadConfig.GFIDS = pe.getControlFlowGuardFunctions()
+
 	return nil
 }
 
@@ -1337,4 +1357,79 @@ func StringifyGuardFlags(flags uint32) []string {
 		}
 	}
 	return values
+}
+
+func (pe *File) getSEHHandlers() []uint32 {
+
+	var handlers []uint32
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+
+	// SEHandlerCount is found in index 19 of the struct.
+	if v.NumField() >= 19 {
+		SEHandlerCount := uint32(v.Field(19).Uint())
+		if SEHandlerCount > 0 {
+			SEHandlerTable := uint32(v.Field(18).Uint())
+			imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+			rva := SEHandlerTable - imageBase
+			for i := uint32(0); i < SEHandlerCount; i++ {
+				offset := pe.getOffsetFromRva(rva + i*4)
+				handler, err := pe.ReadUint32(offset)
+				if err != nil {
+					return handlers
+				}
+
+				handlers = append(handlers, handler)
+			}
+		}
+	}
+
+	return handlers
+}
+
+func (pe *File) getControlFlowGuardFunctions() []uint32{
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	var GFIDS []uint32
+
+	// GuardCFFunctionCount is found in index 23 of the struct.
+	if v.NumField() >= 23 {
+
+		// The GFIDS table is an array of 4 + n bytes, where n is given by :
+		// ((GuardFlags & IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK) >>
+		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT).
+		GuardFlags := v.Field(24).Uint()
+		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >> ImageGuardCfFnctionTableSizeShift
+		GuardCFFunctionCount := v.Field(23).Uint()
+		if GuardCFFunctionCount > 0 {
+			if pe.Is32 {
+				GuardCFFunctionTable := uint32(v.Field(22).Uint())
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+				rva := GuardCFFunctionTable - imageBase
+				for i := uint32(0); i < uint32(GuardCFFunctionCount); i++ {
+					offset := pe.getOffsetFromRva(rva + i*4 + uint32(n))
+					target, err := pe.ReadUint32(offset)
+					if err != nil {
+						return GFIDS
+					}
+
+					GFIDS = append(GFIDS, target)
+				}
+			} else {
+				GuardCFFunctionTable := v.Field(22).Uint()
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+				rva := uint32(GuardCFFunctionTable - imageBase)
+				for i := uint64(0); i < GuardCFFunctionCount; i++ {
+					offset := pe.getOffsetFromRva(rva + uint32(i*4 + n))
+					target, err := pe.ReadUint32(offset)
+					if err != nil {
+						return GFIDS
+					}
+
+					GFIDS = append(GFIDS, target)
+				}
+			}
+
+		}
+	}
+	return GFIDS
 }

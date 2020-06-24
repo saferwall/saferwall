@@ -170,6 +170,16 @@ func (pe *File) getSectionByRva(rva uint32) *ImageSectionHeader {
 	return nil
 }
 
+// getSectionByRva returns the section name containing the given address.
+func (pe *File) getSectionNameByRva(rva uint32) string {
+	for _, section := range pe.Sections {
+		if section.Contains(rva, pe) {
+			return section.NameString()
+		}
+	}
+	return ""
+}
+
 func (pe *File) getSectionByOffset(offset uint32) *ImageSectionHeader {
 	for _, section := range pe.Sections {
 		if section.PointerToRawData == 0 {
@@ -247,7 +257,7 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 		}
 
 		end := rva+maxLen
-		if maxLen > pe.size {
+		if end > pe.size {
 			end = pe.size
 		}
 		s := pe.getStringFromData(0, pe.data[rva:end])
@@ -538,6 +548,15 @@ func (pe *File) Checksum() uint32 {
 	checksum += int(pe.size)
 
 	return uint32(checksum)
+}
+
+// ReadUint64 read a uint64 from a buffer.
+func (pe *File) ReadUint64(offset uint32) (uint64, error) {
+	if offset > pe.size+8 {
+		return 0, ErrOutsideBoundary
+	}
+
+	return binary.LittleEndian.Uint64(pe.data[offset:]), nil
 }
 
 // ReadUint32 read a uint32 from a buffer.

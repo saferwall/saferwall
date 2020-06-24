@@ -7,7 +7,6 @@ package pe
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"reflect"
 	"sort"
 )
@@ -200,8 +199,8 @@ type ImageSectionHeader struct {
 
 	// The file pointer to the first page of the section within the COFF file.
 	// For executable images, this must be a multiple of FileAlignment from the
-	// optional header. For object files, the value should be aligned on a 
-	// 4-byte boundary for best performance. When a section contains only 
+	// optional header. For object files, the value should be aligned on a
+	// 4-byte boundary for best performance. When a section contains only
 	// uninitialized data, this field should be zero.
 	PointerToRawData uint32
 
@@ -347,7 +346,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 
 // NameString returns string representation of a ImageSectionHeader.Name field.
 func (section *ImageSectionHeader) NameString() string {
-	return fmt.Sprintf("%s", section.Name)
+	return string(section.Name[:])
 }
 
 // NextHeaderAddr returns the VirtualAddress of the next section.
@@ -422,7 +421,7 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	// possible extra bytes that might get cut off by aligning the start (and
 	// hence cutting something off the end)
 	if end > section.PointerToRawData+section.SizeOfRawData &&
-		section.PointerToRawData + section.SizeOfRawData > offset {
+		section.PointerToRawData+section.SizeOfRawData > offset {
 		end = section.PointerToRawData + section.SizeOfRawData
 	}
 

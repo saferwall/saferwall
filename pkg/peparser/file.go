@@ -24,7 +24,7 @@ type File struct {
 	Relocations  []Relocation                `json:",omitempty"`
 	Resources    ResourceDirectory           `json:",omitempty"`
 	TLS          TLSDirectory                `json:",omitempty"`
-	LoadConfig   interface{}                 `json:",omitempty"`
+	LoadConfig   LoadConfig                  `json:",omitempty"`
 	Exceptions   []Exception                 `json:",omitempty"`
 	Certificates Certificate                 `json:",omitempty"`
 	DelayImports []DelayImport               `json:",omitempty"`
