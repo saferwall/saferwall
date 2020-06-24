@@ -68,6 +68,7 @@ type File struct {
 	Packer          []string               `json:"packer,omitempty"`
 	FirstSubmission *time.Time             `json:"first_submission,omitempty"`
 	LastSubmission  *time.Time             `json:"last_submission,omitempty"`
+	LastScanned  	*time.Time             `json:"last_scanned,omitempty"`
 	Submissions     []submission           `json:"submissions,omitempty"`
 	Strings         []stringStruct         `json:"strings,omitempty"`
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`

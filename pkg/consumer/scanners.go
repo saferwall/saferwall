@@ -6,6 +6,7 @@ package main
 
 import (
 	"strings"
+	"time"
 
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
@@ -60,6 +61,7 @@ type result struct {
 	TriD    []string               `json:"trid,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
 	Packer  []string               `json:"packer,omitempty"`
+	LastScanned  	*time.Time     `json:"last_scanned,omitempty"`
 	Strings []stringStruct         `json:"strings,omitempty"`
 	MultiAV map[string]interface{} `json:"multiav,omitempty"`
 	Status  int                    `json:"status,omitempty"`

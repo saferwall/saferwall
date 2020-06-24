@@ -69,6 +69,10 @@
       "description": "Last time the file was submitted",
       "type": "integer"
     },
+    "last_scanned": {
+      "description": "Last time the file was scanner",
+      "type": "integer"
+    },
     "comments": {
       "description": "Users comments",
       "type": "array",

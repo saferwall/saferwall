@@ -112,6 +112,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// analysis finished
 	res.Status = finished
+	now := time.Now().UTC()
+	res.LastScanned = &now
 
 	// Marshell results
 	buff, err = json.Marshal(res)

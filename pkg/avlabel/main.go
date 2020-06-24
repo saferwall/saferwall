@@ -52,7 +52,8 @@ func ParseEset (detection string) map[string]string {
 // ParseAvira parses.
 func ParseAvira (detection string) map[string]string {
 	// TR/PSW.Tepfer.ockxa, TR/Patched.Ren.Gen, TR/Crypt.XPACK.Gen
-	params := getParams(`^(?P<Category>[a-zA-Z0-9]{2,10})\/(?P<Family>[a-zA-Z0-9]{1,20})\.(?P<Type>[a-zA-Z0-9]{1,10})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
+	// TR/AD.Kreen.blxny
+	params := getParams(`^(?P<Category>[a-zA-Z0-9]{2,10})\/(?P<Type>[a-zA-Z0-9]{1,20})\.(?P<Family>[a-zA-Z0-9]{1,10})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
 	if len(params) != 0 {
 		return params
 	}
