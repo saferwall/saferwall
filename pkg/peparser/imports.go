@@ -91,6 +91,16 @@ type ImageThunkData64 struct {
 	AddressOfData uint64
 }
 
+
+type ThunkData32 struct {
+	ImageThunkData ImageThunkData32
+	Offset			uint32
+}
+
+type ThunkData64 struct {
+	ImageThunkData ImageThunkData64
+	Offset			uint32
+}
 // ImportFunction represents an imported function in the import table.
 type ImportFunction struct {
 	// An ASCII string that contains the name to import. This is the string that
@@ -115,6 +125,12 @@ type ImportFunction struct {
 
 	// Address Thunk Value (FT)
 	ThunkValue uint64
+
+	// Address Thunk RVA.
+	ThunkRVA uint32
+
+	// Name Thunk RVA.
+	OriginalThunkRVA uint32
 }
 
 // Import represents an empty entry in the emport table.
@@ -189,11 +205,11 @@ func (pe *File) parseImportDirectory(rva, size uint32) (err error) {
 }
 
 func (pe *File) getImportTable32(rva uint32, maxLen uint32,
-	isOldDelayImport bool) ([]*ImageThunkData32, error) {
+	isOldDelayImport bool) ([]*ThunkData32, error) {
 
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData32)
-	retVal := make([]*ImageThunkData32, 0)
+	retVal := make([]*ThunkData32, 0)
 	minAddressOfData := ^uint32(0)
 	maxAddressOfData := uint32(0)
 	repeatedAddress := uint32(0)
@@ -203,7 +219,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 	startRVA := rva
 
 	if rva == 0 {
-		return []*ImageThunkData32{}, nil
+		return []*ThunkData32{}, nil
 	}
 
 	for {
@@ -242,12 +258,12 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 			newRVA := rva - oh32.ImageBase
 			offset = pe.getOffsetFromRva(newRVA)
 			if offset == ^uint32(0) {
-				return []*ImageThunkData32{}, nil
+				return []*ThunkData32{}, nil
 			}
 		} else {
 			offset = pe.getOffsetFromRva(rva)
 			if offset == ^uint32(0) {
-				return []*ImageThunkData32{}, nil
+				return []*ThunkData32{}, nil
 			}
 		}
 
@@ -257,7 +273,7 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 		if err != nil {
 			// log.Printf("Error parsing the import table. " +
 			// 	"Invalid data at RVA: 0x%x", rva)
-			return []*ImageThunkData32{}, nil
+			return []*ThunkData32{}, nil
 		}
 
 		if thunk == (ImageThunkData32{}) {
@@ -306,18 +322,19 @@ func (pe *File) getImportTable32(rva uint32, maxLen uint32,
 		}
 
 		thunkTable[rva] = &thunk
-		retVal = append(retVal, &thunk)
+		thunkData := ThunkData32{ImageThunkData: thunk, Offset: rva}
+		retVal = append(retVal, &thunkData)
 		rva += size
 	}
 	return retVal, nil
 }
 
 func (pe *File) getImportTable64(rva uint32, maxLen uint32,
-	isOldDelayImport bool) ([]*ImageThunkData64, error) {
+	isOldDelayImport bool) ([]*ThunkData64, error) {
 
 	// Setup variables
 	thunkTable := make(map[uint32]*ImageThunkData64)
-	retVal := make([]*ImageThunkData64, 0)
+	retVal := make([]*ThunkData64, 0)
 	minAddressOfData := ^uint64(0)
 	maxAddressOfData := uint64(0)
 	repeatedAddress := uint64(0)
@@ -327,7 +344,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 	startRVA := rva
 
 	if rva == 0 {
-		return []*ImageThunkData64{}, nil
+		return []*ThunkData64{}, nil
 	}
 
 	for {
@@ -366,12 +383,12 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 			newRVA := rva - uint32(oh64.ImageBase)
 			offset = pe.getOffsetFromRva(newRVA)
 			if offset == ^uint32(0) {
-				return []*ImageThunkData64{}, nil
+				return []*ThunkData64{}, nil
 			}
 		} else {
 			offset = pe.getOffsetFromRva(rva)
 			if offset == ^uint32(0) {
-				return []*ImageThunkData64{}, nil
+				return []*ThunkData64{}, nil
 			}
 		}
 
@@ -381,7 +398,7 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 		if err != nil {
 			// log.Printf("Error parsing the import table. " +
 			// 	"Invalid data at RVA: 0x%x", rva)
-			return []*ImageThunkData64{}, nil
+			return []*ThunkData64{}, nil
 		}
 
 		if thunk == (ImageThunkData64{}) {
@@ -432,7 +449,8 @@ func (pe *File) getImportTable64(rva uint32, maxLen uint32,
 		}
 
 		thunkTable[rva] = &thunk
-		retVal = append(retVal, &thunk)
+		thunkData := ThunkData64{ImageThunkData: thunk, Offset: rva}
+		retVal = append(retVal, &thunkData)
 		rva += size
 	}
 	return retVal, nil
@@ -476,7 +494,7 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 		return []*ImportFunction{}, ErrDamagedImportTable
 	}
 
-	var table []*ImageThunkData32
+	var table []*ThunkData32
 	if len(ilt) > 0 {
 		table = ilt
 	} else if len(iat) > 0 {
@@ -489,36 +507,38 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 	numInvalid := uint32(0)
 	for idx := uint32(0); idx < uint32(len(table)); idx++ {
 		imp := ImportFunction{}
-		if table[idx].AddressOfData > 0 {
+		if table[idx].ImageThunkData.AddressOfData > 0 {
 			// If imported by ordinal, we will append the ordinal number
-			if table[idx].AddressOfData&imageOrdinalFlag32 > 0 {
+			if table[idx].ImageThunkData.AddressOfData&imageOrdinalFlag32 > 0 {
 				imp.ByOrdinal = true
-				imp.Ordinal = table[idx].AddressOfData & uint32(0xffff)
+				imp.Ordinal = table[idx].ImageThunkData.AddressOfData & uint32(0xffff)
 			} else {
 				imp.ByOrdinal = false
 				if isOldDelayImport {
-					table[idx].AddressOfData -=
+					table[idx].ImageThunkData.AddressOfData -=
 						pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
 				}
 
 				// Original Thunk
 				if uint32(len(ilt)) > idx {
-					imp.OriginalThunkValue = uint64(ilt[idx].AddressOfData & addressMask32)
+					imp.OriginalThunkValue = uint64(ilt[idx].ImageThunkData.AddressOfData & addressMask32)
+					imp.OriginalThunkRVA = ilt[idx].Offset
 				}
 
 				// Thunk
 				if uint32(len(iat)) > idx {
-					imp.ThunkValue = uint64(iat[idx].AddressOfData & addressMask32)
+					imp.ThunkValue = uint64(iat[idx].ImageThunkData.AddressOfData & addressMask32)
+					imp.ThunkRVA = iat[idx].Offset
 				}
 
 				// Thunk
-				hintNameTableRva := table[idx].AddressOfData & addressMask32
+				hintNameTableRva := table[idx].ImageThunkData.AddressOfData & addressMask32
 				off := pe.getOffsetFromRva(hintNameTableRva)
 				imp.Hint, err = pe.ReadUint16(off)
 				if err != nil {
 					imp.Hint = ^uint16(0) 
 				}
-				imp.Name = pe.getStringAtRVA(table[idx].AddressOfData+2,
+				imp.Name = pe.getStringAtRVA(table[idx].ImageThunkData.AddressOfData+2,
 					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
@@ -593,7 +613,7 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 		return []*ImportFunction{}, ErrDamagedImportTable
 	}
 
-	var table []*ImageThunkData64
+	var table []*ThunkData64
 	if len(ilt) > 0 {
 		table = ilt
 	} else if len(iat) > 0 {
@@ -606,32 +626,35 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 	numInvalid := uint32(0)
 	for idx := uint32(0); idx < uint32(len(table)); idx++ {
 		imp := ImportFunction{}
-		if table[idx].AddressOfData > 0 {
+		if table[idx].ImageThunkData.AddressOfData > 0 {
 			// If imported by ordinal, we will append the ordinal number
-			if table[idx].AddressOfData&imageOrdinalFlag64 > 0 {
+			if table[idx].ImageThunkData.AddressOfData&imageOrdinalFlag64 > 0 {
 				imp.ByOrdinal = true
-				imp.Ordinal = uint32(table[idx].AddressOfData) & uint32(0xffff)
+				imp.Ordinal = uint32(table[idx].ImageThunkData.AddressOfData) & uint32(0xffff)
 			} else {
 				imp.ByOrdinal = false
 				if isOldDelayImport {
-					table[idx].AddressOfData -=
+					table[idx].ImageThunkData.AddressOfData -=
 						pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
 				}
 
 				// Original Thunk
 				if uint32(len(ilt)) > idx {
-					imp.OriginalThunkValue = ilt[idx].AddressOfData & addressMask64
+					imp.OriginalThunkValue =
+					 ilt[idx].ImageThunkData.AddressOfData & addressMask64
+					 imp.OriginalThunkRVA = ilt[idx].Offset
 				}
 
 				// Thunk
 				if uint32(len(iat)) > idx {
-					imp.ThunkValue = iat[idx].AddressOfData & addressMask64
+					imp.ThunkValue = iat[idx].ImageThunkData.AddressOfData & addressMask64
+					imp.ThunkRVA = iat[idx].Offset
 				}
 
-				hintNameTableRva := table[idx].AddressOfData & addressMask64
+				hintNameTableRva := table[idx].ImageThunkData.AddressOfData & addressMask64
 				off := pe.getOffsetFromRva(uint32(hintNameTableRva))
 				imp.Hint = binary.LittleEndian.Uint16(pe.data[off:])
-				imp.Name = pe.getStringAtRVA(uint32(table[idx].AddressOfData+2),
+				imp.Name = pe.getStringAtRVA(uint32(table[idx].ImageThunkData.AddressOfData+2),
 					maxImportNameLength)
 				if !IsValidFunctionName(imp.Name) {
 					imp.Name = "*invalid*"
@@ -667,6 +690,21 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 
 	return importedFunctions, nil
 }
+
+// GetImportEntryInfoByRVA return an import function + index of the entry given
+// an RVA.
+func (pe *File) GetImportEntryInfoByRVA(rva uint32) (Import, int) {
+	for _, imp := range pe.Imports {
+		for i, entry := range imp.Functions {
+			if entry.ThunkRVA == uint64(rva) {
+				return imp, i
+			}
+		}
+	}
+
+	return Import{}, 0
+}
+
 
 // md5hash hashes using md5 algorithm.
 func md5hash(text string) string {
