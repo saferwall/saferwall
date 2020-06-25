@@ -144,8 +144,8 @@ github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1 h1:0ijn2JFThOejq+EEdA5+c/Fx3vvKkBHCN6p6PTdosh8=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1/go.mod h1:TBN1cZXPGz9JwipoK6DLoqQb2U/UY38Z34NJlqRLgnQ=
-github.com/saferwall/saferwall/pkg/peparser v0.0.10 h1:dpzipvGqtaGNHDWe1bktq8wVJXJf6esXIqm/DPga+YE=
-github.com/saferwall/saferwall/pkg/peparser v0.0.10/go.mod h1:mIp27PyGsZduVa5mM5E0AKlSMQT+Lw0THhFf+M2PVcM=
+github.com/saferwall/saferwall/pkg/peparser v0.0.12 h1:t2YDUMLtNP1x05RyPsWpVbFCJ8+HtMEluEY69ej3o6Q=
+github.com/saferwall/saferwall/pkg/peparser v0.0.12/go.mod h1:mIp27PyGsZduVa5mM5E0AKlSMQT+Lw0THhFf+M2PVcM=
 github.com/saferwall/saferwall/pkg/utils v0.0.1/go.mod h1:JuJN2uLw7LUVhn4MO6yG4X4q+8mErr0VU3ZX0QJ0n+A=
 github.com/saferwall/saferwall/pkg/utils v0.0.3 h1:yS0rJj5r2v7ehmPsMY6PbXvCEWolrRwb3AN/5l04KrM=
 github.com/saferwall/saferwall/pkg/utils v0.0.3/go.mod h1:ITc1BmRUmcus7WPPHbScdsQHXF8zHPCugqYK/N9NT04=

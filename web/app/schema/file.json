@@ -71,7 +71,7 @@
     },
     "last_scanned": {
       "description": "Last time the file was scanner",
-      "type": "integer"
+      "type": "string"
     },
     "comments": {
       "description": "Users comments",
