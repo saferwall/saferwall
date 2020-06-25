@@ -696,7 +696,7 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 func (pe *File) GetImportEntryInfoByRVA(rva uint32) (Import, int) {
 	for _, imp := range pe.Imports {
 		for i, entry := range imp.Functions {
-			if entry.ThunkRVA == uint64(rva) {
+			if entry.ThunkRVA == rva {
 				return imp, i
 			}
 		}

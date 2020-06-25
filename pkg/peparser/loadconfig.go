@@ -61,13 +61,37 @@ const (
 	// ImageGuardCfFnctionTableSizeShift indicates the shift to right-justify
 	// Guard CF function table stride.
 	ImageGuardCfFnctionTableSizeShift = 28
+
+	// ImageGuardFlagFIDSupressed indicates that the call target is explicitly
+	// suppressed (do not treat it as valid for purposes of CFG)
+	ImageGuardFlagFIDSupressed = 0x1
+
+	// ImageGuardFlagExportSupressed indicates that the call target is export
+	// suppressed. See Export suppression for more details
+	ImageGuardFlagExportSupressed = 0x2
 )
+
+type CFGFunction struct {
+	Target uint32
+	Flags  *uint8
+}
+
+type CFGIATEntry struct {
+	RVA uint32
+	IATValue uint32
+	INTValue uint32
+	Description string
+	
+}
 
 type LoadConfig struct {
 	LoadCfgStruct interface{}
 	SEH           []uint32
-	GFIDS         []uint32
+	GFIDS         []CFGFunction
+	CFGIAT		  []CFGIATEntry
 }
+
+// https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
 type ImageLoadConfigCodeIntegrity struct {
@@ -1290,19 +1314,20 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 		return err
 	}
 
-
+	// Save the load config struct.
 	pe.LoadConfig.LoadCfgStruct = loadCfg
 
-	// Get SEH handlers.
+	// Retrieve SEH handlers if there are any..
 	if pe.Is32 {
 		handlers := pe.getSEHHandlers()
 		pe.LoadConfig.SEH = handlers
-		fmt.Print(handlers)
 	}
-	
 
-	// Control Flow Guard Function Targets.
+	// Retrieve Control Flow Guard Function Targets if there are any.
 	pe.LoadConfig.GFIDS = pe.getControlFlowGuardFunctions()
+
+	// Retrieve Control Flow Guard IAT entries if there are any.
+	pe.LoadConfig.CFGIAT = pe.getControlFlowGuardIAT()
 
 	return nil
 }
@@ -1386,50 +1411,140 @@ func (pe *File) getSEHHandlers() []uint32 {
 	return handlers
 }
 
-func (pe *File) getControlFlowGuardFunctions() []uint32{
+func (pe *File) getControlFlowGuardFunctions() []CFGFunction {
 
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
-	var GFIDS []uint32
+	var GFIDS []CFGFunction
+	var cfgFlags uint8
+	var err error
 
 	// GuardCFFunctionCount is found in index 23 of the struct.
 	if v.NumField() >= 23 {
-
 		// The GFIDS table is an array of 4 + n bytes, where n is given by :
 		// ((GuardFlags & IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK) >>
 		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT).
+
+		// This allows for extra metadata to be attached to CFG call targets in
+		// the future. The only currently defined metadata is an optional 1-byte
+		// extra flags field (“GFIDS flags”) that is attached to each GFIDS
+		// entry if any call targets have metadata.
 		GuardFlags := v.Field(24).Uint()
-		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >> ImageGuardCfFnctionTableSizeShift
+		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >>
+			ImageGuardCfFnctionTableSizeShift
 		GuardCFFunctionCount := v.Field(23).Uint()
 		if GuardCFFunctionCount > 0 {
 			if pe.Is32 {
 				GuardCFFunctionTable := uint32(v.Field(22).Uint())
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
 				rva := GuardCFFunctionTable - imageBase
-				for i := uint32(0); i < uint32(GuardCFFunctionCount); i++ {
-					offset := pe.getOffsetFromRva(rva + i*4 + uint32(n))
-					target, err := pe.ReadUint32(offset)
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint32(1); i <= uint32(GuardCFFunctionCount); i++ {
+					cfgFunction := CFGFunction{}
+					cfgFunction.Target, err = pe.ReadUint32(offset)
 					if err != nil {
 						return GFIDS
 					}
-
-					GFIDS = append(GFIDS, target)
+					if n > 0 {
+						pe.structUnpack(&cfgFlags, offset+i*4, uint32(n))
+						cfgFunction.Flags = &cfgFlags
+					}
+					GFIDS = append(GFIDS, cfgFunction)
+					offset += i*4 + uint32(n)
 				}
 			} else {
 				GuardCFFunctionTable := v.Field(22).Uint()
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
 				rva := uint32(GuardCFFunctionTable - imageBase)
-				for i := uint64(0); i < GuardCFFunctionCount; i++ {
-					offset := pe.getOffsetFromRva(rva + uint32(i*4 + n))
-					target, err := pe.ReadUint32(offset)
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint64(1); i <= GuardCFFunctionCount; i++ {
+					cfgFunction := CFGFunction{}
+					cfgFunction.Target, err = pe.ReadUint32(offset)
 					if err != nil {
 						return GFIDS
 					}
+					if n > 0 {
+						pe.structUnpack(&cfgFlags, offset+uint32(i*4), uint32(n))
+						cfgFunction.Flags = &cfgFlags
+					}
 
-					GFIDS = append(GFIDS, target)
+					GFIDS = append(GFIDS, cfgFunction)
+					offset += uint32(i*4) + uint32(n)
 				}
 			}
 
 		}
 	}
 	return GFIDS
+}
+
+func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	var GFGIAT []CFGIATEntry
+	var err error
+
+	// GuardAddressTakenIatEntryCount is found in index 27 of the struct.
+	if v.NumField() >= 27 {
+		// An image that supports CFG ES includes a GuardAddressTakenIatEntryTable
+		// whose count is provided by the GuardAddressTakenIatEntryCount as part
+		// of its load configuration directory. This table is structurally
+		// formatted the same as the GFIDS table. It uses the same GuardFlags 
+		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK mechanism to encode extra 
+		// optional metadata bytes in the address taken IAT table, though all
+		// metadata bytes must be zero for the address taken IAT table and are 
+		// reserved.
+		GuardFlags := v.Field(24).Uint()
+		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >>
+			ImageGuardCfFnctionTableSizeShift
+			GuardAddressTakenIatEntryCount := v.Field(27).Uint()
+		if GuardAddressTakenIatEntryCount > 0 {
+			if pe.Is32 {
+				GuardAddressTakenIatEntryTable := uint32(v.Field(26).Uint())
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+				rva := GuardAddressTakenIatEntryTable - imageBase
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint32(1); i <= uint32(GuardAddressTakenIatEntryCount); i++ {
+					cfgIATEntry := CFGIATEntry{}
+					cfgIATEntry.RVA, err = pe.ReadUint32(offset)
+					if err != nil {
+						return GFGIAT
+					}
+					if n > 0 {
+						fmt.Print("GuardAddressTakenIatEntryTable contains metadata <> 0")
+					}
+					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
+					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
+					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
+					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					GFGIAT = append(GFGIAT, cfgIATEntry)
+					offset += i*4 + uint32(n)
+				}
+			} else {
+				GuardAddressTakenIatEntryTable := v.Field(26).Uint()
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+				rva := uint32(GuardAddressTakenIatEntryTable - imageBase)
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint64(1); i <= GuardAddressTakenIatEntryCount; i++ {
+					cfgIATEntry := CFGIATEntry{}
+					cfgIATEntry.RVA, err = pe.ReadUint32(offset)
+					if err != nil {
+						return GFGIAT
+					}
+					if n > 0 {
+						fmt.Print("GuardAddressTakenIatEntryTable contains metadata <> 0")
+					}
+
+					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
+					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
+					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
+					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					GFGIAT = append(GFGIAT, cfgIATEntry)
+					GFGIAT = append(GFGIAT, cfgIATEntry)
+					offset += uint32(i*4) + uint32(n)
+				}
+			}
+
+		}
+	}
+	return GFGIAT
 }
