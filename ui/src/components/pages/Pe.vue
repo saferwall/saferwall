@@ -39,6 +39,9 @@
           <Export 
           v-if="sections[selectedSection] === 'Export'"
             :data="pe[sections[selectedSection]]"/>
+          <LoadConfig 
+          v-if="sections[selectedSection] === 'LoadConfig'"
+            :data="pe[sections[selectedSection]]"/>
         </div>
       </div>
     </div>
@@ -52,6 +55,7 @@ import NtHeaderView from "../elements/pe/NtHeaderView"
 import SectionsView from "../elements/pe/SectionsView"
 import Imports from "../elements/pe/Imports"
 import Export from "../elements/pe/Export"
+import LoadConfig from "../elements/pe/LoadConfig"
 import { mapGetters } from "vuex"
 
 export default {
@@ -61,7 +65,8 @@ export default {
     NtHeaderView,
     SectionsView,
     Imports,
-    Export
+    Export,
+    LoadConfig
   },
   data() {
     return {
