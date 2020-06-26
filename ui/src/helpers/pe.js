@@ -804,14 +804,14 @@ function sectionFlag2String(flag) {
 function GuardFlags2String(flags) {
   var GuardFlagsMap = {
     0x100: "Instrumented",
-    0x200: "WriteInstrumented",
-    0x400: "TargetMetadata",
-    0x800: "SecurityCookieUnused",
-    0x1000: "DelayloadIAT",
-    0x2000: "DelayloadIATInItsOwnSection",
-    0x4000: "ExportSuppressionInfoPresent",
-    0x8000: "EnableExportSuppression",
-    0x10000: "LongjumpTablePresent",
+    0x200: "Write Instrumented",
+    0x400: "Target Metadata",
+    0x800: "Security Cookie Unused",
+    0x1000: "Delay load IAT",
+    0x2000: "Delay load IAT In Its Own Section",
+    0x4000: "Export Suppression Info Present",
+    0x8000: "Enable Export Suppression",
+    0x10000: "Longjump Table Present",
   };
 
   var values = [];
@@ -848,4 +848,5 @@ export {
   subsystem2String,
   magic2String,
   sectionFlag2String,
+  GuardFlags2String
 }
