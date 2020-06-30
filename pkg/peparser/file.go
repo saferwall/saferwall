@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"errors"
 
 	mmap "github.com/edsrzf/mmap-go"
 )
@@ -140,6 +141,7 @@ func (pe *File) PrettyDataDirectory(entry int) string {
 // it refers to.
 func (pe *File) ParseDataDirectories() error {
 
+	foundErr := false 
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
 
@@ -189,18 +191,24 @@ func (pe *File) ParseDataDirectories() error {
 				//  keep parsing data directories even though some entries fails.
 				defer func() {
 					if e := recover(); e != nil {
-						fmt.Printf("Unhandled Exception when trying to parse data directory %s, reason: %v",
+						fmt.Printf("Unhandled Exception when trying to parse data directory %s, reason: %v\n",
 							pe.PrettyDataDirectory(entryIndex), e)
+						foundErr = true
 					}
 				}()
 
 				err := funcMaps[entryIndex](va, size)
 				if err != nil {
-					fmt.Printf("Failed to parse data directory %s, reason: %v",
+					fmt.Printf("Failed to parse data directory %s, reason: %v\n",
 						pe.PrettyDataDirectory(entryIndex), err)
+					foundErr = true
 				}
 			}()
 		}
+	}
+
+	if foundErr {
+		return errors.New("Data directory parsing failed")
 	}
 	return nil
 }

@@ -18,6 +18,7 @@ It aims for the following goals:
 - Static analysis:
     - Crypto hashes, packer identification
     - Strings extraction
+    - Portable Executable file parser
 - Multiple AV scanner which includes major antivirus vendors:
 
     Vendors | status | Vendors | status

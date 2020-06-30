@@ -568,7 +568,7 @@ func (pe *File) ReadUint32(offset uint32) (uint32, error) {
 	return binary.LittleEndian.Uint32(pe.data[offset:]), nil
 }
 
-// ReadUint16 read a uint32 from a buffer.
+// ReadUint16 read a uint16 from a buffer.
 func (pe *File) ReadUint16(offset uint32) (uint16, error) {
 	if offset > pe.size+2 {
 		return 0, ErrOutsideBoundary
@@ -576,6 +576,7 @@ func (pe *File) ReadUint16(offset uint32) (uint16, error) {
 
 	return binary.LittleEndian.Uint16(pe.data[offset:]), nil
 }
+
 
 func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error) {
 	// Boundary check

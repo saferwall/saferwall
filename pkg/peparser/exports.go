@@ -8,7 +8,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 )
 
 const (
@@ -247,8 +246,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 
 	if parsingFailed {
-		log.Printf("RVA AddressOfNames in the export directory points to an " + 
-		 "invalid address: 0x%x", exportDir.AddressOfNames)
+		fmt.Printf("RVA AddressOfNames in the export directory points to an " + 
+		 "invalid address: 0x%x\n", exportDir.AddressOfNames)
 	}
 
 	maxFailedEntries = 10
