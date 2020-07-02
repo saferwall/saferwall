@@ -93,8 +93,6 @@ type LoadConfig struct {
 	CHPE          HybridPE
 }
 
-// https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
-
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
 type ImageLoadConfigCodeIntegrity struct {
 	Flags         uint16 // Flags to indicate if CI information is available, etc.
@@ -102,6 +100,8 @@ type ImageLoadConfigCodeIntegrity struct {
 	CatalogOffset uint32
 	Reserved      uint32 // Additional bitmask to be defined later
 }
+
+// https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
 
 // ImageLoadConfigDirectory32v1 size is 0x40.
 type ImageLoadConfigDirectory32v1 struct {
@@ -1177,7 +1177,7 @@ type ImageLoadConfigDirectory64 struct {
 	GuardXFGTableDispatchFunctionPointer     uint64
 }
 
-type HybridPE struct {
+type CHPEMetadata struct {
 	Version                                  uint32
 	CHPECodeAddressRangeOffset               uint32
 	CHPECodeAddressRangeCount                uint32
@@ -1190,6 +1190,16 @@ type HybridPE struct {
 	WowA64DispatchJumpFunctionPtr            uint32
 	CompilerIATPointer                       uint32
 	WowA64RDTSCFunctionPtr                   uint32
+}
+
+type CodeRange struct {
+	Begin   uint32
+	End     uint32
+	Machine uint8
+}
+type HybridPE struct {
+	CHPEMetadata CHPEMetadata
+	CodeRanges   []CodeRange
 }
 
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
@@ -1634,24 +1644,51 @@ func (pe *File) getHybridPE() HybridPE {
 	if v.NumField() > 31 {
 		CHPEMetadataPointer := v.Field(31).Uint()
 		if CHPEMetadataPointer != 0 {
-			structSize := uint32(binary.Size(hybridPE))
+			structSize := uint32(binary.Size(CHPEMetadata{}))
 			if pe.Is32 {
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
 				rva := uint32(CHPEMetadataPointer) - imageBase
 				fileOffset := pe.getOffsetFromRva(rva)
-				err := pe.structUnpack(&hybridPE, fileOffset, structSize)
+				err := pe.structUnpack(&hybridPE.CHPEMetadata, fileOffset, structSize)
 				if err != nil {
 					return hybridPE
 				}
 			} else {
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
 				rva := CHPEMetadataPointer - imageBase
-				err := pe.structUnpack(&hybridPE, uint32(rva), structSize)
+				err := pe.structUnpack(&hybridPE.CHPEMetadata, uint32(rva), structSize)
 				if err != nil {
 					return hybridPE
 				}
 			}
 
+			rva := hybridPE.CHPEMetadata.CHPECodeAddressRangeOffset
+			structSize = uint32(binary.Size(CodeRange{}))
+			for i := uint32(0); i < hybridPE.CHPEMetadata.CHPECodeAddressRangeCount; i++ {
+
+				codeRange := CodeRange{}
+				fileOffset := pe.getOffsetFromRva(rva)
+				begin, err := pe.ReadUint32(fileOffset)
+				if err != nil {
+					break
+				}
+
+				if begin & 0x0000000f == 1 {
+					codeRange.Machine = 1
+					codeRange.Begin = begin & 0xfffffff0
+				}
+				codeRange.Begin = begin
+
+				fileOffset += 4
+				size, err := pe.ReadUint32(fileOffset)
+				if err != nil {
+					break
+				}
+				codeRange.End = begin + size
+				
+				hybridPE.CodeRanges = append(hybridPE.CodeRanges, codeRange)
+				rva += 8
+			}
 		}
 	}
 
