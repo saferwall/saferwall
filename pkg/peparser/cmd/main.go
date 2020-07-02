@@ -32,13 +32,11 @@ func printAnomalies(anomalies []string) {
 	}
 }
 
-
 func parse(filename string) {
-
-	// fmt.Println("Processing: ", filename)
+	log.Println("Processing: ", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
-		// log.Printf("Error while opening file: %s, reason: %s", filename, err)
+		log.Printf("Error while opening file: %s, reason: %s", filename, err)
 		return
 	}
 
@@ -54,14 +52,14 @@ func parse(filename string) {
 	}()
 
 	err = pe.Parse()
-	if err != nil && 
+	if err != nil &&
 		err != peparser.ErrImageOS2SignatureFound &&
 		err != peparser.ErrDOSMagicNotFound &&
 		err != peparser.ErrImageNtSignatureNotFound &&
 		err != peparser.ErrImageNtOptionalHeaderMagicNotFound &&
 		err != peparser.ErrImageBaseNotAligned &&
 		err != peparser.ErrImageOS2LESignatureFound &&
-		err != peparser.ErrImageVXDSignatureFound && 
+		err != peparser.ErrImageVXDSignatureFound &&
 		err != peparser.ErrInvalidPESize &&
 		err != peparser.ErrInvalidElfanewValue {
 		log.Printf("%s\n", filename)
@@ -73,7 +71,7 @@ func parse(filename string) {
 	}
 
 	// if err == peparser.ErrDOSMagicNotFound {
-	// 	if strings.Contains(filename, "Windows 10 x64") && 
+	// 	if strings.Contains(filename, "Windows 10 x64") &&
 	// 		strings.HasSuffix(filename, ".dll"){
 	// 		// os.Remove(filename)
 	// 	}
@@ -82,17 +80,15 @@ func parse(filename string) {
 	// var buff []byte
 	// buff, err = json.Marshal(pe.RichHeader)
 	// fmt.Print(prettyPrint(buff))
-	pe.Close()
-	// if err == nil {
-	// 	if pe.IsDLL() {
-	// 		log.Print("File is DLL")
-	// 	}
-	// 	if pe.IsDriver() {
-	// 		log.Print("File is Driver")
-	// 	}
-	// 	if pe.IsEXE() {
-	// 		log.Print("File is Exe")
-	// 	}
+
+	// if pe.IsEXE() {
+	// 	log.Print("File is Exe")
+	// }
+	// if pe.IsDLL() {
+	// 	log.Print("File is DLL")
+	// }
+	// if pe.IsDriver() {
+	// 	log.Print("File is Driver")
 	// }
 
 	// if len(pe.Anomalies) > 0 {
@@ -127,6 +123,7 @@ func parse(filename string) {
 
 	// }
 
+	pe.Close()
 }
 
 func main() {
@@ -160,4 +157,5 @@ func main() {
 	for _, file := range fileList {
 		parse(file)
 	}
+
 }

@@ -313,3 +313,15 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	return nil
 }
+
+
+// GetExportFunctionByRVA return an export function given an RVA.
+func (pe *File) GetExportFunctionByRVA(rva uint32) ExportFunction {
+	for _, exp := range pe.Export.Functions {
+		if exp.FunctionRVA == rva {
+			return exp
+		}
+	}
+
+	return ExportFunction{}
+}

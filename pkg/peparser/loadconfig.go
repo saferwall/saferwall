@@ -72,26 +72,26 @@ const (
 )
 
 type CFGFunction struct {
-	Target uint32
-	Flags  *uint8
+	Target      uint32
+	Flags       *uint8
+	Description string
 }
 
 type CFGIATEntry struct {
-	RVA uint32
-	IATValue uint32
-	INTValue uint32
+	RVA         uint32
+	IATValue    uint32
+	INTValue    uint32
 	Description string
-	
 }
 
 type LoadConfig struct {
 	LoadCfgStruct interface{}
 	SEH           []uint32
 	GFIDS         []CFGFunction
-	CFGIAT		  []CFGIATEntry
+	CFGIAT        []CFGIATEntry
+	CFGLongJump   []uint32
+	CHPE          HybridPE
 }
-
-// https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
 type ImageLoadConfigCodeIntegrity struct {
@@ -100,6 +100,8 @@ type ImageLoadConfigCodeIntegrity struct {
 	CatalogOffset uint32
 	Reserved      uint32 // Additional bitmask to be defined later
 }
+
+// https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
 
 // ImageLoadConfigDirectory32v1 size is 0x40.
 type ImageLoadConfigDirectory32v1 struct {
@@ -1175,6 +1177,31 @@ type ImageLoadConfigDirectory64 struct {
 	GuardXFGTableDispatchFunctionPointer     uint64
 }
 
+type CHPEMetadata struct {
+	Version                                  uint32
+	CHPECodeAddressRangeOffset               uint32
+	CHPECodeAddressRangeCount                uint32
+	WowA64ExceptionHandlerFunctionPtr        uint32
+	WowA64DispatchCallFunctionPtr            uint32
+	WowA64DispatchIndirectCallFunctionPtr    uint32
+	WowA64DispatchIndirectCallCfgFunctionPtr uint32
+	WowA64DispatchRetFunctionPtr             uint32
+	WowA64DispatchRetLeafFunctionPtr         uint32
+	WowA64DispatchJumpFunctionPtr            uint32
+	CompilerIATPointer                       uint32
+	WowA64RDTSCFunctionPtr                   uint32
+}
+
+type CodeRange struct {
+	Begin   uint32
+	End     uint32
+	Machine uint8
+}
+type HybridPE struct {
+	CHPEMetadata CHPEMetadata
+	CodeRanges   []CodeRange
+}
+
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
 // used in very limited cases in the Windows NT operating system itself to
 // describe various features too difficult or too large to describe in the file
@@ -1329,6 +1356,12 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 	// Retrieve Control Flow Guard IAT entries if there are any.
 	pe.LoadConfig.CFGIAT = pe.getControlFlowGuardIAT()
 
+	// Retrive Long jump target functions if there are any.
+	pe.LoadConfig.CFGLongJump = pe.getLongJumpTargetTable()
+
+	// Retrieve compiled hybrid PE metadata if there are any.
+	pe.LoadConfig.CHPE = pe.getHybridPE()
+
 	return nil
 }
 
@@ -1390,7 +1423,7 @@ func (pe *File) getSEHHandlers() []uint32 {
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 
 	// SEHandlerCount is found in index 19 of the struct.
-	if v.NumField() >= 19 {
+	if v.NumField() > 19 {
 		SEHandlerCount := uint32(v.Field(19).Uint())
 		if SEHandlerCount > 0 {
 			SEHandlerTable := uint32(v.Field(18).Uint())
@@ -1415,11 +1448,10 @@ func (pe *File) getControlFlowGuardFunctions() []CFGFunction {
 
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	var GFIDS []CFGFunction
-	var cfgFlags uint8
 	var err error
 
 	// GuardCFFunctionCount is found in index 23 of the struct.
-	if v.NumField() >= 23 {
+	if v.NumField() > 23 {
 		// The GFIDS table is an array of 4 + n bytes, where n is given by :
 		// ((GuardFlags & IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK) >>
 		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT).
@@ -1440,16 +1472,23 @@ func (pe *File) getControlFlowGuardFunctions() []CFGFunction {
 				offset := pe.getOffsetFromRva(rva)
 				for i := uint32(1); i <= uint32(GuardCFFunctionCount); i++ {
 					cfgFunction := CFGFunction{}
+					var cfgFlags uint8
 					cfgFunction.Target, err = pe.ReadUint32(offset)
 					if err != nil {
 						return GFIDS
 					}
 					if n > 0 {
-						pe.structUnpack(&cfgFlags, offset+i*4, uint32(n))
+						pe.structUnpack(&cfgFlags, offset+4, uint32(n))
 						cfgFunction.Flags = &cfgFlags
+						if cfgFlags == ImageGuardFlagFIDSupressed ||
+							cfgFlags == ImageGuardFlagExportSupressed {
+							exportName := pe.GetExportFunctionByRVA(cfgFunction.Target)
+							cfgFunction.Description = exportName.Name
+						}
 					}
+
 					GFIDS = append(GFIDS, cfgFunction)
-					offset += i*4 + uint32(n)
+					offset += 4 + uint32(n)
 				}
 			} else {
 				GuardCFFunctionTable := v.Field(22).Uint()
@@ -1457,18 +1496,24 @@ func (pe *File) getControlFlowGuardFunctions() []CFGFunction {
 				rva := uint32(GuardCFFunctionTable - imageBase)
 				offset := pe.getOffsetFromRva(rva)
 				for i := uint64(1); i <= GuardCFFunctionCount; i++ {
+					var cfgFlags uint8
 					cfgFunction := CFGFunction{}
 					cfgFunction.Target, err = pe.ReadUint32(offset)
 					if err != nil {
 						return GFIDS
 					}
 					if n > 0 {
-						pe.structUnpack(&cfgFlags, offset+uint32(i*4), uint32(n))
+						pe.structUnpack(&cfgFlags, offset+4, uint32(n))
 						cfgFunction.Flags = &cfgFlags
+						if cfgFlags == ImageGuardFlagFIDSupressed ||
+							cfgFlags == ImageGuardFlagExportSupressed {
+							exportName := pe.GetExportFunctionByRVA(cfgFunction.Target)
+							cfgFunction.Description = exportName.Name
+						}
 					}
 
 					GFIDS = append(GFIDS, cfgFunction)
-					offset += uint32(i*4) + uint32(n)
+					offset += 4 + uint32(n)
 				}
 			}
 
@@ -1484,19 +1529,19 @@ func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
 	var err error
 
 	// GuardAddressTakenIatEntryCount is found in index 27 of the struct.
-	if v.NumField() >= 27 {
+	if v.NumField() > 27 {
 		// An image that supports CFG ES includes a GuardAddressTakenIatEntryTable
 		// whose count is provided by the GuardAddressTakenIatEntryCount as part
 		// of its load configuration directory. This table is structurally
-		// formatted the same as the GFIDS table. It uses the same GuardFlags 
-		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK mechanism to encode extra 
+		// formatted the same as the GFIDS table. It uses the same GuardFlags
+		// IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK mechanism to encode extra
 		// optional metadata bytes in the address taken IAT table, though all
-		// metadata bytes must be zero for the address taken IAT table and are 
+		// metadata bytes must be zero for the address taken IAT table and are
 		// reserved.
 		GuardFlags := v.Field(24).Uint()
 		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >>
 			ImageGuardCfFnctionTableSizeShift
-			GuardAddressTakenIatEntryCount := v.Field(27).Uint()
+		GuardAddressTakenIatEntryCount := v.Field(27).Uint()
 		if GuardAddressTakenIatEntryCount > 0 {
 			if pe.Is32 {
 				GuardAddressTakenIatEntryTable := uint32(v.Field(26).Uint())
@@ -1509,15 +1554,12 @@ func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
 					if err != nil {
 						return GFGIAT
 					}
-					if n > 0 {
-						fmt.Print("GuardAddressTakenIatEntryTable contains metadata <> 0")
-					}
 					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
 					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
 					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
 					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
 					GFGIAT = append(GFGIAT, cfgIATEntry)
-					offset += i*4 + uint32(n)
+					offset += 4 + uint32(n)
 				}
 			} else {
 				GuardAddressTakenIatEntryTable := v.Field(26).Uint()
@@ -1530,21 +1572,125 @@ func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
 					if err != nil {
 						return GFGIAT
 					}
-					if n > 0 {
-						fmt.Print("GuardAddressTakenIatEntryTable contains metadata <> 0")
-					}
-
 					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
 					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
 					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
 					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
 					GFGIAT = append(GFGIAT, cfgIATEntry)
 					GFGIAT = append(GFGIAT, cfgIATEntry)
-					offset += uint32(i*4) + uint32(n)
+					offset += 4 + uint32(n)
 				}
 			}
 
 		}
 	}
 	return GFGIAT
+}
+
+func (pe *File) getLongJumpTargetTable() []uint32 {
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	var longJumpTargets []uint32
+
+	// GuardLongJumpTargetCount is found in index 29 of the struct.
+	if v.NumField() > 29 {
+		// The long jump table represents a sorted array of RVAs that are valid
+		// long jump targets. If a long jump target module sets
+		// IMAGE_GUARD_CF_LONGJUMP_TABLE_PRESENT in its GuardFlags field, then
+		// all long jump targets must be enumerated in the LongJumpTargetTable.
+		GuardFlags := v.Field(24).Uint()
+		n := (GuardFlags & ImageGuardCfFnctionTableSizeMask) >>
+			ImageGuardCfFnctionTableSizeShift
+		GuardLongJumpTargetCount := v.Field(29).Uint()
+		if GuardLongJumpTargetCount > 0 {
+			if pe.Is32 {
+				GuardLongJumpTargetTable := uint32(v.Field(28).Uint())
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+				rva := GuardLongJumpTargetTable - imageBase
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint32(1); i <= uint32(GuardLongJumpTargetCount); i++ {
+					target, err := pe.ReadUint32(offset)
+					if err != nil {
+						return longJumpTargets
+					}
+					longJumpTargets = append(longJumpTargets, target)
+					offset += 4 + uint32(n)
+				}
+			} else {
+				GuardLongJumpTargetTable := v.Field(26).Uint()
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+				rva := uint32(GuardLongJumpTargetTable - imageBase)
+				offset := pe.getOffsetFromRva(rva)
+				for i := uint64(1); i <= GuardLongJumpTargetCount; i++ {
+					target, err := pe.ReadUint32(offset)
+					if err != nil {
+						return longJumpTargets
+					}
+					longJumpTargets = append(longJumpTargets, target)
+					offset += 4 + uint32(n)
+				}
+			}
+
+		}
+	}
+	return longJumpTargets
+}
+
+func (pe *File) getHybridPE() HybridPE {
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	hybridPE := HybridPE{}
+
+	// CHPEMetadataPointer is found in index 31 of the struct.
+	if v.NumField() > 31 {
+		CHPEMetadataPointer := v.Field(31).Uint()
+		if CHPEMetadataPointer != 0 {
+			structSize := uint32(binary.Size(CHPEMetadata{}))
+			if pe.Is32 {
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+				rva := uint32(CHPEMetadataPointer) - imageBase
+				fileOffset := pe.getOffsetFromRva(rva)
+				err := pe.structUnpack(&hybridPE.CHPEMetadata, fileOffset, structSize)
+				if err != nil {
+					return hybridPE
+				}
+			} else {
+				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+				rva := CHPEMetadataPointer - imageBase
+				err := pe.structUnpack(&hybridPE.CHPEMetadata, uint32(rva), structSize)
+				if err != nil {
+					return hybridPE
+				}
+			}
+
+			rva := hybridPE.CHPEMetadata.CHPECodeAddressRangeOffset
+			structSize = uint32(binary.Size(CodeRange{}))
+			for i := uint32(0); i < hybridPE.CHPEMetadata.CHPECodeAddressRangeCount; i++ {
+
+				codeRange := CodeRange{}
+				fileOffset := pe.getOffsetFromRva(rva)
+				begin, err := pe.ReadUint32(fileOffset)
+				if err != nil {
+					break
+				}
+
+				if begin & 0x0000000f == 1 {
+					codeRange.Machine = 1
+					codeRange.Begin = begin & 0xfffffff0
+				}
+				codeRange.Begin = begin
+
+				fileOffset += 4
+				size, err := pe.ReadUint32(fileOffset)
+				if err != nil {
+					break
+				}
+				codeRange.End = begin + size
+				
+				hybridPE.CodeRanges = append(hybridPE.CodeRanges, codeRange)
+				rva += 8
+			}
+		}
+	}
+
+	return hybridPE
 }
