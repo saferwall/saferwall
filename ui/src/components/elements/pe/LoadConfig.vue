@@ -45,20 +45,17 @@
         </div>
       </div>
     </div>
-    <LoadConfigOther :data="_.omit(data, 'LoadCfgStruct')"/>
   </div>
 </template>
 
 <script>
 import { dec2HexString, GuardFlags2String } from "@/helpers/pe"
 import Copy from "@/components/elements/Copy"
-import LoadConfigOther from "./LoadConfigOther"
 
 export default {
   props: ["data"],
   components: {
     copy: Copy,
-    LoadConfigOther
   },
   data() {
     return {

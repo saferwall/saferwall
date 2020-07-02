@@ -7,12 +7,12 @@
           <div
             class="bt"
             :class="{
-              active: selectedSection === index,
+              active: selectedSection === section,
             }"
             v-for="(section, index) in sections"
             :key="index"
           >
-            <button class="button is-light" @click="selectedSection = index">
+            <button class="button is-light" @click="selectedSection = section" :class="{subsection: loadConfigSubSections.includes(section)}">
               {{ _.startCase(section) }}
             </button>
             <hr />
@@ -20,28 +20,39 @@
         </div>
         <div class="column values">
           <DosHeaderView
-            v-if="sections[selectedSection] === 'DosHeader'"
-            :data="pe[sections[selectedSection]]"
+            v-if="selectedSection === 'DosHeader'"
+            :data="pe[selectedSection]"
             :signature="pe['NtHeader'].Signature"
           />
-          <RichHeaderView 
-          v-if="sections[selectedSection] === 'RichHeader'"
-            :data="pe[sections[selectedSection]].CompIDs"/>
-          <NtHeaderView 
-          v-if="sections[selectedSection] === 'NtHeader'"
-            :data="pe[sections[selectedSection]]"/>
-          <SectionsView 
-          v-if="sections[selectedSection] === 'Sections'"
-            :data="pe[sections[selectedSection]]"/>
-          <Imports 
-          v-if="sections[selectedSection] === 'Imports'"
-            :data="pe[sections[selectedSection]]"/>
-          <Export 
-          v-if="sections[selectedSection] === 'Export'"
-            :data="pe[sections[selectedSection]]"/>
-          <LoadConfig 
-          v-if="sections[selectedSection] === 'LoadConfig'"
-            :data="pe[sections[selectedSection]]"/>
+          <RichHeaderView
+            v-if="selectedSection === 'RichHeader'"
+            :data="pe[selectedSection].CompIDs"
+          />
+          <NtHeaderView
+            v-if="selectedSection === 'NtHeader'"
+            :data="pe[selectedSection]"
+          />
+          <SectionsView
+            v-if="selectedSection === 'Sections'"
+            :data="pe[selectedSection]"
+          />
+          <Imports
+            v-if="selectedSection === 'Imports'"
+            :data="pe[selectedSection]"
+          />
+          <Export
+            v-if="selectedSection === 'Export'"
+            :data="pe[selectedSection]"
+          />
+          <LoadConfig
+            v-if="selectedSection === 'LoadConfig'"
+            :data="pe[selectedSection]"
+          />
+          <LoadConfigOther
+            v-if="loadConfigSubSections.includes(selectedSection)"
+            :data="_.omit(pe['LoadConfig'], 'LoadCfgStruct')"
+            :section="selectedSection"
+          />
         </div>
       </div>
     </div>
@@ -56,6 +67,7 @@ import SectionsView from "../elements/pe/SectionsView"
 import Imports from "../elements/pe/Imports"
 import Export from "../elements/pe/Export"
 import LoadConfig from "../elements/pe/LoadConfig"
+import LoadConfigOther from "../elements/pe/LoadConfigOther"
 import { mapGetters } from "vuex"
 
 export default {
@@ -66,11 +78,12 @@ export default {
     SectionsView,
     Imports,
     Export,
-    LoadConfig
+    LoadConfig,
+    LoadConfigOther,
   },
   data() {
     return {
-      selectedSection: 0,
+      selectedSection: "DosHeader",
     }
   },
   computed: {
@@ -94,7 +107,21 @@ export default {
       ])
     },
     sections: function() {
-      return Object.keys(this.pe)
+      var keys = Object.keys(this.pe)
+      var index = keys.indexOf("LoadConfig")
+      return this._.concat(
+        this._.slice(keys, 0, index + 1),
+        this.loadConfigSubSections,
+        this._.slice(keys, index + 1, keys.length),
+      )
+    },
+    loadConfigSubSections: function() {
+      var sections = Object.keys(this.pe.LoadConfig)
+      return sections.filter((section) => {
+        return (
+          section !== "LoadCfgStruct" && this.pe.LoadConfig[section] !== null
+        )
+      })
     },
   },
 }
@@ -124,8 +151,11 @@ export default {
           font-size: medium;
           font-weight: 400;
           width: 300px;
-          justify-content: right;
+          justify-content: left;
           width: 10em;
+        }
+        .subsection{
+          padding-left: 2rem;
         }
         hr {
           background-color: grey;

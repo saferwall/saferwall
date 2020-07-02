@@ -1,16 +1,5 @@
 <template>
   <div class="container">
-    <div class="buttons has-addons selector">
-      <button
-        class="button"
-        v-for="(item, index) in sections"
-        :key="index"
-        @click="setSelectedSection(index)"
-        :class="{ active: selected === index }"
-      >
-        {{ item }}
-      </button>
-    </div>
     <div class="sections_header">
       <div class="sections_header_field" v-for="label in labels" :key="label">
         {{ _.startCase(label) }}
@@ -44,14 +33,9 @@ import Copy from "@/components/elements/Copy"
 import { dec2HexString } from "@/helpers/pe"
 
 export default {
-  props: ["data"],
+  props: ["data", "section"],
   components: {
     copy: Copy,
-  },
-  data() {
-    return {
-      selected: 1,
-    }
   },
   computed: {
     sections: function() {
@@ -60,16 +44,13 @@ export default {
       })
     },
     labels: function() {
-      return Object.keys(this.data[this.sections[this.selected]][0])
+      return Object.keys(this.data[this.section][0])
     },
     selectedSection: function() {
-      return this.data[this.sections[this.selected]]
+      return this.data[this.section]
     },
   },
   methods: {
-    setSelectedSection(index) {
-      this.selected = index
-    },
     toHex: function(value) {
       return dec2HexString(value)
     },
