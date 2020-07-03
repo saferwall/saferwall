@@ -44,9 +44,17 @@ export default {
       })
     },
     labels: function() {
+      if (this.section === "CHPE") return ["Structure Field", "Value"]
+      if (this.section === "CFGLongJump") return ["RVA"]
       return Object.keys(this.data[this.section][0])
     },
     selectedSection: function() {
+      if (this.section === "CHPE")
+        return this._.toPairs(this.data[this.section].CHPEMetadata)
+      if (this.section === "CFGLongJump")
+        return this._.map(this.data[this.section], (a) => {
+          return { a }
+        })
       return this.data[this.section]
     },
   },
@@ -80,11 +88,8 @@ export default {
     padding: 0.2rem;
     .sections_header_field {
       text-align: left;
-      width: 17rem;
+      width: 25rem;
       font-weight: 600;
-      &.name {
-        width: 6rem;
-      }
     }
   }
   .section {
@@ -93,10 +98,7 @@ export default {
       display: inline-flex;
       .section_field {
         text-align: left;
-        width: 17rem;
-        &.name {
-          width: 6rem;
-        }
+        width: 25rem;
         &:hover {
           .copy {
             opacity: 1;
