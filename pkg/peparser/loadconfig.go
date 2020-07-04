@@ -1177,7 +1177,34 @@ type ImageLoadConfigDirectory64 struct {
 	GuardXFGTableDispatchFunctionPointer     uint64
 }
 
-type CHPEMetadata struct {
+type ImageCHPEMetadataX86v1 struct {
+	Version                                  uint32
+	CHPECodeAddressRangeOffset               uint32
+	CHPECodeAddressRangeCount                uint32
+	WowA64ExceptionHandlerFunctionPtr        uint32
+	WowA64DispatchCallFunctionPtr            uint32
+	WowA64DispatchIndirectCallFunctionPtr    uint32
+	WowA64DispatchIndirectCallCfgFunctionPtr uint32
+	WowA64DispatchRetFunctionPtr             uint32
+	WowA64DispatchRetLeafFunctionPtr         uint32
+	WowA64DispatchJumpFunctionPtr            uint32
+}
+
+type ImageCHPEMetadataX86v2 struct {
+	Version                                  uint32
+	CHPECodeAddressRangeOffset               uint32
+	CHPECodeAddressRangeCount                uint32
+	WowA64ExceptionHandlerFunctionPtr        uint32
+	WowA64DispatchCallFunctionPtr            uint32
+	WowA64DispatchIndirectCallFunctionPtr    uint32
+	WowA64DispatchIndirectCallCfgFunctionPtr uint32
+	WowA64DispatchRetFunctionPtr             uint32
+	WowA64DispatchRetLeafFunctionPtr         uint32
+	WowA64DispatchJumpFunctionPtr            uint32
+	CompilerIATPointer                       uint32 // Present if Version >= 2
+}
+
+type ImageCHPEMetadataX86v3 struct {
 	Version                                  uint32
 	CHPECodeAddressRangeOffset               uint32
 	CHPECodeAddressRangeCount                uint32
@@ -1189,17 +1216,24 @@ type CHPEMetadata struct {
 	WowA64DispatchRetLeafFunctionPtr         uint32
 	WowA64DispatchJumpFunctionPtr            uint32
 	CompilerIATPointer                       uint32
-	WowA64RDTSCFunctionPtr                   uint32
+	WowA64RdtscFunctionPtr                   uint32 // Present if Version >= 3
 }
 
 type CodeRange struct {
 	Begin   uint32
-	End     uint32
+	Length     uint32
 	Machine uint8
 }
+
+type CompilerIAT struct {
+	RVA uint32
+	Value uint32
+	Description string
+}
 type HybridPE struct {
-	CHPEMetadata CHPEMetadata
+	CHPEMetadata interface{}
 	CodeRanges   []CodeRange
+	CompilerIAT  []CompilerIAT
 }
 
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
@@ -1215,7 +1249,7 @@ type HybridPE struct {
 // Windows XP and earlier versions of Windows, the size must be 64 for x86 images.
 func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 
-	// As the laod config structure changes over time,
+	// As the load config structure changes over time,
 	// we first read it size to figure out which one we have to cast against.
 	fileOffset := pe.getOffsetFromRva(rva)
 	structSize, err := pe.ReadUint32(fileOffset)
@@ -1361,6 +1395,8 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 
 	// Retrieve compiled hybrid PE metadata if there are any.
 	pe.LoadConfig.CHPE = pe.getHybridPE()
+
+	pe.getDynamicValueRelocTable()
 
 	return nil
 }
@@ -1644,27 +1680,70 @@ func (pe *File) getHybridPE() HybridPE {
 	if v.NumField() > 31 {
 		CHPEMetadataPointer := v.Field(31).Uint()
 		if CHPEMetadataPointer != 0 {
-			structSize := uint32(binary.Size(CHPEMetadata{}))
+
+			var rva uint32
 			if pe.Is32 {
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
-				rva := uint32(CHPEMetadataPointer) - imageBase
-				fileOffset := pe.getOffsetFromRva(rva)
-				err := pe.structUnpack(&hybridPE.CHPEMetadata, fileOffset, structSize)
-				if err != nil {
-					return hybridPE
-				}
+				rva = uint32(CHPEMetadataPointer) - imageBase
 			} else {
 				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
-				rva := CHPEMetadataPointer - imageBase
-				err := pe.structUnpack(&hybridPE.CHPEMetadata, uint32(rva), structSize)
-				if err != nil {
-					return hybridPE
-				}
+				rva = uint32(CHPEMetadataPointer - imageBase)
 			}
 
-			rva := hybridPE.CHPEMetadata.CHPECodeAddressRangeOffset
-			structSize = uint32(binary.Size(CodeRange{}))
-			for i := uint32(0); i < hybridPE.CHPEMetadata.CHPECodeAddressRangeCount; i++ {
+			// As the image chpe metadata structure changes over time,
+			// we first read its version to figure out which one we have to 
+			// cast against.
+			fileOffset := pe.getOffsetFromRva(rva)
+			version, err := pe.ReadUint32(fileOffset)
+			if err != nil {
+				return hybridPE
+			}
+
+			var ImageCHPEMetaX86 interface{}
+
+			switch version {
+			case 0x1:
+				ImageCHPEMetaX86v1 := ImageCHPEMetadataX86v1{}
+				structSize := uint32(binary.Size(ImageCHPEMetaX86v1))
+				err = pe.structUnpack(&ImageCHPEMetaX86v1, fileOffset, structSize)
+				ImageCHPEMetaX86 = ImageCHPEMetaX86v1
+			case 0x2:
+				ImageCHPEMetaX86v2 := ImageCHPEMetadataX86v2{}
+				structSize := uint32(binary.Size(ImageCHPEMetaX86v2))
+				err = pe.structUnpack(&ImageCHPEMetaX86v2, fileOffset, structSize)
+				ImageCHPEMetaX86 = ImageCHPEMetaX86v2
+			case 0x3:
+			default:
+				ImageCHPEMetaX86v3 := ImageCHPEMetadataX86v3{}
+				structSize := uint32(binary.Size(ImageCHPEMetaX86v3))
+				err = pe.structUnpack(&ImageCHPEMetaX86v3, fileOffset, structSize)
+				ImageCHPEMetaX86 = ImageCHPEMetaX86v3
+			}
+
+			hybridPE.CHPEMetadata = ImageCHPEMetaX86
+
+			v := reflect.ValueOf(ImageCHPEMetaX86)
+			CHPECodeAddressRangeOffset := uint32(v.Field(1).Uint())
+			CHPECodeAddressRangeCount := int(v.Field(2).Uint())
+
+			// Code Ranges
+
+			/*
+			typedef struct _IMAGE_CHPE_RANGE_ENTRY {
+				union {
+					ULONG StartOffset;
+					struct {
+						ULONG NativeCode : 1;
+						ULONG AddressBits : 31;
+					} DUMMYSTRUCTNAME;
+				} DUMMYUNIONNAME;
+			
+				ULONG Length;
+			} IMAGE_CHPE_RANGE_ENTRY, *PIMAGE_CHPE_RANGE_ENTRY;
+			*/
+
+			rva = CHPECodeAddressRangeOffset
+			for i := 0; i < CHPECodeAddressRangeCount; i++ {
 
 				codeRange := CodeRange{}
 				fileOffset := pe.getOffsetFromRva(rva)
@@ -1673,9 +1752,9 @@ func (pe *File) getHybridPE() HybridPE {
 					break
 				}
 
-				if begin & 0x0000000f == 1 {
+				if begin&1 == 1 {
 					codeRange.Machine = 1
-					codeRange.Begin = begin & 0xfffffff0
+					begin = uint32(int(begin) & ^1)
 				}
 				codeRange.Begin = begin
 
@@ -1684,13 +1763,46 @@ func (pe *File) getHybridPE() HybridPE {
 				if err != nil {
 					break
 				}
-				codeRange.End = begin + size
-				
+				codeRange.Length = size
+
 				hybridPE.CodeRanges = append(hybridPE.CodeRanges, codeRange)
 				rva += 8
 			}
+
+			// Compiler IAT
+			CompilerIATPointer := uint32(v.Field(10).Uint())
+			if CompilerIATPointer != 0 {
+				rva := CompilerIATPointer
+				for i := 0; i < 1024; i++ {
+					compilerIAT := CompilerIAT{}
+					compilerIAT.RVA = rva
+					fileOffset = pe.getOffsetFromRva(rva)
+					compilerIAT.Value, err = pe.ReadUint32(fileOffset)
+					if err != nil {
+						break
+					}
+
+					pe.LoadConfig.CHPE.CompilerIAT = append(
+						pe.LoadConfig.CHPE.CompilerIAT, compilerIAT)
+					rva+= 4			
+				}
+			
+			}
+
 		}
 	}
 
 	return hybridPE
+}
+
+func (pe *File) getDynamicValueRelocTable() {
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+
+	// CHPEMetadataPointer is found in index 34 of the struct.
+	if v.NumField() > 34 {
+		DynamicValueRelocTableSection := v.Field(34).Uint()
+		if DynamicValueRelocTableSection != 0 {
+			fmt.Print("Get it")
+		}
+	}
 }
