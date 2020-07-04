@@ -33,7 +33,20 @@
           </span>
         </div>
         <div class="section_field comment">
-          <span class="parent">
+          <span v-if="section[0] === 'GuardFlags'">
+            <span class="parent">
+              <span
+                class="tag is-link is-normal"
+                :class="{ redTag: isAntivirusTag(tag[0]) }"
+                id="tag"
+                v-for="tag in tags"
+                :key="tag"
+              >
+                {{ tag }}
+              </span>
+            </span>
+          </span>
+          <span class="parent" v-else>
             <span>
               {{ getComment(section[0], section[1]) }}
             </span>
@@ -65,12 +78,23 @@ export default {
   computed: {
     LoadCfgStruct: function() {
       var data = this._.omit(this.data.LoadCfgStruct, "CodeIntegrity")
-        data["CodeIntegrity.Catalog"]= this.data.LoadCfgStruct.CodeIntegrity.Catalog
-        data["CodeIntegrity.CatalogOffset"]= this.data.LoadCfgStruct.CodeIntegrity.CatalogOffset
-        data["CodeIntegrity.Flags"]= this.data.LoadCfgStruct.CodeIntegrity.Flags
-        data["CodeIntegrity.Reserved"]= this.data.LoadCfgStruct.CodeIntegrity.Reserved
+      data[
+        "CodeIntegrity.Catalog"
+      ] = this.data.LoadCfgStruct.CodeIntegrity.Catalog
+      data[
+        "CodeIntegrity.CatalogOffset"
+      ] = this.data.LoadCfgStruct.CodeIntegrity.CatalogOffset
+      data["CodeIntegrity.Flags"] = this.data.LoadCfgStruct.CodeIntegrity.Flags
+      data[
+        "CodeIntegrity.Reserved"
+      ] = this.data.LoadCfgStruct.CodeIntegrity.Reserved
 
       return data
+    },
+    tags: function() {
+      if (this.data)
+        return GuardFlags2String(this.data.LoadCfgStruct.GuardFlags)
+      return []
     },
   },
   methods: {
@@ -79,11 +103,26 @@ export default {
     },
     getComment: function(field, value) {
       switch (field) {
-        case "GuardFlags":
-          return this._.join(GuardFlags2String(value), ", ")
         default:
           return ""
       }
+    },
+    isAntivirusTag: function(tag) {
+      const antivirusList = [
+        "eset",
+        "fsecure",
+        "avira",
+        "bitdefender",
+        "kaspersky",
+        "symantec",
+        "sophos",
+        "windefender",
+        "clamav",
+        "comodo",
+        "avast",
+        "mcafee",
+      ]
+      return antivirusList.includes(tag)
     },
   },
 }
@@ -104,7 +143,10 @@ export default {
       width: 25rem;
     }
     &.value {
-      width: 25rem;
+      width: 10rem;
+    }
+    &.comment {
+      width: 50rem;
     }
   }
 }
@@ -124,6 +166,14 @@ export default {
       }
       &.comment {
         width: 50rem;
+        #tag {
+          margin-right: 0.2em;
+          color: white;
+          font-weight: 600;
+        }
+        .redTag {
+          background-color: #f14668;
+        }
       }
       &:hover {
         .copy {
