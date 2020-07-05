@@ -71,36 +71,6 @@ const (
 	ImageGuardFlagExportSupressed = 0x2
 )
 
-type CFGFunction struct {
-	Target      uint32
-	Flags       *uint8
-	Description string
-}
-
-type CFGIATEntry struct {
-	RVA         uint32
-	IATValue    uint32
-	INTValue    uint32
-	Description string
-}
-
-type LoadConfig struct {
-	LoadCfgStruct interface{}
-	SEH           []uint32
-	GFIDS         []CFGFunction
-	CFGIAT        []CFGIATEntry
-	CFGLongJump   []uint32
-	CHPE          HybridPE
-}
-
-// ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
-type ImageLoadConfigCodeIntegrity struct {
-	Flags         uint16 // Flags to indicate if CI information is available, etc.
-	Catalog       uint16 // 0xFFFF means not available
-	CatalogOffset uint32
-	Reserved      uint32 // Additional bitmask to be defined later
-}
-
 // https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
 
 // ImageLoadConfigDirectory32v1 size is 0x40.
@@ -1221,19 +1191,109 @@ type ImageCHPEMetadataX86v3 struct {
 
 type CodeRange struct {
 	Begin   uint32
-	Length     uint32
+	Length  uint32
 	Machine uint8
 }
 
 type CompilerIAT struct {
-	RVA uint32
-	Value uint32
+	RVA         uint32
+	Value       uint32
 	Description string
 }
 type HybridPE struct {
 	CHPEMetadata interface{}
 	CodeRanges   []CodeRange
 	CompilerIAT  []CompilerIAT
+}
+
+type ImageDynamicRelocationTable struct {
+	Version uint32
+	Size    uint32
+	//  IMAGE_DYNAMIC_RELOCATION DynamicRelocations[0];
+}
+
+type ImageDynamicRelocation32 struct {
+	Symbol        uint32
+	BaseRelocSize uint32
+	//  IMAGE_BASE_RELOCATION BaseRelocations[0];
+}
+
+type ImageDynamicRelocation64 struct {
+	Symbol        uint64
+	BaseRelocSize uint32
+	//  IMAGE_BASE_RELOCATION BaseRelocations[0];
+}
+
+type ImageDynamicRelocation32v2 struct {
+	HeaderSize    uint32
+	FixupInfoSize uint32
+	Symbol        uint32
+	SymbolGroup   uint32
+	Flags         uint32
+	// ...     variable length header fields
+	// UCHAR   FixupInfo[FixupInfoSize]
+}
+
+type ImageDynamicRelocation64v2 struct {
+	HeaderSize    uint32
+	FixupInfoSize uint32
+	Symbol        uint64
+	SymbolGroup   uint32
+	Flags         uint32
+	// ...     variable length header fields
+	// UCHAR   FixupInfo[FixupInfoSize]
+}
+
+type CFGFunction struct {
+	Target      uint32
+	Flags       *uint8
+	Description string
+}
+
+type CFGIATEntry struct {
+	RVA         uint32
+	IATValue    uint32
+	INTValue    uint32
+	Description string
+}
+
+type TypeOffset struct {
+	Value               uint16
+	Type                uint8
+	DynamicSymbolOffset uint16
+}
+
+type RelocBlock struct {
+	ImgBaseReloc ImageBaseRelocation
+	TypeOffsets  []TypeOffset
+}
+type RelocEntry struct {
+	// Could be ImageDynamicRelocation32{} or ImageDynamicRelocation64{}
+	ImgDynReloc interface{}
+	RelocBlocks []RelocBlock
+}
+
+// DVRT Dynamic Value Relocation Table
+type DVRT struct {
+	ImgDynRelocTable ImageDynamicRelocationTable
+	Entries          []RelocEntry
+}
+type LoadConfig struct {
+	LoadCfgStruct interface{}
+	SEH           []uint32
+	GFIDS         []CFGFunction
+	CFGIAT        []CFGIATEntry
+	CFGLongJump   []uint32
+	CHPE          HybridPE
+	DVRT          DVRT
+}
+
+// ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
+type ImageLoadConfigCodeIntegrity struct {
+	Flags         uint16 // Flags to indicate if CI information is available, etc.
+	Catalog       uint16 // 0xFFFF means not available
+	CatalogOffset uint32
+	Reserved      uint32 // Additional bitmask to be defined later
 }
 
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
@@ -1396,7 +1456,8 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 	// Retrieve compiled hybrid PE metadata if there are any.
 	pe.LoadConfig.CHPE = pe.getHybridPE()
 
-	pe.getDynamicValueRelocTable()
+	// Retrieve dynamic value relocation table if there are any.
+	pe.LoadConfig.DVRT = pe.getDynamicValueRelocTable()
 
 	return nil
 }
@@ -1691,7 +1752,7 @@ func (pe *File) getHybridPE() HybridPE {
 			}
 
 			// As the image chpe metadata structure changes over time,
-			// we first read its version to figure out which one we have to 
+			// we first read its version to figure out which one we have to
 			// cast against.
 			fileOffset := pe.getOffsetFromRva(rva)
 			version, err := pe.ReadUint32(fileOffset)
@@ -1729,17 +1790,17 @@ func (pe *File) getHybridPE() HybridPE {
 			// Code Ranges
 
 			/*
-			typedef struct _IMAGE_CHPE_RANGE_ENTRY {
-				union {
-					ULONG StartOffset;
-					struct {
-						ULONG NativeCode : 1;
-						ULONG AddressBits : 31;
-					} DUMMYSTRUCTNAME;
-				} DUMMYUNIONNAME;
-			
-				ULONG Length;
-			} IMAGE_CHPE_RANGE_ENTRY, *PIMAGE_CHPE_RANGE_ENTRY;
+				typedef struct _IMAGE_CHPE_RANGE_ENTRY {
+					union {
+						ULONG StartOffset;
+						struct {
+							ULONG NativeCode : 1;
+							ULONG AddressBits : 31;
+						} DUMMYSTRUCTNAME;
+					} DUMMYUNIONNAME;
+
+					ULONG Length;
+				} IMAGE_CHPE_RANGE_ENTRY, *PIMAGE_CHPE_RANGE_ENTRY;
 			*/
 
 			rva = CHPECodeAddressRangeOffset
@@ -1784,25 +1845,125 @@ func (pe *File) getHybridPE() HybridPE {
 
 					pe.LoadConfig.CHPE.CompilerIAT = append(
 						pe.LoadConfig.CHPE.CompilerIAT, compilerIAT)
-					rva+= 4			
+					rva += 4
 				}
-			
 			}
-
 		}
 	}
 
 	return hybridPE
 }
 
-func (pe *File) getDynamicValueRelocTable() {
-	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+func (pe *File) getDynamicValueRelocTable() DVRT {
 
-	// CHPEMetadataPointer is found in index 34 of the struct.
-	if v.NumField() > 34 {
-		DynamicValueRelocTableSection := v.Field(34).Uint()
-		if DynamicValueRelocTableSection != 0 {
-			fmt.Print("Get it")
+	var structSize uint32
+	var imgDynRelocSize uint32
+	dvrt := DVRT{}
+	imgDynRelocTable := ImageDynamicRelocationTable{}
+
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	if v.NumField() <= 35 {
+		return dvrt
+	}
+
+	DynamicValueRelocTableOffset := v.Field(34).Uint()
+	DynamicValueRelocTableSection := v.Field(35).Uint()
+	if DynamicValueRelocTableOffset == 0 || DynamicValueRelocTableSection == 0 {
+		return dvrt
+	}
+
+	section := pe.getSectionByName(".reloc")
+	if section == nil {
+		return dvrt
+	}
+
+	// Get the dynamic value relocation table.
+	rva := section.VirtualAddress + uint32(DynamicValueRelocTableOffset)
+	offset := pe.getOffsetFromRva(rva)
+	structSize = uint32(binary.Size(imgDynRelocTable))
+	err := pe.structUnpack(&imgDynRelocTable, offset, structSize)
+	if err != nil {
+		return dvrt
+	}
+
+	dvrt.ImgDynRelocTable = imgDynRelocTable
+	offset += structSize
+
+	// Get dynamic relocation entries accrording to version.
+	switch imgDynRelocTable.Version {
+	case 1:
+		relocTableIt := uint32(0)
+		baseBlockSize := uint32(0)
+
+		// Itreate over our dynamic reloc table entries
+		for relocTableIt < imgDynRelocTable.Size {
+
+			relocEntry := RelocEntry{}
+			if pe.Is32 {
+				imgDynReloc := ImageDynamicRelocation32{}
+				imgDynRelocSize = uint32(binary.Size(imgDynReloc))
+				err = pe.structUnpack(&imgDynReloc, offset, imgDynRelocSize)
+				if err != nil {
+					return dvrt
+				}
+				relocEntry.ImgDynReloc = imgDynReloc
+				baseBlockSize = imgDynReloc.BaseRelocSize
+			} else {
+				imgDynReloc := ImageDynamicRelocation64{}
+				imgDynRelocSize = uint32(binary.Size(imgDynReloc))
+				err = pe.structUnpack(&imgDynReloc, offset, imgDynRelocSize)
+				if err != nil {
+					return dvrt
+				}
+				relocEntry.ImgDynReloc = imgDynReloc
+				baseBlockSize = imgDynReloc.BaseRelocSize
+			}
+			offset += imgDynRelocSize
+			relocTableIt += imgDynRelocSize
+
+			// Iterate over reach block
+			blockIt := uint32(0)
+			for blockIt < baseBlockSize - imgDynRelocSize {
+				relocBlock := RelocBlock{}
+
+				baseReloc := ImageBaseRelocation{}
+				structSize = uint32(binary.Size(baseReloc))
+				err = pe.structUnpack(&baseReloc, offset, structSize)
+				if err != nil {
+					return dvrt
+				}
+
+				relocBlock.ImgBaseReloc = baseReloc
+				offset += structSize
+				numTypeOffsets := (baseReloc.SizeOfBlock - structSize) / 2
+				for i := uint32(0); i < numTypeOffsets; i++ {
+					typeOffset := TypeOffset{}
+					typeOffset.Value, err = pe.ReadUint16(offset)
+					if err != nil {
+						return dvrt
+					}
+
+					typeOffset.DynamicSymbolOffset = typeOffset.Value & 0xfff
+					typeOffset.Type = uint8(typeOffset.Value & 0xf000 >> 12)
+					offset += 2
+
+					// Padding at the end of the block ?
+					if  (TypeOffset{}) == typeOffset && i+1==numTypeOffsets{
+						break
+					}
+
+					relocBlock.TypeOffsets = append(relocBlock.TypeOffsets, typeOffset)		
+				}
+
+				blockIt += baseReloc.SizeOfBlock
+				relocEntry.RelocBlocks = append(relocEntry.RelocBlocks, relocBlock)
+			}
+
+			dvrt.Entries = append(dvrt.Entries, relocEntry)
+			relocTableIt += baseBlockSize
 		}
 	}
+
+	return dvrt
 }

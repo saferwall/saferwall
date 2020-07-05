@@ -244,6 +244,16 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 	return offset - fileAlignment + sectionAlignment
 }
 
+func (pe *File) getSectionByName(secName string) (section *ImageSectionHeader) {
+	for _, section := range pe.Sections {
+		if  section.NameString() == secName {
+			return &section
+		}
+
+	}
+	return nil
+}
+
 // getStringAtRVA returns an ASCII string located at the given address.
 func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 	if rva == 0 {
