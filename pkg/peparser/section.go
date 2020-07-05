@@ -9,6 +9,7 @@ import (
 	"encoding/binary"
 	"reflect"
 	"sort"
+	"strings"
 )
 
 const (
@@ -346,7 +347,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 
 // NameString returns string representation of a ImageSectionHeader.Name field.
 func (section *ImageSectionHeader) NameString() string {
-	return string(section.Name[:])
+	return strings.Replace(string(section.Name[:]), "\x00", "", -1)
 }
 
 // NextHeaderAddr returns the VirtualAddress of the next section.
