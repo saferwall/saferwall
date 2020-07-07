@@ -16,7 +16,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/pelletier/go-toml v1.5.0 // indirect
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
-	github.com/saferwall/saferwall/pkg/peparser v0.0.12
+	github.com/saferwall/saferwall/pkg/peparser v0.0.14
 	github.com/saferwall/saferwall/pkg/utils v0.0.3
 	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/afero v1.2.2 // indirect
