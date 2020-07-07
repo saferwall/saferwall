@@ -190,6 +190,12 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 
 	// Do the actual parsing
 	err = pe.Parse()
+
+	// Dirty hack to fix json marshalling
+	for i := range pe.Certificates.Content.Certificates {
+		pe.Certificates.Content.Certificates[i].PublicKey = nil
+	}
+	
 	contextLogger.Info("pe pkg success")
 	return pe, err
 }

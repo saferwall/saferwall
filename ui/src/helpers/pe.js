@@ -834,6 +834,14 @@ function magic2String(magic) {
   }
 }
 
+function GFIDS2String(flags) {
+  switch (flags) {
+    case 0x1: return "FIDSupressed";
+    case 0x2: return "ExportSupressed";
+    default: return "";
+  }
+} 
+
 export {
   hex2a,
   reverse,
@@ -848,5 +856,6 @@ export {
   subsystem2String,
   magic2String,
   sectionFlag2String,
-  GuardFlags2String
+  GuardFlags2String,
+  GFIDS2String
 }

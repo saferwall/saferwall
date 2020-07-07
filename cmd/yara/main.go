@@ -11,7 +11,6 @@ import (
 	"errors"
 	"flag"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 )
