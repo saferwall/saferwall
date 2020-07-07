@@ -69,6 +69,26 @@ const (
 	// ImageGuardFlagExportSupressed indicates that the call target is export
 	// suppressed. See Export suppression for more details
 	ImageGuardFlagExportSupressed = 0x2
+
+	ImageDynamicRelocationGuardRfPrologue = 0x00000001
+	ImageDynamicRelocationGuardREpilogue  = 0x00000002
+	ImageEnclaveLongIdLength              = 32
+	ImageEnclaveShortIdLength             = 16
+
+	// ImageEnclaveImportMatchNone indicates that none of the identifiers of the image need to match the value in the import record.
+	ImageEnclaveImportMatchNone = 0x00000000
+
+	// ImageEnclaveImportMatchUniqueId indicates that the value of the enclave unique identifier of the image must match the value in the import record. Otherwise, loading of the image fails.
+	ImageEnclaveImportMatchUniqueId = 0x00000001
+
+	// ImageEnclaveImportMatchAuthorId indicates that the value of the enclave author identifier of the image must match the value in the import record. Otherwise, loading of the image fails. If this flag is set and the import record indicates an author identifier of all zeros, the imported image must be part of the Windows installation.
+	ImageEnclaveImportMatchAuthorId = 0x00000002
+
+	// ImageEnclaveImportMatchFamilyId indicates that the value of the enclave family identifier of the image must match the value in the import record. Otherwise, loading of the image fails.
+	ImageEnclaveImportMatchFamilyId = 0x00000003
+
+	// ImageEnclaveImportMatchImageId indicates that the value of the enclave image identifier must match the value in the import record. Otherwise, loading of the image fails.
+	ImageEnclaveImportMatchImageId = 0x00000004
 )
 
 // https://www.virtualbox.org/svn/vbox/trunk/include/iprt/formats/pecoff.h
@@ -1244,6 +1264,20 @@ type ImageDynamicRelocation64v2 struct {
 	// UCHAR   FixupInfo[FixupInfoSize]
 }
 
+type ImagePrologueDynamicRelocationHeader struct {
+	PrologueByteCount uint8
+	// UCHAR   PrologueBytes[PrologueByteCount];
+}
+
+type ImageEpilogueDynamicRelocationHeader struct {
+	EpilogueCount               uint32
+	EpilogueByteCount           uint8
+	BranchDescriptorElementSize uint8
+	BranchDescriptorCount       uint8
+	// UCHAR   BranchDescriptors[...];
+	// UCHAR   BranchDescriptorBitMap[...];
+}
+
 type CFGFunction struct {
 	Target      uint32
 	Flags       *uint8
@@ -1278,6 +1312,14 @@ type DVRT struct {
 	ImgDynRelocTable ImageDynamicRelocationTable
 	Entries          []RelocEntry
 }
+
+type Enclave struct {
+
+	// Points to either ImageEnclaveConfig32{} or ImageEnclaveConfig64{}
+	Config interface{}
+
+	Imports []ImageEnclaveImport
+}
 type LoadConfig struct {
 	LoadCfgStruct interface{}
 	SEH           []uint32
@@ -1286,6 +1328,7 @@ type LoadConfig struct {
 	CFGLongJump   []uint32
 	CHPE          HybridPE
 	DVRT          DVRT
+	Enclave
 }
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
@@ -1294,6 +1337,129 @@ type ImageLoadConfigCodeIntegrity struct {
 	Catalog       uint16 // 0xFFFF means not available
 	CatalogOffset uint32
 	Reserved      uint32 // Additional bitmask to be defined later
+}
+
+type ImageEnclaveConfig32 struct {
+
+	// The size of the IMAGE_ENCLAVE_CONFIG32 structure, in bytes.
+	Size uint32
+
+	// The minimum size of the IMAGE_ENCLAVE_CONFIG32 structure that the image loader must be able to process in order for the enclave to be usable. This member allows an enclave to inform an earlier version of the image loader that the image loader can safely load the enclave and ignore optional members added to IMAGE_ENCLAVE_CONFIG32 for later versions of the enclave.
+
+	// If the size of IMAGE_ENCLAVE_CONFIG32 that the image loader can process is less than MinimumRequiredConfigSize, the enclave cannot be run securely. If MinimumRequiredConfigSize is zero, the minimum size of the IMAGE_ENCLAVE_CONFIG32 structure that the image loader must be able to process in order for the enclave to be usable is assumed to be the size of the structure through and including the MinimumRequiredConfigSize member.
+	MinimumRequiredConfigSize uint32
+
+	// A flag that indicates whether the enclave permits debugging.
+	PolicyFlags uint32
+
+	// The number of images in the array of images that the ImportList member
+	// points to.
+	NumberOfImports uint32
+
+	// The relative virtual address of the array of images that the enclave
+	// image may import, with identity information for each image.
+	ImportList uint32
+
+	// The size of each image in the array of images that the ImportList member
+	// points to.
+	ImportEntrySize uint32
+
+	// The family identifier that the author of the enclave assigned to the enclave.
+	FamilyID [ImageEnclaveShortIdLength]uint8
+
+	// The image identifier that the author of the enclave assigned to the enclave.
+	ImageID [ImageEnclaveShortIdLength]uint8
+
+	// The version number that the author of the enclave assigned to the enclave.
+	ImageVersion uint32
+
+	// The security version number that the author of the enclave assigned to
+	// the enclave.
+	SecurityVersion uint32
+
+	// The expected virtual size of the private address range for the enclave,
+	// in bytes.
+	EnclaveSize uint32
+
+	// The maximum number of threads that can be created within the enclave.
+	NumberOfThreads uint32
+
+	// A flag that indicates whether the image is suitable for use as the
+	// primary image in the enclave.
+	EnclaveFlags uint32
+}
+
+type ImageEnclaveConfig64 struct {
+
+	// The size of the IMAGE_ENCLAVE_CONFIG32 structure, in bytes.
+	Size uint32
+
+	// The minimum size of the IMAGE_ENCLAVE_CONFIG32 structure that the image loader must be able to process in order for the enclave to be usable. This member allows an enclave to inform an earlier version of the image loader that the image loader can safely load the enclave and ignore optional members added to IMAGE_ENCLAVE_CONFIG32 for later versions of the enclave.
+
+	// If the size of IMAGE_ENCLAVE_CONFIG32 that the image loader can process is less than MinimumRequiredConfigSize, the enclave cannot be run securely. If MinimumRequiredConfigSize is zero, the minimum size of the IMAGE_ENCLAVE_CONFIG32 structure that the image loader must be able to process in order for the enclave to be usable is assumed to be the size of the structure through and including the MinimumRequiredConfigSize member.
+	MinimumRequiredConfigSize uint32
+
+	// A flag that indicates whether the enclave permits debugging.
+	PolicyFlags uint32
+
+	// The number of images in the array of images that the ImportList member
+	// points to.
+	NumberOfImports uint32
+
+	// The relative virtual address of the array of images that the enclave
+	// image may import, with identity information for each image.
+	ImportList uint32
+
+	// The size of each image in the array of images that the ImportList member
+	// points to.
+	ImportEntrySize uint32
+
+	// The family identifier that the author of the enclave assigned to the enclave.
+	FamilyID [ImageEnclaveShortIdLength]uint8
+
+	// The image identifier that the author of the enclave assigned to the enclave.
+	ImageID [ImageEnclaveShortIdLength]uint8
+
+	// The version number that the author of the enclave assigned to the enclave.
+	ImageVersion uint32
+
+	// The security version number that the author of the enclave assigned to the enclave.
+	SecurityVersion uint32
+
+	// The expected virtual size of the private address range for the enclave,in bytes.
+	EnclaveSize uint64
+
+	// The maximum number of threads that can be created within the enclave.
+	NumberOfThreads uint32
+
+	// A flag that indicates whether the image is suitable for use as the primary image in the enclave.
+	EnclaveFlags uint32
+}
+
+// ImageEnclaveImport defines a entry in the array of images that an enclave
+// can import.
+type ImageEnclaveImport struct {
+
+	// The type of identifier of the image that must match the value in the import record.
+	MatchType uint32
+
+	// The minimum enclave security version that each image must have for the image to be imported successfully. The image is rejected unless its enclave security version is equal to or greater than the minimum value in the import record. Set the value in the import record to zero to turn off the security version check.
+	MinimumSecurityVersion uint32
+
+	// The unique identifier of the primary module for the enclave, if the MatchType member is IMAGE_ENCLAVE_IMPORT_MATCH_UNIQUE_ID. Otherwise, the author identifier of the primary module for the enclave..
+	UniqueOrAuthorID [ImageEnclaveLongIdLength]uint8
+
+	// The family identifier of the primary module for the enclave.
+	FamilyID [ImageEnclaveShortIdLength]uint8
+
+	// The image identifier of the primary module for the enclave.
+	ImageID [ImageEnclaveShortIdLength]uint8
+
+	// The relative virtual address of a NULL-terminated string that contains the same value found in the import directory for the image.
+	ImportName uint32
+
+	// Reserved.
+	Reserved uint32
 }
 
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
@@ -1458,6 +1624,9 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 
 	// Retrieve dynamic value relocation table if there are any.
 	pe.LoadConfig.DVRT = pe.getDynamicValueRelocTable()
+
+	// Retrieve enclave configuration if there are any.
+	pe.LoadConfig.Enclave = pe.getEnclaveConfiguration()
 
 	return nil
 }
@@ -1861,7 +2030,6 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 	dvrt := DVRT{}
 	imgDynRelocTable := ImageDynamicRelocationTable{}
 
-
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	if v.NumField() <= 35 {
 		return dvrt
@@ -1924,7 +2092,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 
 			// Iterate over reach block
 			blockIt := uint32(0)
-			for blockIt < baseBlockSize - imgDynRelocSize {
+			for blockIt < baseBlockSize-imgDynRelocSize {
 				relocBlock := RelocBlock{}
 
 				baseReloc := ImageBaseRelocation{}
@@ -1949,11 +2117,11 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 					offset += 2
 
 					// Padding at the end of the block ?
-					if  (TypeOffset{}) == typeOffset && i+1==numTypeOffsets{
+					if (TypeOffset{}) == typeOffset && i+1 == numTypeOffsets {
 						break
 					}
 
-					relocBlock.TypeOffsets = append(relocBlock.TypeOffsets, typeOffset)		
+					relocBlock.TypeOffsets = append(relocBlock.TypeOffsets, typeOffset)
 				}
 
 				blockIt += baseReloc.SizeOfBlock
@@ -1963,7 +2131,69 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 			dvrt.Entries = append(dvrt.Entries, relocEntry)
 			relocTableIt += baseBlockSize
 		}
+	case 2:
+		fmt.Print("Got version 2 !")
 	}
 
 	return dvrt
+}
+
+func (pe *File) getEnclaveConfiguration() Enclave {
+
+	enclave := Enclave{}
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	if v.NumField() <= 40 {
+		return enclave
+	}
+
+	EnclaveConfigurationPointer := v.Field(40).Uint()
+	if EnclaveConfigurationPointer == 0 {
+		return enclave
+	}
+
+	if pe.Is32 {
+		imgEnclaveCfg := ImageEnclaveConfig32{}
+		imgEnclaveCfgSize := uint32(binary.Size(imgEnclaveCfg))
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+		rva := uint32(EnclaveConfigurationPointer) - imageBase
+		offset := pe.getOffsetFromRva(rva)
+		err := pe.structUnpack(&imgEnclaveCfg, offset, imgEnclaveCfgSize)
+		if err != nil {
+			return enclave
+		}
+		enclave.Config = imgEnclaveCfg
+	} else {
+		imgEnclaveCfg := ImageEnclaveConfig64{}
+		imgEnclaveCfgSize := uint32(binary.Size(imgEnclaveCfg))
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+		rva := uint32(EnclaveConfigurationPointer - imageBase)
+		offset := pe.getOffsetFromRva(rva)
+		err := pe.structUnpack(&imgEnclaveCfg, offset, imgEnclaveCfgSize)
+		if err != nil {
+			return enclave
+		}
+		enclave.Config = imgEnclaveCfg
+	}
+
+	// Get the array of images that an enclave can import.
+
+	val := reflect.ValueOf(enclave.Config)
+	ImportListRVA := val.FieldByName("ImportList").Interface().(uint32)
+	NumberOfImports := val.FieldByName("NumberOfImports").Interface().(uint32)
+
+	offset := pe.getOffsetFromRva(ImportListRVA)
+	for i := uint32(0); i < NumberOfImports; i++ {
+		imgEncImp := ImageEnclaveImport{}
+		imgEncImpSize := uint32(binary.Size(imgEncImp))
+		err := pe.structUnpack(&imgEncImp, offset, imgEncImpSize)
+		if err != nil {
+			return enclave
+		}
+
+		offset += imgEncImpSize
+		enclave.Imports = append(enclave.Imports, imgEncImp)
+	}
+
+	return enclave
 }

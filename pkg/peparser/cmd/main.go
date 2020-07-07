@@ -145,10 +145,11 @@ func main() {
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && !strings.HasSuffix(path, ".xml") &&
-			!strings.HasSuffix(path, ".bat") && !strings.HasSuffix(path, ".js") &&
-			!strings.HasSuffix(path, ".chm") && !strings.HasSuffix(path, ".jar") &&
-			!strings.HasSuffix(path, ".cmd") && !strings.HasSuffix(path, ".ps1") {
+		if !f.IsDir() && (
+			strings.HasSuffix(path, ".exe") || strings.HasSuffix(path, ".scr") ||
+			strings.HasSuffix(path, ".dll") || strings.HasSuffix(path, ".sys") ||
+			strings.HasSuffix(path, ".ocx") || strings.HasSuffix(path, ".efi") ||
+			strings.HasSuffix(path, ".cpl") || strings.HasSuffix(path, ".mui")){
 			fileList = append(fileList, path)
 		}
 		return nil
