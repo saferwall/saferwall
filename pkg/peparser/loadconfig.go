@@ -1844,9 +1844,11 @@ func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
 						return GFGIAT
 					}
 					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
-					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
-					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
-					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					if len(imp.Functions) != 0 {
+						cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
+						cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
+						cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					}
 					GFGIAT = append(GFGIAT, cfgIATEntry)
 					offset += 4 + uint32(n)
 				}
@@ -1862,9 +1864,12 @@ func (pe *File) getControlFlowGuardIAT() []CFGIATEntry {
 						return GFGIAT
 					}
 					imp, index := pe.GetImportEntryInfoByRVA(cfgIATEntry.RVA)
-					cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
-					cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
-					cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					if len(imp.Functions) != 0 {
+						cfgIATEntry.INTValue = uint32(imp.Functions[index].OriginalThunkValue)
+						cfgIATEntry.IATValue = uint32(imp.Functions[index].ThunkValue)
+						cfgIATEntry.Description = imp.Name + "!" + imp.Functions[index].Name
+					}
+
 					GFGIAT = append(GFGIAT, cfgIATEntry)
 					GFGIAT = append(GFGIAT, cfgIATEntry)
 					offset += 4 + uint32(n)

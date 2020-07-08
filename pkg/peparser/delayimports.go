@@ -137,3 +137,18 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 
 	return nil
 }
+
+
+// GetDelayImportEntryInfoByRVA return an import function + index of the entry given
+// an RVA.
+func (pe *File) GetDelayImportEntryInfoByRVA(rva uint32) (DelayImport, int) {
+	for _, imp := range pe.DelayImports {
+		for i, entry := range imp.Functions {
+			if entry.ThunkRVA == rva {
+				return imp, i
+			}
+		}
+	}
+
+	return DelayImport{}, 0
+}
