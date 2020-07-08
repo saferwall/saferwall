@@ -70,6 +70,8 @@ func parse(filename string) {
 		log.Println("=====================================================================")
 	}
 
+
+
 	// if err == peparser.ErrDOSMagicNotFound {
 	// 	if strings.Contains(filename, "Windows 10 x64") &&
 	// 		strings.HasSuffix(filename, ".dll"){

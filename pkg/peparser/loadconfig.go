@@ -1320,15 +1320,27 @@ type Enclave struct {
 
 	Imports []ImageEnclaveImport
 }
+
+type RangeTableEntry struct {
+	Rva  uint32
+	Size uint32
+}
+
+type VolatileMetadata struct {
+	Struct         ImageVolatileMetadata
+	AccessRVATable []uint32
+	InfoRangeTable []RangeTableEntry
+}
 type LoadConfig struct {
-	LoadCfgStruct interface{}
-	SEH           []uint32
-	GFIDS         []CFGFunction
-	CFGIAT        []CFGIATEntry
-	CFGLongJump   []uint32
-	CHPE          HybridPE
-	DVRT          DVRT
-	Enclave
+	LoadCfgStruct    interface{}
+	SEH              []uint32
+	GFIDS            []CFGFunction
+	CFGIAT           []CFGIATEntry
+	CFGLongJump      []uint32
+	CHPE             HybridPE
+	DVRT             DVRT
+	Enclave          Enclave
+	VolatileMetadata VolatileMetadata
 }
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
@@ -1460,6 +1472,15 @@ type ImageEnclaveImport struct {
 
 	// Reserved.
 	Reserved uint32
+}
+
+type ImageVolatileMetadata struct {
+	Size                       uint32
+	Version                    uint32
+	VolatileAccessTable        uint32
+	VolatileAccessTableSize    uint32
+	VolatileInfoRangeTable     uint32
+	VolatileInfoRangeTableSize uint32
 }
 
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
@@ -1628,6 +1649,9 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 	// Retrieve enclave configuration if there are any.
 	pe.LoadConfig.Enclave = pe.getEnclaveConfiguration()
 
+	// Retrieve volatile metadat table if there are any.
+	pe.LoadConfig.VolatileMetadata = pe.getVolatileMetadata()
+
 	return nil
 }
 
@@ -1657,7 +1681,6 @@ func PrintLoadConfigStruct() {
 	fmt.Printf("ImageLoadConfigDirectory64v10 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v10{}))
 	fmt.Printf("ImageLoadConfigDirectory64v11 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v11{}))
 	fmt.Printf("ImageLoadConfigDirectory64v12 size : 0x%x\n", binary.Size(ImageLoadConfigDirectory64v12{}))
-
 }
 
 // StringifyGuardFlags returns list of strings which describes the GuardFlags.
@@ -2196,4 +2219,68 @@ func (pe *File) getEnclaveConfiguration() Enclave {
 	}
 
 	return enclave
+}
+
+func (pe *File) getVolatileMetadata() VolatileMetadata {
+
+	volatileMeta := VolatileMetadata{}
+	imgVolatileMeta := ImageVolatileMetadata{}
+	rva := uint32(0)
+
+	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
+	if v.NumField() <= 41 {
+		return volatileMeta
+	}
+
+	VolatileMetadataPointer := v.Field(41).Uint()
+	if VolatileMetadataPointer == 0 {
+		return volatileMeta
+	}
+
+	if pe.Is32 {
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+		rva = uint32(VolatileMetadataPointer) - imageBase
+	} else {
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+		rva = uint32(VolatileMetadataPointer - imageBase)
+	}
+
+	offset := pe.getOffsetFromRva(rva)
+	imgVolatileMetaSize := uint32(binary.Size(imgVolatileMeta))
+	err := pe.structUnpack(&imgVolatileMeta, offset, imgVolatileMetaSize)
+	if err != nil {
+		return volatileMeta
+	}
+	volatileMeta.Struct = imgVolatileMeta
+
+	if imgVolatileMeta.VolatileAccessTable != 0 &&
+		imgVolatileMeta.VolatileAccessTableSize != 0 {
+		offset := pe.getOffsetFromRva(imgVolatileMeta.VolatileAccessTable)
+		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize / 4; i++ {
+			accessRVA, err := pe.ReadUint32(offset)
+			if err != nil {
+				break
+			}
+
+			volatileMeta.AccessRVATable = append(volatileMeta.AccessRVATable, accessRVA)
+			offset += 4
+		}
+	}
+
+	if imgVolatileMeta.VolatileInfoRangeTable != 0 && imgVolatileMeta.VolatileAccessTableSize != 0 {
+		offset := pe.getOffsetFromRva(imgVolatileMeta.VolatileInfoRangeTable)
+		rangeEntrySize := uint32(binary.Size(RangeTableEntry{}))
+		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize / 	    rangeEntrySize; i++ {
+			entry := RangeTableEntry{}
+			err := pe.structUnpack(&entry, offset, rangeEntrySize)
+			if err != nil {
+				break
+			}
+
+			volatileMeta.InfoRangeTable = append(volatileMeta.InfoRangeTable, entry)
+			offset += rangeEntrySize
+		}
+	}
+
+	return volatileMeta
 }

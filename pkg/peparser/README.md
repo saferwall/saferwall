@@ -4,27 +4,28 @@
 
 ## Features
 
-- Works with PE32(x86) and PE32+(x64) binaries.
-- MS DOS header
-- Rich Header (verify checksum)
-- NT Header (file header + optional header)
-- Sections headers
+- :heavy_check_mark: Works with PE32(x86) and PE32+(x64) binaries.
+- :heavy_check_mark: MS DOS header
+- :heavy_check_mark: Rich Header (calculate checksum)
+- :heavy_check_mark: NT Header (file header + optional header)
+- :heavy_check_mark: Sections headers
 - Data directories
-    - Import Table
-    - Export Table
-    - Resource Table
-    - Exceptions Table
-    - Security Table
-    - Relocations Table
-    - Debug Table
-    - TLS Table
-    - Load Config Directory
-    - Bound Import Table
-    - Delay Import Table
-    - COM Table
-- Calculate Authentihash
-- Calculate ImpHash
-- Report several anomalies
+    - :heavy_check_mark: Import Table
+        - Calculate ImpHash
+    - :heavy_check_mark: Export Table
+    - :heavy_check_mark: Resource Table
+    - :heavy_check_mark: Exceptions Table
+    - :heavy_check_mark: Security Table
+        - Calculate Authentihash
+    - :heavy_check_mark: Relocations Table
+    - :heavy_check_mark: Debug Table
+    - :heavy_check_mark: TLS Table
+    - :heavy_check_mark: Load Config Directory:
+        - SEH, GFID, GIAT, Guard LongJumps, CHPE, Dynamic Value Reloc Table, Enclave Configuration, Volatile Metadata tables.
+    - :heavy_check_mark: Bound Import Table
+    - :heavy_check_mark: Delay Import Table
+    - :heavy_check_mark: COM Table
+- :heavy_check_mark: Report several anomalies
 
 # References
 
