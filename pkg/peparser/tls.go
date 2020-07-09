@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 )
 
@@ -94,62 +93,87 @@ func (pe *File) parseTLSDirectory(rva, size uint32) error {
 
 	if pe.Is64 {
 		tlsDir := ImageTLSDirectory64{}
-		tlsSize := uint32(binary.Size(ImageTLSDirectory64{}))
+		tlsSize := uint32(binary.Size(tlsDir))
 		fileOffset := pe.getOffsetFromRva(rva)
-
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+tlsSize])
-		err := binary.Read(buf, binary.LittleEndian, &tlsDir)
+		err := pe.structUnpack(&tlsDir, fileOffset, tlsSize)
 		if err != nil {
 			return err
 		}
-
-		rvaAddressOfCallBacks := uint32(tlsDir.AddressOfCallBacks -
-			pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase)
-		offset := pe.getOffsetFromRva(rvaAddressOfCallBacks)
 		tls.Struct = tlsDir
 
-		var callbacks []uint64
-		for i := 0; ; i++ {
-			c := binary.LittleEndian.Uint64(pe.data[offset+(uint32(i)*4):])
-			if c == 0 {
-				break
-			}
-			callbacks = append(callbacks, c)
-		}
-
-		tls.Callbacks = callbacks
-	} else {
-		tlsDir := ImageTLSDirectory32{}
-		tlsSize := uint32(binary.Size(ImageTLSDirectory32{}))
-		fileOffset := pe.getOffsetFromRva(rva)
-
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+tlsSize])
-		err := binary.Read(buf, binary.LittleEndian, &tlsDir)
-		if err != nil {
-			return err
-		}
-
-		// 94a9dc17d47b03f6fb01cb639e25503b37761b452e7c07ec6b6c2280635f1df9
-		// Callbacks may be empty
-		var callbacks []uint32
 		if tlsDir.AddressOfCallBacks != 0 {
-			rvaAddressOfCallBacks := tlsDir.AddressOfCallBacks -
-				pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+			var callbacks []uint64
+			rvaAddressOfCallBacks := uint32(tlsDir.AddressOfCallBacks -
+				pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase)
 			offset := pe.getOffsetFromRva(rvaAddressOfCallBacks)
-			tls.Struct = tlsDir
-
 			for i := 0; ; i++ {
-				c := binary.LittleEndian.Uint32(pe.data[offset+(uint32(i)*4):])
-				if c == 0 {
+				c, err := pe.ReadUint64(offset + (uint32(i) * 4))
+				if err != nil || c == 0 {
 					break
 				}
 				callbacks = append(callbacks, c)
 			}
+			tls.Callbacks = callbacks
 		}
+	} else {
+		tlsDir := ImageTLSDirectory32{}
+		tlsSize := uint32(binary.Size(tlsDir))
+		fileOffset := pe.getOffsetFromRva(rva)
+		err := pe.structUnpack(&tlsDir, fileOffset, tlsSize)
+		if err != nil {
+			return err
+		}
+		tls.Struct = tlsDir
 
-		tls.Callbacks = callbacks
+		// 94a9dc17d47b03f6fb01cb639e25503b37761b452e7c07ec6b6c2280635f1df9
+		// Callbacks may be empty
+		if tlsDir.AddressOfCallBacks != 0 {
+			var callbacks []uint32
+			rvaAddressOfCallBacks := tlsDir.AddressOfCallBacks -
+				pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+			offset := pe.getOffsetFromRva(rvaAddressOfCallBacks)
+			for i := 0; ; i++ {
+				c, err := pe.ReadUint32(offset + (uint32(i) * 4))
+				if err != nil || c == 0 {
+					break
+				}
+				callbacks = append(callbacks, c)
+			}
+			tls.Callbacks = callbacks
+		}
 	}
 
 	pe.TLS = tls
 	return nil
+}
+
+// PrettyTLSCharacteristics returns the string representations of the
+// `Characteristics` field of TLS directory.
+func (pe *File) PrettyTLSCharacteristics(Characteristics uint32) []string {
+	var values []string
+	
+	TLSCharacteristicsMap := map[uint32]string{
+		ImageScnAlign1Bytes:    "Align1Bytes",
+		ImageScnAlign2Bytes:    "Align2Bytes",
+		ImageScnAlign4Bytes:    "Align4Bytes",
+		ImageScnAlign8Bytes:    "Align8Bytes",
+		ImageScnAlign16Bytes:   "Align16Bytes",
+		ImageScnAlign32Bytes:   "Align32Bytes",
+		ImageScnAlign64Bytes:   "Align64Bytes",
+		ImageScnAlign128Bytes:  "Align128Bytes",
+		ImageScnAlign256Bytes:  "Align265Bytes",
+		ImageScnAlign512Bytes:  "Align512Bytes",
+		ImageScnAlign1024Bytes: "Align1024Bytes",
+		ImageScnAlign2048Bytes: "Align2048Bytes",
+		ImageScnAlign4096Bytes: "Align4096Bytes",
+		ImageScnAlign8192Bytes: "Align8192Bytes",
+	}
+
+	for k, s := range TLSCharacteristicsMap {
+		if k&Characteristics != 0 {
+			values = append(values, s)
+		}
+	}
+
+	return values
 }
