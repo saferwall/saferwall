@@ -33,7 +33,7 @@ func printAnomalies(anomalies []string) {
 }
 
 func parse(filename string) {
-	// log.Println("Processing: ", filename)
+	log.Println("Processing: ", filename)
 	pe, err := peparser.Open(filename)
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)

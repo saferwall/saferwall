@@ -19,6 +19,7 @@
         - Calculate Authentihash
     - :heavy_check_mark: Relocations Table
     - :heavy_check_mark: Debug Table
+        - CODEVIEW, POGO, VC FEATURE, REPRO, FPO, EXDLL CHARACTERISTICS, SPGO debug types
     - :heavy_check_mark: TLS Table
     - :heavy_check_mark: Load Config Directory:
         - SEH, GFID, GIAT, Guard LongJumps, CHPE, Dynamic Value Reloc Table, Enclave Configuration, Volatile Metadata tables.

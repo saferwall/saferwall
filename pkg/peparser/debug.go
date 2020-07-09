@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -203,39 +202,46 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 
 	for i := uint32(0); i < debugDirsCount; i++ {
 		offset := pe.getOffsetFromRva(rva + debugDirSize*i)
-		buf := bytes.NewReader(pe.data[offset : offset+debugDirSize])
-		err := binary.Read(buf, binary.LittleEndian, &debugDir)
+		err := pe.structUnpack(&debugDir, offset, debugDirSize)
 		if err != nil {
 			return errors.New(errorMsg)
 		}
 
 		switch debugDir.Type {
 		case ImageDebugTypeCodeview:
-			debugSignature := binary.LittleEndian.Uint32(pe.data[debugDir.PointerToRawData:])
+			debugSignature, err := pe.ReadUint32(debugDir.PointerToRawData)
+			if err != nil {
+				continue
+			}
+
 			if debugSignature == CVSignatureRSDS {
 				// PDB 7.0
-				pdb := CvInfoPDB70{CvSignature: debugSignature}
+				pdb := CvInfoPDB70{CvSignature: CVSignatureRSDS}
 
 				// Guid
-				offset := debugDir.PointerToRawData
-				buff := bytes.NewReader(pe.data[offset+4 : offset+4+16])
-				err = binary.Read(buff, binary.LittleEndian, &pdb.Signature)
+				offset := debugDir.PointerToRawData + 4
+				guidSize := uint32(binary.Size(pdb.Signature))
+				err = pe.structUnpack(&pdb.Signature, offset, guidSize)
 				if err != nil {
 					continue
 				}
 				// Age
-				pdb.Age = binary.LittleEndian.Uint32(pe.data[offset+20:])
+				offset += guidSize
+				pdb.Age, err = pe.ReadUint32(offset)
+				if err != nil {
+					continue
+				}
+				offset += 4
 
 				// PDB file name
-				pdbFilenameSize := debugDir.SizeOfData - 24
+				pdbFilenameSize := debugDir.SizeOfData - 24 - 1
 
 				// pdbFileName_size can be negative here, as seen in the malware
 				// sample with MD5 hash: 7c297600870d026c014d42596bb9b5fd
 				// Checking for positive size here to ensure proper parsing.
 				if pdbFilenameSize > 0 {
-					buff = bytes.NewReader(pe.data[offset+24 : offset+24+pdbFilenameSize])
 					pdbFilename := make([]byte, pdbFilenameSize)
-					err = binary.Read(buff, binary.LittleEndian, &pdbFilename)
+					err = pe.structUnpack(&pdbFilename, offset, pdbFilenameSize)
 					if err != nil {
 						continue
 					}
@@ -249,20 +255,30 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 				// PDB 2.0
 				cvHeader := CVHeader{}
 				offset := debugDir.PointerToRawData
-				buf := bytes.NewReader(pe.data[offset : offset+8])
-				err := binary.Read(buf, binary.LittleEndian, &cvHeader)
+				err = pe.structUnpack(&cvHeader, offset, size)
 				if err != nil {
 					continue
 				}
 
 				pdb := CvInfoPDB20{CvHeader: cvHeader}
-				pdb.Signature = binary.LittleEndian.Uint32(pe.data[offset+8:])
-				pdb.Age = binary.LittleEndian.Uint32(pe.data[offset+12:])
-				pdbFilenameSize := debugDir.SizeOfData - 16
+
+				// Signature
+				pdb.Signature, err = pe.ReadUint32(offset + 8)
+				if err != nil {
+					continue
+				}
+
+				// Age
+				pdb.Age, err = pe.ReadUint32(offset + 12)
+				if err != nil {
+					continue
+				}
+				offset += 16
+
+				pdbFilenameSize := debugDir.SizeOfData - 16 - 1
 				if pdbFilenameSize > 0 {
-					buff := bytes.NewReader(pe.data[offset+16 : offset+16+pdbFilenameSize])
 					pdbFilename := make([]byte, pdbFilenameSize)
-					err = binary.Read(buff, binary.LittleEndian, &pdbFilename)
+					err = pe.structUnpack(&pdbFilename, offset, pdbFilenameSize)
 					if err != nil {
 						continue
 					}
