@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"strconv"
 )
 
 const (
@@ -512,6 +513,20 @@ func (pe *File) parseImports32(importDesc interface{}, maxLen uint32) (
 			if table[idx].ImageThunkData.AddressOfData&imageOrdinalFlag32 > 0 {
 				imp.ByOrdinal = true
 				imp.Ordinal = table[idx].ImageThunkData.AddressOfData & uint32(0xffff)
+				
+				// Original Thunk
+				if uint32(len(ilt)) > idx {
+					imp.OriginalThunkValue = uint64(ilt[idx].ImageThunkData.AddressOfData)
+					imp.OriginalThunkRVA = ilt[idx].Offset
+				}
+
+				// Thunk
+				if uint32(len(iat)) > idx {
+					imp.ThunkValue = uint64(iat[idx].ImageThunkData.AddressOfData)
+					imp.ThunkRVA = iat[idx].Offset
+				}
+
+				imp.Name = "#" + strconv.Itoa(int(imp.Ordinal))
 			} else {
 				imp.ByOrdinal = false
 				if isOldDelayImport {
@@ -627,12 +642,31 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 	for idx := uint32(0); idx < uint32(len(table)); idx++ {
 		imp := ImportFunction{}
 		if table[idx].ImageThunkData.AddressOfData > 0 {
+
 			// If imported by ordinal, we will append the ordinal number
 			if table[idx].ImageThunkData.AddressOfData&imageOrdinalFlag64 > 0 {
 				imp.ByOrdinal = true
 				imp.Ordinal = uint32(table[idx].ImageThunkData.AddressOfData) & uint32(0xffff)
+
+				// Original Thunk
+				if uint32(len(ilt)) > idx {
+					imp.OriginalThunkValue =
+						ilt[idx].ImageThunkData.AddressOfData
+					imp.OriginalThunkRVA = ilt[idx].Offset
+				}
+
+				// Thunk
+				if uint32(len(iat)) > idx {
+					imp.ThunkValue = iat[idx].ImageThunkData.AddressOfData
+					imp.ThunkRVA = iat[idx].Offset
+				}
+
+				imp.Name = "#" + strconv.Itoa(int(imp.Ordinal))
+
 			} else {
+
 				imp.ByOrdinal = false
+	
 				if isOldDelayImport {
 					table[idx].ImageThunkData.AddressOfData -=
 						pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
@@ -641,8 +675,8 @@ func (pe *File) parseImports64(importDesc interface{}, maxLen uint32) ([]*Import
 				// Original Thunk
 				if uint32(len(ilt)) > idx {
 					imp.OriginalThunkValue =
-					 ilt[idx].ImageThunkData.AddressOfData & addressMask64
-					 imp.OriginalThunkRVA = ilt[idx].Offset
+						ilt[idx].ImageThunkData.AddressOfData & addressMask64
+					imp.OriginalThunkRVA = ilt[idx].Offset
 				}
 
 				// Thunk
