@@ -439,32 +439,32 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 				fpo := FPOData{}
 				fpo.OffStart, err = pe.ReadUint32(offset)
 				if err != nil {
-					continue
+					break
 				}
 
 				fpo.ProcSize, err = pe.ReadUint32(offset + 4)
 				if err != nil {
-					continue
+					break
 				}
 
 				fpo.NumLocals, err = pe.ReadUint32(offset + 8)
 				if err != nil {
-					continue
+					break
 				}
 
 				fpo.ParamsSize, err = pe.ReadUint16(offset + 12)
 				if err != nil {
-					continue
+					break
 				}
 
 				fpo.PrologLength, err = pe.ReadUint8(offset + 14)
 				if err != nil {
-					continue
+					break
 				}
 
 				attributes, err := pe.ReadUint16(offset + 15)
 				if err != nil {
-					continue
+					break
 				}
 
 				//
