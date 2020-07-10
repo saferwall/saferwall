@@ -246,7 +246,7 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 
 func (pe *File) getSectionByName(secName string) (section *ImageSectionHeader) {
 	for _, section := range pe.Sections {
-		if  section.NameString() == secName {
+		if section.NameString() == secName {
 			return &section
 		}
 
@@ -266,7 +266,7 @@ func (pe *File) getStringAtRVA(rva, maxLen uint32) string {
 			return ""
 		}
 
-		end := rva+maxLen
+		end := rva + maxLen
 		if end > pe.size {
 			end = pe.size
 		}
@@ -562,7 +562,7 @@ func (pe *File) Checksum() uint32 {
 
 // ReadUint64 read a uint64 from a buffer.
 func (pe *File) ReadUint64(offset uint32) (uint64, error) {
-	if offset > pe.size+8 {
+	if offset + 8 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -571,7 +571,7 @@ func (pe *File) ReadUint64(offset uint32) (uint64, error) {
 
 // ReadUint32 read a uint32 from a buffer.
 func (pe *File) ReadUint32(offset uint32) (uint32, error) {
-	if offset > pe.size+4 {
+	if offset + 4 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -580,7 +580,7 @@ func (pe *File) ReadUint32(offset uint32) (uint32, error) {
 
 // ReadUint16 read a uint16 from a buffer.
 func (pe *File) ReadUint16(offset uint32) (uint16, error) {
-	if offset > pe.size+2 {
+	if offset+2 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -589,14 +589,13 @@ func (pe *File) ReadUint16(offset uint32) (uint16, error) {
 
 // ReadUint8 read a uint8 from a buffer.
 func (pe *File) ReadUint8(offset uint32) (uint8, error) {
-	if offset > pe.size+1 {
+	if offset+1 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
-	b := pe.data[offset:offset+1][0]
+	b := pe.data[offset : offset+1][0]
 	return uint8(b), nil
 }
-
 
 func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error) {
 	// Boundary check
@@ -633,5 +632,5 @@ func (pe *File) ReadBytesAtOffset(offset, size uint32) ([]byte, error) {
 		return nil, ErrOutsideBoundary
 	}
 
-	return pe.data[offset: offset+size], nil
+	return pe.data[offset : offset+size], nil
 }
