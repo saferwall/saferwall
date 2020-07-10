@@ -133,10 +133,7 @@ type ImageDebugDirectory struct {
 // DebugEntry wraps ImageDebugDirectory to include debug directory type.
 type DebugEntry struct {
 	// Points to the image debug entry structure.
-	Data ImageDebugDirectory
-
-	// Debug type.
-	Type uint32
+	Struct ImageDebugDirectory
 
 	// Holds specific information about the debug type entry.
 	Info interface{}
@@ -237,6 +234,14 @@ type ImagePGOItem struct {
 type POGO struct {
 	Signature uint32 // _IMAGE_POGO_INFO
 	Entries   []ImagePGOItem
+}
+
+type VCFeature struct {
+	PreVC11 uint32 `json:"Pre VC 11"`
+	CCpp uint32 `json:"C/C++"`
+	Gs uint32 `json:"/GS"`
+	Sdl uint32 `json:"/sdl"`
+	GuardN uint32
 }
 
 // ImageDebugMisc represents the IMAGE_DEBUG_MISC structure.
@@ -389,16 +394,20 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 					offset += 8 + uint32(len(pogoEntry.Name)) + 4
 				}
 
-				// Include these extra informations
 				debugEntry.Info = pogo
 			}
 
-		case ImageDebugTypeMisc:
-			break
+		case ImageDebugTypeVCFeature:
+			vcf := VCFeature{}
+			size := uint32(binary.Size(vcf))
+			err := pe.structUnpack(&vcf, debugDir.PointerToRawData, size)
+			if err != nil {
+				continue
+			}
+			debugEntry.Info = vcf
 		}
 
-		debugEntry.Type = debugDir.Type
-		debugEntry.Data = debugDir
+		debugEntry.Struct = debugDir
 		pe.Debugs = append(pe.Debugs, debugEntry)
 	}
 
