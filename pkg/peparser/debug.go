@@ -204,13 +204,13 @@ type FPOData struct {
 	NumLocals uint32
 
 	// The size of the parameters, in DWORDs.
-	NunParams uint32
+	ParamsSize uint16
 
 	// The number of bytes in the function prolog code.
-	NumProlog uint32
+	PrologLength uint8
 
 	// The number of registers saved.
-	NumRegs uint8
+	SavedRegsCount uint8
 
 	// A variable that indicates whether the function uses structured exception handling.
 	HasSEH uint8
@@ -238,10 +238,10 @@ type POGO struct {
 
 type VCFeature struct {
 	PreVC11 uint32 `json:"Pre VC 11"`
-	CCpp uint32 `json:"C/C++"`
-	Gs uint32 `json:"/GS"`
-	Sdl uint32 `json:"/sdl"`
-	GuardN uint32
+	CCpp    uint32 `json:"C/C++"`
+	Gs      uint32 `json:"/GS"`
+	Sdl     uint32 `json:"/sdl"`
+	GuardN  uint32
 }
 
 type REPRO struct {
@@ -424,6 +424,72 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 				continue
 			}
 			debugEntry.Info = repro
+
+		case ImageDebugTypeFPO:
+			offset := debugDir.PointerToRawData
+			size := uint32(16)
+			fpoEntries := []FPOData{}
+			c := uint32(0)
+			for c < debugDir.SizeOfData {
+				fpo := FPOData{}
+				fpo.OffStart, err = pe.ReadUint32(offset)
+				if err != nil {
+					continue
+				}
+
+				fpo.ProcSize, err = pe.ReadUint32(offset + 4)
+				if err != nil {
+					continue
+				}
+
+				fpo.NumLocals, err = pe.ReadUint32(offset + 8)
+				if err != nil {
+					continue
+				}
+
+				fpo.ParamsSize, err = pe.ReadUint16(offset + 12)
+				if err != nil {
+					continue
+				}
+
+				fpo.PrologLength, err = pe.ReadUint8(offset + 14)
+				if err != nil {
+					continue
+				}
+
+				attributes, err := pe.ReadUint16(offset + 15)
+				if err != nil {
+					continue
+				}
+
+				//
+				// UChar  cbRegs :3;  /* # regs saved */
+				// UChar  fHasSEH:1;  /* Structured Exception Handling */
+				// UChar  fUseBP :1;  /* EBP has been used */
+				// UChar  reserved:1;
+				// UChar  cbFrame:2;  /* frame type */
+				//
+
+				// The lowest 3 bits
+				fpo.SavedRegsCount = uint8(attributes & 0x7)
+
+				// The next bit.
+				fpo.HasSEH = uint8(attributes & 0x8 >> 3)
+
+				// The next bit.
+				fpo.UseBP = uint8(attributes & 0x10 >> 4)
+
+				// The next bit.
+				fpo.Reserved = uint8(attributes & 0x20 >> 5)
+
+				// The next 2 bits.
+				fpo.FrameType = uint8(attributes & 0xC0 >> 6)
+
+				fpoEntries = append(fpoEntries, fpo)
+				c += size
+				offset += 16
+			}
+			debugEntry.Info = fpoEntries
 		}
 
 		debugEntry.Struct = debugDir
@@ -490,6 +556,23 @@ func SectionAttributeDescription(section string) string {
 
 	if val, ok := sectionNameMap[section]; ok {
 		return val
+	}
+
+	return "?"
+}
+
+// FPOFrameTypePretty returns a string interpretation of the FPO frame type.
+func FPOFrameTypePretty(ft uint8) string {
+	frameTypeMap := map[uint8]string{
+		FrameFPO:    "FPO",
+		FrameTrap:   "Trap",
+		FrameTSS:    "TSS",
+		FrameNonFPO: "NonFPO",
+	}
+
+	v, ok := frameTypeMap[ft]
+	if ok {
+		return v
 	}
 
 	return "?"
