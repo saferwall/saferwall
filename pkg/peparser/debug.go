@@ -93,6 +93,11 @@ const (
 )
 
 const (
+	// mage is CET compatible.
+	ImageDllCharacteristicsExCETCompat = 0x0001
+)
+
+const (
 	POGOTypePGU  = 0x50475500
 	POGzOTypePGI = 0x50474900
 	POGOTypePGO  = 0x50474F00
@@ -490,6 +495,13 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 				offset += 16
 			}
 			debugEntry.Info = fpoEntries
+		case ImageDebugTypeExDllCharacteristics:
+			exllChar, err := pe.ReadUint32(debugDir.PointerToRawData)
+			if err != nil {
+				continue
+			}
+
+			debugEntry.Info = exllChar
 		}
 
 		debugEntry.Struct = debugDir
@@ -576,4 +588,21 @@ func FPOFrameTypePretty(ft uint8) string {
 	}
 
 	return "?"
+}
+
+// PrettyExtendedDLLCharacteristics maps dll char to string.
+func PrettyExtendedDLLCharacteristics(characteristics uint32) []string {
+
+	var values []string
+
+	exDllCharacteristicsMap := map[uint32]string{
+		ImageDllCharacteristicsExCETCompat: "CET Compatible",
+	}
+	for k, s := range exDllCharacteristicsMap {
+		if k&characteristics != 0 {
+			values = append(values, s)
+		}
+	}
+
+	return values
 }
