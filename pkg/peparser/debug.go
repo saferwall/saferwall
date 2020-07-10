@@ -244,6 +244,11 @@ type VCFeature struct {
 	GuardN uint32
 }
 
+type REPRO struct {
+	Size uint32
+	Hash []byte
+}
+
 // ImageDebugMisc represents the IMAGE_DEBUG_MISC structure.
 type ImageDebugMisc struct {
 	DataType uint32 // The type of data carried in the `Data` field.
@@ -405,6 +410,20 @@ func (pe *File) parseDebugDirectory(rva, size uint32) error {
 				continue
 			}
 			debugEntry.Info = vcf
+
+		case ImageDebugTypeRepro:
+			repro := REPRO{}
+			offset := debugDir.PointerToRawData
+
+			repro.Size, err = pe.ReadUint32(offset)
+			if err != nil {
+				continue
+			}
+			repro.Hash, err = pe.ReadBytesAtOffset(offset+4, repro.Size)
+			if err != nil {
+				continue
+			}
+			debugEntry.Info = repro
 		}
 
 		debugEntry.Struct = debugDir

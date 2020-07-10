@@ -608,3 +608,20 @@ func (pe *File) structUnpack(iface interface{}, offset, size uint32) (err error)
 	}
 	return nil
 }
+
+// ReadBytesAtOffset returns a byte array from offset.
+func (pe *File) ReadBytesAtOffset(offset, size uint32) ([]byte, error) {
+	// Boundary check
+	totalSize := offset + size
+
+	// Integer overflow
+	if (totalSize > offset) != (size > 0) {
+		return nil, ErrOutsideBoundary
+	}
+
+	if offset >= pe.size || totalSize > pe.size {
+		return nil, ErrOutsideBoundary
+	}
+
+	return pe.data[offset: offset+size], nil
+}
