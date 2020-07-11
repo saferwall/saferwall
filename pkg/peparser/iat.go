@@ -4,10 +4,6 @@
 
 package pe
 
-import (
-	"encoding/binary"
-)
-
 // IATEntry represents an entry inside the IAT.
 type IATEntry struct {
 	Index   uint32
@@ -33,6 +29,7 @@ func (pe *File) parseIATDirectory(rva, size uint32) error {
 
 	var entries []IATEntry
 	var index uint32
+	var err error
 
 	startRva := rva
 
@@ -40,15 +37,26 @@ func (pe *File) parseIATDirectory(rva, size uint32) error {
 		ie := IATEntry{}
 		offset := pe.getOffsetFromRva(rva)
 		if pe.Is64 {
-			ie.Value = binary.LittleEndian.Uint64(pe.data[offset:])
+			ie.Value, err = pe.ReadUint64(offset)
+			if err != nil {
+				break
+			}
 			ie.Rva = rva
 			rva += 8
 		} else {
-			ie.Value = binary.LittleEndian.Uint32(pe.data[offset:])
+			ie.Value, err = pe.ReadUint32(offset)
+			if err != nil {
+				break
+			}
 			ie.Rva = rva
+
 			rva += 4
 		}
 		ie.Index = index
+		imp, i := pe.GetImportEntryInfoByRVA(rva)
+		if len(imp.Functions) != 0 {
+			ie.Meaning = imp.Name + "!" + imp.Functions[i].Name
+		}
 		entries = append(entries, ie)
 		index++
 	}
