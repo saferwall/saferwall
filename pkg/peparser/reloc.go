@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 )
@@ -13,11 +12,11 @@ import (
 var (
 	// ErrInvalidBaseRelocVA is reposed when base reloc lies outside of the image.
 	ErrInvalidBaseRelocVA = errors.New("Invalid relocation information." +
-	" Base Relocation VirtualAddress is outside of PE Image")
+		" Base Relocation VirtualAddress is outside of PE Image")
 
 	// ErrInvalidBasicRelocSizeOfBloc is reposed when base reloc is too large.
 	ErrInvalidBasicRelocSizeOfBloc = errors.New("Invalid relocation " +
-	"information. Base Relocation SizeOfBlock too large")
+		"information. Base Relocation SizeOfBlock too large")
 )
 
 // The Type field of the relocation record indicates what kind of relocation
@@ -49,16 +48,16 @@ const (
 	// The relocation interpretation is dependent on the machine type.
 	// When the machine type is MIPS, the base relocation applies to a MIPS jump
 	// instruction.
-	ImageRelBasedMipsJmpAddr = 5
+	ImageRelBasedMIPSJmpAddr = 5
 
 	// This relocation is meaningful only when the machine type is ARM or Thumb.
 	// The base relocation applies the 32-bit address of a symbol across a
 	// consecutive MOVW/MOVT instruction pair.
-	ImageRelBasedArmMov32 = 5
+	ImageRelBasedARMMov32 = 5
 
 	// This relocation is only meaningful when the machine type is RISC-V. The
 	// base relocation applies to the high 20 bits of a 32-bit absolute address.
-	ImageRelBasedRiscvHigh20 = 5
+	ImageRelBasedRISCVHigh20 = 5
 
 	// Reserved, must be zero.
 	ImageRelReserved = 6
@@ -71,16 +70,16 @@ const (
 	// This relocation is only meaningful when the machine type is RISC-V.
 	// The base relocation applies to the low 12 bits of a 32-bit absolute
 	// address formed in RISC-V I-type instruction format.
-	ImageRelBasedRiscvLow12i = 7
+	ImageRelBasedRISCVLow12i = 7
 
 	// This relocation is only meaningful when the machine type is RISC-V.
 	// The base relocation applies to the low 12 bits of a 32-bit absolute
 	// address formed in RISC-V S-type instruction format.
-	ImageRelBasedRiscvLow12s = 8
+	ImageRelBasedRISCVLow12s = 8
 
 	// The relocation is only meaningful when the machine type is MIPS.
 	// The base relocation applies to a MIPS16 jump instruction.
-	ImageRelBasedMipsJmpAddr16 = 9
+	ImageRelBasedMIPSJmpAddr16 = 9
 
 	// The base relocation applies the difference to the 64-bit field at offset.
 	ImageRelBasedDir64 = 10
@@ -152,8 +151,7 @@ func (pe *File) parseRelocDirectory(rva, size uint32) error {
 	for rva < end {
 		baseReloc := ImageBaseRelocation{}
 		offset := pe.getOffsetFromRva(rva)
-		buff := bytes.NewReader(pe.data[offset : offset+relocSize])
-		err := binary.Read(buff, binary.LittleEndian, &baseReloc)
+		err := pe.structUnpack(&baseReloc, offset, relocSize)
 		if err != nil {
 			return err
 		}
@@ -187,5 +185,57 @@ func (pe *File) parseRelocDirectory(rva, size uint32) error {
 	}
 
 	return nil
+}
 
+// PrettyRelocTypeEntry returns the string representation
+// of the `Type` field of a base reloc entry.
+func (pe *File) PrettyRelocTypeEntry(k uint8) string {
+	relocTypesMap := map[uint8]string{
+		ImageRelBasedAbsolute:      "Absolute",
+		ImageRelBasedHigh:          "High",
+		ImageRelBasedLow:           "Low",
+		ImageRelBasedHighLow:       "HighLow",
+		ImageRelBasedHighAdj:       "HighAdj",
+		ImageRelReserved:           "Reserved",
+		ImageRelBasedRISCVLow12s:   "RISC-V Low12s",
+		ImageRelBasedMIPSJmpAddr16: "MIPS Jmp Addr16",
+		ImageRelBasedDir64:         "DIR64",
+	}
+
+	if value, ok := relocTypesMap[k]; ok {
+		return value
+	}
+
+	switch pe.NtHeader.FileHeader.Machine {
+	case ImageFileMachineMIPS16:
+	case ImageFileMachineMIPSFPU:
+	case ImageFileMachineMIPSFPU16:
+	case ImageFileMachineWCEMIPSv2:
+		if k == ImageRelBasedMIPSJmpAddr {
+			return "MIPS JMP Addr"
+		}
+
+	case ImageFileMachineARM:
+	case ImageFileMachineARM64:
+	case ImageFileMachineARMNT:
+		if k == ImageRelBasedARMMov32 {
+			return "ARM MOV 32"
+		}
+
+		if k == ImageRelBasedThumbMov32 {
+			return "Thumb MOV 32"
+		}
+	case ImageFileMachineRISCV32:
+	case ImageFileMachineRISCV64:
+	case ImageFileMachineRISCV128:
+		if k == ImageRelBasedRISCVHigh20 {
+			return "RISC-V High 20"
+		}
+
+		if k == ImageRelBasedRISCVLow12i {
+			return "RISC-V Low 12"
+		}
+	}
+
+	return "?"
 }
