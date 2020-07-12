@@ -124,6 +124,7 @@ export default {
       ]
       return antivirusList.includes(tag)
     },
+    
   },
 }
 </script>
