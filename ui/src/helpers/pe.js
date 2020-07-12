@@ -840,7 +840,32 @@ function GFIDS2String(flags) {
     case 0x2: return "ExportSupressed";
     default: return "";
   }
-} 
+}
+
+function TlsCharacteristics2String(Characteristics) {
+  var TlsCharacteristicsMap = {
+    0x00100000: "Align 1 Bytes",
+    0x00200000: "Align 2 Bytes",
+    0x00300000: "Align 4 Bytes",
+    0x00400000: "Align 8 Bytes",
+    0x00500000: "Align 16 Bytes",
+    0x00600000: "Align 32 Bytes",
+    0x00700000: "Align 64 Bytes",
+    0x00800000: "Align 128 Bytes",
+    0x00900000: "Align 265 Bytes",
+    0x00a00000: "Align 512 Bytes",
+    0x00b00000: "Align 1024 Bytes",
+    0x00c00000: "Align 2048 Bytes",
+    0x00d00000: "Align 4096 Bytes",
+    0x00e00000: "Align 8192 Bytes",
+  };
+
+  if (Characteristics in TlsCharacteristicsMap) {
+    return TlsCharacteristicsMap[Characteristics];
+  }
+
+  return "?"
+}
 
 export {
   hex2a,
@@ -857,5 +882,6 @@ export {
   magic2String,
   sectionFlag2String,
   GuardFlags2String,
-  GFIDS2String
+  GFIDS2String,
+  TlsCharacteristics2String
 }
