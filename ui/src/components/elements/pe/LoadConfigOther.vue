@@ -7,20 +7,24 @@
     </div>
     <div
       class="section"
-      v-for="(section, index) in selectedSection"
+      v-for="(content, index) in selectedSection"
       :key="index + 'b'"
     >
       <div class="section_content">
         <div
           class="section_field"
-          v-for="(field, index) in Object.values(section)"
+          v-for="(field, index) in Object.values(content)"
           :key="'function_' + index"
         >
           <span class="parent">
             <span>
               {{ processData(field) }}
+              <copy :content="processData(field)" />
             </span>
-            <copy :content="processData(field)" />
+            <span v-if="section === 'GFIDS' && index === 1">
+              {{ getFlag(field) }}
+              <copy :content="getFlag(field)" v-if="field" />
+            </span>
           </span>
         </div>
       </div>
@@ -30,7 +34,7 @@
 
 <script>
 import Copy from "@/components/elements/Copy"
-import { dec2HexString } from "@/helpers/pe"
+import { dec2HexString, GFIDS2String } from "@/helpers/pe"
 
 export default {
   props: ["data", "section"],
@@ -38,20 +42,42 @@ export default {
     copy: Copy,
   },
   computed: {
-    sections: function() {
-      return this._.omitBy(Object.keys(this.data), (key) => {
-        return this.data[key] === null
-      })
-    },
     labels: function() {
       if (this.section === "CHPE") return ["Structure Field", "Value"]
+      if (this.section === "VolatileMetadata")
+        return ["Structure Field", "Value", "Description"]
       if (this.section === "CFGLongJump") return ["RVA"]
+      if (this.section === "SEH") return ["Handler"]
+      if (this.section === "Access RVA") return ["Access RVA"]
+      if (this.section === "Volatile Access Ranger") return ["RVA", "Size"]
+      if (this.section === "Code Ranger") return ["Begin", "End", "Machine"]
       return Object.keys(this.data[this.section][0])
     },
     selectedSection: function() {
       if (this.section === "CHPE")
         return this._.toPairs(this.data[this.section].CHPEMetadata)
-      if (this.section === "CFGLongJump")
+      if (this.section === "Volatile Access Ranger")
+        return this.data.VolatileMetadata.InfoRangeTable
+      if (this.section === "Code Ranger")
+        return this.data.CHPE.CodeRanges
+      if (this.section === "Access RVA")
+        return this._.map(this.data.VolatileMetadata.AccessRVATable, (a) => {
+          return { a }
+        })
+      if (this.section === "VolatileMetadata") {
+        var data = this._.toPairs(this.data[this.section].Struct)
+        return data.map((item) => {
+          if (
+            item[0] === "Size" ||
+            item[0] === "VolatileAccessTableSize" ||
+            item[0] === "VolatileInfoRangeTableSize"
+          ) {
+            item.push(this.getSize(item[1]))
+          }
+          return item
+        })
+      }
+      if (this.section === "CFGLongJump" || this.section === "SEH")
         return this._.map(this.data[this.section], (a) => {
           return { a }
         })
@@ -68,6 +94,15 @@ export default {
       if (this._.isString(value)) return value
       if (this._.isNull(value)) return "none"
       return ""
+    },
+    getFlag: function(value) {
+      if (value === 0) return ""
+      return GFIDS2String(value)
+    },
+    getSize: function(value) {
+      if (value >= 1000000) return (value / 1000000).toFixed(2) + " MB"
+      if (value >= 1000) return (value / 1000).toFixed(2) + " KB"
+      else return value + " B"
     },
   },
 }

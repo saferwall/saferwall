@@ -12,7 +12,11 @@
             v-for="(section, index) in sections"
             :key="index"
           >
-            <button class="button is-light" @click="selectedSection = section" :class="{subsection: loadConfigSubSections.includes(section)}">
+            <button
+              class="button is-light"
+              @click="selectedSection = section"
+              :class="{ subsection: loadConfigSubSections.includes(section), extrasubsection: extraSubSections.includes(section) }"
+            >
               {{ _.startCase(section) }}
             </button>
             <hr />
@@ -48,8 +52,15 @@
             v-if="selectedSection === 'LoadConfig'"
             :data="pe[selectedSection]"
           />
+          <Enclave
+            v-if="selectedSection === 'Enclave'"
+            :data="pe['LoadConfig']['Enclave']"
+          />
           <LoadConfigOther
-            v-if="loadConfigSubSections.includes(selectedSection)"
+            v-if="
+              loadConfigSubSections.includes(selectedSection) &&
+                selectedSection !== 'Enclave'
+            "
             :data="_.omit(pe['LoadConfig'], 'LoadCfgStruct')"
             :section="selectedSection"
           />
@@ -68,6 +79,7 @@ import Imports from "../elements/pe/Imports"
 import Export from "../elements/pe/Export"
 import LoadConfig from "../elements/pe/LoadConfig"
 import LoadConfigOther from "../elements/pe/LoadConfigOther"
+import Enclave from "../elements/pe/Enclave"
 import { mapGetters } from "vuex"
 
 export default {
@@ -80,10 +92,12 @@ export default {
     Export,
     LoadConfig,
     LoadConfigOther,
+    Enclave,
   },
   data() {
     return {
       selectedSection: "DosHeader",
+      extraSubSections : ['Access RVA','Volatile Access Ranger', 'Code Ranger']
     }
   },
   computed: {
@@ -108,20 +122,30 @@ export default {
     },
     sections: function() {
       var keys = Object.keys(this.pe)
-      var index = keys.indexOf("LoadConfig")
-      return this._.concat(
-        this._.slice(keys, 0, index + 1),
-        this.loadConfigSubSections,
-        this._.slice(keys, index + 1, keys.length),
-      )
+      keys = keys.filter((section) => this.pe[section] !== null)
+      return this.addAtPosition(keys, this.loadConfigSubSections, "LoadConfig")
     },
     loadConfigSubSections: function() {
       var sections = Object.keys(this.pe.LoadConfig)
-      return sections.filter((section) => {
+      sections = sections.filter((section) => {
         return (
           section !== "LoadCfgStruct" && this.pe.LoadConfig[section] !== null
         )
       })
+      sections = this.addAtPosition(sections, ['Access RVA','Volatile Access Ranger'], 'VolatileMetadata')
+      sections = this.addAtPosition(sections, ['Code Ranger'], 'CHPE')
+
+      return sections
+    },
+  },
+  methods: {
+    addAtPosition: function(array, element, position) {
+      var index = this._.indexOf(array, position)
+      return this._.concat(
+        this._.slice(array, 0, index + 1),
+        element,
+        this._.slice(array, index + 1, array.length),
+      )
     },
   },
 }
@@ -135,10 +159,10 @@ export default {
     margin-bottom: 20px;
   }
   .columns {
-    padding: 1rem;
+    padding: 0.5rem;
     .items {
       display: grid;
-      width: max-content;
+      width: 20rem;
       height: max-content;
       .bt {
         display: inline-flex;
@@ -154,8 +178,11 @@ export default {
           justify-content: left;
           width: 10em;
         }
-        .subsection{
+        .subsection {
           padding-left: 2rem;
+        }
+        .extrasubsection {
+          padding-left: 3rem;
         }
         hr {
           background-color: grey;
@@ -163,7 +190,7 @@ export default {
           display: block;
           height: 35px;
           width: 1px;
-          margin: 0;
+          margin: auto !important;
         }
       }
 
@@ -187,9 +214,6 @@ export default {
           background-color: #00d1b2;
         }
       }
-    }
-    .values {
-      margin-left: 2rem;
     }
   }
 }
