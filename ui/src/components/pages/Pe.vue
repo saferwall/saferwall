@@ -48,6 +48,18 @@
             v-if="selectedSection === 'Export'"
             :data="pe[selectedSection]"
           />
+          <TLS
+            v-if="selectedSection === 'TLS'"
+            :data="pe[selectedSection]"
+          />
+          <Debugs
+            v-if="selectedSection === 'Debugs'"
+            :data="pe[selectedSection]"
+          />
+          <IAT
+            v-if="selectedSection === 'IAT'"
+            :data="pe[selectedSection]"
+          />
           <LoadConfig
             v-if="selectedSection === 'LoadConfig'"
             :data="pe[selectedSection]"
@@ -77,6 +89,9 @@ import NtHeaderView from "../elements/pe/NtHeaderView"
 import SectionsView from "../elements/pe/SectionsView"
 import Imports from "../elements/pe/Imports"
 import Export from "../elements/pe/Export"
+import TLS from "../elements/pe/TLS"
+import Debugs from "../elements/pe/Debugs"
+import IAT from "../elements/pe/IAT"
 import LoadConfig from "../elements/pe/LoadConfig"
 import LoadConfigOther from "../elements/pe/LoadConfigOther"
 import Enclave from "../elements/pe/Enclave"
@@ -90,6 +105,9 @@ export default {
     SectionsView,
     Imports,
     Export,
+    TLS,
+    Debugs,
+    IAT,
     LoadConfig,
     LoadConfigOther,
     Enclave,
