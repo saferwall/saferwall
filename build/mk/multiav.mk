@@ -64,3 +64,27 @@ multiav-release-av-go:	## Release the AV with the gRPC server
 	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.2 \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
+
+multiav-build: 	## Build all AVs.
+	for av in avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender ; do \
+		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \
+		make multiav-build-av AV_VENDOR=$$av   ; \
+	done
+
+multiav-release: ## Build and release all AVs.
+	for av in avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender ; do \
+		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \
+		make multiav-build-av AV_VENDOR=$$av   ; \
+	done
+
+multiav-build-go:	## Build all AVs (go agents).
+	for av in avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender ; do \
+		echo "${GREEN} [*] =============== Building go-$$av =============== ${RESET}" ; \
+		make multiav-build-av-go AV_VENDOR=$$av   ; \
+	done
+
+multiav-release-go:	## Build and release all AVs (go agents).
+	for av in avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender ; do \
+		echo "${GREEN} [*] =============== Building go-$$av =============== ${RESET}" ; \
+		make multiav-release-av-go AV_VENDOR=$$av   ; \
+	done
