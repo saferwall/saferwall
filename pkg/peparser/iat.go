@@ -13,9 +13,9 @@ type IATEntry struct {
 }
 
 // The structure and content of the import address table are identical to those
-// of the import lookup table, until the file is bound. During binding, the entries
-// in the import address table are overwritten with the 32-bit (for PE32) or
-// 64-bit (for PE32+) addresses of the symbols that are being imported.
+// of the import lookup table, until the file is bound. During binding, the 
+// entries in the import address table are overwritten with the 32-bit (for 
+// PE32) or 64-bit (for PE32+) addresses of the symbols that are being imported.
 // These addresses are the actual memory addresses of the symbols, although
 // technically they are still called “virtual addresses.” The loader typically
 // processes the binding.
@@ -61,5 +61,6 @@ func (pe *File) parseIATDirectory(rva, size uint32) error {
 		index++
 	}
 
+	pe.IAT = entries
 	return nil
 }

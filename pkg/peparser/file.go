@@ -32,6 +32,7 @@ type File struct {
 	BoundImports []BoundImportDescriptorData `json:",omitempty"`
 	GlobalPtr    uint32                      `json:",omitempty"`
 	CLRHeader    *ImageCOR20Header           `json:",omitempty"`
+	IAT          []IATEntry					 `json:",omitempty"`
 	Header       []byte
 	data         mmap.MMap
 	closer       io.Closer
