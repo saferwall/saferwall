@@ -7,7 +7,7 @@
         :key="index"
         :class="{ name: label === 'Name' }"
       >
-        {{ _.startCase(label) }}
+        {{ label }}
       </div>
     </div>
     <div class="section" v-for="(section, sec_index) in data" :key="sec_index">
@@ -16,13 +16,12 @@
           class="section_field"
           v-for="([key, value], third_index) in Object.entries(section)"
           :key="third_index"
-          :class="{ name: key === 'Name' }"
         >
           <span class="parent">
             <span>
-              {{ key == "Name" ? getName(value) : getHex(value) }}
+              {{ processData(value, third_index) }}
             </span>
-            <copy :content="key == 'Name' ? getName(value) : getHex(value)" />
+            <copy :content="processData(value, third_index)" />
           </span>
         </div>
       </div>
@@ -39,18 +38,17 @@ export default {
   components: {
     copy: Copy,
   },
-  computed: {
-    labels: function() {
-      var keys = Object.keys(this.data[0])
-      if (keys.length < 1) return []
-      return keys
-    },
+  data() {
+    return {
+      labels: ['#', 'Entry RVA', 'Value', 'Description']
+    }
   },
   methods: {
-    getHex: function(dec) {
+    toHex: function(dec) {
       return dec2HexString(dec)
     },
-    processData: function(value) {
+    processData: function(value, index) {
+      if(index === 0) return value
       if (this._.isNumber(value)) return this.toHex(value)
       if (this._.isArray(value)) return this._.join(value, ", ")
       if (this._.isString(value)) return value
