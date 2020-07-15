@@ -11,13 +11,25 @@ help: ## This help.
 
 .DEFAULT_GOAL := help
 
-# Retrieve the root directory of the project
+# Retrieve the root directory of the project.
 ROOT_DIR	:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# Include our env file
+# Define standard colors
+BLACK        := $(shell tput -Txterm setaf 0)
+RED          := $(shell tput -Txterm setaf 1)
+GREEN        := $(shell tput -Txterm setaf 2)
+YELLOW       := $(shell tput -Txterm setaf 3)
+LIGHTPURPLE  := $(shell tput -Txterm setaf 4)
+PURPLE       := $(shell tput -Txterm setaf 5)
+BLUE         := $(shell tput -Txterm setaf 6)
+WHITE        := $(shell tput -Txterm setaf 7)
+
+RESET := $(shell tput -Txterm sgr0)
+
+# Our config file.
 include $(ROOT_DIR)/.env
 
-# Include our internals makefiles
+# Include our internals makefiles.
 include build/mk/docker.mk
 include build/mk/vault.mk
 include build/mk/multiav.mk
