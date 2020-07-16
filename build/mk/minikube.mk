@@ -11,6 +11,15 @@ ifeq ($(MINIKUBE_DRIVER),none)
 	sudo apt update 
 	sudo apt install -y conntrack
 	sudo minikube start --driver=none
+	# sudo mv /root/.kube $(HOME)/.kube # this will write over any previous configuration
+	sudo chown -R $(USER) $(HOME)/.kube
+	sudo chgrp -R $(USER) $(HOME)/.kube
+	# sudo mv /root/.minikube $(HOME)/.minikube # this will write over any previous configuration
+	sudo chown -R $(USER) $(HOME)/.minikube
+	sudo chgrp -R $(USER) $(HOME)/.minikube
 else
 	minikube start --driver=$(MINIKUBE_DRIVER)  --cpus $(MINIKUBE_CPU) --memory $(MINIKUBE_MEMORY) --disk-size=$(MINIKUBE_DISK_SIZE)GB
 endif
+	kubectl version
+	minikube status
+

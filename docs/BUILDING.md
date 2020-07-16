@@ -10,12 +10,13 @@
 ## Deploying in Minikube
 
 1. Install docker: `make docker-install`.
-2. Install Minikube binary: `make minikube-install`
-3. If you do not already have a hypervisor installed, install one of these now:
+2. Install Minikube: `make minikube-install`
+3. Install Kubectl: `make kubectl-install`
+4. If you do not already have a hypervisor installed, install one of these now:
     - KVM, which also uses QEMU: `make kvm-install`
     - VirtualBox: `make vbox-install`
-    - Minikube also supports a `--driver=none` option that runs the Kubernetes components on the host and not in a VM. Using this driver requires Docker and a Linux environment but not a hypervisor.
-4. Start Minikube cluster: edit the `.env` to specify which driver to use for minikube, number of cpus, ram and disk size:
+    - No Driver: minikube also supports a `--driver=none` option that runs the Kubernetes components on the host and not in a VM. Using this driver requires Docker and a Linux environment but not a hypervisor.
+5. Start Minikube cluster: edit the `.env` to specify which driver to use for minikube, number of cpus, ram and disk size:
     ```c
     # supported values ['virtualbox', 'kvm2', 'none']
     export MINIKUBE_DRIVER=none
