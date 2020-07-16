@@ -7,5 +7,10 @@ minikube-install:		## Install minikube
 	minikube version
 
 minikube-start:			## Start minikube
-	minikube start --driver=$(MK_DRIVER)  --cpus $(MK_CPU) --memory $(MK_MEM) --disk-size=$(MK_DISK)GB
-	kubectl proxy --address='0.0.0.0' --disable-filter=true &
+ifeq ($(MINIKUBE_DRIVER),none)
+	sudo apt update 
+	sudo apt install -y conntrack
+	sudo minikube start --driver=none
+else
+	minikube start --driver=$(MINIKUBE_DRIVER)  --cpus $(MINIKUBE_CPU) --memory $(MINIKUBE_MEMORY) --disk-size=$(MINIKUBE_DISK_SIZE)GB
+endif

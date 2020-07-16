@@ -17,13 +17,14 @@
     - Minikube also supports a `--driver=none` option that runs the Kubernetes components on the host and not in a VM. Using this driver requires Docker and a Linux environment but not a hypervisor.
 4. Start Minikube cluster: edit the `.env` to specify which driver to use for minikube, number of cpus, ram and disk size:
     ```c
-    export MINIKUBE_DRVIER=none     # supported values ['virtualbox', 'kvm2', 'none']
-    export MINIKUBE_CPU=2           # skip this if you set the driver to `none`.
-    export MINIKUBE_MEMORY=4096     # skip this if you set the driver to `none`.
-    export MINIKUBE_DISK_SIZE=40GB  # skip this if you set the driver to `none`.
+    # supported values ['virtualbox', 'kvm2', 'none']
+    export MINIKUBE_DRIVER=none
+    # skip those if you set the driver to `none`.
+    export MINIKUBE_CPU=2
+    export MINIKUBE_MEMORY=4096
+    export MINIKUBE_DISK_SIZE=40GB
     ```
     Then run `make minikube-start`.
-5. 
 
 ## Deploying on-promise 
 

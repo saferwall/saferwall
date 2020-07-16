@@ -37,7 +37,7 @@ docker-tag-version: 	## Generate container `latest` tag
 	docker tag $(REPO)/$(IMG) $(REPO)/$(IMG):$(VERSION)
 
 docker-repo-login: 	## Login to Docker Hub
-	docker login --username=$(REPO) --password=$(DOCKER_HUB_PWD)
+	docker login --username=$(DOCKER_HUB_PWD) --password=$(DOCKER_HUB_PWD)
 
 docker-install:		## install docker
 	sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y
