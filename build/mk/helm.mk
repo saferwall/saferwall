@@ -1,4 +1,4 @@
-HELM_VERSION = 3.2.0
+HELM_VERSION = 3.2.4
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz 
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -28,3 +28,13 @@ helm-release:		## Install Helm release.
 
 helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(RELEASE_NAME) saferwall
+
+helm-init-cert-manager: # Init cert-manager
+	# Create the namespace for cert-manager.
+	kubectl create namespace cert-manager
+	# Install the CustomResourceDefinition
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.14.2/cert-manager.crds.yaml
+
+helm-update-dependency: # Update Helm deployement dependecies
+	cd  $(ROOT_DIR)/deployments \
+		&& helm dependency update saferwall

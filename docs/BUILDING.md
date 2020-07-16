@@ -34,12 +34,28 @@
         - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
         - multiav: `make multiav-build`
         - multiav-go: `make multiav-build-go`
-
-## Deploying on-promise 
+7. Install Helm: `make helm-install`.
+8. Add the required Helm Charts repositories: `make helm-add-repos`.
+9. Fetch Helm dependecies: `make helm-update-dependency`.
+10. Install helm chart: ``helm install saferwall --generate-name`.
+11. Edit the `deployements/saferwall/values.yaml`
+    - Set `couchbase-cluster.enabled` to true.
+    - Set `efs-provisione.enabled` to false.
+    - Set `backend.enabled` to false.
+    - Set `frontend.enabled` to false.
+    - Set `consumer.enabled` to false.
+    - Set `cert-manager.enabled` to false.
+    - Set `elasticsearch.enabled` to false.
+    - Set `kibana.enabled` to false.
+    - Set `filebeat.enabled` to false.
+    - Set `prometheus-operator.enabled` to false.
+12. Install the chart:
+    - `cd deployement`
+    - `helm install saferwall --generate-name`
 
 ## Deploying on cloud (AWS)
 
-- The first step is to build those containers. You need a repository to store them:
+1. The first step is to build those containers. You need a repository to store them:
     - If you're deploying on the cloud, you will be probably using [docker hub](https://hub.docker.com/) or a similar service.
     - Create an account and put your credentials in the `.env` file like this:
     ```c
@@ -47,11 +63,21 @@
     export DOCKER_HUB_USR = your_docker_hub_username
     export DOCKER_HUB_PWD = your_docker_hub_password
     ```
+2. Edit the file `deployments/saferwall/chsrts/nsq/values.yaml` so that:
+```yaml
+persistence:
+    storageClass: "standard"
+```
+
+
 - Install it: `make saferwall`.
--. Edit the deployments/values.yaml to match your needs.
--. Logs are found elasticsearch:
+- Edit the deployments/values.yaml to match your needs.
+- Logs are found elasticsearch:
 <p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="500px" height="auto"></p>
 
+## Deploying on-promise 
+
+- WIP
 
 ## Building AV Images
 

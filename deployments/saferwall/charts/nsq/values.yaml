@@ -34,7 +34,7 @@ nsqd:
       tag: latest
 
   persistence:
-    storageClass: "gp2"
+    storageClass: "standard"
     resources:
       requests:
         storage: 1Gi

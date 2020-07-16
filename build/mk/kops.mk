@@ -104,12 +104,6 @@ kops-tips:		## Some kops commands
 	# Finally configure your cluster with:
 	kops update cluster --name saferwall.k8s.local --yes
 
-helm-init-cert-manager: # Init cert-manager
-	# Create the namespace for cert-manager.
-	kubectl create namespace cert-manager
-	# Install the CustomResourceDefinition
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.14.2/cert-manager.crds.yaml
-
 saferwall: ## Deploy the cluster
 	make awscli-install
 	make kops-install
@@ -128,3 +122,6 @@ saferwall: ## Deploy the cluster
 	make helm-install
 	make helm-add-repos
 	make helm-init-cert-manager
+	make helm-update-dependency
+	# Initial install
+	make helm-release 
