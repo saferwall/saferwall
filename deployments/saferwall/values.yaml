@@ -38,7 +38,7 @@ minio:
 
 ####### FILEBEAT #########
 filebeat:
-  enabled: true
+  enabled: false
   filebeatConfig:
     filebeat.yml: |-
       filebeat.autodiscover:
@@ -68,16 +68,16 @@ filebeat:
 
 ####### ELASTIC SEARCH #########
 elasticsearch:
-  enabled: true
-  # replicas: 1
-  # minimumMasterNodes: 1
+  enabled: false
+  replicas: 1
+  minimumMasterNodes: 1
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
 
 ####### KIBANA #########
 kibana:
-  enabled: true
+  enabled: false
 
 ####### PROMETHEUS #########
 prometheus-operator:
@@ -85,7 +85,7 @@ prometheus-operator:
 
 ####### COUCHBASE #########
 couchbase-cluster:
-  enabled: true
+  enabled: false
   couchbaseCluster:
     create: true
     authSecretOverride: "cb-admin-secret"
@@ -158,6 +158,7 @@ couchbase-cluster:
 
 ########### NSQ ###########
 nsq:
+  enabled: true
   nsqd:
     name: nsqd
     replicaCount: 2
@@ -179,7 +180,7 @@ nfs-server-provisioner:
 
 ########### NGINX INGRESS  #############
 nginx-ingress:
-  enabled: true
+  enabled: false
   controller:
     config:
       use-proxy-protocol: "true"
@@ -197,7 +198,7 @@ nginx-ingress:
 
 ########### BACKEND ###########
 backend:
-  enabled: true
+  enabled: false
   name: backend
   replicaCount: 1
   containerPort: 8080
@@ -212,7 +213,7 @@ backend:
 
 ########### FRONTEND ###########
 frontend:
-  enabled: true
+  enabled: false
   name: frontend
   replicaCount: 1
   containerPort: 80
@@ -227,7 +228,7 @@ frontend:
 
 ########### WEBSITE ###########
 website:
-  enabled: true
+  enabled: false
   name: website
   replicaCount: 1
   containerPort: 4000
@@ -254,7 +255,7 @@ backendHostname: https://dev.api.saferwall.com
 
 ########### CONSUMER ###########
 consumer:
-  enabled: true
+  enabled: false
   name: consumer
   replicaCount: 1
   image:

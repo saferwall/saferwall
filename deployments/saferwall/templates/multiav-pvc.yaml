@@ -8,7 +8,7 @@ metadata:
 spec:
   {{- if index .Values "efs-provisioner" "enabled" }}
   storageClassName: aws-efs
-  {{- else if .Values "nfs-server-provisioner" "enabled" }}
+  {{- else if index .Values "nfs-server-provisioner" "enabled" }}
   storageClassName: nfs
   {{- end }}
   accessModes:
