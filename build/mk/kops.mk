@@ -118,6 +118,13 @@ saferwall: ## Deploy the cluster
 	make kops-create-cluster
 	make kops-create-efs
 	make kops-create-mount-targers
+	# Building docker containers
+	make backend-release
+	make frontend-release
+	make consumer-release
+	make multiav-release
+	make multiav-release-go
+	# At this stage, all containers are ready
 	make helm-install
 	make helm-add-repos
 	make helm-init-cert-manager

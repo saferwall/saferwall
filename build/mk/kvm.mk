@@ -34,9 +34,12 @@ kvm-mod-install:	## Compile and install kvm
 	# just loading kvm-intel will load kvm automatically
 	sudo modprobe kvm-intel
 
-kvm-tools-install: 	## Install KVM related tools
-	sudo apt install virt-manager qemu-kvm bridge-utils -y
+kvm-install: 	## Install KVM and related tools.
+	# Verify hardware virtualization support.
+	sudo apt update
+	sudo apt install -y cpu-checker
 	sudo kvm-ok
+	sudo apt install virt-manager qemu-kvm bridge-utils -y
 	kvm --version
 
 kvm-libvirt:

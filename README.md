@@ -36,17 +36,7 @@ Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high av
 
 Everything runs inside Kubernetes. You can either deploy it in the cloud or have it self hosted.
 
- To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provisions a kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported.
-
-Steps to deploy in AWS:
-(This still needs to be improved)
-1. Clone the project: `git clone https://github.com/saferwall/saferwall`
-2. Using a debian linux, make sure `build-essential` are installed: `sudo apt-get install build-essential`.
-3. Rename the `example.env` to `.env` and fill the secrets according to which AVs you want to have.
-4. Install it: `make saferwall`.
-5. Edit the deployments/values.yaml to match your needs.
-6. Logs are found elasticsearch:
-<p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="auto" height="auto"></p>
+To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provisions a kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported. Refer to the following [link](https://github.com/saferwall/saferwall/blob/master/docs/BUILDING.md) for how to setup.
 
 ## Built with:
 
