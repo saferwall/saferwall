@@ -40,18 +40,18 @@
 10. Install helm chart: ``helm install saferwall --generate-name`.
 11. Edit the `deployements/saferwall/values.yaml`
     - Set `couchbase-cluster.enabled` to true.
-    - Set `efs-provisione.enabled` to false.
-    - Set `backend.enabled` to false.
-    - Set `frontend.enabled` to false.
-    - Set `consumer.enabled` to false.
-    - Set `cert-manager.enabled` to false.
-    - Set `elasticsearch.enabled` to false.
-    - Set `kibana.enabled` to false.
-    - Set `filebeat.enabled` to false.
-    - Set `prometheus-operator.enabled` to false.
+    - Set `nfs-server-provisioner.enabled` to true.
+    - Set `backend.enabled` to true.
+    - Set `frontend.enabled` to true.
+    - Set `consumer.enabled` to true.
+    - If you are  interested to see the logs in EFK:
+        - Set `elasticsearch.enabled` to true.
+        - Set `kibana.enabled` to true. 
+        - Set `filebeat.enabled` to true.
+    - Set `prometheus-operator.enabled` to true if you want to get metrics.
 12. Install the chart:
     - `cd deployement`
-    - `helm install saferwall --generate-name`
+    - `helm upgrade saferwall <release-name generated before>`
 
 ## Deploying on cloud (AWS)
 

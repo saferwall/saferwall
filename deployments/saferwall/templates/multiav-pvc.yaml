@@ -6,7 +6,11 @@ metadata:
   annotations:
     volume.beta.kubernetes.io/storage-class: aws-efs
 spec:
+  {{- if index .Values "efs-provisioner" "enabled" }}
   storageClassName: aws-efs
+  {{- else if .Values "nfs-server-provisioner" "enabled" }}
+  storageClassName: nfs
+  {{- end }}
   accessModes:
     - ReadWriteMany
   resources:

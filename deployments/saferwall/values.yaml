@@ -242,7 +242,7 @@ website:
 
 ########## CERT-MANAGER ############
 cert-manager:
-  enabled: true
+  enabled: false
   ingressShim:
     defaultIssuerName: letsencrypt-prod
     defaultIssuerKind: ClusterIssuer
@@ -264,7 +264,7 @@ consumer:
 
 ########### MULTIAV ###########
 multiav:
-  enabled: true
+  enabled: false
   name: multiav
   vendors:
     avast:
