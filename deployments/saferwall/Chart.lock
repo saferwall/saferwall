@@ -11,6 +11,9 @@ dependencies:
 - name: efs-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.11.0
+- name: nfs-server-provisioner
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 1.1.1
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v0.14.3
@@ -29,5 +32,5 @@ dependencies:
 - name: prometheus-operator
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 8.13.3
-digest: sha256:f3087d925660df8c44471ca85a805abbe04a6d67a97d31ea4a34bac0922dfd08
-generated: "2020-04-29T23:51:08.031492705+10:00"
+digest: sha256:e1057e3d162cbbe7d2c716968cb916843b5ba1c50b29bffec29f980d2c3066e3
+generated: "2020-07-16T19:40:18.289599087+10:00"

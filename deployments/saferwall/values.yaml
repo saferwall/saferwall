@@ -173,6 +173,10 @@ efs-provisioner:
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
 
+########### NFS SERVER PROVISONNER ###########
+nfs-server-provisioner:
+  enabled: false
+
 ########### NGINX INGRESS  #############
 nginx-ingress:
   enabled: true
