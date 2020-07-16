@@ -26,6 +26,14 @@
     export MINIKUBE_DISK_SIZE=40GB
     ```
     Then run `make minikube-start`.
+6. Building the containers:
+    - Build the backend: `make backend-build`
+    - Build the frontend: `make ui-build`
+    - Build the consumers: `make consumer-build`
+    - Build the multiav:
+        - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
+        - multiav: `make multiav-build`
+        - multiav-go: `make multiav-build-go`
 
 ## Deploying on-promise 
 
@@ -45,10 +53,8 @@
 <p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="500px" height="auto"></p>
 
 
-## Building AntiVirus Images
+## Building AV Images
 
-- Every AV is containerized in a docker container.
-- Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images.
 - Edit the `.env` and fill the secrets according to which AVs you want to have.
     - Eset: copy the license to `./build/data/ERA-Endpoint.lic`, and also inside the `.env`:
         ```c
