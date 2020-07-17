@@ -3,8 +3,10 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ include "saferwall.fullname" . }}-samples
+  {{- if index .Values "efs-provisioner" "enabled" }}
   annotations:
     volume.beta.kubernetes.io/storage-class: aws-efs
+  {{- end }}
 spec:
   {{- if index .Values "efs-provisioner" "enabled" }}
   storageClassName: aws-efs

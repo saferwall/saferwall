@@ -27,6 +27,7 @@
     ```
     Then run `make minikube-start`.
 6. Building the containers:
+    - Before running any of the builds below, if you are not the _none_ driver, __make sure to eval__ the minikube env variables into your shell using the command: `eval $(minikube docker-env)`.
     - Build the backend: `make backend-build`
     - Build the frontend: `make ui-build`
     - Build the consumers: `make consumer-build`
@@ -37,10 +38,13 @@
 7. Install Helm: `make helm-install`.
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
 9. Fetch Helm dependecies: `make helm-update-dependency`.
-10. Install helm chart: ``helm install saferwall --generate-name`.
-11. Edit the `deployements/saferwall/values.yaml`
-    - Set `couchbase-cluster.enabled` to true.
+10. Edit the `deployements/saferwall/values.yaml`
     - Set `nfs-server-provisioner.enabled` to true.
+11. Install helm chart:
+    - `cd deployement && helm install saferwall --generate-name`.
+12. Wait (~1 min) till the output of `kubectl get pods` show all pods are running fine.
+13. Edit again the `deployements/saferwall/values.yaml`
+    - Set `couchbase-cluster.enabled` to true.
     - Set `backend.enabled` to true.
     - Set `frontend.enabled` to true.
     - Set `consumer.enabled` to true.
@@ -49,8 +53,8 @@
         - Set `kibana.enabled` to true. 
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-12. Install the chart:
-    - `cd deployement`
+14. Install the chart:
+    - `cd deployement` if you're not inside the deployement folder.
     - `helm upgrade saferwall <release-name generated before>`
 
 ## Deploying on cloud (AWS)
