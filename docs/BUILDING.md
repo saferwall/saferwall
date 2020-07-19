@@ -38,12 +38,12 @@
 7. Install Helm: `make helm-install`.
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
 9. Fetch Helm dependecies: `make helm-update-dependency`.
-10. Edit the `deployements/saferwall/values.yaml`
+10. Edit the `deployments/saferwall/values.yaml`
     - Set `nfs-server-provisioner.enabled` to true.
 11. Install helm chart:
-    - `cd deployement && helm install saferwall --generate-name`.
+    - `cd deployments && helm install saferwall --generate-name`.
 12. Wait (~1 min) till the output of `kubectl get pods` show all pods are running fine.
-13. Edit again the `deployements/saferwall/values.yaml`
+13. Edit again the `deployments/saferwall/values.yaml`
     - Set `couchbase-cluster.enabled` to true.
     - Set `backend.enabled` to true.
     - Set `frontend.enabled` to true.
@@ -54,7 +54,7 @@
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
 14. Install the chart:
-    - `cd deployement` if you're not inside the deployement folder.
+    - `cd deployments` if you're not inside the deployments folder.
     - `helm upgrade saferwall <release-name generated before>`
 
 ## Deploying on cloud (AWS)

@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add nfs-server-provisionner for local testing in minikube.
 - Improve the building process documentation thanks to [Jameel Haffejee](https://github.com/RC114).
 - Reworked to file tags schema.
-- Improve the rending of the landing page.
+- Improve the rendering of the landing page.
 - Fix phrasing in README from [@bf](https://github.com/bf).
 - Fix recover from panic routine in parse-pe in consumer.
 - Add exception catching in strings pkg.

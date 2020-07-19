@@ -262,7 +262,7 @@ func initOSClient() *minio.Client {
 			log.Fatalln(err)
 		}
 	} else {
-		log.Printf("Object torage bucket %s exists already", AvatarSpaceBucket)
+		log.Printf("Object storage bucket %s exists already", AvatarSpaceBucket)
 	}
 
 	return client

@@ -18,7 +18,7 @@ ifeq ($(MINIKUBE_DRIVER),none)
 	sudo chown -R $(USER) $(HOME)/.minikube
 	sudo chgrp -R $(USER) $(HOME)/.minikube
 else
-	minikube start --driver=$(MINIKUBE_DRIVER)  --cpus $(MINIKUBE_CPU) --memory $(MINIKUBE_MEMORY) --disk-size=$(MINIKUBE_DISK_SIZE)GB
+	minikube start --driver=$(MINIKUBE_DRIVER)  --cpus $(MINIKUBE_CPU) --memory $(MINIKUBE_MEMORY) --disk-size=$(MINIKUBE_DISK_SIZE)
 endif
 	kubectl version
 	minikube status
