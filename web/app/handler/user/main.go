@@ -326,7 +326,6 @@ func GetByUsername(username string) (User, error) {
 
 	getResult, err := db.UsersCollection.Get(username, &gocb.GetOptions{})
 	if err != nil {
-		log.Errorln(err)
 		return user, err
 	}
 
