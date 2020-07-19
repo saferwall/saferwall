@@ -3,10 +3,10 @@
 # https://github.com/saferwall/saferwall
 #
 
-## Deploy environment label, e.g. baremetal, aws
+## Deploy environment label, e.g. local, aws
 ##
 global:
-  deployEnv: aws
+  deployEnv: local
 
 ########### MINIO ###########
 minio:

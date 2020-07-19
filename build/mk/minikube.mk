@@ -7,8 +7,9 @@ minikube-install:		## Install minikube
 	minikube version
 
 minikube-start:			## Start minikube
-ifeq ($(MINIKUBE_DRIVER),none)
 	sudo apt update 
+	sudo apt install -y nfs-common
+ifeq ($(MINIKUBE_DRIVER),none)
 	sudo apt install -y conntrack
 	sudo minikube start --driver=none
 	# sudo mv /root/.kube $(HOME)/.kube # this will write over any previous configuration
