@@ -10,7 +10,6 @@ private
 scripts
 test
 ui
-web
 website
 .env
 example.env

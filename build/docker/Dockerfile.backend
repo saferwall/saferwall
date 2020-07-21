@@ -14,13 +14,13 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 WORKDIR /web
 
 # Copy go mod and sum files
-COPY go.mod go.sum ./
+COPY ./web/go.mod ./web/go.sum ./
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
 # Copy the source from the current directory to the Working Directory inside the container
-COPY . .
+COPY /web .
 
 # Build the go app.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/server .
@@ -39,9 +39,8 @@ WORKDIR /backend
 
 # Copy the app
 COPY --from=builder /go/bin/server .
-COPY ./config ./config
-COPY ./data ./data
-COPY ./app/schema ./app/schema
+COPY ./web/data ./data
+COPY ./web/app/schema ./app/schema
 
 # Run the server.
 ENTRYPOINT ["/backend/server"]
