@@ -1,7 +1,7 @@
 # This file needs to be edited !
 
 [ui]
-address = "https://company.com"
+address = "http://mysaferwall.com"
 
 [app]
 address = ":8080"
@@ -11,7 +11,7 @@ max_file_size = 64000000 # 64MB
 max_avatar_file_size = 100000 # 100KB
 admin_user = "Administrator"
 admin_pwd = "password"
-admin_email = "admin@company.com"
+admin_email = "admin@mysaferwall.com"
 
 [db]
 server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}'
@@ -36,7 +36,7 @@ signkey = "jwt_secret_auth_key"
 [smtp]
 server = "smtp.gmail.com"
 port = 465
-user =  "noreply@company.com"
+user =  "noreply@mysaferwall.com"
 password = "password"
-identity =  "CompanyIdentify"
-sender =  "noreply@company.com"
+identity = "CompanyIdentify"
+sender = "noreply@mysaferwall.com"

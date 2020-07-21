@@ -1,13 +1,10 @@
 dependencies:
 - name: minio
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 5.0.24
+  version: 5.0.31
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
-  version: 0.1.2
-- name: couchbase-cluster
-  repository: https://couchbase-partners.github.io/helm-charts/
-  version: 0.1.2
+  version: 2.0.1
 - name: efs-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.11.0
@@ -22,15 +19,15 @@ dependencies:
   version: 1.36.3
 - name: filebeat
   repository: https://helm.elastic.co
-  version: 7.6.2
+  version: 7.8.0
 - name: elasticsearch
   repository: https://helm.elastic.co
-  version: 7.6.2
+  version: 7.8.0
 - name: kibana
   repository: https://helm.elastic.co
-  version: 7.6.2
+  version: 7.8.0
 - name: prometheus-operator
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 8.13.3
-digest: sha256:e1057e3d162cbbe7d2c716968cb916843b5ba1c50b29bffec29f980d2c3066e3
-generated: "2020-07-16T19:40:18.289599087+10:00"
+  version: 9.1.0
+digest: sha256:a70239df8f0501a914efd10139d37ff4e279ed625c3d8a78b7d191e967a84af4
+generated: "2020-07-21T11:03:32.744699327+10:00"

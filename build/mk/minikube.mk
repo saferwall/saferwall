@@ -23,4 +23,5 @@ else
 endif
 	kubectl version
 	minikube status
+	sudo minikube addons enable ingress
 
