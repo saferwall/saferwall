@@ -19,14 +19,14 @@ spec:
     secretName: {{ include "saferwall.fullname" . }}-tls
   {{- end }}
   rules:
-  - host: {{ .Values.frontendDomainName }}
+  - host: {{ .Values.global.frontendDomainName }}
     http:
       paths:
       - path: /
         backend:
           serviceName: {{ include "saferwall.frontend.fullname" . }}
           servicePort: {{ .Values.frontend.service.port }}
-  - host: {{ .Values.backendDomainName }}
+  - host: {{ .Values.global.backendDomainName }}
     http:
       paths:
       - path: /
@@ -34,7 +34,7 @@ spec:
           serviceName: {{ include "saferwall.backend.fullname" . }}
           servicePort: {{ .Values.backend.service.port }}
 {{- if .Values.website.enabled -}}
-  - host: {{ .Values.websiteDomainName }}
+  - host: {{ .Values.global.websiteDomainName }}
     http:
       paths:
       - path: /
