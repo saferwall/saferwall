@@ -12,17 +12,13 @@ maintainers:
       email: admin@saferwall.com
 dependencies:
     - name: minio
-      version: 5.0.24
+      version: 5.0.31
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: minio.enabled
     - name: couchbase-operator
-      version: 0.1.2
+      version: 2.0.1
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
-    - name: couchbase-cluster
-      version: 0.1.2
-      repository: https://couchbase-partners.github.io/helm-charts/
-      condition: couchbase-cluster.enabled
     - name: efs-provisioner
       version: 0.11.0
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -40,18 +36,18 @@ dependencies:
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: nginx-ingress.enabled
     - name: filebeat
-      version: 7.6.2
+      version: 7.8.0
       repository: https://helm.elastic.co
       condition: filebeat.enabled
     - name: elasticsearch
-      version: 7.6.2
+      version: 7.8.0
       repository: https://helm.elastic.co
       condition: elasticsearch.enabled
     - name: kibana
-      version: 7.6.2
+      version: 7.8.0
       repository: https://helm.elastic.co
       condition: kibana.enabled
     - name: prometheus-operator
-      version: 8.13.3
+      version: 9.1.0
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: prometheus-operator.enabled

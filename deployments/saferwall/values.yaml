@@ -3,7 +3,7 @@
 # https://github.com/saferwall/saferwall
 #
 
-## Deploy environment label, e.g. local, aws
+## Deploy environment label, e.g. local, aws.
 ##
 global:
   deployEnv: local
@@ -84,77 +84,249 @@ prometheus-operator:
   enabled: false
 
 ####### COUCHBASE #########
-couchbase-cluster:
-  enabled: false
-  couchbaseCluster:
-    create: true
-    authSecretOverride: "cb-admin-secret"
-    baseImage: "couchbase/server"
-    version: "enterprise-6.0.1"
-    exposeAdminConsole: true
-    adminConsoleServices:
-      - data
-    exposedFeatures: []
+couchbase-operator:
+  enabled: true
+
+  # Select what to install
+  install:
+    # install the couchbase operator
+    couchbaseOperator: true
+    # install the admission controller
+    admissionController: true
+    # install couchbase cluster
+    couchbaseCluster: true
+    # install sync gateway
+    syncGateway: false
+
+  # couchbaseOperator is the controller for couchbase cluster
+  couchbaseOperator:
+    # name of the couchbase operator
+    name: "couchbase-operator"
+    # image config
+    image:
+      repository: couchbase/operator
+      tag: 2.0.1
+    imagePullPolicy: IfNotPresent
+    # imagePullSecrets is an optional list of references to secrets  to use for pulling images
+    imagePullSecrets: []
+    # additional command arguments will be translated to `--key=value`
+    commandArgs:
+      # pod creation timeout
+      pod-create-timeout: 10m
+    # resources of couchbase-operator
+    resources: {}
+    # nodeSelector for couchbase-operator pod assignment
+    # Ref: https://kubernetes.io/docs/user-guide/node-selection/
+    nodeSelector: {}
+    # tolerations of pod match nodes with corresponding taints
+    tolerations: []
+
+  # Default values for couchbase-cluster
+  cluster:
+    # name of the cluster. defaults to name of chart release
+    name:
+    # image is the base couchbase image and version of the couchbase cluster
+    image: "couchbase/server:6.5.1"
+    security:
+      # adminSecret is name of secret to use instead of using
+      # the default secret with username and password specified above
+      adminSecret: "cb-admin-secret"
+      rbac:
+        managed: true
+      ldap: {}
+    # networking options
+    networking:
+      # Option to expose admin console
+      exposeAdminConsole: true
+      # Option to expose admin console
+      adminConsoleServices:
+        - data
+      # Specific services to use when exposing ui
+      exposedFeatures:
+        - client
+        - xdcr
+      # Defines how the admin console service is exposed.
+      # Allowed values are NodePort and LoadBalancer.
+      # If this field is LoadBalancer then you must also define a spec.dns.domain.
+      adminConsoleServiceType: NodePort
+      # Defines how the per Couchbase node ports are exposed.
+      # Allowed values are NodePort and LoadBalancer.
+      # If this field is LoadBalancer then you must also define a spec.dns.domain.
+      exposedFeatureServiceType: NodePort
+      # The dynamic DNS configuration to use when exposing services
+      dns:
+      # Custom map of annotations to be added to console and per-pod (exposed feature) services
+      serviceAnnotations: {}
+      # The Couchbase cluster tls configuration (auto-generated)
+      tls:
+    # The retention period that log volumes are kept for after their associated pods have been deleted.
+    logRetentionTime: 604800s
+    # The maximum number of log volumes that can be kept after their associated pods have been deleted.
+    logRetentionCount: 20
+    # xdcr defines remote clusters and replications to them.
+    xdcr:
+      # managed defines whether the Operator should manage XDCR remote clusters
+      managed: false
+      # remoteClusters contains references to any remote clusters to replicate to
+      remoteClusters:
+    # backup defines values for automated backup.
+    backup:
+      # managed determines whether Automated Backup is enabled
+      managed: true
+      # image used by the Operator to perform backup or restore
+      image: couchbase/operator-backup:6.5.1
+      # optional service account to use when performing backups
+      # service account will be created if it does not exist
+      serviceAccountName:
+    # defines integration with third party monitoring sofware
+    monitoring:
+      prometheus:
+        # defines whether Prometheus metric collection is enabled
+        enabled: false
+        # image used by the Operator to perform metric collection
+        # (injected as a "sidecar" in each Couchbase Server Pod)
+        image: couchbase/exporter:1.0.1
+        # Optional Kubernetes secret that clients use to access Prometheus metrics
+        authorizationSecret:
+    # Cluster wide settings for nodes and services
     cluster:
-      dataServiceMemoryQuota: 512
-      indexServiceMemoryQuota: 512
-      searchServiceMemoryQuota: 512
-      eventingServiceMemoryQuota: 512
-      analyticsServiceMemoryQuota: 1024
+      # The amount of memory that should be allocated to the data service
+      dataServiceMemoryQuota: 512Mi
+      # The amount of memory that should be allocated to the index service
+      indexServiceMemoryQuota: 512Mi
+      # The amount of memory that should be allocated to the search service
+      searchServiceMemoryQuota: 512Mi
+      # The amount of memory that should be allocated to the eventing service
+      eventingServiceMemoryQuota: 512Mi
+      # The amount of memory that should be allocated to the analytics service
+      analyticsServiceMemoryQuota: 1Gi
+      # The index storage mode to use for secondary indexing
       indexStorageSetting: memory_optimized
-      autoFailoverTimeout: 120
+      # Timeout that expires to trigger the auto failover.
+      autoFailoverTimeout: 120s
+      # The number of failover events we can tolerate
       autoFailoverMaxCount: 3
+      # Whether to auto failover if disk issues are detected
       autoFailoverOnDataDiskIssues: true
-      autoFailoverOnDataDiskIssuesTimePeriod: 120
-      autoFailoverServerGroup: false
+      # How long to wait for transient errors before failing over a faulty disk
+      autoFailoverOnDataDiskIssuesTimePeriod: 120s
+      # configuration of global Couchbase auto-compaction settings.
+      autoCompaction:
+        # amount of fragmentation allowed in persistent database [2-100]
+        databaseFragmentationThreshold:
+          percent: 30
+          size: 1Gi
+        # amount of fragmentation allowed in persistent view files [2-100]
+        viewFragmentationThreshold:
+          percent: 30
+          size: 1Gi
+        # whether auto-compaction should be performed in parallel
+        parallelCompaction: false
+        # how frequently tombstones may be purged
+        tombstonePurgeInterval: 72h
+        # optional window when an auto-compaction may start (uncomment below)
+        timeWindow: {}
+        # start: 02:00
+        # end: 06:00
+        # abortCompactionOutsideWindow: true
+
+    # configuration of logging functionality
+    # for use in conjuction with logs persistent volume mount
+    logging:
+      # retention period that log volumes are kept after pods have been deleted
       logRetentionTime: 604800s
+      # the maximum number of log volumes that can be kept after pods have been deleted
       logRetentionCount: 20
+    # kubernetes security context applied to pods
+    securityContext:
+      # fsGroup of persistent volume mount
+      fsGroup: 1000
+    # cluster buckets
     buckets:
-      files:
-        name: files
-        type: couchbase
-        memoryQuota: 128
-        replicas: 1
-        ioPriority: high
-        evictionPolicy: fullEviction
-        conflictResolution: seqno
-        enableFlush: true
-        enableIndexReplica: false
-      users:
-        name: users
-        type: couchbase
-        memoryQuota: 128
-        replicas: 1
-        ioPriority: high
-        evictionPolicy: fullEviction
-        conflictResolution: seqno
-        enableFlush: true
-        enableIndexReplica: false
+      # Managed defines whether buckets are managed by us or the clients.
+      managed: true
     servers:
-      all_services:
+      # Name for the server configuration. It must be unique.
+      default:
+        # Size of the couchbase cluster.
         size: 3
+        # The services to run on nodes
         services:
           - data
           - index
           - query
           - search
-          - eventing
           - analytics
+          - eventing
+        # volume claims to use for persistent storage
+        volumeMounts: {}
+        # ServerGroups define the set of availability zones we want to distribute pods over.
         serverGroups: []
+        # Pod defines the policy to create pod for the couchbase pod.
         pod:
           volumeMounts:
             default: couchbase
             data:  couchbase
-    securityContext:
-      fsGroup: 1000
+    # VolumeClaimTemplates define the desired characteristics of a volume
+    # that can be requested and claimed by a pod.
     volumeClaimTemplates:
       - metadata:
           name: couchbase
         spec:
-          storageClassName: default
+          storageClassName: standard
           resources:
             requests:
               storage: 2Gi
+
+  # couchbase buckets to create
+  # disable default bucket creation by setting
+  # couchbaseBuckets.default: null
+  #
+  # setting default to null throws warning https://github.com/helm/helm/issues/5184
+  buckets:
+    # A bucket to create by default
+    files:
+      # Name of the bucket
+      name: files
+      # The type of bucket to use
+      type: couchbase
+      # The amount of memory that should be allocated to the bucket
+      memoryQuota: 128Mi
+      # The number of bucket replicates
+      replicas: 1
+      # The priority when compared to other buckets
+      ioPriority: high
+      # The bucket eviction policy which determines behavior during expire and high mem usage
+      evictionPolicy: fullEviction
+      # The bucket's conflict resolution mechanism; which is to be used if a conflict occurs during Cross Data-Center Replication (XDCR). Sequence-based and timestamp-based mechanisms are supported.
+      conflictResolution: seqno
+      # The enable flush option denotes wether the data in the bucket can be flushed
+      enableFlush: true
+      # Enable Index replica specifies whether or not to enable view index replicas for this bucket.
+      enableIndexReplica: false
+      # data compression mode for the bucket to run in [off, passive, active]
+      compressionMode: "passive"
+    users:
+      # Name of the bucket
+      name: users
+      # The type of bucket to use
+      type: couchbase
+      # The amount of memory that should be allocated to the bucket
+      memoryQuota: 128Mi
+      # The number of bucket replicates
+      replicas: 1
+      # The priority when compared to other buckets
+      ioPriority: high
+      # The bucket eviction policy which determines behavior during expire and high mem usage
+      evictionPolicy: fullEviction
+      # The bucket's conflict resolution mechanism; which is to be used if a conflict occurs during Cross Data-Center Replication (XDCR). Sequence-based and timestamp-based mechanisms are supported.
+      conflictResolution: seqno
+      # The enable flush option denotes wether the data in the bucket can be flushed
+      enableFlush: true
+      # Enable Index replica specifies whether or not to enable view index replicas for this bucket.
+      enableIndexReplica: false
+      # data compression mode for the bucket to run in [off, passive, active]
+      compressionMode: "passive"
 
 ########### NSQ ###########
 nsq:
@@ -170,7 +342,7 @@ nsq:
 efs-provisioner:
   enabled: false
   efsProvisioner:
-    efsFileSystemId: "fs-id-here"
+    efsFileSystemId: "<put-fs-id-here>"
     awsRegion: "us-east-1"
     provisionerName: "saferwall.com/aws-efs"
 
@@ -198,7 +370,7 @@ nginx-ingress:
 
 ########### BACKEND ###########
 backend:
-  enabled: false
+  enabled: true
   name: backend
   replicaCount: 1
   containerPort: 8080
@@ -213,7 +385,7 @@ backend:
 
 ########### FRONTEND ###########
 frontend:
-  enabled: false
+  enabled: true
   name: frontend
   replicaCount: 1
   containerPort: 80
@@ -248,14 +420,14 @@ cert-manager:
     defaultIssuerName: letsencrypt-prod
     defaultIssuerKind: ClusterIssuer
 certEmail: admin@saferwall.com
-backendDomainName: dev.api.saferwall.com
-frontendDomainName: dev.saferwall.com
+backendDomainName: api.saferwall.com
+frontendDomainName: saferwall.com
 websiteDomainName: about.saferwall.com
-backendHostname: https://dev.api.saferwall.com
+backendHostname: https://api.saferwall.com
 
 ########### CONSUMER ###########
 consumer:
-  enabled: false
+  enabled: true
   name: consumer
   replicaCount: 1
   image:
