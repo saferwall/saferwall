@@ -30,6 +30,7 @@ RESET := $(shell tput -Txterm sgr0)
 include $(ROOT_DIR)/.env
 
 # Include our internals makefiles.
+include build/mk/aws.mk
 include build/mk/docker.mk
 include build/mk/minikube.mk
 include build/mk/vault.mk
