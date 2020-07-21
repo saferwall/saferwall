@@ -15,10 +15,6 @@ spec:
       labels:
         app: {{ include "saferwall.backend.fullname" . }}
     spec:
-      {{ if not (eq .Values.global.deployEnv "local") }}
-      imagePullSecrets:
-        - name: regcred
-      {{- end }}
       containers:
         - name: "{{ .Values.backend.name }}"
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"

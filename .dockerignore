@@ -1,0 +1,39 @@
+## Saferwall project specific files
+.circleci
+.vault
+api
+cmd
+deployments
+docs
+minio
+private
+scripts
+test
+ui
+website
+.env
+example.env
+
+# git
+**/.git
+**/.gitattributes
+**/.gitignore
+**/.gitmodules
+
+# Common
+**/.DS_Store
+**/Thumbs.db
+**/*.md
+**/*~
+**/*.log
+
+# IDE
+**/.idea
+**/.vscode
+
+# Node
+**/logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/node_modules
