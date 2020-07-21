@@ -1,15 +1,3 @@
-awscli-install:		## Install aws cli tool and configure it
-	sudo apt install curl python -y
-	curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-	unzip -o awscli-bundle.zip
-	sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-	aws --version
-	rm awscli-bundle.zip
-	@echo "========================================================================================="
-	@echo "log in to aws console and get your access and secret key, for more information, consult:"
-	@echo "https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/"
-	aws configure
-
 kops-create-user:	## Create the kops IAM user to provision the cluster
 	# create kops group 
 	aws iam create-group --group-name kops
@@ -25,8 +13,9 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
 
+KOPS_VERSION=1.17.1
 kops-install:		## Install Kubernetes Kops
-	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v1.16.1/kops-linux-amd64
+	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops
 	sudo mv ./kops /usr/local/bin/
 	kops version
@@ -92,6 +81,13 @@ kops-update-cluster:		## Update k8s cluster
 	kops update cluster --yes
 	kops rolling-update cluster --yes
 
+kops-cluster:			## Init ios cluster: create user, kops bucket,
+	make kops-create-user
+	make kops-create-kops-bucket
+	make kops-create-cluster
+	make kops-create-efs
+	make kops-create-mount-targers
+
 kops-tips:		## Some kops commands
 	# list clusters with
 	kops get cluster
@@ -107,11 +103,7 @@ kops-tips:		## Some kops commands
 saferwall: ## Deploy the cluster
 	make awscli-install
 	make kops-install
-	make kops-create-user
-	make kops-create-kops-bucket
-	make kops-create-cluster
-	make kops-create-efs
-	make kops-create-mount-targers
+	make kops-cluster
 	# Building docker containers
 	make backend-release
 	make frontend-release
@@ -121,7 +113,7 @@ saferwall: ## Deploy the cluster
 	# At this stage, all containers are ready
 	make helm-install
 	make helm-add-repos
+	make make helm-update-dependency
 	make helm-init-cert-manager
-	make helm-update-dependency
 	# Initial install
 	make helm-release 
