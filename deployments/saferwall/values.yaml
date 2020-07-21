@@ -7,6 +7,11 @@
 ##
 global:
   deployEnv: local
+  certEmail: admin@mysaferwall.com
+  backendDomainName: api.mysaferwall.com
+  frontendDomainName: mysaferwall.com
+  websiteDomainName: about.mysaferwall.com
+  backendHostname: http://api.mysaferwall.com
 
 ########### MINIO ###########
 minio:
@@ -419,11 +424,6 @@ cert-manager:
   ingressShim:
     defaultIssuerName: letsencrypt-prod
     defaultIssuerKind: ClusterIssuer
-certEmail: admin@saferwall.com
-backendDomainName: api.saferwall.com
-frontendDomainName: saferwall.com
-websiteDomainName: about.saferwall.com
-backendHostname: https://api.saferwall.com
 
 ########### CONSUMER ###########
 consumer:
