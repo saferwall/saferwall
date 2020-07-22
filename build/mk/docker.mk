@@ -59,7 +59,7 @@ docker-rm-images:		## Delete all images
 docker-rm-dangling:		## Delete all dangling images
 	sudo docker images --quiet --filter=dangling=true | sudo xargs --no-run-if-empty docker rmi -f
 
-docker-rm-image-tags:	## Delete all tags from image
+docker-rm-image-tags:	## Delete all tags from image, {IMG} as argument.
 	sudo docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f $(REPO)/$(IMG):{}
 
 docker-get-ip:			## Get container IP addr

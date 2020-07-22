@@ -12,18 +12,22 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk \
 
 WORKDIR /saferwall
 
-# Copy the source from the current directory to the Working Directory inside the container
-COPY . .
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
-
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
     && git clone https://github.com/aquynh/capstone.git \
     && cd capstone \
     && ./make.sh \
     && ./make.sh install
+
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source from the current directory to the Working Directory inside the container
+COPY . .
 
 # Build the binary.
 RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \ 
@@ -101,7 +105,6 @@ WORKDIR /consumer
 
 # Copy our static executable.
 COPY --from=builder /go/bin/consumer .
-COPY ./configs ./configs
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \

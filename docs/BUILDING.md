@@ -17,7 +17,7 @@
     - VirtualBox: `make vbox-install`
     - No Driver: minikube also supports a `--driver=none` option that runs the Kubernetes components on the host and not in a VM. Using this driver requires Docker and a Linux environment but not a hypervisor.
 5. Start Minikube cluster: edit the `.env` to specify which driver to use for minikube, number of cpus, ram and disk size:
-    ```c
+    ```mk
     # supported values ['virtualbox', 'kvm2', 'none']
     export MINIKUBE_DRIVER=none
     # skip those if you set the driver to `none`.
@@ -27,14 +27,13 @@
     ```
     Then run `make minikube-start`.
 6. Building the containers:
-    - Before running any of the builds below, if you are not using the _none_ driver, __make sure to eval__ the minikube environment variables into your shell using the command: `eval $(minikube docker-env)`.
-    - Build the backend: `make backend-build`
-    - Build the frontend: `make ui-build`
-    - Build the consumers: `make consumer-build`
-    - Build the multiav:
+    - Before running any of the builds below, if you are not using the _none_ driver, __make sure to eval__ the minikube environment variables into your shell using the command by running: `eval $(minikube docker-env)`.
+    - Those are __optional__, run them only if you wish to  not to use the public containers. 
+        - Build the frontend: `make ui-build`.
+        - Build the consumers: `make consumer-build`.
+        - Build the backend `make backend-build`.
+    - Build the __multiav__:
         - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
-        - multiav: `make multiav-build`
-        - multiav-go: `make multiav-build-go`
 7. Install Helm: `make helm-install`.
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
 9. Fetch Helm dependecies: `make helm-update-dependency`.
@@ -120,9 +119,8 @@ export AWS_EFS_TOKEN = example-efs
         ```
     - Avast: copy the license to `./build/data/license.avastlic`
     - Kaspersky: copy the license to `./build/data/kaspersky.license.key`
-- Run `make multiav`: this will build and push to docker hub all the AVs.
-- Run `make multiav-go`: this will take the images created before as a base, and build on top of them a gRPC daemon listening for files to scan.
-- Every conponent of this project is running inside a docker container. This include the backend, the frontend, the AV scanners, the workers, the database, etc ...
+- Run `make multiav-build`: this will build and push to docker hub all the AVs.
+- Run `make multiav-build-go`: this will take the images created before as a base, and build on top of them a gRPC daemon listening for files to scan.
 
  Logs are found elasticsearch:
 <p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="500px" height="auto"></p>

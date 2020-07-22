@@ -15,17 +15,17 @@ spec:
       labels:
         app: {{ include "saferwall.consumer.fullname" . }}
     spec:
-      {{ if not (eq .Values.global.deployEnv "local") }}
+      {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:
         - name: regcred
       {{- end }}
       containers:
         - name: "{{ .Values.consumer.name }}"
           image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
-          {{ if eq .Values.global.deployEnv "local" }}
+          {{ if eq .Values.global.localRegistryServer true }}
           imagePullPolicy: Never
           {{ else }}
-          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
+          imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"
           {{- end }}
           volumeMounts:
           - name: samples
