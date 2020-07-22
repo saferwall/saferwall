@@ -15,14 +15,14 @@ spec:
       labels:
         app: {{ include "saferwall.frontend.fullname" . }}
     spec:
-      {{ if not (eq .Values.global.deployEnv "local") }}
+      {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:
         - name: regcred
       {{- end }}
       containers:
         - name: "{{ .Values.frontend.name }}"
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
-          {{ if eq .Values.global.deployEnv "local" }}
+          {{ if eq .Values.global.localRegistryServer true }}
           imagePullPolicy: Never
           {{ else }}
           imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"

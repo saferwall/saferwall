@@ -3,10 +3,14 @@
 # https://github.com/saferwall/saferwall
 #
 
-## Deploy environment label, e.g. local, aws.
+## Global project configuration
 ##
 global:
-  deployEnv: local
+  # Set to true if you are using minikube and your own builded docker images.
+  localRegistryServer: false
+  # Set to true if you wish to pull the images from your own private docker
+  # registry server.
+  privateRegistryServer: false 
   certEmail: admin@mysaferwall.com
   backendDomainName: api.mysaferwall.com
   frontendDomainName: mysaferwall.com
@@ -353,7 +357,7 @@ efs-provisioner:
 
 ########### NFS SERVER PROVISONNER ###########
 nfs-server-provisioner:
-  enabled: false
+  enabled: true
 
 ########### NGINX INGRESS  #############
 nginx-ingress:
