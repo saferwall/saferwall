@@ -6,11 +6,11 @@
 ## Global project configuration
 ##
 global:
-  certEmail: admin@mysaferwall.com
+  email: admin@mysaferwall.com
   backendDomainName: api.mysaferwall.com
   frontendDomainName: mysaferwall.com
   websiteDomainName: about.mysaferwall.com
-  backendHostname: http://api.mysaferwall.com
+  backendHostname: https://api.mysaferwall.com
   privateRegistryServer: false
 
 ########### MINIO ###########
@@ -375,9 +375,11 @@ nginx-ingress:
 
 ########## CERT-MANAGER ############
 cert-manager:
-  enabled: false
+  enabled: true
   ingressShim:
-    defaultIssuerName: letsencrypt-prod
+    defaultIssuerName: selfsigned-issuer
+    # defaultIssuerName: letsencrypt-prod
+    # defaultIssuerName: letsencrypt-staging
     defaultIssuerKind: ClusterIssuer
 
 ########### BACKEND ###########
