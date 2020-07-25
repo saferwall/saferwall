@@ -28,12 +28,13 @@
     Then run `make minikube-start`.
 6. Building the containers:
     - Before running any of the builds below, if you are not using the _none_ driver, __make sure to eval__ the minikube environment variables into your shell using the command by running: `eval $(minikube docker-env)`.
-    - Those are __optional__, run them only if you wish to  not to use the public containers. 
+    - Those are __optional__, run them only if you wish to not to use the public containers. 
         - Build the frontend: `make ui-build`.
         - Build the consumers: `make consumer-build`.
         - Build the backend `make backend-build`.
     - Build the __multiav__:
         - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
+        - By default, saferwall will use only the free ones.
 7. Install Helm: `make helm-install`.
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
 9. Fetch Helm dependecies: `make helm-update-dependency`.
@@ -44,11 +45,12 @@
         - Set `kibana.enabled` to true. 
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-11. Install helm chart: `make helm-release`.
-12. Wait until the output of `kubectl get pods` show all pods are running fine.
-13. Edit your host file to setup a dns entry for the minikube ip:
+11. Init cert manager: `make helm-init-cert-manager`.
+12. Install helm chart: `make helm-release`.
+13. Wait until the output of `kubectl get pods` show all pods are running fine.
+14. Edit your host file to setup a dns entry for the minikube ip:
     - `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-14. Open the browser and naviguate to `http://mysaferwall.com`
+15. Open the browser and naviguate to `https://mysaferwall.com`.
 
 ## Deploying on cloud (AWS)
 
