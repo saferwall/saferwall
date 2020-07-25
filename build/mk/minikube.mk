@@ -6,7 +6,7 @@ minikube-install:		## Install minikube
 	sudo cp minikube /usr/local/bin && rm minikube
 	minikube version
 
-minikube-start:			## Start minikube
+minikube-up:			## Start minikube cluster.
 	sudo apt update 
 	sudo apt install -y nfs-common
 ifeq ($(MINIKUBE_DRIVER),none)
@@ -25,3 +25,5 @@ endif
 	minikube status
 	sudo minikube addons enable ingress
 
+minikube-down:			## Stop and delete minikube cluster.
+	sudo minikube stop && sudo minikube delete

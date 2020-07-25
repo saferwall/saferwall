@@ -6,18 +6,18 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/client-body-buffer-size: "64M"
     nginx.ingress.kubernetes.io/proxy-body-size: "64M"
-    {{- if index .Values "cert-manager" "enabled" -}}
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- if index .Values "cert-manager" "enabled" }}
+    cert-manager.io/cluster-issuer: {{ index .Values "cert-manager" "ingressShim" "defaultIssuerName" }}
     {{- end }}
 spec:
-  {{- if index .Values "cert-manager" "enabled" -}}
   tls:
   - hosts:
-    - {{ .Values.frontendDomainName }}
-    - {{ .Values.backendDomainName }}
-    - {{ .Values.websiteDomainName }}
+    - {{ .Values.global.frontendDomainName }}
+    - {{ .Values.global.backendDomainName }}
+    {{- if .Values.website.enabled -}}
+    - {{ .Values.global.websiteDomainName }}
+    {{- end }}
     secretName: {{ include "saferwall.fullname" . }}-tls
-  {{- end }}
   rules:
   - host: {{ .Values.global.frontendDomainName }}
     http:

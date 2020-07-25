@@ -33,6 +33,7 @@ include $(ROOT_DIR)/.env
 include build/mk/aws.mk
 include build/mk/docker.mk
 include build/mk/minikube.mk
+include build/mk/kind.mk
 include build/mk/vault.mk
 include build/mk/multiav.mk
 include build/mk/go.mk

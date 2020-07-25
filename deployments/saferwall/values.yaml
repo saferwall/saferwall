@@ -6,16 +6,12 @@
 ## Global project configuration
 ##
 global:
-  # Set to true if you are using minikube and your own builded docker images.
-  localRegistryServer: false
-  # Set to true if you wish to pull the images from your own private docker
-  # registry server.
-  privateRegistryServer: false 
-  certEmail: admin@mysaferwall.com
+  email: admin@mysaferwall.com
   backendDomainName: api.mysaferwall.com
   frontendDomainName: mysaferwall.com
   websiteDomainName: about.mysaferwall.com
-  backendHostname: http://api.mysaferwall.com
+  backendHostname: https://api.mysaferwall.com
+  privateRegistryServer: false
 
 ########### MINIO ###########
 minio:
@@ -377,6 +373,15 @@ nginx-ingress:
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
 
+########## CERT-MANAGER ############
+cert-manager:
+  enabled: true
+  ingressShim:
+    defaultIssuerName: selfsigned-issuer
+    # defaultIssuerName: letsencrypt-prod
+    # defaultIssuerName: letsencrypt-staging
+    defaultIssuerKind: ClusterIssuer
+
 ########### BACKEND ###########
 backend:
   enabled: true
@@ -407,6 +412,16 @@ frontend:
     port: 80
     targetPort: 80
 
+########### CONSUMER ###########
+consumer:
+  enabled: true
+  name: consumer
+  replicaCount: 1
+  image:
+    repository: saferwall/consumer
+    tag: latest
+    pullPolicy: Always
+
 ########### WEBSITE ###########
 website:
   enabled: false
@@ -422,30 +437,13 @@ website:
     port: 80
     targetPort: 4000
 
-########## CERT-MANAGER ############
-cert-manager:
-  enabled: false
-  ingressShim:
-    defaultIssuerName: letsencrypt-prod
-    defaultIssuerKind: ClusterIssuer
-
-########### CONSUMER ###########
-consumer:
-  enabled: true
-  name: consumer
-  replicaCount: 1
-  image:
-    repository: saferwall/consumer
-    tag: latest
-    pullPolicy: Always
-
 ########### MULTIAV ###########
 multiav:
-  enabled: false
+  enabled: true
   name: multiav
   vendors:
     avast:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -467,7 +465,7 @@ multiav:
         port: 50051
         targetPort: 50051
     bitdefender:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -500,7 +498,7 @@ multiav:
         port: 50051
         targetPort: 50051
     eset:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -511,7 +509,7 @@ multiav:
         port: 50051
         targetPort: 50051
     fsecure:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -522,7 +520,7 @@ multiav:
         port: 50051
         targetPort: 50051
     kaspersky:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -533,7 +531,7 @@ multiav:
         port: 50051
         targetPort: 50051
     mcafee:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -544,7 +542,7 @@ multiav:
         port: 50051
         targetPort: 50051
     sophos:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:
@@ -555,7 +553,7 @@ multiav:
         port: 50051
         targetPort: 50051
     symantec:
-      enabled: true
+      enabled: false
       replicaCount: 1
       containerPort: 50051
       image:

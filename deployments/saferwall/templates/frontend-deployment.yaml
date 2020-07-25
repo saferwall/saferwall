@@ -22,14 +22,9 @@ spec:
       containers:
         - name: "{{ .Values.frontend.name }}"
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
-          {{ if eq .Values.global.localRegistryServer true }}
-          imagePullPolicy: Never
-          {{ else }}
-          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
-          {{- end }}
           ports:
             - containerPort: {{ .Values.frontend.containerPort }}
           env:
             - name: VUE_APP_BACKEND_HOST
-              value: "{{ .Values.backendHostname }}"
+              value: "{{ .Values.global.backendHostname }}"
 {{- end }}

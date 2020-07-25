@@ -22,11 +22,6 @@ spec:
       containers:
         - name: "{{ .Values.consumer.name }}"
           image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
-          {{ if eq .Values.global.localRegistryServer true }}
-          imagePullPolicy: Never
-          {{ else }}
-          imagePullPolicy: "{{ .Values.consumer.image.pullPolicy }}"
-          {{- end }}
           volumeMounts:
           - name: samples
             mountPath: /samples
