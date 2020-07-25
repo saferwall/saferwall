@@ -1,6 +1,7 @@
 {{- if .Values.multiav.enabled -}}
 {{- $root := . -}}
 {{- range $av, $value := .Values.multiav.vendors }}
+{{- if $value.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,8 +18,10 @@ spec:
       labels:
         app: {{ include "saferwall.multiav.fullname" $root }}-{{ $av }}
     spec:
+      {{ if eq $root.Values.global.privateRegistryServer true }}
       imagePullSecrets:
         - name: regcred
+      {{- end }}
       containers:
         - name: "{{ $av }}"
           image: "{{ $value.image.repository }}:{{ $value.image.tag }}"
@@ -36,5 +39,6 @@ spec:
         persistentVolumeClaim:
           claimName: {{ include "saferwall.fullname" $root }}-samples
 ---
+{{- end }}
 {{- end }}
 {{- end }}

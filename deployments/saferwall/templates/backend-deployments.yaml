@@ -22,11 +22,6 @@ spec:
       containers:
         - name: "{{ .Values.backend.name }}"
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          {{ if eq .Values.global.localRegistryServer true }}
-          imagePullPolicy: Never
-          {{ else }}
-          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
-          {{- end }}
           ports:
             - containerPort: {{ .Values.backend.containerPort }}
           env:
