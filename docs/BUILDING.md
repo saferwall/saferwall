@@ -25,7 +25,7 @@
     export MINIKUBE_MEMORY=4096
     export MINIKUBE_DISK_SIZE=40GB
     ```
-    Then run `make minikube-start`.
+    Then run `make minikube-up`.
 6. Building the containers:
     - Before running any of the builds below, if you are not using the _none_ driver, __make sure to eval__ the minikube environment variables into your shell using the command by running: `eval $(minikube docker-env)`.
     - Those are __optional__, run them only if you wish to not to use the public containers. 
@@ -51,6 +51,16 @@
 14. Edit your host file to setup a dns entry for the minikube ip:
     - `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
 15. Open the browser and naviguate to `https://mysaferwall.com`.
+16. Browser will complain about self signed certificate, you will need to import the cert into your favorite browser:
+    - Get the tls details from kubernetes and convert them to pkcs#12:
+    ```bash
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['ca\.crt']}" | base64 --decode  >> ca.crt
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['tls\.crt']}" | base64 --decode  >> tls.crt
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
+    openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
+    ```
+    - Go then to the browser certificate settings and import `saferwall.p12`.
+
 
 ## Deploying on cloud (AWS)
 
