@@ -51,6 +51,16 @@
 14. Edit your host file to setup a dns entry for the minikube ip:
     - `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
 15. Open the browser and naviguate to `https://mysaferwall.com`.
+16. Browser will complain about self signed certificate, you will need to import the cert into your favorite browser:
+    - Get the tls details from kubernetes and convert them to pkcs#12:
+    ```bash
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['ca\.crt']}" | base64 --decode  >> ca.crt
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['tls\.crt']}" | base64 --decode  >> tls.crt
+    kubectl get secret <SECRET_NAME> -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
+    openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
+    ```
+    - Go then to the browser certificate settings and import `saferwall.p12`.
+
 
 ## Deploying on cloud (AWS)
 
