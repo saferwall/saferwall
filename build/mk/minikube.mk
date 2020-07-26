@@ -1,7 +1,8 @@
-DOWNLOAD_URL = https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+MK_VERSION = v1.12.1
+MK_DOWNLOAD_URL = https://github.com/kubernetes/minikube/releases/download/$(MK_VERSION)/minikube-linux-amd64
 
 minikube-install:		## Install minikube
-	curl -Lo minikube $(DOWNLOAD_URL)
+	curl -Lo minikube $(MK_DOWNLOAD_URL)
 	chmod +x minikube
 	sudo cp minikube /usr/local/bin && rm minikube
 	minikube version

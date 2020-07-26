@@ -25,7 +25,7 @@
     export MINIKUBE_MEMORY=4096
     export MINIKUBE_DISK_SIZE=40GB
     ```
-    Then run `make minikube-start`.
+    Then run `make minikube-up`.
 6. Building the containers:
     - Before running any of the builds below, if you are not using the _none_ driver, __make sure to eval__ the minikube environment variables into your shell using the command by running: `eval $(minikube docker-env)`.
     - Those are __optional__, run them only if you wish to not to use the public containers. 
