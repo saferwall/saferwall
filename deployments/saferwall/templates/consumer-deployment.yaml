@@ -40,4 +40,18 @@ spec:
           items:
             - key: consumer_conf
               path: saferwall.prod.toml
+      initContainers:
+        - name: wait-for-couchbase
+          image: groundnuty/k8s-wait-for:v1.3
+          imagePullPolicy: Always
+          args:
+            - "pod"
+            - "-lapp=couchbase"
+        - name: wait-for-backend
+          image: groundnuty/k8s-wait-for:v1.3
+          imagePullPolicy: Always
+          args:
+            - "pod"
+            - "-ltier=backend"
+
 {{- end }}

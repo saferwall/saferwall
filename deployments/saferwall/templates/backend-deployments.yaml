@@ -5,6 +5,7 @@ metadata:
   name: {{ include "saferwall.backend.fullname" . }}
   labels:
     app: {{ include "saferwall.backend.fullname" . }}
+    tier: backend
 spec:
   selector:
     matchLabels:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         app: {{ include "saferwall.backend.fullname" . }}
+        tier: backend
     spec:
       {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:
@@ -37,4 +39,11 @@ spec:
           items:
             - key: backends_conf
               path: app.prod.toml
+      initContainers:
+        - name: wait-for-couchbase
+          image: groundnuty/k8s-wait-for:v1.3
+          imagePullPolicy: Always
+          args:
+            - "pod"
+            - "-lapp=couchbase"
 {{- end }}
