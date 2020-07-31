@@ -1,4 +1,4 @@
- 
+{{- if or (index .Values "efs-provisioner" "enabled") (index .Values "nfs-server-provisioner" "enabled") }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -18,3 +18,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
+{{- end }}
