@@ -344,7 +344,7 @@ nsq:
     replicaCount: 2
 
 ########### EFS-PROVISONNER ###########
-efsProvisioner:
+efs-provisioner:
   enabled: false
   efsProvisioner:
     efsFileSystemId: "<put-fs-id-here>"
@@ -352,7 +352,7 @@ efsProvisioner:
     provisionerName: "saferwall.com/aws-efs"
 
 ########### NFS SERVER PROVISONNER ###########
-nfsServerProvisioner:
+nfs-server-provisioner:
   enabled: false
 
 ########### NGINX INGRESS  #############

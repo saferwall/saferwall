@@ -1,15 +1,16 @@
+{{- if or (index .Values "efs-provisioner" "enabled") (index .Values "nfs-server-provisioner" "enabled") }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ include "saferwall.fullname" . }}-samples
-  {{- if .Values.efsProvisioner.enabled }}
+  {{- if index .Values "efs-provisioner" "enabled" }}
   annotations:
     volume.beta.kubernetes.io/storage-class: aws-efs
   {{- end }}
 spec:
-  {{- if .Values.efsProvisioner.enabled }}
+  {{- if index .Values "efs-provisioner" "enabled" }}
   storageClassName: aws-efs
-  {{- else if .Values.nfsServerProvisioner.enabled }}
+  {{- else if index .Values "nfs-server-provisioner" "enabled" }}
   storageClassName: nfs
   {{- end }}
   accessModes:
@@ -17,3 +18,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
+{{- end }}
