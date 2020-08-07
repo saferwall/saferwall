@@ -1,0 +1,20 @@
+name: Lint and Test Helm Charts
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Dump Config
+      	run: kubectl version && kubectl cluster-info && kubectl config get-contexts && kubectl config current-context
+	      run: minikube status 
