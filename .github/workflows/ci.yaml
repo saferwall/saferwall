@@ -30,4 +30,7 @@ jobs:
       - name: Helm Release
         run: make helm-release
 
+      - name: Wait for pods to be ready
+        run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s
+
     
