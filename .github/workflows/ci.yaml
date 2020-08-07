@@ -14,7 +14,6 @@ jobs:
 
       - name: Setup config
         run: cp example.env .env
-
+        
       - name: Dump Config
-      	run: kubectl version && kubectl cluster-info && kubectl config get-contexts && kubectl config current-context
-	      run: minikube status 
+        run: kubectl version && kubectl cluster-info && kubectl config get-contexts && kubectl config current-context
