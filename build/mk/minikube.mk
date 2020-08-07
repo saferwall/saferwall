@@ -23,6 +23,10 @@ else
 	minikube start --driver=$(MINIKUBE_DRIVER)  --cpus $(MINIKUBE_CPU) --memory $(MINIKUBE_MEMORY) --disk-size=$(MINIKUBE_DISK_SIZE)
 endif
 	kubectl version
+	kubectl cluster-info
+	kubectl config get-contexts  
+	kubectl config current-context
+	kubectl config use-context minikube
 	minikube status
 	sudo minikube addons enable ingress
 
