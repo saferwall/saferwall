@@ -14,6 +14,15 @@ jobs:
 
       - name: Setup config
         run: cp example.env .env
+
+      - name: Install Minikube
+        run: make minikube-install
+
+      - name: Install Kubectl
+        run: make kubectl-install
+
+      - name: minikube up
+        run: make minikube-up
         
       - name: Dump Config
         run: kubectl version ; kubectl cluster-info ; kubectl config get-contexts ; kubectl config current-context
