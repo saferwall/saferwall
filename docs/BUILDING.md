@@ -39,7 +39,6 @@
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
 9. Fetch Helm dependecies: `make helm-update-dependency`.
 10. Edit the `deployments/saferwall/values.yaml`
-    - Set `nfs-server-provisioner.enabled` to true.
     - If you are interested to see the logs in EFK:
         - Set `elasticsearch.enabled` to true.
         - Set `kibana.enabled` to true. 

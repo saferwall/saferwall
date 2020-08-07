@@ -25,6 +25,9 @@ jobs:
         run: make minikube-up
         
       - name: Install Helm, add repos, and build dependencies
-        run: make helm-install && make helm-add-repo && make helm-update-dependency
+        run: make helm-install && make helm-add-repo && make helm-update-dependency && make helm-init-cert-manager
+
+      - name: Helm Release
+        run: make helm-release
 
     

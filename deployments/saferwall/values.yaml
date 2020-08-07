@@ -353,7 +353,7 @@ efs-provisioner:
 
 ########### NFS SERVER PROVISONNER ###########
 nfs-server-provisioner:
-  enabled: false
+  enabled: true
 
 ########### NGINX INGRESS  #############
 nginx-ingress:
