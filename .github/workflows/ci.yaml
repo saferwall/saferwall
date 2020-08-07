@@ -21,8 +21,8 @@ jobs:
       - name: Install Kubectl
         run: make kubectl-install
 
-      - name: minikube up
+      - name: Setup Minikube
         run: make minikube-up
         
-      - name: Dump Config
-        run: kubectl version ; kubectl cluster-info ; kubectl config get-contexts ; kubectl config current-context
+      - name: Install Helm 
+        run: make helm-install
