@@ -3,13 +3,53 @@ name: Update MultiAV Signature Database
 on:
   schedule:
   - cron: "0 0 * * *"
+  push:
 
 jobs:
-  update-lamav:
+  update-clamav:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup config
+        run: cp example.env .env
+
       - name: Build ClamAV docker image
         run: make multiav-build-av AV_VENDOR=clamav
+
+  update-avira:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Build ClamAV docker image
+        run: make multiav-build-av AV_VENDOR=avira
+
+  update-comodo:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Build ClamAV docker image
+        run: make multiav-build-av AV_VENDOR=comodo
+
+  update-windefender:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Build ClamAV docker image
+        run: make multiav-build-av AV_VENDOR=windefender

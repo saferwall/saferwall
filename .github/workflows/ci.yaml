@@ -1,7 +1,6 @@
 name: Lint and Test Helm Charts
 
 on:
-  push:
   pull_request:
     branches: [ master ]
 
@@ -25,10 +24,14 @@ jobs:
         run: make minikube-up
         
       - name: Install Helm, add repos, and build dependencies
-        run: make helm-install && make helm-add-repos && make helm-update-dependency && make helm-init-cert-manager
+        run: |
+            make helm-install \
+            && make helm-add-repos \
+            && make helm-update-dependency \
+            && make helm-init-cert-manager
 
       - name: Helm Release
         run: make helm-release
 
       - name: Wait for pods to be ready
-        run: kubectl wait --for=condition=Ready pods --all --timeout=300s
+        run: kubectl wait --for=condition=Ready pods --all --timeout=360s
