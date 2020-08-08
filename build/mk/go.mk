@@ -25,10 +25,5 @@ go-setup:	## Download and install go
 	sudo mv go /usr/local/
 	mkdir -p ~/go
 	rm go$(GO_VERSION).linux-amd64.tar.gz
-
-go-govendor: ## Install govendor
-	go get -u github.com/derekparker/delve/cmd/dlv
-	go get -u github.com/kardianos/govendor
-
-
+	go version
 
