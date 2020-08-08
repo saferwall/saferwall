@@ -1,4 +1,4 @@
-MK_VERSION = v1.12.1
+MK_VERSION = v1.12.2
 MK_DOWNLOAD_URL = https://github.com/kubernetes/minikube/releases/download/$(MK_VERSION)/minikube-linux-amd64
 
 minikube-install:		## Install minikube
