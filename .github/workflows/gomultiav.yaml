@@ -84,18 +84,17 @@ jobs:
       - name: Build (go) Bitdefender docker image
         run: make multiav-build-av-go AV_VENDOR=bitdefender
 
-    update-goeset:
-      runs-on: ubuntu-18.04
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-  
-        - name: Setup config
-          run: cp example.env .env
-  
-        - name: Log into registry
-          run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
-  
-        - name: Build (go) ESET docker image
-          run: make multiav-build-av-go AV_VENDOR=eset
-  
+  update-goeset:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+
+      - name: Build (go) ESET docker image
+        run: make multiav-build-av-go AV_VENDOR=eset
