@@ -1,4 +1,4 @@
-name: Update go MultiAV
+name: AntiVirus Database Update (go)
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   push:
 
 jobs:
-  update-clamav:
+  update-goclamav:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -15,10 +15,10 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build goClamAV docker image
+      - name: Build (go) ClamAV docker image
         run: make multiav-build-av-go AV_VENDOR=clamav
 
-  update-avira:
+  update-goavira:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -27,10 +27,10 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build goAvira docker image
+      - name: Build (go) Avira docker image
         run: make multiav-build-av-go AV_VENDOR=avira
 
-  update-comodo:
+  update-gocomodo:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -39,10 +39,10 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build goCOMODO docker image
+      - name: Build (go) COMODO docker image
         run: make multiav-build-av-go AV_VENDOR=comodo
 
-  update-windefender:
+  update-gowindefender:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -51,5 +51,17 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build go Windows Defender docker image
+      - name: Build (go) Windows Defender docker image
         run: make multiav-build-av-go AV_VENDOR=windefender
+
+  update-gofsecure:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Build (go) FSecure docker image
+        run: make multiav-build-av-go AV_VENDOR=fsecure
