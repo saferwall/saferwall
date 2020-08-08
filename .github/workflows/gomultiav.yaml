@@ -64,7 +64,7 @@ jobs:
         run: cp example.env .env
 
       - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
 
       - name: Build (go) FSecure docker image
         run: make multiav-build-av-go AV_VENDOR=fsecure
@@ -79,7 +79,7 @@ jobs:
         run: cp example.env .env
 
       - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
 
       - name: Build (go) Bitdefender docker image
         run: make multiav-build-av-go AV_VENDOR=bitdefender

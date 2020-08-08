@@ -39,7 +39,6 @@ docker-tag-version: 	## Generate container `latest` tag
 docker-repo-login: 	## Login to Docker Hub
 	@echo '$(DOCKER_HUB_PWD)' | sudo docker login --username=$(DOCKER_HUB_USR) --password-stdin
 
-
 docker-install:		## install docker
 	sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
