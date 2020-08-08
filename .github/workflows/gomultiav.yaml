@@ -1,8 +1,9 @@
-name: Update MultiAV Signature Database
+name: Update go MultiAV
 
 on:
   schedule:
   - cron: "0 0 * * *"
+  push:
 
 jobs:
   update-clamav:
@@ -14,8 +15,8 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build ClamAV docker image
-        run: make multiav-build-av AV_VENDOR=clamav
+      - name: Build goClamAV docker image
+        run: make multiav-build-av-go AV_VENDOR=clamav
 
   update-avira:
     runs-on: ubuntu-18.04
@@ -26,8 +27,8 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build Avira docker image
-        run: make multiav-build-av AV_VENDOR=avira
+      - name: Build goAvira docker image
+        run: make multiav-build-av-go AV_VENDOR=avira
 
   update-comodo:
     runs-on: ubuntu-18.04
@@ -38,8 +39,8 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build COMODO docker image
-        run: make multiav-build-av AV_VENDOR=comodo
+      - name: Build goCOMODO docker image
+        run: make multiav-build-av-go AV_VENDOR=comodo
 
   update-windefender:
     runs-on: ubuntu-18.04
@@ -50,5 +51,5 @@ jobs:
       - name: Setup config
         run: cp example.env .env
 
-      - name: Build Windows Defender docker image
-        run: make multiav-build-av AV_VENDOR=windefender
+      - name: Build go Windows Defender docker image
+        run: make multiav-build-av-go AV_VENDOR=windefender
