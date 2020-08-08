@@ -6,53 +6,53 @@ on:
   push:
 
 jobs:
-  update-goclamav:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-goclamav:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Build (go) ClamAV docker image
-        run: make multiav-build-av-go AV_VENDOR=clamav
+  #     - name: Build (go) ClamAV docker image
+  #       run: make multiav-build-av-go AV_VENDOR=clamav
 
-  update-goavira:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-goavira:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Build (go) Avira docker image
-        run: make multiav-build-av-go AV_VENDOR=avira
+  #     - name: Build (go) Avira docker image
+  #       run: make multiav-build-av-go AV_VENDOR=avira
 
-  update-gocomodo:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-gocomodo:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Build (go) COMODO docker image
-        run: make multiav-build-av-go AV_VENDOR=comodo
+  #     - name: Build (go) COMODO docker image
+  #       run: make multiav-build-av-go AV_VENDOR=comodo
 
-  update-gowindefender:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-gowindefender:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Build (go) Windows Defender docker image
-        run: make multiav-build-av-go AV_VENDOR=windefender
+  #     - name: Build (go) Windows Defender docker image
+  #       run: make multiav-build-av-go AV_VENDOR=windefender
 
   update-gofsecure:
     runs-on: ubuntu-18.04
@@ -64,7 +64,7 @@ jobs:
         run: cp example.env .env
 
       - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
       - name: Build (go) FSecure docker image
         run: make multiav-build-av-go AV_VENDOR=fsecure
@@ -79,7 +79,7 @@ jobs:
         run: cp example.env .env
 
       - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login docker.pkg.github.com -u ${{ github.repository_owner }} --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
       - name: Build (go) Bitdefender docker image
         run: make multiav-build-av-go AV_VENDOR=bitdefender
