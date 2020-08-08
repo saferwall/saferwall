@@ -69,35 +69,35 @@ jobs:
   #     - name: Build (go) FSecure docker image
   #       run: make multiav-build-av-go AV_VENDOR=fsecure
 
-  update-gobitdefender:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-gobitdefender:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+  #     - name: Log into registry
+  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-      - name: Build (go) Bitdefender docker image
-        run: make multiav-build-av-go AV_VENDOR=bitdefender
+  #     - name: Build (go) Bitdefender docker image
+  #       run: make multiav-build-av-go AV_VENDOR=bitdefender
 
-  update-goeset:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-goeset:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+  #     - name: Log into registry
+  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-      - name: Build (go) ESET docker image
-        run: make multiav-build-av-go AV_VENDOR=eset
+  #     - name: Build (go) ESET docker image
+  #       run: make multiav-build-av-go AV_VENDOR=eset
 
   update-avast:
     runs-on: ubuntu-18.04
@@ -113,3 +113,18 @@ jobs:
 
       - name: Build (go) Avast docker image
         run: make multiav-build-av-go AV_VENDOR=avast
+
+  update-symantec:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+
+      - name: Build (go) Avast docker image
+        run: make multiav-build-av-go AV_VENDOR=symantec
