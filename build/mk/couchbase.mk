@@ -1,7 +1,7 @@
 COUCHBASE_CONTAINER_NAME = cb-db
-COUCHBASE_CONTAINER_STATUS := $(shell sudo docker container inspect -f '{{.State.Status}}' $(COUCHBASE_CONTAINER_NAME))
 
 couchbase-start:	## Start Couchbase Server docker container.
+	$(eval COUCHBASE_CONTAINER_STATUS := $(shell sudo docker container inspect -f '{{.State.Status}}' $(COUCHBASE_CONTAINER_NAME)))
 ifeq ($(COUCHBASE_CONTAINER_STATUS),running)
 	@echo "All good, couchabse server is already running."
 else
