@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="McAfee VirusScan Command Line Scanner in a docker container"
 
 # Vars
