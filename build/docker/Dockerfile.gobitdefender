@@ -30,9 +30,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/bitdefender:0.0.1
+FROM saferwall/bitdefender:0.0.2
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="gRPC server over linux version of Bitdefender"
 
 # Vars
@@ -40,7 +40,7 @@ ENV BITDEFENDER_INSTALL_DIR 	/opt/BitDefender-scanner/
 ENV BITDEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
-RUN bdscan --update \
+RUN 2 \
 	&& echo -n "$(date +%s)" >> $BITDEFENDER_DB_UPDATE_DATE
 
 # Copy our static executable.

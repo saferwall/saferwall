@@ -54,20 +54,20 @@ jobs:
   #     - name: Build (go) Windows Defender docker image
   #       run: make multiav-build-av-go AV_VENDOR=windefender
 
-  update-gofsecure:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # update-gofsecure:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+  #     - name: Setup config
+  #       run: cp example.env .env
 
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+  #     - name: Log into registry
+  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-      - name: Build (go) FSecure docker image
-        run: make multiav-build-av-go AV_VENDOR=fsecure
+  #     - name: Build (go) FSecure docker image
+  #       run: make multiav-build-av-go AV_VENDOR=fsecure
 
   update-gobitdefender:
     runs-on: ubuntu-18.04
@@ -83,3 +83,19 @@ jobs:
 
       - name: Build (go) Bitdefender docker image
         run: make multiav-build-av-go AV_VENDOR=bitdefender
+
+    update-goeset:
+      runs-on: ubuntu-18.04
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+  
+        - name: Setup config
+          run: cp example.env .env
+  
+        - name: Log into registry
+          run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+  
+        - name: Build (go) ESET docker image
+          run: make multiav-build-av-go AV_VENDOR=eset
+  
