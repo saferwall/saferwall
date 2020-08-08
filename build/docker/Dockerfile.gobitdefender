@@ -40,7 +40,7 @@ ENV BITDEFENDER_INSTALL_DIR 	/opt/BitDefender-scanner/
 ENV BITDEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update the VDF
-RUN 2 \
+RUN bdscan --update \
 	&& echo -n "$(date +%s)" >> $BITDEFENDER_DB_UPDATE_DATE
 
 # Copy our static executable.
