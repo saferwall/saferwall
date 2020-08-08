@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="Comodo Antivirus for Linux in a docker container"
 
 # Vars
@@ -30,4 +30,3 @@ RUN /opt/COMODO/cmdscan -v -s /eicar ; exit 0
 # Clean up
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
-
