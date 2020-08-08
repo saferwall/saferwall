@@ -11,22 +11,27 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
     && update-ca-certificates 2>/dev/null || true
 
 WORKDIR $GOPATH/src/saferwall/clamav/
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy our go files
 COPY . .
 
-# Fetch dependencies.
-RUN go get -d -v 
-
 # Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/clamavscanner .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/clamavscanner pkg/grpc/multiav/clamav/server/main.go
 
 
 ############################
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/clamav:0.0.1
+FROM saferwall/clamav:0.0.2
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="gRPC server clamav"
 
 # Vars
