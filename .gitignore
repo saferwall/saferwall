@@ -23,6 +23,7 @@ sav-linux-free
 sep-deb.zip
 **/*.lic-expired
 **/*.key-expired
+**/secrets.tar.gz
 build/data/install.conf
 
 ## old copy
