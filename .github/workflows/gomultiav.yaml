@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Decrypt Secret
         run: ./scripts/decrypt_secret.sh
         env:
           SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
