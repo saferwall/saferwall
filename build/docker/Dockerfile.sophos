@@ -1,12 +1,12 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="Sophos Anti-Virus for Linux in a docker container"
 
 # Vars
 ARG SOPHOS_URL
 ENV SOPHOS_INSTALL_DIR      /opt/sophos
-ENV SOPHOS_TMP			    /tmp/sophos
+ENV SOPHOS_TMP	       /tmp/sophos
 ENV SOPHOS_INSTALL_SCRIPT	$SOPHOS_TMP/sophos-av/install.sh
 ENV SOPHOS_INSTALL_ARCHIVE 	$SOPHOS_TMP/sav-linux-free
 ENV SOPHOS_INSTALL_ARGS	--update-free --acceptlicence --autostart=False --enableOnBoot=False --automatic --ignore-existing-installation --update-source-type=s

@@ -99,7 +99,7 @@ jobs:
   #     - name: Build (go) ESET docker image
   #       run: make multiav-build-av-go AV_VENDOR=eset
 
-  # update-avast:
+  # update-goavast:
   #   runs-on: ubuntu-18.04
   #   steps:
   #     - name: Checkout
@@ -114,7 +114,7 @@ jobs:
   #     - name: Build (go) Avast docker image
   #       run: make multiav-build-av-go AV_VENDOR=avast
 
-  # update-symantec:
+  # update-gosymantec:
   #   runs-on: ubuntu-18.04
   #   steps:
   #     - name: Checkout
@@ -129,7 +129,37 @@ jobs:
   #     - name: Build (go) Symantec docker image
   #       run: make multiav-build-av-go AV_VENDOR=symantec
 
-  update-mcafee:
+  # update-gomcafee:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup config
+  #       run: cp example.env .env
+
+  #     - name: Log into registry
+  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+
+  #     - name: Build (go) McAfee docker image
+  #       run: make multiav-build-av-go AV_VENDOR=mcafee
+
+  # update-gokaspersky:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup config
+  #       run: cp example.env .env
+
+  #     - name: Log into registry
+  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+
+  #     - name: Build (go) Kaspersky docker image
+  #       run: make multiav-build-av-go AV_VENDOR=kaspersky
+
+  update-gosophos:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -141,20 +171,5 @@ jobs:
       - name: Log into registry
         run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-      - name: Build (go) McAfee docker image
-        run: make multiav-build-av-go AV_VENDOR=mcafee
-
-  update-kaspersky:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup config
-        run: cp example.env .env
-
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
-
-      - name: Build (go) kaspersky docker image
+      - name: Build (go) Sophos docker image
         run: make multiav-build-av-go AV_VENDOR=kaspersky
