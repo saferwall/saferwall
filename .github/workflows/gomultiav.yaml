@@ -6,143 +6,131 @@ on:
   push:
 
 jobs:
-  # update-goclamav:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  update-goclamav:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) ClamAV docker image
-  #       run: make multiav-build-av-go AV_VENDOR=clamav
+      - name: Build (go) ClamAV docker image
+        run: make multiav-release-av-go AV_VENDOR=clamav
 
-  # update-goavira:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  update-goavira:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) Avira docker image
-  #       run: make multiav-build-av-go AV_VENDOR=avira
+      - name: Build (go) Avira docker image
+        run: make multiav-release-av-go AV_VENDOR=avira
 
-  # update-gocomodo:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  update-gocomodo:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) COMODO docker image
-  #       run: make multiav-build-av-go AV_VENDOR=comodo
+      - name: Build (go) COMODO docker image
+        run: make multiav-release-av-go AV_VENDOR=comodo
 
-  # update-gowindefender:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  update-gofsecure:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) Windows Defender docker image
-  #       run: make multiav-build-av-go AV_VENDOR=windefender
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-gofsecure:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+      - name: Build (go) FSecure docker image
+        run: make multiav-release-av-go AV_VENDOR=fsecure
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+  update-gobitdefender:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) FSecure docker image
-  #       run: make multiav-build-av-go AV_VENDOR=fsecure
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-gobitdefender:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+      - name: Build (go) Bitdefender docker image
+        run: make multiav-release-av-go AV_VENDOR=bitdefender
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+  update-goeset:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) Bitdefender docker image
-  #       run: make multiav-build-av-go AV_VENDOR=bitdefender
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-goeset:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+      - name: Build (go) ESET docker image
+        run: make multiav-release-av-go AV_VENDOR=eset
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+  update-goavast:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) ESET docker image
-  #       run: make multiav-build-av-go AV_VENDOR=eset
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-goavast:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+      - name: Build (go) Avast docker image
+        run: make multiav-release-av-go AV_VENDOR=avast
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+  update-gosymantec:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) Avast docker image
-  #       run: make multiav-build-av-go AV_VENDOR=avast
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-gosymantec:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+      - name: Build (go) Symantec docker image
+        run: make multiav-release-av-go AV_VENDOR=symantec
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+  update-gomcafee:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Build (go) Symantec docker image
-  #       run: make multiav-build-av-go AV_VENDOR=symantec
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
-  # update-gomcafee:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-
-  #     - name: Setup config
-  #       run: cp example.env .env
-
-  #     - name: Log into registry
-  #       run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
-
-  #     - name: Build (go) McAfee docker image
-  #       run: make multiav-build-av-go AV_VENDOR=mcafee
+      - name: Build (go) McAfee docker image
+        run: make multiav-release-av-go AV_VENDOR=mcafee
 
   # update-gokaspersky:
   #   runs-on: ubuntu-18.04
@@ -159,6 +147,18 @@ jobs:
   #     - name: Build (go) Kaspersky docker image
   #       run: make multiav-build-av-go AV_VENDOR=kaspersky
 
+  # update-gowindefender:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup config
+  #       run: cp example.env .env
+
+  #     - name: Build (go) Windows Defender docker image
+  #       run: make multiav-build-av-go AV_VENDOR=windefender
+
   update-gosophos:
     runs-on: ubuntu-18.04
     steps:
@@ -172,4 +172,4 @@ jobs:
         run: echo "${{ secrets.DOCKER_HUB_PWD }}" | docker login --username=${{ github.repository_owner }} --password-stdin
 
       - name: Build (go) Sophos docker image
-        run: make multiav-build-av-go AV_VENDOR=kaspersky
+        run: make multiav-build-av-go AV_VENDOR=sophos
