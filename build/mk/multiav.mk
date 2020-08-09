@@ -63,7 +63,7 @@ multiav-build-av-go:	## Build the AV with the gRPC server
 multiav-release-av-go:	## Release the AV with the gRPC server
 	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.2 \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
-	 DOCKER_DIR=pkg/grpc/multiav/$(AV_VENDOR)/server
+	 DOCKER_DIR=.
 
 AV_LIST = avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender
 multiav-build: 	## Build all AVs.
