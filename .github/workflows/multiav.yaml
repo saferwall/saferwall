@@ -1,54 +1,175 @@
-name: Update MultiAV Signature Database
+name: Update Multi-AV Engines
 
 on:
   schedule:
-  - cron: "0 0 * * *"
+  - cron: "0 0 1 * *"
 
 jobs:
-  update-clamav:
+  
+  update-goclamav:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
-      - name: Build ClamAV docker image
-        run: make multiav-build-av AV_VENDOR=clamav
+      - name: Build and Release (go) ClamAV docker image
+        run: make multiav-release-av AV_VENDOR=clamav
 
-  update-avira:
+  update-goavira:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
-      - name: Build Avira docker image
-        run: make multiav-build-av AV_VENDOR=avira
+      - name: Build and Release (go) Avira docker image
+        run: make multiav-release-av AV_VENDOR=avira
 
-  update-comodo:
+  update-gocomodo:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
-      - name: Build COMODO docker image
-        run: make multiav-build-av AV_VENDOR=comodo
+      - name: Build and Release (go) COMODO docker image
+        run: make multiav-release-av AV_VENDOR=comodo
 
-  update-windefender:
+  update-gofsecure:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
-      - name: Build Windows Defender docker image
-        run: make multiav-build-av AV_VENDOR=windefender
+      - name: Build and Release (go) FSecure docker image
+        run: make multiav-release-av AV_VENDOR=fsecure
+
+  update-gobitdefender:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Bitdefender docker image
+        run: make multiav-release-av AV_VENDOR=bitdefender
+
+  update-goeset:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) ESET docker image
+        run: make multiav-release-av AV_VENDOR=eset
+
+  update-goavast:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Avast docker image
+        run: make multiav-release-av AV_VENDOR=avast
+
+  update-gosymantec:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Symantec docker image
+        run: make multiav-release-av AV_VENDOR=symantec
+
+  update-gomcafee:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) McAfee docker image
+        run: make multiav-release-av AV_VENDOR=mcafee
+
+  update-gokaspersky:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Kaspersky docker image
+        run: make multiav-release-av AV_VENDOR=kaspersky
+
+  update-gosophos:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Sophos docker image
+        run: make multiav-release-av AV_VENDOR=sophos
+
+  update-gowindefender:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) Windows Defender docker image
+        run: make multiav-release-av AV_VENDOR=windefender
