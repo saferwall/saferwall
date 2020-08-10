@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	github.com/aws/aws-sdk-go v1.32.1
-	github.com/bitly/go-nsq v1.0.7
 	github.com/bnagy/gapstone v0.0.0-20190828052830-ede92aaeaba7
 	github.com/fatih/color v1.9.0
 	github.com/golang/protobuf v1.3.1
