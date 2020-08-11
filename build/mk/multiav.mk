@@ -3,6 +3,7 @@
 -include build/mk/multiav.bitdefender.mk
 -include build/mk/multiav.clamav.mk
 -include build/mk/multiav.comodo.mk
+-include build/mk/multiav.drweb.mk
 -include build/mk/multiav.eset.mk
 -include build/mk/multiav.fsecure.mk
 -include build/mk/multiav.kaspersky.mk
@@ -29,11 +30,15 @@ ifeq ($(AV_VENDOR),eset)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
 endif
 
+ifeq ($(AV_VENDOR),drweb)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg DR_WEB_LICENSE_KEY=$(DR_WEB_LICENSE_KEY)")
+endif
+
 ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
-	sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	@sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-release-av:		## Release an AV inside a docker contrainer.
 	$(eval DOCKER_BUILD_ARGS := "")
@@ -47,6 +52,10 @@ endif
 
 ifeq ($(AV_VENDOR),eset)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
+endif
+
+ifeq ($(AV_VENDOR),drweb)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg DR_WEB_LICENSE_KEY=$(DR_WEB_LICENSE_KEY)")
 endif
 
 ifeq ($(AV_VENDOR),bitdefender)
