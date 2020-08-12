@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	nsq "github.com/nsqio/go-nsq"
 	"github.com/minio/minio-go/v6"
+	nsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

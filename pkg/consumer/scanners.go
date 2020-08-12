@@ -17,6 +17,8 @@ import (
 	avira_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	bitdefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/client"
 	bitdefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
+	drwebclient "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/client"
+	drweb_api "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	clamavclient "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/client"
 	clamav_api "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	comodoclient "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/client"
@@ -203,8 +205,16 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 
 	// Get the address of AV gRPC server
-	key := "multiav." + engine + "_addr"
-	address := viper.GetString(key)
+	multiavCfg := viper.GetStringMap("multiav")
+	engineCfg := multiavCfg[engine]
+	address := engineCfg.(map[string]interface{})["addr"].(string)
+	enabled := engineCfg.(map[string]interface{})["enabled"].(bool)
+
+	// Is this engine enabled
+	if !enabled {
+		c <- multiav.ScanResult{}
+		return
+	}
 
 	// Get a gRPC client scanner instance for a given engine.
 	conn, err := multiav.GetClientConn(address)
@@ -237,6 +247,8 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		res, err = aviraclient.ScanFile(avira_api.NewAviraScannerClient(conn), filePath)
 	case "bitdefender":
 		res, err = bitdefenderclient.ScanFile(bitdefender_api.NewBitdefenderScannerClient(conn), filePath)
+	case "drweb":
+		res, err = drwebclient.ScanFile(drweb_api.NewDrWebScannerClient(conn), filePath)
 	case "clamav":
 		res, err = clamavclient.ScanFile(clamav_api.NewClamAVScannerClient(conn), filePath)
 	case "comodo":
@@ -273,6 +285,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	aviraChan := make(chan multiav.ScanResult)
 	avastChan := make(chan multiav.ScanResult)
 	bitdefenderChan := make(chan multiav.ScanResult)
+	drwebChan := make(chan multiav.ScanResult)
 	clamavChan := make(chan multiav.ScanResult)
 	comodoChan := make(chan multiav.ScanResult)
 	esetChan := make(chan multiav.ScanResult)
@@ -298,9 +311,10 @@ func multiAvScan(filePath string) map[string]interface{} {
 	go avScan("comodo", filePath, comodoChan)
 	go avScan("avast", filePath, avastChan)
 	go avScan("mcafee", filePath, mcafeeChan)
+	go avScan("drweb", filePath, drwebChan)
 
 	multiavScanResults := map[string]interface{}{}
-	avEnginesCount := 12
+	avEnginesCount := 13
 	avCount := 0
 	for {
 		select {
@@ -315,6 +329,9 @@ func multiAvScan(filePath string) map[string]interface{} {
 			avCount++
 		case clamavRes := <-clamavChan:
 			multiavScanResults["clamav"] = clamavRes
+			avCount++
+		case drwebRes := <-drwebChan:
+			multiavScanResults["drweb"] = drwebRes
 			avCount++
 		case comodoRes := <-comodoChan:
 			multiavScanResults["comodo"] = comodoRes

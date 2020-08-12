@@ -22,5 +22,7 @@ ssl = false
 [multiav]
 {{- $root := . -}}
 {{- range $av, $value := .Values.multiav.vendors }}
-{{ $av }}_addr = "{{ include "saferwall.multiav.fullname" $root }}-{{ $av }}:50051"
+  [multiav.{{ $av }}]
+  enabled = $value.enabled
+  addr = "{{ include "saferwall.multiav.fullname" $root }}-{{ $av }}:50051"
 {{- end }}
