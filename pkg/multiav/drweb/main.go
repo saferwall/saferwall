@@ -15,6 +15,9 @@ import (
 const (
 	cmd      = "/opt/drweb.com/bin/drweb-ctl"
 	regexStr = "infected with (.*)"
+
+	// ConfigD represents the configuration daemon
+	ConfigD  = "/opt/drweb.com/bin/drweb-configd"
 )
 
 // Result represents detection results

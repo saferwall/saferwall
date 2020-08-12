@@ -46,6 +46,7 @@ To make it easy to get a production grade Kubernetes cluster up and running, we 
 - Messaging: [NSQ](https://nsq.io/)
 - Database: [Couchbase](https://www.couchbase.com/)
 - Logging: [FileBeat](https://www.elastic.co/beats/filebeat) + [ElasticSearch](https://www.elastic.co/) + [Kibanna](https://www.elastic.co/)
+- Metrics: [Prometheus](https://prometheus.io/)
 - Minio: [Object storage](https://min.io/)
 - Deployment: [Helm](https://helm.sh/) + [Kubernetes](https://kubernetes.io/)
 

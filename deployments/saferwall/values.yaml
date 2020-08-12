@@ -508,6 +508,17 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+    drweb:
+      enabled: false
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/godrweb
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
     fsecure:
       enabled: false
       replicaCount: 1

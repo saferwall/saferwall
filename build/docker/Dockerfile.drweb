@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="Dr.Web Anti-Virus for Linux in a docker container"
 
 # Vars
@@ -19,24 +19,21 @@ RUN wget $DR_WEB_URL -P /tmp \
     && chmod +x /tmp/$DR_WEB_INSTALLER \
     && /tmp/$DR_WEB_INSTALLER -- --non-interactive
 
-# Add the EICAR Anti-Virus Test File
-ADD http://www.eicar.org/download/eicar.com.txt eicar
-
 # Start the engine as daemon, and activate it.
 RUN /opt/drweb.com/bin/drweb-configd -d  \
     && /opt/drweb.com/bin/drweb-ctl license --GetRegistered $DR_WEB_LICENSE_KEY
 
-# Trigger an update and wait for it.
+# Trigger an update.
 RUN /opt/drweb.com/bin/drweb-configd -d  \
     && /opt/drweb.com/bin/drweb-ctl update &> /dev/null; exit 0
 
-# Test detection
+# Wait for the update the finish and test detection.
 RUN /opt/drweb.com/bin/drweb-configd -d \
-    && /opt/drweb.com/bin/drweb-ctl scan /eicar \
     && echo "Updating the database ..." \ 
     && /bin/bash -c 'while /opt/drweb.com/bin/drweb-ctl baseinfo | grep -q "Last successful update: unknown"; do sleep 5; done' \
     && /opt/drweb.com/bin/drweb-ctl baseinfo \ 
-    && /opt/drweb.com/bin/drweb-ctl appinfo 
+    && /opt/drweb.com/bin/drweb-ctl appinfo \
+    && /opt/drweb.com/bin/drweb-ctl scan /eicar
 
 # Clean up
 RUN rm -rf /tmp/*  \

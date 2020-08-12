@@ -48,6 +48,20 @@ jobs:
       - name: Build and Release (go) COMODO docker image
         run: make multiav-release-av-go AV_VENDOR=comodo
 
+  update-godrweb:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build and Release (go) DrWeb docker image
+        run: make multiav-release-av-go AV_VENDOR=drweb
+    
   update-gofsecure:
     runs-on: ubuntu-18.04
     steps:

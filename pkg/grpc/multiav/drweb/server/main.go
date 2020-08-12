@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
+	"github.com/saferwall/saferwall/pkg/utils"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/drweb"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,14 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	// start DrWeb daemon
+	log.Infoln("Starting drweb daemon ...")
+	_, err := utils.ExecCommand("sudo", drweb.ConfigD, "-d")
+	if err != nil {
+		grpclog.Fatalf("failed to start drweb daemon: %v", err)
+	}
+
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -51,7 +60,7 @@ func main() {
 		grpclog.Fatalf("failed to read av db update date %v", err)
 	}
 
-	// attach the AviraScanner service to the server
+	// attach the DrWebScanner service to the server
 	pb.RegisterDrWebScannerServer(
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 
