@@ -9,7 +9,6 @@ minio
 private
 scripts
 test
-ui
 website
 .env
 example.env
@@ -19,6 +18,7 @@ example.env
 **/.gitattributes
 **/.gitignore
 **/.gitmodules
+**/.github
 
 # Common
 **/.DS_Store

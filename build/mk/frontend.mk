@@ -1,8 +1,22 @@
-frontend-docker-run:		## Run the docker container
+ui-docker-run:		## Run the docker container
 	sudo docker run -it -p 80:80 --name ui saferwall/ui
 
-ui-build:		## Build the UI in docker
-	sudo make docker-build IMG=ui DOCKER_FILE=ui/Dockerfile DOCKER_DIR=ui/
+ui-build: ## Build frontend in a docker container
+	@echo "${GREEN} [*] =============== Build Frontend =============== ${RESET}"
+	sudo make docker-build IMG=ui \
+		DOCKER_FILE=build/docker/Dockerfile.frontend DOCKER_DIR=ui/ ;
+	@EXIT_CODE=$$?
+	@if test $$EXIT_CODE ! 0; then \
+		sudo make docker-release IMG=ui \
+		DOCKER_FILE=build/docker/Dockerfile.frontend DOCKER_DIR=ui/ ; \
+	fi
 
-ui-release:		## build and release UI.
-	sudo make docker-release IMG=ui VERSION=0.0.2 DOCKER_FILE=ui/Dockerfile DOCKER_DIR=ui/
+ui-release: ## Build and release frontend in a docker container.
+	@echo "${GREEN} [*] =============== Build and Release Frontend =============== ${RESET}"
+	sudo make docker-release IMG=ui VERSION=$(SAFERWALL_VER) \
+	 DOCKER_FILE=build/docker/Dockerfile.frontend DOCKER_DIR=ui/ ;
+	@EXIT_CODE=$$?
+	@if test $$EXIT_CODE ! 0; then \
+		sudo make docker-release IMG=ui VERSION=$(SAFERWALL_VER) \
+		 DOCKER_FILE=build/docker/Dockerfile.frontend DOCKER_DIR=ui/ ; \
+	fi
