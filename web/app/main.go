@@ -43,8 +43,8 @@ var (
 	// MaxAvatarFileSize allowed
 	MaxAvatarFileSize int64
 
-	// Debug mode
-	Debug bool
+	// Domain name
+	Domain string
 
 	// NsqProducer holds an instance of NSQ producer.
 	NsqProducer *nsq.Producer
@@ -340,7 +340,7 @@ func Init() {
 	// Load default & saferwall image avatar.
 	loadAvatars()
 
-	Debug = viper.GetBool("app.debug")
+	Domain = viper.GetString("app.domain")
 	StoragePath = viper.GetString("app.tmp_samples")
 	MaxFileSize = int64(viper.GetInt("app.max_file_size"))
 	MaxAvatarFileSize = int64(viper.GetInt("app.max_avatar_file_size"))

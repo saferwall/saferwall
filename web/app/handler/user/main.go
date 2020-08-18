@@ -944,6 +944,9 @@ func GetActivitiy(c echo.Context) error {
 		}
 		activities = append(activities, row)
 	}
+	if len(activities) == 0 {
+		return c.JSON(http.StatusOK, []map[string]string{})
+	}
 	return c.JSON(http.StatusOK, activities)
 }
 
@@ -985,6 +988,10 @@ func GetActivities(c echo.Context) error {
 			log.Println(err)
 		}
 		activities = append(activities, row)
+	}
+
+	if len(activities) == 0 {
+		return c.JSON(http.StatusOK, []map[string]string{})
 	}
 	return c.JSON(http.StatusOK, activities)
 }
