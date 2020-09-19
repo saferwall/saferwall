@@ -5,11 +5,13 @@
 package pe
 
 import (
-	"bytes"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/binary"
 	"errors"
+	"reflect"
 	"sort"
+	"time"
 	"unsafe"
 
 	"go.mozilla.org/pkcs7"
@@ -20,7 +22,8 @@ import (
 const (
 	// WinCertRevision1_0 represents the WIN_CERT_REVISION_1_0 Version 1,
 	// legacy version of the Win_Certificate structure.
-	// It is supported only for purposes of verifying legacy Authenticode signatures
+	// It is supported only for purposes of verifying legacy Authenticode
+	// signatures
 	WinCertRevision1_0 = 0x0100
 
 	// WinCertRevision2_0 represents the WIN_CERT_REVISION_2_0. Version 2
@@ -46,13 +49,16 @@ const (
 )
 
 var (
-	errSecurityDataDirOutOfBands = errors.New(`Boundary checks failed in security data directory`)
+	errSecurityDataDirOutOfBands = errors.New(
+		`Boundary checks failed in security data directory`)
 )
 
 // Certificate directory.
 type Certificate struct {
-	Header  WinCertificate
-	Content *pkcs7.PKCS7
+	Header   WinCertificate
+	Content  *pkcs7.PKCS7 `json:"-"`
+	Info CertInfo
+	Verified bool
 }
 
 // WinCertificate encapsulates a signature used in verifying executable files.
@@ -65,6 +71,24 @@ type WinCertificate struct {
 
 	// Specifies the type of certificate.
 	CertificateType uint16
+}
+
+// CertInfo wraps the important fields of the pkcs7 structure.
+// This is what we what keep in JSON marshalling.
+type CertInfo struct {
+	// The certificate authority (CA) that charges customers to issue
+	// certificates for them.
+	Issuer string
+
+	// The subject of the certificate is the entity its public key is associated
+	// with (i.e. the "owner" of the certificate).
+	Subject string
+
+	// The certificate won't be valid after this timestamp.
+	NotBefore time.Time
+
+	// The certificate won't be valid after this timestamp.
+	NotAfter time.Time
 }
 
 // Authentihash generates the pe image file hash.
@@ -170,11 +194,18 @@ func (pe *File) Authentihash() []byte {
 	return h.Sum(nil)
 }
 
+// The security directory contains the authenticode signatur, which is a digital
+// signature format that is used, among other purposes, to determine the origin
+// and integrity of software binaries. Authenticode is based on the Public-Key
+// Cryptography Standards (PKCS) #7 standard and uses X.509 v3 certificates to
+// bind an Authenticode-signed file to the identity of a software publisher.
 func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 
+	var pkcs *pkcs7.PKCS7
+	var isValid bool
+	certInfo := CertInfo{}
 	certHeader := WinCertificate{}
 	certSize := uint32(binary.Size(certHeader))
-	var pkcs *pkcs7.PKCS7
 
 	// The virtual address value from the Certificate Table entry in the
 	// Optional Header Data Directory is a file offset to the first attribute
@@ -182,18 +213,13 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 	fileOffset := rva
 
 	for {
-		// Boundary check
-		if fileOffset+certSize > pe.size {
+		err := pe.structUnpack(&certHeader, fileOffset, certSize)
+		if err != nil {
 			return errSecurityDataDirOutOfBands
 		}
 
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+certSize])
-		err := binary.Read(buf, binary.LittleEndian, &certHeader)
-		if err != nil {
-			return err
-		}
 		if fileOffset+certHeader.Length > pe.size {
-			return errSecurityDataDirOutOfBands;
+			return errSecurityDataDirOutOfBands
 		}
 
 		certContent := pe.data[fileOffset+certSize : fileOffset+certHeader.Length]
@@ -203,8 +229,75 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 			return err
 		}
 
-		// Verify the signature
-		pkcs.Verify()
+		// The pkcs7.PKCS7 structure contains many fields that we are not
+		// interested to, so create another structure, similar to _CERT_INFO
+		// structure which contains only the imporant information.
+		serialNumber := pkcs.Signers[0].IssuerAndSerialNumber.SerialNumber
+		for _, cert := range pkcs.Certificates {
+			if !reflect.DeepEqual(cert.SerialNumber, serialNumber) {
+				continue
+			}
+
+			certInfo.NotAfter = cert.NotAfter
+			certInfo.NotBefore = cert.NotBefore
+
+			// Issuer infos
+			if len(cert.Issuer.Country) > 0 {
+				certInfo.Issuer = cert.Issuer.Country[0]
+			}
+
+			if len(cert.Issuer.Province) > 0 {
+				certInfo.Issuer += ", " + cert.Issuer.Province[0]
+			}
+
+			if len(cert.Issuer.Locality) > 0 {
+				certInfo.Issuer += ", " + cert.Issuer.Locality[0]
+			}
+
+			certInfo.Issuer += ", " + cert.Issuer.CommonName
+
+			// Subject infos
+			if len(cert.Subject.Country) > 0 {
+				certInfo.Subject = cert.Subject.Country[0]
+			}
+
+			if len(cert.Subject.Province) > 0 {
+				certInfo.Subject += ", " + cert.Subject.Province[0]
+			}
+
+			if len(cert.Subject.Locality) > 0 {
+				certInfo.Subject += ", " + cert.Subject.Locality[0]
+			}
+
+			if len(cert.Subject.Organization) > 0 {
+				certInfo.Subject += ", " + cert.Subject.Organization[0]
+			}
+
+			certInfo.Subject += ", " + cert.Subject.CommonName
+
+			break
+		}
+
+		// Verify the signature. This will also verify the chain of trust of the
+		// the end-entity signer cert to one of the root in the truststore.
+		// Let's load the system root certs.
+		var certPool *x509.CertPool
+		skipCertVerification := false
+		certPool, err = x509.SystemCertPool()
+		if err != nil {
+			skipCertVerification = true
+		}
+
+		// SystemCertPool() return an error in Windows, so we skip verification
+		// for now.
+		if skipCertVerification {
+			err = pkcs.VerifyWithChain(certPool)
+			if err == nil {
+				isValid = true
+			} else {
+				isValid = false
+			}
+		}
 
 		// Subsequent entries are accessed by advancing that entry's dwLength bytes,
 		// rounded up to an 8-byte multiple, from the start of the current attribute
@@ -220,6 +313,7 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 		fileOffset = nextOffset
 	}
 
-	pe.Certificates = Certificate{Header: certHeader, Content: pkcs}
+	pe.Certificates = Certificate{Header: certHeader, Content: pkcs,
+		Info: certInfo, Verified: isValid}
 	return nil
 }
