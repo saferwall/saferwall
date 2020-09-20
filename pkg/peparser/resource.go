@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 	"log"
 	"unsafe"
@@ -71,7 +70,8 @@ type ImageResourceDirectory struct {
 	NumberOfIDEntries uint16
 }
 
-// ImageResourceDirectoryEntry represents an entry in the resource directory entries.
+// ImageResourceDirectoryEntry represents an entry in the resource directory
+// entries.
 type ImageResourceDirectoryEntry struct {
 	// is used to identify either a type of resource, a resource name, or a
 	// resource's language ID.
@@ -148,23 +148,11 @@ func makeIntResource(id uintptr) *uint16 {
 	return (*uint16)(unsafe.Pointer(id))
 }
 
-func (pe *File) readUnicodeStringAtRVA(rva uint32, maxLength uint32) string {
-	unicodeString := ""
-	offset := pe.getOffsetFromRva(rva)
-	buff := pe.data[offset : offset+(maxLength*2)]
-	for i := uint32(0); i < maxLength*2; i += 2 {
-		unicodeString += string(buff[i])
-	}
-	return unicodeString
-
-}
-
 func (pe *File) parseResourceDataEntry(rva uint32) *ImageResourceDataEntry {
 	dataEntry := ImageResourceDataEntry{}
 	dataEntrySize := uint32(binary.Size(dataEntry))
 	offset := pe.getOffsetFromRva(rva)
-	buff := bytes.NewReader(pe.data[offset : offset+dataEntrySize])
-	err := binary.Read(buff, binary.LittleEndian, &dataEntry)
+	err := pe.structUnpack(&dataEntry, offset, dataEntrySize)
 	if err != nil {
 		log.Println("Error parsing a resource directory data entry, the RVA is invalid")
 		return nil
@@ -176,8 +164,7 @@ func (pe *File) parseResourceDirectoryEntry(rva uint32) *ImageResourceDirectoryE
 	resource := ImageResourceDirectoryEntry{}
 	resourceSize := uint32(binary.Size(resource))
 	offset := pe.getOffsetFromRva(rva)
-	buff := bytes.NewReader(pe.data[offset : offset+resourceSize])
-	err := binary.Read(buff, binary.LittleEndian, &resource)
+	err := pe.structUnpack(&resource, offset, resourceSize)
 	if err != nil {
 		return nil
 	}
@@ -197,22 +184,19 @@ func (pe *File) parseResourceDirectoryEntry(rva uint32) *ImageResourceDirectoryE
 	return &resource
 }
 
-func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs []uint32) (
-	ResourceDirectory, error) {
+// Navigating the resource directory hierarchy is like navigating a hard disk.
+// There's a master directory (the root directory), which has subdirectories.
+// The subdirectories have subdirectories of their own that may point to the
+// raw resource data for things like dialog templates. 
+func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32,
+	 dirs []uint32) (ResourceDirectory, error) {
 
-	// Get the resource directory structure, that is, the header
-	// If the table preceding the actual entries
 	resourceDir := ImageResourceDirectory{}
 	resourceDirSize := uint32(binary.Size(resourceDir))
 	offset := pe.getOffsetFromRva(rva)
-	buff := bytes.NewReader(pe.data[offset : offset+resourceDirSize])
-	err := binary.Read(buff, binary.LittleEndian, &resourceDir)
+	err := pe.structUnpack(&resourceDir, offset, resourceDirSize)
 	if err != nil {
-		// If we can't parse resources directory then silently return.
-		// This directory does not necessarily have to be valid to
-		// still have a valid PE file
-		log.Println("Invalid resources directory. Can't parse directory data")
-		return ResourceDirectory{}, nil
+		return ResourceDirectory{}, err
 	}
 
 	if baseRVA == 0 {
@@ -224,14 +208,14 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs 
 	}
 
 	// Advance the RVA to the position immediately following the directory
-	// table header and pointing to the first entry in the table
+	// table header and pointing to the first entry in the table.
 	rva += resourceDirSize
 
 	numberOfEntries := int(resourceDir.NumberOfNamedEntries +
 		resourceDir.NumberOfIDEntries)
 	var dirEntries []ResourceDirectoryEntry
 
-	// Set a hard limit on the maximum reasonable number of entries
+	// Set a hard limit on the maximum reasonable number of entries.
 	if numberOfEntries > maxAllowedEntries {
 		log.Printf(`Error parsing the resources directory. 
 		 The directory contains %d entries`, numberOfEntries)
@@ -253,12 +237,23 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs 
 		} else {
 			nameOffset := res.Name & 0x7FFFFFFF
 			uStringOffset := pe.getOffsetFromRva(baseRVA + nameOffset)
-			maxLen := binary.LittleEndian.Uint16(pe.data[uStringOffset:])
+			maxLen, err := pe.ReadUint16(uStringOffset)
+			if err != nil {
+				break
+			}
 			entryName = pe.readUnicodeStringAtRVA(baseRVA+nameOffset+2,
 				uint32(maxLen))
 		}
 
+		// A directory entry points to either another resource directory or to
+		// the data for an individual resource. When the directory entry points 
+		// to another resource directory, the high bit of the second DWORD in 
+		// the structure is set and the remaining 31 bits are an offset to the 
+		// resource directory. 
 		dataIsDirectory := (res.OffsetToData & 0x80000000) >> 31
+
+		// The offset is relative to the beginning of the resource section, 
+		// not an RVA.
 		OffsetToDirectory := res.OffsetToData & 0x7FFFFFFF
 		if dataIsDirectory > 0 {
 			// One trick malware can do is to recursively reference
@@ -269,13 +264,12 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs 
 			// Instead of raising a PEFormatError this would skip some
 			// reasonable data so we just break.
 			// 9ee4d0a0caf095314fd7041a3e4404dc is the offending sample.
-			if intInSlice(baseRVA + OffsetToDirectory, dirs) {
+			if intInSlice(baseRVA+OffsetToDirectory, dirs) {
 				break
-
 			}
 
 			level++
-			dirs= append(dirs, baseRVA + OffsetToDirectory)
+			dirs = append(dirs, baseRVA+OffsetToDirectory)
 			directoryEntry, _ := pe.doParseResourceDirectory(
 				baseRVA+OffsetToDirectory,
 				size-(rva-baseRVA),
@@ -314,6 +308,8 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32, dirs 
 	}, nil
 }
 
+// The resource directory contains resources like dialog templates, icons, 
+// and bitmaps. The resources are found in a section called .rsrc section.
 func (pe *File) parseResourceDirectory(rva, size uint32) error {
 	var dirs []uint32
 	Resources, err := pe.doParseResourceDirectory(rva, size, 0, 0, dirs)
