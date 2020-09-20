@@ -194,7 +194,7 @@ func (pe *File) Authentihash() []byte {
 	return h.Sum(nil)
 }
 
-// The security directory contains the authenticode signatur, which is a digital
+// The security directory contains the authenticode signature, which is a digital
 // signature format that is used, among other purposes, to determine the origin
 // and integrity of software binaries. Authenticode is based on the Public-Key
 // Cryptography Standards (PKCS) #7 standard and uses X.509 v3 certificates to

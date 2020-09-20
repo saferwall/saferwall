@@ -4,26 +4,26 @@
 
 ## Features
 
-- :heavy_check_mark: Works with PE32/PE32+ file fomat.
-- :heavy_check_mark: Supports Intel x86/AMD64/ARM7ARM7 Thumb/ARM8-64/IA64/CHPE architectures.
-- :heavy_check_mark: MS DOS header
-- :heavy_check_mark: Rich Header (calculate checksum)
-- :heavy_check_mark: NT Header (file header + optional header)
-- :heavy_check_mark: Sections headers
+- Works with PE32/PE32+ file fomat.
+- Supports Intel x86/AMD64/ARM7ARM7 Thumb/ARM8-64/IA64/CHPE architectures.
+- MS DOS header
+- Rich Header (calculate checksum)
+- NT Header (file header + optional header)
+- Sections headers + entropy calculation. 
 - Data directories
-    - :heavy_check_mark: Import Table + ImpHash calculation.
-    - :heavy_check_mark: Export Table
-    - :heavy_check_mark: Resource Table
-    - :heavy_check_mark: Exceptions Table
-    - :heavy_check_mark: Security Table + Authentihash calculation.
-    - :heavy_check_mark: Relocations Table
-    - :heavy_check_mark: Debug Table (CODEVIEW, POGO, VC FEATURE, REPRO, FPO, EXDLL CHARACTERISTICS debug types).
-    - :heavy_check_mark: TLS Table
-    - :heavy_check_mark: Load Config Directory (SEH, GFID, GIAT, Guard LongJumps, CHPE, Dynamic Value Reloc Table, Enclave Configuration, Volatile Metadata tables).
-    - :heavy_check_mark: Bound Import Table
-    - :heavy_check_mark: Delay Import Table
-    - :heavy_check_mark: COM Table
-- :heavy_check_mark: Report several anomalies
+    - Import Table + ImpHash calculation.
+    - Export Table
+    - Resource Table
+    - Exceptions Table
+    - Security Table + Authentihash calculation.
+    - Relocations Table
+    - Debug Table (CODEVIEW, POGO, VC FEATURE, REPRO, FPO, EXDLL CHARACTERISTICS debug types).
+    - TLS Table
+    - Load Config Directory (SEH, GFID, GIAT, Guard LongJumps, CHPE, Dynamic Value Reloc Table, Enclave Configuration, Volatile Metadata tables).
+    - Bound Import Table
+    - Delay Import Table
+    - COM Table
+- Report several anomalies
 
 ## Installing
 
@@ -57,14 +57,13 @@ func main() {
     err = pe.Parse()
     if err != nil {
         log.Fatalf("Error while opening file: %s, reason: %s", filename, err)
-	}
+    }
 ```
 
 ## Todo:
 
 - imports MS-styled names demangling
 - PE: VB5 and VB6 typical structures: project info, DLLCall-imports, referenced modules, object table
-- section entropy
 
 # References
 
