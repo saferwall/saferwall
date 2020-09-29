@@ -1,0 +1,28 @@
+FROM centos:centos8
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.0.1"
+LABEL description="ServerProtect for Linux"
+
+# Installation guide: https://docs.trendmicro.com/all/ent/splx/v3.0/en-us/splx_3.0_gsg.pdf
+
+# Vars
+ENV TREND_MICRO_PKG_NAME SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
+ENV TREND_MICRO_URL https://files.trendmicro.com/products/splx/$TREND_MICRO_PKG_NAME
+
+# Fix the locales issue first.
+# https://github.com/CentOS/sig-cloud-instance-images/issues/71
+RUN yum -y install glibc-langpack-en
+
+## Install dependencies
+RUN yum -y install perl-Sys-Syslog bzip2
+
+# Download TrendMicro.
+ADD $TREND_MICRO_URL /tmp/
+
+# Unpack it
+RUN tar zxvf /tmp/$TREND_MICRO_PKG_NAME -C /tmp
+
+# Install it
+# 1. Do you agree to the above license terms? (yes or no) 
+# 2. Do you wish to connect this SPLX server to Trend Micro Control Manager? (y/n) [y]
+RUN (echo 'y'; echo 'n') | sh /tmp/SProtectLinux-3.0.bin
