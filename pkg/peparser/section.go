@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"math"
 )
 
 const (
@@ -394,7 +395,7 @@ func (section *ImageSectionHeader) Contains(rva uint32, pe *File) bool {
 	return vaAdj <= rva && rva < vaAdj+size
 }
 
-// Data returns a data chunk from a section
+// Data returns a data chunk from a section.
 func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 
 	pointerToRawDataAdj := pe.adjustFileAlignment(section.PointerToRawData)
@@ -431,6 +432,34 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	}
 
 	return pe.data[offset:end]
+}
+
+// Entropy calculates section entropy.
+func (section *ImageSectionHeader) Entropy(pe *File) float64 {
+	sectionData := section.Data(0, 0, pe)
+	if sectionData == nil {
+		return 0.0
+	}
+
+	sectionSize := float64(len(sectionData))
+	if sectionSize == 0.0 {
+		return 0.0
+	}
+
+	var frequencies [256]uint64
+	for _, v := range section.Data(0, 0, pe) {
+		frequencies[v]++
+	}
+
+	var entropy float64 
+	for _, p := range frequencies {
+		if p > 0 {
+			freq := float64(p) / sectionSize
+			entropy += freq * math.Log2(freq)
+		}
+	}
+
+	return -entropy
 }
 
 // byVirtualAddress sorts all sections by Virtual Address.

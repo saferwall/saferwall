@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/json"
 	"log"
@@ -68,6 +69,11 @@ func parse(filename string) {
 			printAnomalies(pe.Anomalies)
 		}
 		log.Println("=====================================================================")
+	}
+
+	// section entropy
+	for _, s := range pe.Sections {
+		fmt.Printf("Section %s, Entropy: %f\n", s.NameString(), s.Entropy(&pe))
 	}
 
 
