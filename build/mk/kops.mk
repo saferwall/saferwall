@@ -13,7 +13,7 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
 
-KOPS_VERSION=1.17.1
+KOPS_VERSION=1.18.1
 kops-install:		## Install Kubernetes Kops
 	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops

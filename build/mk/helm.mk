@@ -1,4 +1,4 @@
-HELM_VERSION = 3.2.4
+HELM_VERSION = 3.3.4
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz 
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
