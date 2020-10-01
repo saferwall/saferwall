@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package trendmicro.api;
+
+// The trendmicro scanner service definition.
+service TrendMicroScanner {
+  // Scan a file
+  rpc ScanFile(ScanFileRequest) returns (ScanResponse) {}
+  // Version.
+  rpc GetVersion(VersionRequest) returns (VersionResponse) {}
+}
+
+// The scan file request message containing the file path to scan.
+message ScanFileRequest { string filepath = 1; }
+
+// The scan response message containing detection results of the antiVirus.
+message ScanResponse {
+  string output = 1;
+  bool infected = 2;
+  int64 update = 3;
+}
+
+// The version request message ask for version.
+message VersionRequest {}
+
+// The response message containing engine/db version.
+message VersionResponse { string version = 1; }
+
