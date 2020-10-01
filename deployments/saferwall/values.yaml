@@ -574,6 +574,17 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+    trendmicro:
+      enabled: false
+      replicaCount: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gotrendmicro
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
     windefender:
       enabled: true
       replicaCount: 1

@@ -29,6 +29,7 @@ It aims for the following goals:
     ClamAV | :heavy_check_mark: | Sophos | :heavy_check_mark: 
     Comodo | :heavy_check_mark: | Symantec | :heavy_check_mark: 
     ESET | :heavy_check_mark: | Windows Defender | :heavy_check_mark: 
+    TrendMicro | :heavy_check_mark: | DrWeb | :heavy_check_mark: 
 
 ## Installation
 

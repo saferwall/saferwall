@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A portable executable (PE) file parser.
 - Add a UI for displaying PE parsing results.
 - A new antivirus engine (DrWeb).
-- A new antivirus engine (AVG).
+- A new antivirus engine (TrendMicro).
 
 ## [0.0.2] - 2020-08-12
 ### Added
