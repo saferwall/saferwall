@@ -35,6 +35,8 @@ import (
 	sophos_api "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
 	symantec_api "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	trendmicroclient "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/client"
+	trendmicro_api "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
 	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/magic"
@@ -265,6 +267,8 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 		res, err = symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
 	case "sophos":
 		res, err = sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
+	case "trendmicro":
+		res, err = trendmicroclient.ScanFile(trendmicro_api.NewTrendMicroScannerClient(conn), filePath)
 	case "windefender":
 		res, err = windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
 	}
@@ -294,6 +298,7 @@ func multiAvScan(filePath string) map[string]interface{} {
 	mcafeeChan := make(chan multiav.ScanResult)
 	symantecChan := make(chan multiav.ScanResult)
 	sophosChan := make(chan multiav.ScanResult)
+	trendmicroChan := make(chan multiav.ScanResult)
 	windefenderChan := make(chan multiav.ScanResult)
 
 	// We Start as much go routines as the AV engines we have.
@@ -312,9 +317,10 @@ func multiAvScan(filePath string) map[string]interface{} {
 	go avScan("avast", filePath, avastChan)
 	go avScan("mcafee", filePath, mcafeeChan)
 	go avScan("drweb", filePath, drwebChan)
+	go avScan("trendmicro", filePath, trendmicroChan)
 
 	multiavScanResults := map[string]interface{}{}
-	avEnginesCount := 13
+	avEnginesCount := 14
 	avCount := 0
 	for {
 		select {
@@ -353,6 +359,9 @@ func multiAvScan(filePath string) map[string]interface{} {
 			avCount++
 		case sophosRes := <-sophosChan:
 			multiavScanResults["sophos"] = sophosRes
+			avCount++
+		case trendmicroRes := <-trendmicroChan:
+			multiavScanResults["trendmicro"] = trendmicroRes
 			avCount++
 		case windefenderRes := <-windefenderChan:
 			multiavScanResults["windefender"] = windefenderRes

@@ -66,8 +66,8 @@ ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
-ifeq ($(AV_VENDOR),bitdefender)
-	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
+ifeq ($(AV_VENDOR),trendmicro)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg TREND_MICRO_LICENSE_KEY=$(TREND_MICRO_LICENSE_KEY)")
 endif
 
 	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
