@@ -38,6 +38,10 @@ ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
+ifeq ($(AV_VENDOR),trendmicro)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg TREND_MICRO_LICENSE_KEY=$(TREND_MICRO_LICENSE_KEY)")
+endif
+
 	@sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-release-av:		## Release an AV inside a docker contrainer.
@@ -62,6 +66,10 @@ ifeq ($(AV_VENDOR),bitdefender)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
+ifeq ($(AV_VENDOR),bitdefender)
+	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
+endif
+
 	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-build-av-go:	## Build the AV with the gRPC server
@@ -74,7 +82,7 @@ multiav-release-av-go:	## Release the AV with the gRPC server
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=.
 
-AV_LIST = avira avast bitdefender comodo clamav eset fsecure kaspersky mcafee sophos symantec windefender
+AV_LIST = avast avira bitdefender clamav drweb comodo eset fsecure kaspersky mcafee sophos symantec trendmicro windefender
 multiav-build: 	## Build all AVs.
 	for av in $(AV_LIST) ; do \
 		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \

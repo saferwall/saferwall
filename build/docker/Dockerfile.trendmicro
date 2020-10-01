@@ -1,13 +1,15 @@
 FROM centos:centos8
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.2"
 LABEL description="ServerProtect for Linux"
 
 # Installation guide: https://docs.trendmicro.com/all/ent/splx/v3.0/en-us/splx_3.0_gsg.pdf
 
 # Vars
+ARG TREND_MICRO_LICENSE_KEY
 ENV TREND_MICRO_PKG_NAME SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
 ENV TREND_MICRO_URL https://files.trendmicro.com/products/splx/$TREND_MICRO_PKG_NAME
+ENV TREND_MICRO_CFG /opt/TrendMicro/SProtectLinux/tmsplx.xml
 
 # Fix the locales issue first.
 # https://github.com/CentOS/sig-cloud-instance-images/issues/71
@@ -18,11 +20,36 @@ RUN yum -y install perl-Sys-Syslog bzip2
 
 # Download TrendMicro.
 ADD $TREND_MICRO_URL /tmp/
+# COPY $TREND_MICRO_PKG_NAME /tmp/ (testing)
 
-# Unpack it
-RUN tar zxvf /tmp/$TREND_MICRO_PKG_NAME -C /tmp
-
-# Install it
+# Unpack it & Install it.
 # 1. Do you agree to the above license terms? (yes or no) 
 # 2. Do you wish to connect this SPLX server to Trend Micro Control Manager? (y/n) [y]
-RUN (echo 'y'; echo 'n') | sh /tmp/SProtectLinux-3.0.bin
+RUN tar zxvf /tmp/$TREND_MICRO_PKG_NAME -C /tmp/ \
+    && (echo 'y'; echo 'n') | sh /tmp/SProtectLinux-3.0.bin
+
+# Disable RealTime Scan.
+RUN old='"RealtimeScan" Value="1"' && new='"RealtimeScan" Value="0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
+
+# Do not take any action when a file is detected.
+RUN old='"ManualAllTypesAction" Value="3-2"' && new='"ManualAllTypesAction" Value="0-0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
+
+# Disable sending a notification when there is a virus outbreak.
+RUN old='"VirusOutbreak" Value="1"' && new='"VirusOutbreak" Value="0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
+
+# Disable any scheduled update + any scheduled scan runs.
+RUN old='"Schedule" Value="2"' && new='"Schedule" Value="0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG  \
+    && cat $TREND_MICRO_CFG | grep \"Schedule\"
+
+# Activate it.
+RUN cd /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp \
+    && /etc/init.d/splx restart \
+    && ./splxmain -q $TREND_MICRO_LICENSE_KEY
+
+# Launch an update.
+RUN cd /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp \
+    && ./splxmain -u
