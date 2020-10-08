@@ -9,33 +9,33 @@ const (
 
 	// The DOS MZ executable format is the executable file format used
 	// for .EXE files in DOS.
-	ImageDOSSignature   = 0x5A4D     // MZ
-	ImageDOSZMSignature = 0x4D5A     // ZM
+	ImageDOSSignature   = 0x5A4D // MZ
+	ImageDOSZMSignature = 0x4D5A // ZM
 
-	// The New Executable (abbreviated NE or NewEXE) is a 16-bit .exe file 
+	// The New Executable (abbreviated NE or NewEXE) is a 16-bit .exe file
 	// format, a successor to the DOS MZ executable format. It was used in
 	// Windows 1.0–3.x, multitasking MS-DOS 4.0, OS/2 1.x, and the OS/2 subset
 	// of Windows NT up to version 5.0 (Windows 2000). A NE is also called a
 	// segmented executable.
-	ImageOS2Signature   = 0x454E
-	
+	ImageOS2Signature = 0x454E
+
 	// Linear Executable is an executable file format in the EXE family.
 	// It was used by 32-bit OS/2, by some DOS extenders, and by Microsoft
 	// Windows VxD files. It is an extension of MS-DOS EXE, and a successor
 	// to NE (New Executable).
 	ImageOS2LESignature = 0x454C
-	
+
 	// There are two main varieties of LE executables:
 	// LX (32-bit), and LE (mixed 16/32-bit).
-	ImageVXDSignature    = 0x584C
-	
+	ImageVXDSignature = 0x584C
+
 	// Terse Executables have a 'VZ' signature.
-	ImageTESignature    = 0x5A56
-	
+	ImageTESignature = 0x5A56
+
 	// The Portable Executable (PE) format is a file format for executables,
 	// object code, DLLs and others used in 32-bit and 64-bit versions of
 	// Windows operating systems.
-	ImageNTSignature    = 0x00004550 // PE00
+	ImageNTSignature = 0x00004550 // PE00
 )
 
 // Optional Header magic
@@ -76,24 +76,69 @@ const (
 
 // The Characteristics field contains flags that indicate attributes of the object or image file.
 const (
-	ImageFileRelocsStripped       = 0x0001 // Relocation info stripped from file.
-	ImageFileExecutableImage      = 0x0002 // File is executable  (i.e. no unresolved external references).
-	ImageFileLineNumsStripped     = 0x0004 // Line numbers stripped from file.
-	ImageFileLocalSymsStripped    = 0x0008 // Local symbols stripped from file.
-	ImageFileAgressibeWsTrim      = 0x0010 // Aggressively trim working set
-	ImageFileLargeAddressAware    = 0x0020 // App can handle >2gb addresses
-	ImageFileBytesReservedLow     = 0x0080 // Bytes of machine word are reversed.
-	ImageFile32BitMachine         = 0x0100 // 32 bit word machine.
-	ImageFileDebugStripped        = 0x0200 // Debugging info stripped from file in .DBG file
-	ImageFileRemovableRunFromSwap = 0x0400 // If Image is on removable media, copy and run from the swap file.
-	ImageFileNetRunFromSwap       = 0x0800 // If Image is on Net, copy and run from the swap file.
-	ImageFileSystem               = 0x1000 // System File.
-	ImageFileDLL                  = 0x2000 // File is a DLL.
-	ImageFileUpSystemOnly         = 0x4000 // File should only be run on a UP machine
-	ImageFileBytesReservedHigh    = 0x8000 // Bytes of machine word are reversed.
+	// Image file only. This flag indicates that the file contains no base
+	// relocations and must be loaded at its preferred base address. In the
+	// case of base address conflict, the OS loader reports an error. This flag
+	// should not be set for managed PE files.
+	ImageFileRelocsStripped = 0x0001
+
+	// Flag indicates that the file is an image file (EXE or DLL). This flag
+	// should be set for managed PE files. If it is not set, this generally
+	// indicates a linker error (i.e. no unresolved external references).
+	ImageFileExecutableImage = 0x0002
+
+	// COFF line numbers have been removed. This flag should be set for managed
+	// PE files because they do not use the debug information embedded in the
+	// PE file itself. Instead, the debug information is saved in accompanying
+	// program database (PDB) files.
+	ImageFileLineNumsStripped = 0x0004
+
+	// COFF symbol table entries for local symbols have been removed. This flag
+	// should be set for managed PE files, for the reason given in the preceding
+	// entry.
+	ImageFileLocalSymsStripped = 0x0008
+
+	// Aggressively trim the working set.
+	ImageFileAgressibeWsTrim = 0x0010
+
+	// Application can handle addresses beyond the 2GB range. This flag should
+	// not be set for pure-IL managed PE files of versions 1.0 and 1.1 but can
+	// be set for v2.0+ files.
+	ImageFileLargeAddressAware = 0x0020
+
+	// Little endian.
+	ImageFileBytesReservedLow = 0x0080
+
+	// Machine is based on 32-bit architecture. This flag is usually set by
+	// the current versions of code generators producing managed PE files.
+	// Version 2.0 and newer, however, can produce 64-bit specific images,
+	// which don’t have this flag set.
+	ImageFile32BitMachine = 0x0100
+
+	// Debug information has been removed from the image file.
+	ImageFileDebugStripped = 0x0200
+
+	// If the image file is on removable media, copy and run it from the swap
+	// file.
+	ImageFileRemovableRunFromSwap = 0x0400
+
+	// If the image file is on a network, copy and run it from the swap file.
+	ImageFileNetRunFromSwap = 0x0800
+
+	// The image file is a system file (for example, a device driver). This flag
+	ImageFileSystem = 0x1000
+
+	// The image file is a DLL rather than an EXE. It cannot be directly run.
+	ImageFileDLL = 0x2000
+
+	// The image file should be run on a uniprocessor machine only.
+	ImageFileUpSystemOnly = 0x4000
+
+	// Big endian.
+	ImageFileBytesReservedHigh = 0x8000
 )
 
-// Subsystem values of an OptionalHeader
+// Subsystem values of an OptionalHeader.
 const (
 	ImageSubsystemUnknown                = 0  // An unknown subsystem.
 	ImageSubsystemNative                 = 1  // Device drivers and native Windows processes
