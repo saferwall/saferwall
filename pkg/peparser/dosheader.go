@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 )
 
@@ -75,10 +74,9 @@ type ImageDosHeader struct {
 // without Windows, the program could at least print out amessage saying that
 // Windows was required to run the executable.
 func (pe *File) ParseDOSHeader() (err error) {
-	offset := 0
-	size := binary.Size(pe.DosHeader)
-	buf := bytes.NewReader(pe.data[offset : offset+size])
-	err = binary.Read(buf, binary.LittleEndian, &pe.DosHeader)
+	offset := uint32(0)
+	size := uint32(binary.Size(pe.DosHeader))
+	err = pe.structUnpack(&pe.DosHeader, offset, size)
 	if err != nil {
 		return err
 	}

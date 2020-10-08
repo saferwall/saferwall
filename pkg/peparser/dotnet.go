@@ -4,11 +4,6 @@
 
 package pe
 
-import (
-	"bytes"
-	"encoding/binary"
-)
-
 // COM+ Header entry point flags.
 const (
 	COMImageFlagsILOnly           = 0x00000001
@@ -80,8 +75,7 @@ func (pe *File) parseCLRHeaderDirectory(rva, size uint32) error {
 
 	clrHeader := ImageCOR20Header{}
 	offset := pe.getOffsetFromRva(rva)
-	buf := bytes.NewReader(pe.data[offset : offset+size])
-	err := binary.Read(buf, binary.LittleEndian, &clrHeader)
+	err := pe.structUnpack(&clrHeader, offset, size)
 	if err != nil {
 		return err
 	}

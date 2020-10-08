@@ -492,7 +492,6 @@ func (pe *File) parseExceptionDirectory(rva, size uint32) error {
 
 	// The target platform determines which format of the function table entry
 	// to use.
-
 	var exceptions []Exception
 	fileOffset := pe.getOffsetFromRva(rva)
 

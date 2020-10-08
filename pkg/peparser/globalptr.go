@@ -9,8 +9,10 @@ import (
 	"log"
 )
 
-// This data directory is set to all zeros if the target architecture
-// (for example, I386 or AMD64) does not use the concept of a global pointer.
+// RVA of the value to be stored in the global pointer register. The size must
+// be set to 0. This data directory is set to all zeros if the target 
+// architecture (for example, I386 or AMD64) does not use the concept of a \
+// global pointer.
 func (pe *File) parseGlobalPtrDirectory(rva, size uint32) error {
 
 	log.Println("PE Contains a Global Pointer directory")

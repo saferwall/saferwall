@@ -87,6 +87,11 @@ type ImageTLSDirectory64 struct {
 	Characteristics uint32
 }
 
+// TLS provides direct PE and COFF support for static thread local storage (TLS).
+// TLS is a special storage class that Windows supports in which a data object 
+// is not an automatic (stack) variable, yet is local to each individual thread 
+// that runs the code. Thus, each thread can maintain a different value for a 
+// variable declared by using TLS.
 func (pe *File) parseTLSDirectory(rva, size uint32) error {
 
 	tls := TLSDirectory{}

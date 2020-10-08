@@ -272,6 +272,13 @@ type ImageDebugMisc struct {
 	Data string
 }
 
+// Image files contain an optional debug directory that indicates what form of 
+// debug information is present and where it is. This directory consists of an
+// array of debug directory entries whose location and size are indicated in the
+// image optional header.
+// The debug directory can be in a discardable .debug section (if one exists),
+// or it can be included in any other section in the image file, or not be in a
+// section at all.
 func (pe *File) parseDebugDirectory(rva, size uint32) error {
 
 	// Define some vars.

@@ -45,6 +45,12 @@ type BoundForwardedRefData struct {
 	Name   string
 }
 
+// This table is an array of bound import descriptors, each of which describes
+// a DLL this image was bound up with at the time of the image creation.
+// The descriptors also carry the time stamps of the bindings, and if the 
+// bindings are up-to-date, the OS loader uses these bindings as a “shortcut” 
+// for API import. Otherwise, the loader ignores the bindings and resolves the
+// imported APIs through the Import tables.
 func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 	var sectionsAfterOffset []uint32
 	var safetyBoundary uint32
