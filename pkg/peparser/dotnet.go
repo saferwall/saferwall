@@ -206,7 +206,15 @@ type MetadataStreamHeader struct {
 	// characters (plus zero terminator). The name might be shorter, in which
 	// case the size of the stream header is correspondingly reduced, padded to
 	// the 4-byte boundary.
-	Name [32]byte
+	Name string
+}
+
+// CLRData embeds the Common Language Runtime Header structure as well as the
+// Metadata header structure.
+type CLRData struct {
+	CLRHeader             *ImageCOR20Header
+	MetadataHeader        *MetadataHeader
+	MetadataStreamHeaders []*MetadataStreamHeader
 }
 
 func (pe *File) parseMetadataHeader(rva, size uint32) error {
@@ -243,6 +251,41 @@ func (pe *File) parseMetadataHeader(rva, size uint32) error {
 		return err
 	}
 
+	pe.CLR.MetadataHeader = &mh
+
+	// Immediately following the MetadataHeader is a series of Stream Headers.
+	// A “stream” is to the metadata what a “section” is to the assembly. The
+	// NumberOfStreams property indicates how many StreamHeaders to read.
+	offset += 4
+	for i := uint16(0); i < mh.Streams; i++ {
+		sh := MetadataStreamHeader{}
+		if sh.Offset, err = pe.ReadUint32(offset); err != nil {
+			return err
+		}
+		if sh.Size, err = pe.ReadUint32(offset + 4); err != nil {
+			return err
+		}
+
+		// Name requires a special treatement.
+		offset += 8
+		for j := uint32(0); j <= 32; j++ {
+			var c uint8
+			if c, err = pe.ReadUint8(offset); err != nil {
+				return err
+			}
+
+			offset++
+			if c == 0 && (j+1) % 4 == 0 {
+				break
+			}
+			if c != 0 {
+				sh.Name += string(c)
+			}
+		}
+
+		pe.CLR.MetadataStreamHeaders = append(pe.CLR.MetadataStreamHeaders, &sh)
+
+	}
 	return nil
 
 }
@@ -254,18 +297,19 @@ func (pe *File) parseMetadataHeader(rva, size uint32) error {
 // language runtime header in the .text section.
 func (pe *File) parseCLRHeaderDirectory(rva, size uint32) error {
 
+	clr := CLRData{}
 	clrHeader := ImageCOR20Header{}
 	offset := pe.getOffsetFromRva(rva)
 	err := pe.structUnpack(&clrHeader, offset, size)
 	if err != nil {
 		return err
 	}
-
+	clr.CLRHeader = &clrHeader
 	if clrHeader.MetaData.VirtualAddress != 0 && clrHeader.MetaData.Size != 0 {
 		pe.parseMetadataHeader(clrHeader.MetaData.VirtualAddress,
 			clrHeader.MetaData.Size)
 	}
 
-	pe.CLRHeader = &clrHeader
+	pe.CLR = clr
 	return nil
 }
