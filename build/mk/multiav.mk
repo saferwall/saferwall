@@ -70,7 +70,7 @@ ifeq ($(AV_VENDOR),trendmicro)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg TREND_MICRO_LICENSE_KEY=$(TREND_MICRO_LICENSE_KEY)")
 endif
 
-	sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	@sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-build-av-go:	## Build the AV with the gRPC server
 	sudo make docker-build IMG=go$(AV_VENDOR) VERSION=0.0.2 \
@@ -82,9 +82,9 @@ multiav-release-av-go:	## Release the AV with the gRPC server
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=.
 
-AV_LIST = avast avira bitdefender clamav drweb comodo eset fsecure kaspersky mcafee sophos symantec trendmicro windefender
+AVs = avast avira bitdefender clamav drweb comodo eset fsecure kaspersky mcafee sophos symantec trendmicro windefender
 multiav-build: 	## Build all AVs.
-	for av in $(AV_LIST) ; do \
+	for av in $(AVs) ; do \
 		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \
 		make multiav-build-av AV_VENDOR=$$av ; \
 		EXIT_CODE=$$? ; \
@@ -94,7 +94,7 @@ multiav-build: 	## Build all AVs.
 	done
 
 multiav-release: ## Build and release all AVs.
-	for av in $(AV_LIST) ; do \
+	for av in $(AVs) ; do \
 		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \
 		make multiav-build-av AV_VENDOR=$$av   ; \
 		EXIT_CODE=$$? ; \
@@ -104,7 +104,7 @@ multiav-release: ## Build and release all AVs.
 	done
 
 multiav-build-go:	## Build all AVs (go agents).
-	for av in $(AV_LIST) ; do \
+	for av in $(AVs) ; do \
 		echo "${GREEN} [*] =============== Building go-$$av =============== ${RESET}" ; \
 		make multiav-build-av-go AV_VENDOR=$$av   ; \
 		EXIT_CODE=$$? ; \
@@ -114,7 +114,7 @@ multiav-build-go:	## Build all AVs (go agents).
 	done
 
 multiav-release-go:	## Build and release all AVs (go agents).
-	for av in $(AV_LIST) ; do \
+	for av in $(AVs) ; do \
 		echo "${GREEN} [*] =============== Building go-$$av =============== ${RESET}" ; \
 		make multiav-release-av-go AV_VENDOR=$$av  ; \
 		EXIT_CODE=$$? ; \
