@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 	"reflect"
 	"sort"
@@ -227,12 +226,12 @@ type ImageSectionHeader struct {
 	Characteristics uint32
 }
 
-// ParseSectionHeader parses the PE section headers.
-// Each row of the section table is, in effect, a section header. This table
-// immediately follows the optional header, if any.
+// ParseSectionHeader parses the PE section headers. Each row of the section
+// table is, in effect, a section header. It must immediately follow the PE
+// header.
 func (pe *File) ParseSectionHeader() (err error) {
 
-	// get the first section offset.
+	// Get the first section offset.
 	optionalHeaderOffset := pe.DosHeader.AddressOfNewEXEHeader + 4 +
 		uint32(binary.Size(pe.NtHeader.FileHeader))
 	offset := optionalHeaderOffset +
@@ -243,11 +242,15 @@ func (pe *File) ParseSectionHeader() (err error) {
 
 	section := ImageSectionHeader{}
 	numberOfSections := pe.NtHeader.FileHeader.NumberOfSections
-	sectionSize := uint32(binary.Size(section))
+	sectionHeaderSize := uint32(binary.Size(section))
 
+	// The section header indexing in the table is one-based, with the order of
+	// the sections defined by the linker. The sections follow one another
+	// contiguously in the order defined by the section header table, with 
+	// starting RVAs aligned by the value of the SectionAlignment field of the
+	// PE header.
 	for i := uint16(0); i < numberOfSections; i++ {
-		buf := bytes.NewReader(pe.data[offset : offset+sectionSize])
-		err = binary.Read(buf, binary.LittleEndian, &section)
+		err := pe.structUnpack(&section, offset, sectionHeaderSize)
 		if err != nil {
 			return err
 		}
@@ -303,7 +306,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 		}
 
 		pe.Sections = append(pe.Sections, section)
-		offset += sectionSize
+		offset += sectionHeaderSize
 	}
 
 	// Sort the sections by their VirtualAddress. This will allow to check
@@ -311,7 +314,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 	sort.Sort(byVirtualAddress(pe.Sections))
 
 	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
-		offset += sectionSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
+		offset += sectionHeaderSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
 	}
 
 	// There could be a problem if there are no raw data sections

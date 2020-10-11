@@ -155,7 +155,6 @@ func (pe *File) GetAnomalies() error {
 
 	// Use oh for fields which are common for both structures.
 	oh := oh32
-
 	if oh.AddressOfEntryPoint != 0 && oh.AddressOfEntryPoint < oh.SizeOfHeaders {
 		pe.Anomalies = append(pe.Anomalies, AnoAddressOfEPLessSizeOfHeaders)
 	}

@@ -17,8 +17,8 @@ const (
 var (
 	ErrExportMaxOrdEntries       = "Export directory contains more than max ordinal entries"
 	ErrExportManyRepeatedEntries = "Export directory contains many repeated entries"
-	AnoNullNumberOfFunctions = "Export directory contains zero number of functions"
-	AnoNullAddressOfFunctions = "Export directory contains zero address of functions"
+	AnoNullNumberOfFunctions     = "Export directory contains zero number of functions"
+	AnoNullAddressOfFunctions    = "Export directory contains zero address of functions"
 )
 
 // ImageExportDirectory represents the IMAGE_EXPORT_DIRECTORY structure.
@@ -94,7 +94,7 @@ type Export struct {
 // - an EXE can have exports (no need of relocation nor DLL flag), and can use
 // them normally
 // - exports can be not used for execution, but for documenting the internal code
-// - numbers of functions will be different from number of names when the file 
+// - numbers of functions will be different from number of names when the file
 // is exporting some functions by ordinal.
 func (pe *File) parseExportDirectory(rva, size uint32) error {
 
@@ -246,8 +246,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 
 	if parsingFailed {
-		fmt.Printf("RVA AddressOfNames in the export directory points to an " + 
-		 "invalid address: 0x%x\n", exportDir.AddressOfNames)
+		fmt.Printf("RVA AddressOfNames in the export directory points to an "+
+			"invalid address: 0x%x\n", exportDir.AddressOfNames)
 	}
 
 	maxFailedEntries = 10
@@ -313,7 +313,6 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	return nil
 }
-
 
 // GetExportFunctionByRVA return an export function given an RVA.
 func (pe *File) GetExportFunctionByRVA(rva uint32) ExportFunction {

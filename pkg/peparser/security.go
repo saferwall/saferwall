@@ -199,6 +199,7 @@ func (pe *File) Authentihash() []byte {
 // and integrity of software binaries. Authenticode is based on the Public-Key
 // Cryptography Standards (PKCS) #7 standard and uses X.509 v3 certificates to
 // bind an Authenticode-signed file to the identity of a software publisher.
+// This data are not loaded into memory as part of the image file.
 func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 
 	var pkcs *pkcs7.PKCS7
@@ -299,9 +300,9 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 			}
 		}
 
-		// Subsequent entries are accessed by advancing that entry's dwLength bytes,
-		// rounded up to an 8-byte multiple, from the start of the current attribute
-		// certificate entry.
+		// Subsequent entries are accessed by advancing that entry's dwLength 
+		// bytes, rounded up to an 8-byte multiple, from the start of the 
+		// current attribute certificate entry.
 		nextOffset := certHeader.Length + fileOffset
 		nextOffset = ((nextOffset + 8 - 1) / 8) * 8
 

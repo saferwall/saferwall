@@ -5,7 +5,6 @@
 package pe
 
 import (
-	"bytes"
 	"encoding/binary"
 )
 
@@ -34,7 +33,7 @@ type ImageDelayImportDescriptor struct {
 
 	// The delay import name table (INT) contains the names of the imports that
 	// might require loading. They are ordered in the same fashion as the
-	// function pointers in the IAT. 
+	// function pointers in the IAT.
 	ImportNameTableRVA uint32
 
 	// The delay bound import address table (BIAT) is an optional table of
@@ -72,8 +71,8 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 		importDelayDesc := ImageDelayImportDescriptor{}
 		fileOffset := pe.getOffsetFromRva(rva)
 		importDescSize := uint32(binary.Size(importDelayDesc))
-		buf := bytes.NewReader(pe.data[fileOffset : fileOffset+importDescSize])
-		err := binary.Read(buf, binary.LittleEndian, &importDelayDesc)
+		err := pe.structUnpack(&importDelayDesc, fileOffset, importDescSize)
+
 		// If the RVA is invalid all would blow up. Some EXEs seem to be
 		// specially nasty and have an invalid RVA.
 		if err != nil {
@@ -115,7 +114,7 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 
 		nameRVA := uint32(0)
 		if importDelayDesc.Attributes == 0 {
-			nameRVA = importDelayDesc.Name - 
+			nameRVA = importDelayDesc.Name -
 				pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
 		} else {
 			nameRVA = importDelayDesc.Name
@@ -137,7 +136,6 @@ func (pe *File) parseDelayImportDirectory(rva, size uint32) error {
 
 	return nil
 }
-
 
 // GetDelayImportEntryInfoByRVA return an import function + index of the entry given
 // an RVA.

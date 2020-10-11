@@ -4,6 +4,8 @@
 
 package pe
 
+// Architecture-specific data. This data directory is not used 
+// (set to all zeros) for I386, IA64, or AMD64 architecture.
 func (pe *File) parseArchitectureDirectory(rva, size uint32) error {
 	return nil
 }
