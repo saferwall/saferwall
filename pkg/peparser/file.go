@@ -175,7 +175,7 @@ func (pe *File) ParseDataDirectories() error {
 	// Iterate over data directories and call the appropriate function.
 	for entryIndex := 0; entryIndex < ImageNumberOfDirectoryEntries; entryIndex++ {
 
-		if entryIndex != 2 {
+		if entryIndex != 14 {
 			continue
 		}
 		var va, size uint32

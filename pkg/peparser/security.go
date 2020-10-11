@@ -300,9 +300,9 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 			}
 		}
 
-		// Subsequent entries are accessed by advancing that entry's dwLength bytes,
-		// rounded up to an 8-byte multiple, from the start of the current attribute
-		// certificate entry.
+		// Subsequent entries are accessed by advancing that entry's dwLength 
+		// bytes, rounded up to an 8-byte multiple, from the start of the 
+		// current attribute certificate entry.
 		nextOffset := certHeader.Length + fileOffset
 		nextOffset = ((nextOffset + 8 - 1) / 8) * 8
 

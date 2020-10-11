@@ -116,7 +116,7 @@ type ResourceDirectoryEntry struct {
 
 	// If the resource is identified by name this attribute will contain the
 	// name string. Empty string otherwise. If identified by id, the id is
-	//available at .Id field.
+	// available at .Id field.
 	Name string
 
 	// The resource identifier.
