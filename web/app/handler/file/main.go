@@ -33,6 +33,9 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+const (
+	sha256regex = "^[a-f0-9]{64}$"
+)
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -242,9 +245,9 @@ func GetFileByFields(fields []string, sha256 string) (File, error) {
 func GetFile(c echo.Context) error {
 
 	// get path param
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	matched, _ := regexp.MatchString(sha256regex, sha256)
 	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
@@ -291,7 +294,7 @@ func GetFile(c echo.Context) error {
 func PutFile(c echo.Context) error {
 
 	// get path param
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 
 	// Read the json body
 	b, err := ioutil.ReadAll(c.Request().Body)
@@ -315,7 +318,7 @@ func PutFile(c echo.Context) error {
 			"verbose_msg": msg})
 	}
 
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	matched, _ := regexp.MatchString(sha256regex, sha256)
 	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
@@ -353,7 +356,7 @@ func PutFile(c echo.Context) error {
 func DeleteFile(c echo.Context) error {
 
 	// get path param
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 	return c.JSON(http.StatusOK, sha256)
 }
 
@@ -557,7 +560,7 @@ func DeleteFiles(c echo.Context) error {
 // Download downloads a file.
 func Download(c echo.Context) error {
 	// get path param
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 
 	reader, err := app.MinioClient.GetObject(
 		app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
@@ -619,8 +622,8 @@ func Actions(c echo.Context) error {
 	actionType := actions["type"].(string)
 
 	// get path param
-	sha256 := c.Param("sha256")
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	sha256 := strings.ToLower(c.Param("sha256"))
+	matched, _ := regexp.MatchString(sha256regex, sha256)
 	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
@@ -739,7 +742,7 @@ func Actions(c echo.Context) error {
 func PostComment(c echo.Context) error {
 
 	// get path param
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 
 	// Read the json body
 	b, err := ioutil.ReadAll(c.Request().Body)
@@ -763,7 +766,7 @@ func PostComment(c echo.Context) error {
 			"verbose_msg": msg})
 	}
 
-	matched, _ := regexp.MatchString("^[a-f0-9]{64}$", sha256)
+	matched, _ := regexp.MatchString(sha256regex, sha256)
 	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
 			Message:     "Invalid sha265",
@@ -828,7 +831,7 @@ func PostComment(c echo.Context) error {
 func DeleteComment(c echo.Context) error {
 
 	// Get the file doc.
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 	file, err := GetFileBySHA256(sha256)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -881,7 +884,7 @@ func ScanFileFromObjectStorage(c echo.Context) error {
 			"verbose_msg": "Username does not exists"})
 	}
 
-	sha256 := c.Param("sha256")
+	sha256 := strings.ToLower(c.Param("sha256"))
 
 	// Fetch the object
 	reader, err := app.MinioClient.GetObject(
