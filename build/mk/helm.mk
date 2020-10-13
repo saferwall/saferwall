@@ -29,12 +29,16 @@ helm-release:		## Install Helm release.
 helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(RELEASE_NAME) saferwall
 
-helm-init-cert-manager: # Init cert-manager
+helm-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager
 	# Install the CustomResourceDefinition
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.14.2/cert-manager.crds.yaml
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.2/cert-manager.yaml
 
 helm-update-dependency: # Update Helm deployement dependecies
 	cd  $(ROOT_DIR)/deployments \
 		&& helm dependency update saferwall
+
+helm-cert-manager-rm-crd: ## Delete cert-manager crd objects.
+	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
+	kubectl delete namespace cert-manager
