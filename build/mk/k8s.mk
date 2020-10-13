@@ -129,3 +129,12 @@ k8s-kube-capacity: 	## Install kube-capacity
 
 k8s-delete-all-objects: ## Delete all objects
 	kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+
+k8s-dump-tls-secrets: ## Dump TLS secrets
+	sudo apt install jq -y
+	$(eval HELM_RELEASE_NAME := $(shell sudo helm ls --filter saferwall --output json | jq '.[0].name' | tr -d '"'))
+	$(eval HELM_SECRET_TLS_NAME := $(HELM_RELEASE_NAME)-tls)
+	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['ca\.crt']}" | base64 --decode  >> ca.crt
+	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.crt']}" | base64 --decode  >> tls.crt
+	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
+	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
