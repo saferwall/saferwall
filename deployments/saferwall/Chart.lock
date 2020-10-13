@@ -13,10 +13,10 @@ dependencies:
   version: 1.1.1
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v0.14.3
-- name: nginx-ingress
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 1.36.3
+  version: v1.0.3
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx/
+  version: 3.7.0
 - name: filebeat
   repository: https://helm.elastic.co
   version: 7.8.0
@@ -29,5 +29,5 @@ dependencies:
 - name: prometheus-operator
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 9.1.0
-digest: sha256:a70239df8f0501a914efd10139d37ff4e279ed625c3d8a78b7d191e967a84af4
-generated: "2020-07-21T11:03:32.744699327+10:00"
+digest: sha256:82fa0af5827eb0e0d1bf464edb4a8db525c0d0fc15421cb6a39455c0517880ae
+generated: "2020-10-13T12:39:48.408235986+11:00"

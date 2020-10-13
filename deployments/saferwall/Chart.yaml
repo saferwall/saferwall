@@ -2,8 +2,8 @@ apiVersion: v2
 name: saferwall
 description: A hackable malware sandbox for the 21st Century
 type: application
-version: 0.0.2
-appVersion: 0.0.2
+version: 0.0.3
+appVersion: 0.0.3
 home: https://saferwall.com
 icon: https://saferwall.com/favicon.png
 sources:
@@ -29,13 +29,13 @@ dependencies:
       repository: https://kubernetes-charts.storage.googleapis.com/
       condition: nfs-server-provisioner.enabled
     - name: cert-manager
-      version: 0.14.3
+      version: 1.0.3
       repository: https://charts.jetstack.io
       condition: cert-manager.enabled
-    - name: nginx-ingress
-      version: 1.36.3
-      repository: https://kubernetes-charts.storage.googleapis.com/
-      condition: nginx-ingress.enabled
+    - name: ingress-nginx
+      version: 3.7.0
+      repository: https://kubernetes.github.io/ingress-nginx/
+      condition: ingress-nginx.enabled
     - name: filebeat
       version: 7.8.0
       repository: https://helm.elastic.co

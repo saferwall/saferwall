@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "saferwall.fullname" . }}
@@ -23,22 +23,31 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: {{ include "saferwall.frontend.fullname" . }}
-          servicePort: {{ .Values.frontend.service.port }}
+          service:
+            name: {{ include "saferwall.frontend.fullname" . }}
+            port:
+              number: {{ .Values.frontend.service.port }}
   - host: {{ .Values.global.backendDomainName }}
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: {{ include "saferwall.backend.fullname" . }}
-          servicePort: {{ .Values.backend.service.port }}
+          service:
+            name: {{ include "saferwall.backend.fullname" . }}
+            port:
+              number: {{ .Values.backend.service.port }}
 {{- if .Values.website.enabled -}}
   - host: {{ .Values.global.websiteDomainName }}
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: {{ include "saferwall.website.fullname" . }}
-          servicePort: {{ .Values.website.service.port }}
+          service:
+            name: {{ include "saferwall.website.fullname" . }}
+            port:
+              number: {{ .Values.website.service.port }}
 {{- end }}
