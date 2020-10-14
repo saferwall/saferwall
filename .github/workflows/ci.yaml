@@ -10,61 +10,61 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-        - name: Setup config
-          run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-        - name: Install Minikube
-          run: make minikube-install
+      - name: Install Minikube
+        run: make minikube-install
 
-        - name: Install Kubectl
-          run: make kubectl-install
+      - name: Install Kubectl
+        run: make kubectl-install
 
-        - name: Create Minikube cluster
-          run: make minikube-up
-          
-        - name: Install Helm, add repos, and build dependencies
-          run: |
-              make helm-install \
-              && make helm-add-repos \
-              && make helm-update-dependency \
-              && make k8s-init-cert-manager
+      - name: Create Minikube cluster
+        run: make minikube-up
+        
+      - name: Install Helm, add repos, and build dependencies
+        run: |
+            make helm-install \
+            && make helm-add-repos \
+            && make helm-update-dependency \
+            && make k8s-init-cert-manager
 
-        - name: Helm Release
-          run: make helm-release
+      - name: Helm Release
+        run: make helm-release
 
-        - name: Wait for pods to be ready
-          run: kubectl wait --for=condition=Ready pods --all --timeout=360s
+      - name: Wait for pods to be ready
+        run: kubectl wait --for=condition=Ready pods --all --timeout=360s
 
   deploy-on-kind:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-        - name: Setup config
-          run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-        - name: Install Kind
-          run: make kind-install
+      - name: Install Kind
+        run: make kind-install
 
-        - name: Install Kubectl
-          run: make kubectl-install
+      - name: Install Kubectl
+        run: make kubectl-install
 
-        - name: Install Helm
-          run: make helm-install
+      - name: Install Helm
+        run: make helm-install
 
-        - name: Create Kind cluster and install dependencies
-          run: sudo make kind-up
-          
-        - name: Helm Release
-          run: sudo make helm-release
+      - name: Create Kind cluster and install dependencies
+        run: sudo make kind-up
+        
+      - name: Helm Release
+        run: sudo make helm-release
 
-        - name: Wait for pods to be ready
-          run: kubectl wait --for=condition=Ready pods --all --timeout=360s
+      - name: Wait for pods to be ready
+        run: kubectl wait --for=condition=Ready pods --all --timeout=360s
