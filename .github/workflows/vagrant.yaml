@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  deploy-on-minikube:
+  Build Vagrant Box:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
