@@ -19,6 +19,6 @@ jobs:
 
       - name: Create Vagrant box
         run: |
-            cd saferwall/build/vagrant \
+            cd ./build/vagrant \
             && vagrant up
         
