@@ -17,4 +17,6 @@ kind-deploy-ingress-nginx: ## Deploy ngress-nginx in Kind.
 kind-delete-cluster:	## Delete Kind cluster.
 	sudo kind delete clusters saferwall
 
-kind-up: kind-create-cluster kind-deploy-ingress-nginx helm-init-cert-manager		## Deploy Kind cluster and install requirements.
+kind-up: ## Deploy Kind cluster and install requirements.
+	make kind-create-cluster
+	make kind-deploy-ingress-nginx

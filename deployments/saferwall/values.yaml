@@ -356,7 +356,7 @@ nfs-server-provisioner:
   enabled: true
 
 ########### NGINX INGRESS  #############
-nginx-ingress:
+ingress-nginx:
   enabled: false
   controller:
     config:

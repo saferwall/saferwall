@@ -9,14 +9,14 @@ It aims for the following goals:
 - Provide a collaborative platform to share samples among malware researchers.
 - Acts as a system expert, to help researchers generates an automated malware analysis report.
 - Hunting platform to find new malwares.
-- Quality ensurance for signature before releasing.
+- Quality ensurance for signatures before releasing.
 
 <p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="auto" height="auto"></p>
 
 ## Features
 
 - Static analysis:
-    - Crypto hashes, packer identification
+    - Crypto hashes, packer identification,
     - Strings extraction
     - Portable Executable file parser
 - Multiple AV scanner which includes major antivirus vendors:
@@ -33,11 +33,16 @@ It aims for the following goals:
 
 ## Installation
 
-Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high availability, scalibility and the huge ecosystem behind it. 
+Saferwall take advantage of [kubernetes](https://kubernetes.io/) for its high availability, scalability and the huge ecosystem behind it. 
 
 Everything runs inside Kubernetes. You can either deploy it in the cloud or have it self hosted.
 
-To make it easy to get a production grade Kubernetes cluster up and running, we use [kops](https://github.com/kubernetes/kops). It automatically provisions a kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only AWS is officially supported. Refer to the following [link](https://github.com/saferwall/saferwall/blob/master/docs/BUILDING.md) for how to setup.
+Here are the different deployment options available depending on how you are planning to use it:
+- Just to get a feeling of the app, you can use the already hosted instance in [https://saferwall.com](https://saferwall.com).
+- For __local testing__ purposes or __individual__ usage, a [Vagrant](https://www.vagrantup.com/) box is available, the only requirements is virtualbox and vagrant. This setup runs on Windows, Linux and OSX. Please refer to this [link](docs/DEPLOYING-TEST.md) for detailed steps.
+- In __development scenarios__, when you intend to make changes to the code and add features, please refer to this [link](docs/DEPLOYING-DEV.md) for detailed steps.
+- For __production grade deployment__, we use [kops](https://github.com/kubernetes/kops). It automatically provisions a kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only [AWS](https://aws.amazon.com/) is officially supported. A [helm](https://helm.sh/) chart is also provided for fast deployement. This work well for compagnies or small teams planning to scan a massive amounts of file. Please refer to this [link](docs/DEPLOYING-PROD.md) for detailed steps.
+
 
 ## Built with:
 

@@ -1,0 +1,24 @@
+name: Generate Vagrant Box
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy-on-minikube:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup config
+        run: cp example.env .env
+
+      - name: Install Vagrant
+        run: make vagrant-install
+
+      - name: Create Vagrant box
+        run: |
+            cd saferwall/build/vagrant \
+            && vagrant up
+        
