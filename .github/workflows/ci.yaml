@@ -72,7 +72,9 @@ jobs:
             && sudo make k8s-init-cert-manager
         
       - name: Helm Release
-        run: sudo make helm-release
+        run: |
+            cd ./deployments \
+            && sudo helm install saferwall --generate-name
 
       - name: Wait for pods to be ready
         run: kubectl wait --for=condition=Ready pods --all --timeout=360s

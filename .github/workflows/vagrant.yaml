@@ -17,6 +17,9 @@ jobs:
       - name: Install Vagrant
         run: make vagrant-install
 
+      - name: Install VBox
+        run: make vbox-install
+
       - name: Create Vagrant box
         run: |
             cd ./build/vagrant \
