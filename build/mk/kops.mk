@@ -114,6 +114,6 @@ saferwall: ## Deploy the cluster
 	make helm-install
 	make helm-add-repos
 	make make helm-update-dependency
-	make helm-init-cert-manager
+	make k8s-init-cert-manager
 	# Initial install
 	make helm-release 

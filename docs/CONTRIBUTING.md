@@ -28,7 +28,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 ## Requirements
 
 - Copy the `example.env` to `.env`. This file stores the project configuration.
-c- Nearly all operations that we work with daily in this project is automated with a make command. Here is the full list of supported commands (just type `make` on the root directory):
+- Nearly all operations that we work with daily in this project, is automated using __makefiles__. You can print thefull list of supported commands by typing `make` on the root directory:
 
 ```shell
  make

@@ -138,3 +138,13 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.crt']}" | base64 --decode  >> tls.crt
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
+
+k8s-init-cert-manager: ## Init cert-manager
+	# Create the namespace for cert-manager.
+	kubectl create namespace cert-manager
+	# Install the CustomResourceDefinition
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.2/cert-manager.yaml
+
+k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
+	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
+	kubectl delete namespace cert-manager

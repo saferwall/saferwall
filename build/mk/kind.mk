@@ -20,4 +20,3 @@ kind-delete-cluster:	## Delete Kind cluster.
 kind-up: ## Deploy Kind cluster and install requirements.
 	make kind-create-cluster
 	make kind-deploy-ingress-nginx
-	make helm-init-cert-manager	
