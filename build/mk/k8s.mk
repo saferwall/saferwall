@@ -144,6 +144,11 @@ k8s-init-cert-manager: ## Init cert-manager
 	kubectl create namespace cert-manager
 	# Install the CustomResourceDefinition
 	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.2/cert-manager.yaml
+	# Verify the installation.
+	kubectl wait --namespace cert-manager \
+	--for=condition=ready pod \
+	--selector=app.kubernetes.io/instance=cert-manager \
+	--timeout=90s
 
 k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
