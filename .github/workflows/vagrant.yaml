@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  Build Vagrant Box:
+  build-vagrant-box:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
