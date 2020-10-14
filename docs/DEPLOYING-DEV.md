@@ -48,7 +48,7 @@ Ubuntu 18.04/20.04 users will benefit from `make` commands available for quickly
 13. Wait until the output of `kubectl get pods` show all pods are running fine.
 14. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-    - Kind: 
+    - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
 15. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
 
 # Building AV Images
