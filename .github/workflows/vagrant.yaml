@@ -5,7 +5,8 @@ on:
     branches: [ master ]
 
 jobs:
-  deploy-on-minikube:
+## Disabled for now as Github action does not yet support nested virtualization.
+  build-vagrant-box:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -17,8 +18,19 @@ jobs:
       - name: Install Vagrant
         run: make vagrant-install
 
+      - name: Install VBox
+        run: make vbox-install
+
       - name: Create Vagrant box
         run: |
-            cd saferwall/build/vagrant \
+            cd ./build/vagrant \
             && vagrant up
         
+      - name: Create box package
+        run: make vagrant-package
+
+      - name: Authenticate to Vagrant cloud
+        run: make vagrant-login
+
+      - name: Publish the box
+        run: make vagrant-login

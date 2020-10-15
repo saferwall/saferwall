@@ -23,11 +23,15 @@ endif
 	kubectl config use-context minikube
 	minikube status
 ifneq ($(MINIKUBE_DRIVER),none)
-	sudo minikube addons enable ingress
+	minikube addons enable ingress
 endif
 	
 
 minikube-down:			## Stop and delete minikube cluster.
+ifeq ($(MINIKUBE_DRIVER),none)
 	sudo -E minikube stop
 	sudo -E minikube delete
-	sudo rm -rf /tmp/*
+else
+	minikube stop
+	minikube delete
+endif
