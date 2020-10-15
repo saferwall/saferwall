@@ -10,4 +10,7 @@ vagrant-install: ## Download and install HashiCorp Vagrant.
 	rm -f $(VAGRANT_ZIP_FILE)
 	vagrant version
 
+vagrant-package: ## Package Vagrant box.
+	$(eval VAGRANT_VM_NAME := $(shell VBoxManage list vms | cut -f 1 -d ' ' | tr -d '"'))
+	vagrant package --base $(VAGRANT_VM_NAME) --output saferwall
 
