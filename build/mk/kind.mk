@@ -16,7 +16,7 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	# set taint tolerations and schedule it to the custom labelled node.
 	sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 	# Wait a bit before probing for pods, otherwise you get: error: no matching resources found
-	sleep 30s
+	@echo "Sleeping 30 seconds" && sleep 30s
 	# Now the Ingress is all setup. Wait until is ready to process requests running:
 	sudo kubectl wait --namespace ingress-nginx \
 	--for=condition=ready pod \

@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
       vb.gui = false
   
       # Customize the amount of memory on the VM:
-      vb.memory = "4096"
+      vb.memory = "8192"
 
       # Customize the number of cpus on the VM:
       vb.cpus = 2
@@ -85,6 +85,7 @@ Vagrant.configure("2") do |config|
         && make helm-update-dependency \
         && make k8s-init-cert-manager \
         && make helm-release \
+        && echo "Waiting for pods to come up, timeout: 360s" \
         && sudo kubectl wait --for=condition=Ready pods --all --timeout=360s \
         && echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts \
         && curl -k -I https://mysaferwall.com \
