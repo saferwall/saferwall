@@ -5,6 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
+## Disabled for now as Github action does not yet support nested virtualization.
   build-vagrant-box:
     runs-on: ubuntu-20.04
     steps:
@@ -25,3 +26,11 @@ jobs:
             cd ./build/vagrant \
             && vagrant up
         
+      - name: Create box package
+        run: make vagrant-package
+
+      - name: Authenticate to Vagrant cloud
+        run: make vagrant-login
+
+      - name: Publish the box
+        run: make vagrant-login
