@@ -51,16 +51,16 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
       # Display the VirtualBox GUI when booting the machine
-      vb.gui = true
+      vb.gui = false
   
       # Customize the amount of memory on the VM:
-      vb.memory = "2048"
+      vb.memory = "4096"
 
       # Customize the number of cpus on the VM:
       vb.cpus = 2
 
       # Disable nested virtualization on the VM:
-      vb.customize ["modifyvm", :id, "--nested-hw-virt", "off"]
+      # vb.customize ["modifyvm", :id, "--nested-hw-virt", "off"]
   end
   #
   # View the documentation for the provider you are using for more
@@ -82,7 +82,12 @@ Vagrant.configure("2") do |config|
         && make kind-up \
         && make helm-install \
         && make helm-add-repos \
+        && make helm-update-dependency \
         && make k8s-init-cert-manager \
-        && make helm-release
+        && make helm-release \
+        && sudo kubectl wait --for=condition=Ready pods --all --timeout=360s \
+        && echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts \
+        && curl -k -I https://mysaferwall.com \
+        && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
   SHELL
 end
