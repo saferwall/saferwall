@@ -43,6 +43,14 @@ jobs:
   #     - name: Wait for pods to be ready
   #       run: kubectl wait --for=condition=Ready pods --all --timeout=360s
 
+        - name: Add DNS entry
+          run: echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
+
+        - name: Check success
+          run: |
+              curl -k -I https://mysaferwall.com \
+              && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+
   deploy-on-kind:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -83,4 +91,6 @@ jobs:
         run: echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
 
       - name: Check success
-        run: curl -k -I https://mysaferwall.com && curl -k -I https://api.mysaferwall.com
+        run: |
+            curl -k -I https://mysaferwall.com \
+            && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
