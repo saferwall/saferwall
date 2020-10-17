@@ -1,7 +1,7 @@
 # Deploying documentation for developers
 
-Ubuntu 18.04/20.04 users will benefit from `make` commands available for quickly bootstrapping this deployment.
-- make sure `build-essential` are installed: `sudo apt-get install build-essential curl git -y`.
+Ubuntu `18.04/20.04` users will benefit from `make` commands available for quickly bootstrapping this deployment.
+- Install few dependencies: `sudo apt-get install make curl git -y`.
 - Clone the project: `git clone https://github.com/saferwall/saferwall`
 - Copy the `example.env` to `.env`, this file stores the project configuration.
 
@@ -11,21 +11,21 @@ Ubuntu 18.04/20.04 users will benefit from `make` commands available for quickly
   - If you don't want to run a VM, as it takes more resources and not ideal for a single developer machine, use [kind](https://kind.sigs.k8s.io/).
   - If you don't mind spinning a VM, or you want the most full-featured local Kubernetes solution, then you can go ahead with [minikube](https://minikube.sigs.k8s.io/docs/).
 
-We would __recommand you__ to go with `kind` if you don't know know which one to choos3.
+It is __recommanded__ to go with `kind` if you don't know know which one to choose.
 
 # Deploying in Kind or Minikube
 
-1. Install Docker: `make docker-install`.
-2. Install Kind: `make kind-install` or Minikube: `make minikube-install`
-3. Install Kubectl: `make kubectl-install`
-4. Minikube only users: 
-    - A hypervisor like QEMU/KVM or Virtualbox is required: KVM/QEMU: `make kvm-install` or VirtualBox: `make vbox-install`.
+1. Install `Docker`: `make docker-install`.
+2. Install `Kind`: `make kind-install` or Minikube: `make minikube-install`
+3. Install `Kubectl`: `make kubectl-install`
+4. __Minikube__ users only: 
+    - A hypervisor like `QEMU/KVM` or `Virtualbox` is required: For KVM/QEMU: `make kvm-install`, for VirtualBox: `make vbox-install`.
     - Edit the `.env` to specify which driver to use and number of cpus, ram and disk size:
         ```mk
         # supported values ['virtualbox', 'kvm2']
         export MINIKUBE_DRIVER=virtualbox
         export MINIKUBE_CPU=2
-        export MINIKUBE_MEMORY=4096
+        export MINIKUBE_MEMORY=6144
         export MINIKUBE_DISK_SIZE=40GB
         ```
 5. _Optional_ step: building the containers if you do not wish to use the public ones or you want to build your own.

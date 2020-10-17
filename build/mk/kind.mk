@@ -1,9 +1,9 @@
 KIND_VERSION = v0.9.0
 
 kind-install: ## Install Kind for local kubernetes cluster deployements.
-	curl -Lo kind "https://kind.sigs.k8s.io/dl/$(KIND_VERSION)/kind-$$(uname)-amd64"
+	curl -LosS kind "https://kind.sigs.k8s.io/dl/$(KIND_VERSION)/kind-$$(uname)-amd64"
 	chmod +x kind
-	sudo cp kind /usr/local/bin && rm kind
+	sudo mv kind /usr/local/bin
 	kind version
 
 kind-create-cluster:	## Create Kind cluster.
@@ -16,7 +16,7 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	# set taint tolerations and schedule it to the custom labelled node.
 	sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 	# Wait a bit before probing for pods, otherwise you get: error: no matching resources found
-	echo "Sleeping 30 seconds ..." && sleep 30s
+	sleep 30s
 	# Now the Ingress is all setup. Wait until is ready to process requests running:
 	sudo kubectl wait --namespace ingress-nginx \
 	--for=condition=ready pod \

@@ -16,9 +16,15 @@ vagrant-package: ## Package Vagrant box.
 vagrant-login:	## Authenticate to Vagrant cloud
 	vagrant cloud auth login --token $(VAGRANT_TOKEN)
 
-VAGRANT_DESCRIPTION = Saferwall kubernetes cluster for local use
-VAGRANT_SHORT_DESCRIPTION = A hackable malware sandbox for the 21st Century
+VAGRANT_DESCRIPTION = Saferwall kubernetes cluster for local use.
+VAGRANT_SHORT_DESCRIPTION = A hackable malware sandbox for the 21st Century.
 vagrant-publish:	## Upload the image to the cloud.
 	vagrant cloud publish saferwall/saferwall $(SAFERWALL_VER) virtualbox saferwall.box \
 	 -d "$(VAGRANT_DESCRIPTION)" --version-description "$(SAFERWALL_VER)"
 	  --release --short-description "$(VAGRANT_SHORT_DESCRIPTION)" --force
+
+vagrant-create:		## Create  Vagrant Box.
+	cd build/vagrant \
+		&& vagrant up \
+	make vagrant-package
+	make vagrant-publish

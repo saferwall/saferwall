@@ -3,7 +3,7 @@ HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
 helm-install:		## Install Helm.
-	wget $(HELM_URL)
+	wget -q $(HELM_URL)
 	tar zxvf $(HELM_ZIP)
 	sudo mv linux-amd64/helm /usr/local/bin/helm
 	rm -f $(HELM_ZIP)

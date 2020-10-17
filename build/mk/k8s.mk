@@ -1,9 +1,8 @@
-kubectl-install:		## Install kubectl
-	sudo apt-get update && sudo apt-get install -y apt-transport-https
-	curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-	echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-	sudo apt-get update
-	sudo apt-get install -y kubectl
+KUBECTL_VERSION = 1.19.2
+kubectl-install:		## Install kubectl.
+	curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VERSION)/bin/linux/amd64/kubectl
+	chmod +x kubectl
+	sudo mv kubectl /usr/local/bin
 	kubectl version --client
 
 KUBECTX_URL=https://github.com/ahmetb/kubectx/releases/download/v0.9.0/kubectx_v0.9.0_linux_x86_64.tar.gz
@@ -153,3 +152,6 @@ k8s-init-cert-manager: ## Init cert-manager
 k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
 	kubectl delete namespace cert-manager
+
+k8s-troubleshooting:
+	kubectl get events --sort-by='.metadata.creationTimestamp'

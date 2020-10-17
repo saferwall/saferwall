@@ -7,3 +7,7 @@ vbox-install:		## Install VirtualBox
 	sudo apt-get update
 	sudo apt-get install virtualbox-6.1 -y
 	sudo apt-get install -f
+
+vbox-troubleshoot:
+	vboxmanage startvm <vm-uuid> --type emergencystop
+
