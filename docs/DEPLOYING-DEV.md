@@ -11,6 +11,8 @@ Ubuntu 18.04/20.04 users will benefit from `make` commands available for quickly
   - If you don't want to run a VM, as it takes more resources and not ideal for a single developer machine, use [kind](https://kind.sigs.k8s.io/).
   - If you don't mind spinning a VM, or you want the most full-featured local Kubernetes solution, then you can go ahead with [minikube](https://minikube.sigs.k8s.io/docs/).
 
+We would __recommand you__ to go with `kind` if you don't know know which one to choos3.
+
 # Deploying in Kind or Minikube
 
 1. Install Docker: `make docker-install`.
@@ -48,7 +50,7 @@ Ubuntu 18.04/20.04 users will benefit from `make` commands available for quickly
 13. Wait until the output of `kubectl get pods` show all pods are running fine.
 14. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-    - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
+    - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
 15. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
 
 # Building AV Images
