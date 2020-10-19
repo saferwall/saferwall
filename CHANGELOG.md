@@ -5,11 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added
 - A portable executable (PE) file parser.
-- Add a UI for displaying PE parsing results.
+- A UI for displaying PE parsing results.
+
+## [0.0.3] - 2020-11-01
+### Added
 - A new antivirus engine (DrWeb).
 - A new antivirus engine (TrendMicro).
+- A Vagrant image (virtualbox) to test locally the product.
+
+### Changed
+- Use specific Kubectl version.
+- Remove none driver support for `minikube` and replace it with `kind`.
+- Bump ingress-nginx version and support new API spec.
+- Bump cert-manager version.
+- Retry building UI/Backend/MultiAV/Consumer docker imgs one more time when failed.
+- Improve the CONTRIBUTING doc.
+
+# Fixed:
+- Force lower case a sha256 hash before search in Backend thanks to [@hotail](https://github.com/hotail)
+- `AV_LIST` variable in multiav mk was override somewhere thanks to  [@najashark](https://github.com/najashark)
 
 ## [0.0.2] - 2020-08-12
 ### Added

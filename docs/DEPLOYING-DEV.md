@@ -52,6 +52,11 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
     - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
 15. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
+16. The credentials to access the dashboard are: 
+    ```
+    username: Administrator
+    password: password
+    ```
 
 # Building AV Images
 
