@@ -1,6 +1,8 @@
 package gib
 
 import (
+	"bufio"
+	"os"
 	"testing"
 )
 
@@ -23,6 +25,10 @@ func TestNGrams(t *testing.T) {
 			"saferwall",
 			[]string{"safer", "aferw", "ferwa", "erwal", "rwall"},
 			5,
+		}, {
+			"",
+			[]string{},
+			5,
 		},
 	}
 
@@ -35,4 +41,34 @@ func TestNGrams(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestAllNGrams(t *testing.T) {
+	expectedThreeNgrams, err := readLines("./testdata/all-three-ngrams.txt")
+	if err != nil {
+		t.Fatal("failed to read file with ", err)
+	}
+	allPossibleThreeNgrams := allNgrams(3)
+	for i, c := range expectedThreeNgrams {
+		if c != allPossibleThreeNgrams[i] {
+			t.Fatalf("wrong possible ngram expected %s got %s", c, allPossibleThreeNgrams[i])
+		}
+	}
+}
+
+// readLines reads a whole file into memory
+// and returns a slice of its lines.
+func readLines(path string) ([]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
 }
