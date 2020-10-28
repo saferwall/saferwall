@@ -19,7 +19,7 @@
         </span>
         <span id="Av">
           <i class="icon fas fa-shield-alt"></i>
-          Antivirus: {{ file.AvDetectionCount }}/12
+          Antivirus: {{ file.AvDetectionCount }}/{{ file.AvCount }}
         </span>
         <span id="timestamp" v-if="time">
           <i class="icon fas fa-clock"></i>
