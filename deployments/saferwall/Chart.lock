@@ -4,10 +4,10 @@ dependencies:
   version: 5.0.31
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
-  version: 2.0.1
+  version: 2.0.2
 - name: efs-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.11.0
+  version: 0.13.0
 - name: nfs-server-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.1.1
@@ -16,18 +16,18 @@ dependencies:
   version: v1.0.3
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 3.7.0
+  version: 3.7.1
 - name: filebeat
   repository: https://helm.elastic.co
-  version: 7.8.0
+  version: 7.9.3
 - name: elasticsearch
   repository: https://helm.elastic.co
-  version: 7.8.0
+  version: 7.9.3
 - name: kibana
   repository: https://helm.elastic.co
-  version: 7.8.0
+  version: 7.9.3
 - name: prometheus-operator
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 9.1.0
-digest: sha256:82fa0af5827eb0e0d1bf464edb4a8db525c0d0fc15421cb6a39455c0517880ae
-generated: "2020-10-13T12:39:48.408235986+11:00"
+  version: 9.3.2
+digest: sha256:b6be8a0e16603b78c9757dc5b2bda59d9f440027ec67c3801e6697261c52e937
+generated: "2020-10-27T08:16:00.595304408+11:00"

@@ -71,3 +71,13 @@ docker-daemon-restart:	## Restart docker daemon & reload config
 
 docker-enable-experimental:		## Enable experimental
 	echo '{"experimental":true}' >> /etc/docker/daemon.json
+
+docker-stats: ## Get docker stats nicely formatted.
+	sudo docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+docker-non-root: ## Run docker as non root.
+	sudo groupadd docker
+	sudo usermod -aG docker $(USER)
+	newgrp docker 
+	sudo chown "$(USER)":"$(USER)" /home/"$(USER)"/.docker -R
+	sudo chmod g+rwx "$(HOME)/.docker" -R

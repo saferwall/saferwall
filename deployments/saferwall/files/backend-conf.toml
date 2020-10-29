@@ -27,7 +27,6 @@ seckey = "{{ .Values.minio.secretKey }}"
 accesskey = "{{ .Values.minio.accessKey }}"
 spacename = "{{ .Values.minio.spacename }}"
 avatarspace = "{{ .Values.minio.avatarspace }}"
-
 ssl = false
 
 [auth]
