@@ -81,3 +81,15 @@ docker-non-root: ## Run docker as non root.
 	newgrp docker 
 	sudo chown "$(USER)":"$(USER)" /home/"$(USER)"/.docker -R
 	sudo chmod g+rwx "$(HOME)/.docker" -R
+
+docker-cadvisor:	## Run docker cAdvisor.
+	docker run \
+	--volume=/:/rootfs:ro \
+	--volume=/var/run:/var/run:rw \
+	--volume=/sys:/sys:ro \
+	--volume=/var/lib/docker/:/var/lib/docker:ro \
+	--volume=/dev/disk/:/dev/disk:ro \
+	--publish=8080:8080 \
+	--detach=true \
+	--name=cadvisor \
+	google/cadvisor:latest

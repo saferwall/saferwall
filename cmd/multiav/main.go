@@ -15,6 +15,8 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	comodoclient "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
+	drwebclient "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/client"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	esetclient "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
 	fsecureclient "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/client"
@@ -27,6 +29,8 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	trendmicroclient "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/client"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"google.golang.org/grpc"
@@ -84,6 +88,8 @@ func scan(engine string, filePath string, conn *grpc.ClientConn) {
 		res, err = clamavclient.ScanFile(clamav_api.NewClamAVScannerClient(conn), filePath)
 	case "comodo":
 		res, err = comodoclient.ScanFile(comodo_api.NewComodoScannerClient(conn), filePath)
+	case "drweb":
+		res, err = drwebclient.ScanFile(drweb_api.NewDrWebScannerClient(conn), filePath)
 	case "eset":
 		res, err = esetclient.ScanFile(eset_api.NewEsetScannerClient(conn), filePath)
 	case "fsecure":
@@ -96,6 +102,8 @@ func scan(engine string, filePath string, conn *grpc.ClientConn) {
 		res, err = symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
 	case "sophos":
 		res, err = sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
+	case "trendmicro":
+		res, err = trendmicroclient.ScanFile(trendmicro_api.NewTrendMicroScannerClient(conn), filePath)
 	case "windefender":
 		res, err = windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
 	}
@@ -110,23 +118,25 @@ func scan(engine string, filePath string, conn *grpc.ClientConn) {
 
 
 func main() {
-	// Parse command line args.
 	serverAddr, _, filePath, engine := parseFlags()
 
-	// Get grpc client conn.
 	conn, err := multiav.GetClientConn(serverAddr)
 	if err != nil {
-		log.Fatalf("fail to dial for engine %s : %v", engine, err)
+		log.Fatalf("Failed to dial for engine %s : %v", engine, err)
 	}
 	defer conn.Close()
 
+	// To avoid having to send the samples to inside 
+	// the container, we map the volume as follow:
+	// /samples:/samples, so we can just iterate over files
+	// in the host and send the file path in the gRPC call.
 	files, err := utils.WalkAllFilesInDir(filePath)
 	if err != nil {
 		log.Fatalf("fail to walk dir %s : %v", filePath, err)
 	}
-
-	// Scan the file.
 	for _, file := range files {
 		scan(engine, file, conn)
 	}
+
+
 }

@@ -53,3 +53,21 @@ export AWS_EFS_TOKEN = example-efs
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
 11. Install helm chart: `make helm-release`.
+
+## Tips for deploying a production cluster
+
+- To have a HA cluster we need at least more than one master and several workers, in different availability zones.
+- With multiple master nodes, you will be able both to do graceful (zero-downtime) upgrades and you will be able to survive AZ failures.
+- Harden Kubernetes API to be accessible only from alllowed IPs via firewall rules or change the kops cluster config with the `kubernetesApiAccess`.
+
+## Billing Tips
+
+- Opt for EC2 Spot Instances and reserved instances.
+- Support kubernetes cluster with on-demand instances, which can take up the slack in the event of any interruptions to spot instances. This will improve availability and reliability.
+- Size of the master node:
+	- 1-5 nodes: m3.medium
+	- 6-10 nodes: m3.large
+	- 11-100 nodes: m3.xlarge
+	- 101-250 nodes: m3.2xlarge
+	- 251-500 nodes: c4.4xlarge
+	- more than 500 nodes: c4.8xlarge
