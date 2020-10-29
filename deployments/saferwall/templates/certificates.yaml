@@ -1,4 +1,4 @@
-{{- if index .Values "cert-manager" "enabled" -}}
+{{- if index .Values "cert-manager" "enabled" }}
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:

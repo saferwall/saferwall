@@ -38,9 +38,7 @@ spec:
           configMap:
             name: {{ include "saferwall.multiav.fullname" . }}-seccomp-profile
 {{- end }}
-
 ---
-
 ## Seccomp-profile for Windows Defender
 {{- if .Values.multiav.enabled }}
 apiVersion: v1

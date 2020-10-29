@@ -48,10 +48,10 @@ github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3Ee
 github.com/coreos/go-semver v0.3.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
-github.com/couchbase/gocb/v2 v2.1.6 h1:SAmZ7UEW/nKW94spQ3/0s2p8MNYS0au63BlQq6yRYi8=
-github.com/couchbase/gocb/v2 v2.1.6/go.mod h1:dUnIOn6b/gFrRAvAoLgWnwWSvyTrhbT7gLnFegjkacI=
-github.com/couchbase/gocbcore/v9 v9.0.6 h1:aqLGIpoCfP0iFKO+ql2v4rfP9a5attKbLHN39mNuplA=
-github.com/couchbase/gocbcore/v9 v9.0.6/go.mod h1:jOSQeBSECyNvD7aS4lfuaw+pD5t6ciTOf8hrDP/4Nus=
+github.com/couchbase/gocb/v2 v2.1.7 h1:Uk6dNO6uGvyg8MRCpPv4p9Km37QJto75AS1vEuyjwXc=
+github.com/couchbase/gocb/v2 v2.1.7/go.mod h1:slqPPDOgZ592ADPaWPivtMEI5EQ+7jANcqVb6At4Drw=
+github.com/couchbase/gocbcore/v9 v9.0.7 h1:CezCsJ+TSU/efe2ZGrgCFweCjDum0pZNyrpE6VaVHo8=
+github.com/couchbase/gocbcore/v9 v9.0.7/go.mod h1:jOSQeBSECyNvD7aS4lfuaw+pD5t6ciTOf8hrDP/4Nus=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

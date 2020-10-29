@@ -1,4 +1,4 @@
-{{- if .Values.consumer.enabled -}}
+{{- if .Values.consumer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -53,5 +53,4 @@ spec:
           args:
             - "pod"
             - "-ltier=backend"
-
 {{- end }}

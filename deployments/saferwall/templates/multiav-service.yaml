@@ -1,4 +1,4 @@
-{{- if .Values.multiav.enabled -}}
+{{- if .Values.multiav.enabled }}
 {{- $root := . -}}
 {{- range $av, $value := .Values.multiav.vendors }}
 apiVersion: v1

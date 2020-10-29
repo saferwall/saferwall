@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/couchbase/gocb/v2 v2.1.6
+	github.com/couchbase/gocb/v2 v2.1.7
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/kjk/betterguid v0.0.0-20170621091430-c442874ba63a
