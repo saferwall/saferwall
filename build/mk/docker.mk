@@ -37,7 +37,7 @@ docker-tag-version: 	## Generate container `latest` tag
 	docker tag $(REPO)/$(IMG) $(REPO)/$(IMG):$(VERSION)
 
 docker-repo-login: 	## Login to Docker Hub
-	@echo '$(DOCKER_HUB_PWD)' | sudo docker login --username=$(DOCKER_HUB_USR) --password-stdin
+	@echo '$(DOCKER_HUB_PWD)' | docker login --username=$(DOCKER_HUB_USR) --password-stdin
 
 docker-install:		## install docker
 	sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y
@@ -48,22 +48,22 @@ docker-install:		## install docker
 	sudo apt-get install docker-ce -y
 
 docker-stop-all:		## Stop all containers
-	sudo docker stop $$(sudo docker ps -a -q)
+	docker stop $$(docker ps -a -q)
 
 docker-rm-all:			## Delete all containers
-	sudo docker rm $$(sudo docker ps -a -q)
+	docker rm $$(docker ps -a -q)
 
 docker-rm-images:		## Delete all images
-	sudo docker rmi $$(sudo docker images -q) -f
+	docker rmi $$(docker images -q) -f
 
 docker-rm-dangling:		## Delete all dangling images
-	sudo docker images --quiet --filter=dangling=true | sudo xargs --no-run-if-empty docker rmi -f
+	docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f
 
 docker-rm-image-tags:	## Delete all tags from image, {IMG} as argument.
-	sudo docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f $(REPO)/$(IMG):{}
+	docker images | grep $(IMG) | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f $(REPO)/$(IMG):{}
 
 docker-get-ip:			## Get container IP addr
-	sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
+	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
 
 docker-daemon-restart:	## Restart docker daemon & reload config
 	sudo systemctl daemon-reload
@@ -73,7 +73,7 @@ docker-enable-experimental:		## Enable experimental
 	echo '{"experimental":true}' >> /etc/docker/daemon.json
 
 docker-stats: ## Get docker stats nicely formatted.
-	sudo docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+	docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
 
 docker-non-root: ## Run docker as non root.
 	sudo groupadd docker

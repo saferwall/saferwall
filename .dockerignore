@@ -10,6 +10,7 @@ private
 scripts
 test
 website
+sandbox
 .env
 example.env
 

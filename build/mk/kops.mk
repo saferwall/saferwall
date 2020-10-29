@@ -1,3 +1,10 @@
+KOPS_VERSION=1.18.2
+kops-install:		## Install Kubernetes Kops
+	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
+	chmod +x ./kops
+	sudo mv ./kops /usr/local/bin/
+	kops version
+
 kops-create-user:	## Create the kops IAM user to provision the cluster
 	# create kops group 
 	aws iam create-group --group-name kops
@@ -12,17 +19,13 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	aws iam create-user --user-name kops
 	aws iam add-user-to-group --user-name kops --group-name kops
 	aws iam create-access-key --user-name kops
-
-KOPS_VERSION=1.18.1
-kops-install:		## Install Kubernetes Kops
-	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
-	chmod +x ./kops
-	sudo mv ./kops /usr/local/bin/
-	kops version
+	echo "Copy the SecretAccessKey and AccessKeyID from the output."
+	aws configure
 
 kops-create-kops-bucket:		## Create s3 bucket for kops
-	aws s3api create-bucket --bucket $(KOPS_STATE_STORE) --region $(AWS_REGION)
-	# Enable versioning
+	@echo "Creating S3 Bucket to store kops state"
+	aws s3api create-bucket --bucket $(KOPS_STATE_S3_BUCKET_NAME) --region $(AWS_REGION)
+	@echo "Enable bucket versioning"
 	aws s3api put-bucket-versioning --bucket $(KOPS_STATE_STORE) --versioning-configuration Status=Enabled
 	# Enable encryption
 	# aws s3api put-bucket-encryption --bucket $(KOPS_STATE_STORE) --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
@@ -31,10 +34,12 @@ kops-create-cluster:			## Create k8s cluster
 	kubectl config get-contexts
 	aws ec2 describe-availability-zones --region $(AWS_REGION)
 	kops create cluster \
-		--zones us-east-1a \
+		--master-count $(AWS_MASTER_COUNT) \
+		--master-size $(AWS_MASTER_SIZE) \
+		--master-zones $(AWS_MASTER_ZONES) \
 		--node-count $(AWS_NODE_COUNT) \
 		--node-size $(AWS_NODE_SIZE) \
-		--master-size $(AWS_MASTER_SIZE) \
+		--zones $(AWS_NODE_ZONES) \
 		--cloud aws \
 		--name ${KOPS_CLUSTER_NAME} 
 	kops edit cluster --name $(KOPS_CLUSTER_NAME)
@@ -90,30 +95,26 @@ kops-cluster:			## Init ios cluster: create user, kops bucket,
 
 kops-tips:		## Some kops commands
 	# list clusters with
-	kops get cluster
+	kops get clusters
  	# edit this cluster with:
 	kops edit cluster ${KOPS_CLUSTER_NAME} 
 	# edit your node instance group
-	kops edit ig --name=${KOPS_CLUSTER_NAME}  nodes
+	kops edit ig --name=${KOPS_CLUSTER_NAME} nodes
  	# edit your master instance group:
 	kops edit ig --name=${KOPS_CLUSTER_NAME} master-us-east-1a
 	# Finally configure your cluster with:
 	kops update cluster --name saferwall.k8s.local --yes
 
+kops-export-yaml:  ### Export Kops cLuster config
+	kops get --name ${KOPS_CLUSTER_NAME} -o yaml > cluster-desired-config.yaml
+
 saferwall: ## Deploy the cluster
 	make awscli-install
 	make kops-install
 	make kops-cluster
-	# Building docker containers
-	make backend-release
-	make frontend-release
-	make consumer-release
-	make multiav-release
-	make multiav-release-go
-	# At this stage, all containers are ready
 	make helm-install
 	make helm-add-repos
-	make make helm-update-dependency
+	make helm-update-dependency
 	make k8s-init-cert-manager
-	# Initial install
+	# Install a release
 	make helm-release 
