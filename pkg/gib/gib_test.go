@@ -122,6 +122,32 @@ func TestHeuristic(t *testing.T) {
 	}
 }
 
+func TestSanitize(t *testing.T) {
+
+	testCases := []struct {
+		input  string
+		output string
+	}{
+		{
+			input:  "!hello.;",
+			output: "hello",
+		}, {
+			input:  "@HEY.$",
+			output: "hey",
+		}, {
+			input:  "sAfErWaLl<=>?@[\\]^_`{|}~ ",
+			output: "saferwall",
+		},
+	}
+
+	for _, tt := range testCases {
+		san := sanitize(tt.input)
+		if san != tt.output {
+			t.Fatalf("sanitizing failed expected %s got %s", tt.output, san)
+		}
+	}
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {

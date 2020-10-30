@@ -1,7 +1,10 @@
 // Package gib heuristic.go implements heuristic pattern matching on strings.
 package gib
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 var simplePatterns = []string{
 	`\A[^eariotnslcu]+`, // Lack of any of the first 10 most-used letters in English.
@@ -30,6 +33,13 @@ var simplePatterns = []string{
 	"tuvwxy",
 	"uvwxyz",
 	"|[asdfjkl]{8}",
+}
+
+func sanitize(s string) string {
+	// Make a Regex to say we only want letters and numbers
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	processedString := reg.ReplaceAllString(s, "")
+	return strings.ToLower(processedString)
 }
 
 func simpleNonSense(text string) bool {
