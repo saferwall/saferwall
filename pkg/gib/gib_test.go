@@ -94,6 +94,34 @@ func TestNGramValues(t *testing.T) {
 	}
 }
 
+func TestHeuristic(t *testing.T) {
+	testCases := []struct {
+		text     string
+		expected bool
+	}{
+		{
+			text:     "MMMMMMXVIII",
+			expected: true,
+		}, {
+			text:     "pqxyzwww",
+			expected: true,
+		}, {
+			text:     "aaaaaaaaaa",
+			expected: true,
+		}, {
+			text:     "asdqwfbeqbfuilac",
+			expected: true,
+		},
+	}
+
+	for _, tt := range testCases {
+		isNonsense := simpleNonSense(tt.text)
+		if isNonsense != tt.expected {
+			t.Fatalf("expected nonsense(%s) to be %t got %t", tt.text, tt.expected, isNonsense)
+		}
+	}
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {
