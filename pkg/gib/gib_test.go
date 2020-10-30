@@ -56,6 +56,44 @@ func TestAllNGrams(t *testing.T) {
 	}
 }
 
+func TestIDF(t *testing.T) {
+	totalStrings := 12030.
+	stringFreq := 430.
+	totalFreq := 840.
+	maxFreq := 0.12
+
+	expected := 4.80280496297434
+	actual := ngramIDFValue(totalStrings, stringFreq, totalFreq, maxFreq)
+
+	if expected != actual {
+		t.Log(actual)
+		t.Fatalf("bad idf value expected %f got %f", expected, actual)
+	}
+}
+
+func TestNGramValues(t *testing.T) {
+	corpus := []string{"hello world!", "saferwall is great", "is this gibberish"}
+	n := 3
+	ngrams := nGramValues(corpus, n, true)
+
+	expectedIDF := 1.
+	expectedFreq := 3.
+
+	actualIDF := highestIDF(ngrams)
+	actualFreq := highestFreq(ngrams)
+
+	if actualIDF != expectedIDF || actualFreq != expectedFreq {
+		t.Fatalf("bad idf values expected %f got %f | expected freq %f got %f", expectedIDF, actualIDF, expectedFreq, actualFreq)
+	}
+
+	expectedScore := 0.7443419746550483
+	tfIDFScore := TFIDFScoreFunction(ngrams, 3, 25., 1.365, 1.159)
+
+	if tfIDFScore("popopo") != expectedScore {
+		t.Fatalf("expected score %f got %f", expectedScore, tfIDFScore("popopo"))
+	}
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {
