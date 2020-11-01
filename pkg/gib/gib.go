@@ -6,6 +6,18 @@ import (
 	"strings"
 )
 
+const (
+	// MinLength represents minimal length of a string to process
+	MinLength = 6
+	// MinScore represents the absolute minimal score for any given string
+	MinScore = 8.6
+	// Dataset is the file path to the ngram dataset collected from a corpora
+	Dataset           = "./data/ngram.json"
+	scoreLenThreshold = 25.
+	scoreLenPenalty   = 0.9233
+	scoreRepPenalty   = 0.9674
+)
+
 var (
 	lowerCaseLetters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 )

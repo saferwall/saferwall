@@ -9,6 +9,40 @@ import (
 // NGramScores is a match between an ngram and it's score in from a text corpora
 type NGramScores map[string][3]float64
 
+// IsNGram checks if a given string is a valid ngram in our dataset
+func (ns NGramScores) IsNGram(s string) bool {
+
+	_, ok := ns[s]
+	return ok
+}
+
+// Frequency returns the string computed frequency in the dataset
+func (ns NGramScores) Frequency(s string) float64 {
+	score, ok := ns[s]
+	if !ok {
+		return 0.
+	}
+	return score[0]
+}
+
+// TotalFrequency returns the string count in the dataset
+func (ns NGramScores) TotalFrequency(s string) float64 {
+	score, ok := ns[s]
+	if !ok {
+		return 0.
+	}
+	return score[1]
+}
+
+// IDF returns the IDF score in the corpus of a given ngram
+func (ns NGramScores) IDF(s string) float64 {
+	score, ok := ns[s]
+	if !ok {
+		return 0.
+	}
+	return score[2]
+}
+
 func loadDataset(filename string) (NGramScores, error) {
 
 	// Open our jsonFile
