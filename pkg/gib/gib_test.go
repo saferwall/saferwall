@@ -48,6 +48,16 @@ func TestAllNGrams(t *testing.T) {
 	if err != nil {
 		t.Fatal("failed to read file with ", err)
 	}
+	allPossibleZeroNgrams := allNgrams(0)
+	if len(allPossibleZeroNgrams) != 0 {
+		t.Fatalf("expected 0-gram but got %d", len(allPossibleZeroNgrams))
+	}
+	allPossibleOneNgrams := allNgrams(1)
+	for i, c := range allPossibleOneNgrams {
+		if c != lowerCaseLetters[i] {
+			t.Fatalf("wrong possible ngram expected %s got %s", c, lowerCaseLetters[i])
+		}
+	}
 	allPossibleThreeNgrams := allNgrams(3)
 	for i, c := range expectedThreeNgrams {
 		if c != allPossibleThreeNgrams[i] {
@@ -145,6 +155,13 @@ func TestSanitize(t *testing.T) {
 		if san != tt.output {
 			t.Fatalf("sanitizing failed expected %s got %s", tt.output, san)
 		}
+	}
+}
+
+func TestDataset(t *testing.T) {
+	_, err := loadDataset("./dataset/ngram.json")
+	if err != nil {
+		t.Fatal("failed to load dataset with error : ", err)
 	}
 }
 

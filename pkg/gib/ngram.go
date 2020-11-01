@@ -5,9 +5,9 @@ package gib
 // NGramData defines an entry in an n-gram table that contains frequency statistics
 // and IDF (inverse document frequency) derived from example data.
 type NGramData struct {
-	StringFrequency float64
-	TotalFrequency  float64
-	IDF             float64
+	Frequency      float64
+	TotalFrequency float64
+	IDF            float64
 }
 
 // NGramSet defines a set of ngrams and their respective strings.

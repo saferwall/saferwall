@@ -96,9 +96,9 @@ func nGramValues(corpus []string, n int, reAdjust bool) map[string]NGramData {
 		totalFreq := counts[ngram]
 		score := ngramIDFValue(float64(numStrings), float64(stringFreq), float64(totalFreq), float64(maxFreq))
 		generatedNGrams[ngram] = NGramData{
-			StringFrequency: float64(stringFreq),
-			TotalFrequency:  float64(totalFreq),
-			IDF:             score,
+			Frequency:      float64(stringFreq),
+			TotalFrequency: float64(totalFreq),
+			IDF:            score,
 		}
 	}
 
@@ -107,9 +107,9 @@ func nGramValues(corpus []string, n int, reAdjust bool) map[string]NGramData {
 		for ngram, value := range generatedNGrams {
 			if value.IDF == 0 {
 				generatedNGrams[ngram] = NGramData{
-					StringFrequency: 0.,
-					TotalFrequency:  0.,
-					IDF:             maxIDF,
+					Frequency:      0.,
+					TotalFrequency: 0.,
+					IDF:            maxIDF,
 				}
 			}
 		}
