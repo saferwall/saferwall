@@ -6,8 +6,26 @@ import (
 	"os"
 )
 
+// Score defines a table of scores for a given NGram
+type Score [3]float64
+
+// Frequency returns the frequency value in a score
+func (s Score) Frequency() float64 {
+	return s[0]
+}
+
+// TotalFrequency returns the total frequency value in a score
+func (s Score) TotalFrequency() float64 {
+	return s[1]
+}
+
+// IDF returns the IDF value in a score
+func (s Score) IDF() float64 {
+	return s[2]
+}
+
 // NGramScores is a match between an ngram and it's score in from a text corpora
-type NGramScores map[string][3]float64
+type NGramScores map[string]Score
 
 // IsNGram checks if a given string is a valid ngram in our dataset
 func (ns NGramScores) IsNGram(s string) bool {
@@ -22,7 +40,7 @@ func (ns NGramScores) Frequency(s string) float64 {
 	if !ok {
 		return 0.
 	}
-	return score[0]
+	return score.Frequency()
 }
 
 // TotalFrequency returns the string count in the dataset
@@ -31,7 +49,7 @@ func (ns NGramScores) TotalFrequency(s string) float64 {
 	if !ok {
 		return 0.
 	}
-	return score[1]
+	return score.TotalFrequency()
 }
 
 // IDF returns the IDF score in the corpus of a given ngram
@@ -40,13 +58,13 @@ func (ns NGramScores) IDF(s string) float64 {
 	if !ok {
 		return 0.
 	}
-	return score[2]
+	return score.IDF()
 }
 
 func loadDataset(filename string) (NGramScores, error) {
 
 	// Open our jsonFile
-	jsonFile, err := os.Open("./data/ngram.json")
+	jsonFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		return nil, err

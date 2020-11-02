@@ -2,7 +2,9 @@ package gib
 
 import (
 	"bufio"
+	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -33,7 +35,7 @@ func TestNGrams(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		res := ngrams(tt.input, tt.n)
+		res := ngramsFromString(tt.input, tt.n)
 
 		for i, s := range tt.output {
 			if s != res[i] {
@@ -159,10 +161,117 @@ func TestSanitize(t *testing.T) {
 }
 
 func TestDataset(t *testing.T) {
-	_, err := loadDataset("./dataset/ngram.json")
+	_, err := loadDataset("./data/ngram.json")
 	if err != nil {
 		t.Fatal("failed to load dataset with error : ", err)
 	}
+}
+
+func TestScorer(t *testing.T) {
+	testCases := []string{
+		"lakdfqtajaklj",
+		"AaBbCcDdEeFGgHhIiJjKkLlMmNnOoPpQqRrSsTtU",
+		"AcoGQMJyIapivScpnfuXUDMtgTtvAACYdAyABnSLpoABhzZWAAVvAYAAAnqUAFTPo",
+		"BCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"CDjjiJJTbvFWaSdEtUygGMoGl",
+		"CQgHAwIDFQIDAxYCAQIeAQIXgAAKCRC",
+		"CgKDQpPUkdBTklaSUHIENPTUJVFRFRQKLStLStLStLStLStLStLStLStLStLSt",
+		"aoaoesuouooeueooeuoaeuoeou",
+		"iuewrofahgalkfgaufpiupqrjf",
+		"ieeoienkjadfakj",
+		"lalalaalkjuogaajfajlfal",
+	}
+	dataset, err := loadDataset("./data/ngram.json")
+	if err != nil {
+		t.Fatal("failed to read ngram data with error :", err)
+	}
+
+	nonsense := NewScorer(dataset)
+
+	for _, tt := range testCases {
+		isNonsense, _ := nonsense(tt)
+		if isNonsense != true {
+			t.Fatalf("expected %t but got %t", true, isNonsense)
+		}
+	}
+}
+
+func TestTFIDFScoreFunction(t *testing.T) {
+
+	type TestCase struct {
+		input    string
+		expected bool
+	}
+	testCases := make([]TestCase, 0, 25)
+	// populate test cases
+	labeledCases, err := readLines("./testdata/labeledCases.csv")
+	if err != nil {
+		t.Fatal("failed to read test data with error :", err)
+	}
+
+	for _, c := range labeledCases {
+		var input string
+		var expected bool
+		testCase := strings.Split(c, ",")
+
+		input = testCase[1]
+		res := testCase[0]
+
+		if res == "y" {
+			expected = false
+		} else if res == "n" {
+			expected = true
+		}
+
+		testCases = append(testCases, TestCase{
+			input:    input,
+			expected: expected,
+		})
+	}
+
+	dataset, err := loadDataset("./data/ngram.json")
+	if err != nil {
+		t.Fatal("failed to read ngram data with error :", err)
+	}
+
+	isGibberish := NewScorer(dataset)
+
+	var trueNegatives float64
+	var truePositives float64
+
+	var falseNegatives []string
+	var falsePositives []string
+
+	for _, tt := range testCases {
+		actual, err := isGibberish(tt.input)
+		if err != nil {
+			t.Fatal("failed to score string with error :", err)
+		}
+		knownReal := tt.expected
+		labeledAsNonsense := actual
+
+		if knownReal {
+			if labeledAsNonsense {
+				falsePositives = append(falsePositives, tt.input)
+			} else {
+				trueNegatives++
+			}
+		} else {
+			if labeledAsNonsense {
+				truePositives++
+			} else {
+				falseNegatives = append(falseNegatives, tt.input)
+			}
+		}
+	}
+
+	fpCount := float64(len(falsePositives))
+	fnCount := float64(len(falseNegatives))
+
+	precision := float64(truePositives/(truePositives+fpCount)) * 100
+	recall := float64(truePositives/(truePositives+fnCount)) * 100
+	testResults := fmt.Sprintf("Test Results : \n Precision : %f %% \t Recall %f %% \n True Positives : %f \t True Negatives : %f \n False Positives : %f \t False Negatives : %f\n ", precision, recall, truePositives, trueNegatives, fpCount, fnCount)
+	t.Log(testResults)
 }
 
 // readLines reads a whole file into memory
