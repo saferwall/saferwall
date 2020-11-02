@@ -10,7 +10,6 @@ var simplePatterns = []string{
 	`\A[^eariotnslcu]+`, // Lack of any of the first 10 most-used letters in English.
 	`(.){5,}`,           // Repeated single characters: 5 or more in row.
 	`(.){2,}(.){2,}`,    // repeated sequences
-	`^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$`,
 	"abcdef",
 	"bcdefg",
 	"cdefgh",

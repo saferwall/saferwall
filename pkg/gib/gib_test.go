@@ -149,6 +149,9 @@ func TestSanitize(t *testing.T) {
 		}, {
 			input:  "sAfErWaLl<=>?@[\\]^_`{|}~ ",
 			output: "saferwall",
+		}, {
+			input:  "Bartók's",
+			output: "Bartóks",
 		},
 	}
 
@@ -196,7 +199,7 @@ func TestScorer(t *testing.T) {
 	}
 }
 
-func TestTFIDFScoreFunction(t *testing.T) {
+func TestScoreFunctionOnLabeledData(t *testing.T) {
 
 	type TestCase struct {
 		input    string
@@ -272,6 +275,38 @@ func TestTFIDFScoreFunction(t *testing.T) {
 	recall := float64(truePositives/(truePositives+fnCount)) * 100
 	testResults := fmt.Sprintf("Test Results : \n Precision : %f %% \t Recall %f %% \n True Positives : %f \t True Negatives : %f \n False Positives : %f \t False Negatives : %f\n ", precision, recall, truePositives, trueNegatives, fpCount, fnCount)
 	t.Log(testResults)
+}
+
+func TestScoreFunctionOnRealData(t *testing.T) {
+
+	// all the test cases are real string read from /usr/share/dict/words
+	testCases, err := readLines("/usr/share/dict/words")
+	if err != nil {
+		t.Fatal("failed to read test cases with error :", err)
+	}
+
+	dataset, err := loadDataset("./data/ngram.json")
+	if err != nil {
+		t.Fatal("failed to read ngram dataset with error :", err)
+	}
+
+	isGibberish := NewScorer(dataset)
+
+	fp := 0
+	for _, tt := range testCases {
+		if len(sanitize(tt)) <= 6 {
+			continue
+		}
+		gibberish, err := isGibberish(tt)
+		if err != nil {
+			t.Fatal("failed to score string with error : ", err)
+		}
+		if gibberish != false {
+			fp++
+		}
+	}
+	t.Logf("Found %d False Positives (Real String Marked as Gibberish", fp)
+
 }
 
 // readLines reads a whole file into memory

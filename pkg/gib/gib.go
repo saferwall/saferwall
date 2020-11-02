@@ -45,7 +45,7 @@ func allNgrams(n int) []string {
 		return lowerCaseLetters
 	}
 
-	newNgrams := make([]string, 0, 26)
+	newNgrams := make([]string, 0)
 	for _, letter := range lowerCaseLetters {
 		for _, ngram := range allNgrams(n - 1) {
 			newNgrams = append(newNgrams, letter+ngram)
@@ -101,9 +101,7 @@ func nGramValues(corpus []string, n int, reAdjust bool) NGramScores {
 	maxFreq := 0
 	// computes max count and assign it as max frequency of ngram
 	for _, k := range counts {
-		if k > maxFreq {
-			maxFreq = k
-		}
+		maxFreq = int(math.Max(float64(k), float64(maxFreq)))
 	}
 
 	for ngram, strings := range occurrences.Set {
@@ -155,6 +153,7 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64, lenPenal
 	ngramLen := n
 
 	score := func(s string) float64 {
+		s = sanitize(s)
 		ngramsInStr := ngramsFromString(s, ngramLen)
 		ngramCounts := make(map[string]int)
 
@@ -194,7 +193,6 @@ func NewScorer(ngramFreq NGramScores) func(string) (bool, error) {
 		if simpleNonSense(s) {
 			return true, nil
 		}
-
 		score := tfidfScorer(s)
 
 		result := score > MinScore
