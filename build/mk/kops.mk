@@ -114,7 +114,7 @@ saferwall: ## Deploy the cluster
 	make kops-cluster
 	make helm-install
 	make helm-add-repos
-	make helm-update-dependency
+	make helm-update-dep
 	make k8s-init-cert-manager
 	# Install a release
 	make helm-release 

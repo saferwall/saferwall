@@ -82,7 +82,7 @@ Vagrant.configure("2") do |config|
         && make kind-up \
         && make helm-install \
         && make helm-add-repos \
-        && make helm-update-dependency \
+        && make helm-update-dep \
         && make k8s-init-cert-manager \
         && make helm-release \
         && echo "Waiting for pods to come up, timeout: 360s" \

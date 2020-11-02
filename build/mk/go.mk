@@ -25,4 +25,4 @@ go-setup:	## Download and install go
 	sudo mv go /usr/local/
 	mkdir -p ~/go
 	rm go$(GO_VERSION).linux-amd64.tar.gz
-	export PATH=$PATH:/usr/local/go/bin && go version
+	export PATH=$(PATH):/usr/local/go/bin && go version

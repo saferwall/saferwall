@@ -15,10 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A Vagrant image (virtualbox) to test locally the product.
 
 ### Changed
+- Display only enabled antivirus thanks to [@nikAizuddin](https://github.com/nikAizuddin): [#248](https://github.com/saferwall/saferwall/pull/248)
 - Use specific Kubectl version.
 - Remove none driver support for `minikube` and replace it with `kind`.
-- Bump ingress-nginx version and support new API spec.
-- Bump cert-manager version.
+- Bump cert-manager, EKF, Prometheus, ingress-nginx, minio, couchbase helm chart versions.
 - Retry building UI/Backend/MultiAV/Consumer docker imgs one more time when failed.
 - Improve the CONTRIBUTING doc.
 
