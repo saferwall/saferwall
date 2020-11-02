@@ -34,6 +34,7 @@ const (
 
 // ScanResult av result
 type ScanResult struct {
+	Enabled  bool   `json:"enabled"`
 	Output   string `json:"output"`
 	Infected bool   `json:"infected"`
 	Update   int64  `json:"update"`

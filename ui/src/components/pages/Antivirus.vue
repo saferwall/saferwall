@@ -141,7 +141,15 @@ export default {
       Object.keys(_firstScan).forEach((key) => {
         _firstScan[key].showCopy = false
         _lastScan[key].showCopy = false
+
+        if (!_firstScan[key]['enabled']) {
+          delete _firstScan[key]
+        }
+        if (!_lastScan[key]['enabled']) {
+          delete _lastScan[key]
+        }
       })
+
       return {
         firstScan: _firstScan,
         lastScan: _lastScan,

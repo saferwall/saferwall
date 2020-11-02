@@ -25,6 +25,13 @@ export default {
     },
   },
   methods: {
+    getAvCount: function(scans) {
+      var count = 0
+      for (const av of Object.values(scans)) {
+        if (av.enabled) count++
+      }
+      return count
+    },
     getAvDetectionCount: function(scans) {
       var count = 0
       for (const av of Object.values(scans)) {
@@ -41,6 +48,9 @@ export default {
         )
         .then((res) => {
           res.data.AvDetectionCount = this.getAvDetectionCount(
+            res.data.multiav.last_scan,
+          )
+          res.data.AvCount = this.getAvCount(
             res.data.multiav.last_scan,
           )
           res.data.timestamp = file.timestamp
