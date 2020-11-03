@@ -37,7 +37,7 @@ func main() {
   pathToDataset := "/home/user/go/github.com/saferwall/saferwall/pkg/gib/data/ngram.json"
   
   // load dataset as an ngram score table
-  defaultDataset := gib.loadDataset(pathToDataset)
+  defaultDataset := gib.LoadDataset(pathToDataset)
 
   // create a new gibberish detector
   isGibberish := gib.NewScorer(defaultDataset)
