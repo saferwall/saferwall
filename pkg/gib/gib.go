@@ -166,7 +166,7 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64, lenPenal
 		scores := make([]float64, 0)
 		score := lengthPenalty
 		for n, c := range ngramCounts {
-			sc := ngramFreq.IDF(n) * math.Pow(float64(c), repPenalty) * (0.5 + 0.5*float64(c)/maxFreq)
+			sc := ngramFreq.IDF(n) * math.Pow(float64(c), repPenalty) * (0.5 + 0.5*(float64(c)/maxFreq))
 			scores = append(scores, sc)
 			score += sc
 		}
@@ -188,10 +188,6 @@ func NewScorer(ngramFreq NGramScores) func(string) (bool, error) {
 
 		if len(s) < MinLength {
 			return false, errors.New("string to score is too short min length is 6")
-		}
-
-		if simpleNonSense(s) {
-			return true, nil
 		}
 		score := tfidfScorer(s)
 

@@ -151,7 +151,7 @@ func TestSanitize(t *testing.T) {
 			output: "saferwall",
 		}, {
 			input:  "Bartók's",
-			output: "Bartóks",
+			output: "bartks",
 		},
 	}
 
@@ -202,10 +202,11 @@ func TestScorer(t *testing.T) {
 func TestScoreFunctionOnLabeledData(t *testing.T) {
 
 	type TestCase struct {
-		input    string
-		expected bool
+		input     string
+		knownReal bool
+		expected  bool
 	}
-	testCases := make([]TestCase, 0, 25)
+	testCases := make([]TestCase, 0)
 	// populate test cases
 	labeledCases, err := readLines("./testdata/labeledCases.csv")
 	if err != nil {
@@ -214,6 +215,7 @@ func TestScoreFunctionOnLabeledData(t *testing.T) {
 
 	for _, c := range labeledCases {
 		var input string
+		var knownReal bool
 		var expected bool
 		testCase := strings.Split(c, ",")
 
@@ -221,14 +223,17 @@ func TestScoreFunctionOnLabeledData(t *testing.T) {
 		res := testCase[0]
 
 		if res == "y" {
+			knownReal = true
 			expected = false
 		} else if res == "n" {
+			knownReal = false
 			expected = true
 		}
 
 		testCases = append(testCases, TestCase{
-			input:    input,
-			expected: expected,
+			input:     input,
+			knownReal: knownReal,
+			expected:  expected,
 		})
 	}
 
@@ -239,8 +244,8 @@ func TestScoreFunctionOnLabeledData(t *testing.T) {
 
 	isGibberish := NewScorer(dataset)
 
-	var trueNegatives float64
-	var truePositives float64
+	var trueNegatives int
+	var truePositives int
 
 	var falseNegatives []string
 	var falsePositives []string
@@ -250,17 +255,17 @@ func TestScoreFunctionOnLabeledData(t *testing.T) {
 		if err != nil {
 			t.Fatal("failed to score string with error :", err)
 		}
-		knownReal := tt.expected
-		labeledAsNonsense := actual
+		knownReal := tt.knownReal
+		labeledAsGibberish := actual
 
 		if knownReal {
-			if labeledAsNonsense {
+			if labeledAsGibberish {
 				falsePositives = append(falsePositives, tt.input)
 			} else {
 				trueNegatives++
 			}
 		} else {
-			if labeledAsNonsense {
+			if labeledAsGibberish {
 				truePositives++
 			} else {
 				falseNegatives = append(falseNegatives, tt.input)
@@ -268,12 +273,13 @@ func TestScoreFunctionOnLabeledData(t *testing.T) {
 		}
 	}
 
-	fpCount := float64(len(falsePositives))
-	fnCount := float64(len(falseNegatives))
+	fpCount := len(falsePositives)
+	fnCount := len(falseNegatives)
 
-	precision := float64(truePositives/(truePositives+fpCount)) * 100
-	recall := float64(truePositives/(truePositives+fnCount)) * 100
-	testResults := fmt.Sprintf("Test Results : \n Precision : %f %% \t Recall %f %% \n True Positives : %f \t True Negatives : %f \n False Positives : %f \t False Negatives : %f\n ", precision, recall, truePositives, trueNegatives, fpCount, fnCount)
+	precision := Precision(truePositives, fpCount) * 100
+	recall := Recall(truePositives, fnCount) * 100
+	accuracy := Accuracy(truePositives, fpCount, trueNegatives, fnCount) * 100
+	testResults := fmt.Sprintf("Test Results : \n Accuracy %f %% Precision : %f %% \t Recall %f %% \n True Positives : %d \t True Negatives : %d \n False Positives : %d \t False Negatives : %d\n ", accuracy, precision, recall, truePositives, trueNegatives, fpCount, fnCount)
 	t.Log(testResults)
 }
 
