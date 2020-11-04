@@ -33,7 +33,7 @@ TestFileHooks()
     }
 
     wprintf(L"[+] Calling WriteFile\n");
-    bResult = WriteFile(hFile, Buffer, wcslen(Buffer) * sizeof(WCHAR), &dwNumberOfBytesWritten, NULL);
+    bResult = WriteFile(hFile, Buffer, DWORD(wcslen(Buffer) * sizeof(WCHAR)), &dwNumberOfBytesWritten, NULL);
     if (!bResult)
     {
 		PrintError("WriteFileW");
