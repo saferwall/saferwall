@@ -1,6 +1,6 @@
 # Introduction
 
-Saferwall's sandbox is a tool written in C focused primarly in analyzing malware.
+Saferwall sandbox is a tool written in C focused primarly in analyzing malware.
 The current implementation is targetting Windows OS for the momen, specifically Windows 7 x64.
 
 ## Architecture
@@ -28,13 +28,20 @@ The current implementation is targetting Windows OS for the momen, specifically 
 
 ## Features
 
-- Invisible hooks.
+- Invisible inline user hooks.
+- Kernel mode malware support.
 - Track child processes and follows code injection.
-- Resistent to anti-sandbox detection techniques.
-- User simulater running inside the guest.
 - Extract all files writen to disk.
 - Memory dumps/unpacking.
 - Fix IAT for PE dumps.
+- Resistent to anti-VM detection techniques.
+- User simulater running inside the guest.
+
+## Hiding
+
+- Driver running in the guest (registry keys, ..)
+- Processes running inside the guest (User simulator)
+- DLL injected.
 
 
 ## Hooked APIs
