@@ -358,6 +358,55 @@ func TestScoreFunctionOnLudiso(t *testing.T) {
 	t.Log(testResults)
 }
 
+func TestOnMacroDocs(t *testing.T) {
+
+	testCases := []struct {
+		input    string
+		expected bool
+	}{
+		{
+			input:    "H67oooeewxpd8ll",
+			expected: true,
+		}, {
+			input:    "IGwkqQGAL(lAwPHFBmE + lAwPHFBmE)",
+			expected: true,
+		}, {
+			input:    "Y0sd1ec1f2mgj4",
+			expected: true,
+		}, {
+			input:    "RtlMoveMemory",
+			expected: false,
+		}, {
+			input:    "OEACCDH",
+			expected: true,
+		}, {
+			input:    "QcNNKBE",
+			expected: true,
+		}, {
+			input:    "Ogilhvhap",
+			expected: true,
+		},
+	}
+	dataset, err := loadDataset("./data/ngram.json")
+	if err != nil {
+		t.Fatal("failed to read ngram dataset with error :", err)
+	}
+
+	isGibberish := NewScorer(dataset)
+
+	for _, tt := range testCases {
+		s := sanitize(tt.input)
+		israndom, err := isGibberish(s)
+		if err != nil {
+			t.Fatalf("failed to test on string %s with error %v", s, err)
+		}
+		if israndom != tt.expected {
+			t.Fatalf("failed on test case %s expected %t got %t", tt.input, tt.expected, israndom)
+		}
+	}
+
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {
