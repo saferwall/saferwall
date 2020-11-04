@@ -45,6 +45,12 @@
     <ClCompile Include="test_sync.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_winsvc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_wincrypt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header.h">

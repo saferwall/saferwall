@@ -23,7 +23,7 @@
     <ProjectGuid>{7205E4BF-08C0-431E-B2B1-3749F2ED277B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HookTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -170,6 +170,8 @@
     <ClCompile Include="test_processthread.cpp" />
     <ClCompile Include="test_registry.cpp" />
     <ClCompile Include="test_sync.cpp" />
+    <ClCompile Include="test_wincrypt.cpp" />
+    <ClCompile Include="test_winsvc.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>

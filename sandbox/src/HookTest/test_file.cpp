@@ -21,7 +21,7 @@ TestFileHooks()
     bResult = CreateDirectoryEx(L"C:\\ProgramData", szFilePath, NULL);
     if (!bResult)
     {
-        ErrorExit("CreateDirectoryExW");
+        PrintError("CreateDirectoryExW");
     }
 
 	wprintf(L"[+] Calling CreateFileW\n");
@@ -29,14 +29,14 @@ TestFileHooks()
     hFile = CreateFile(szFilePath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        ErrorExit("CreateFileW");
+		PrintError("CreateFileW");
     }
 
     wprintf(L"[+] Calling WriteFile\n");
     bResult = WriteFile(hFile, Buffer, wcslen(Buffer) * sizeof(WCHAR), &dwNumberOfBytesWritten, NULL);
     if (!bResult)
     {
-        ErrorExit("WriteFileW");
+		PrintError("WriteFileW");
     }
     CloseHandle(hFile);
 
@@ -45,13 +45,13 @@ TestFileHooks()
     bResult = MoveFile(szFilePath, szDestFilePath);
     if (!bResult)
     {
-        ErrorExit("MoveFile");
+		PrintError("MoveFile");
     }
 
     wprintf(L"[+] Calling DeleteFile\n");
     bResult = DeleteFile(szDestFilePath);
     if (!bResult)
     {
-        ErrorExit("DeleteFile");
+		PrintError("DeleteFile");
     }
 }

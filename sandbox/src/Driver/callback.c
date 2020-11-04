@@ -22,8 +22,10 @@ CreateProcessNotifyRoutine(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _In
             CreateInfo->ImageFileName,
             CreateInfo->FileOpenNameAvailable);
 
-        UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"wrar59b3_1831105618.exe");
-        if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
+		UNICODE_STRING ProcessNameToWatch = RTL_CONSTANT_STRING(L"1597026149.exe");
+		UNICODE_STRING ProcessNameToWatch2 = RTL_CONSTANT_STRING(L"main.exe");
+        if (!RtlxSuffixUnicodeString(&ProcessNameToWatch, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE) &&
+			!RtlxSuffixUnicodeString(&ProcessNameToWatch2, (PUNICODE_STRING)CreateInfo->ImageFileName, TRUE))
         {
             return;
         }
@@ -178,7 +180,7 @@ LoadImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		// Add to the list of monitored processes.
 		//
 
-		MonAddProcessToMonitoredList((ULONG)(ULONG_PTR)ProcessId);
+		// MonAddProcessToMonitoredList((ULONG)(ULONG_PTR)ProcessId);
     }
 }
 

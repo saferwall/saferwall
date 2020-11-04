@@ -78,6 +78,9 @@
     <ClInclude Include="winuserapi.h">
       <Filter>Source Files\Hooks\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="winsvc.h">
+      <Filter>Source Files\Hooks\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -129,6 +132,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="winuserapi.cpp">
+      <Filter>Source Files\Hooks\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="winsvc.cpp">
       <Filter>Source Files\Hooks\Source</Filter>
     </ClCompile>
   </ItemGroup>

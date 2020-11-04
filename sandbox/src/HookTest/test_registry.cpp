@@ -13,7 +13,7 @@ OpenRegistryKey(PWCHAR pSubKey)
 
     if (dwRet != ERROR_SUCCESS)
     {
-        ErrorExit("RegOpenKey");
+		PrintError("RegOpenKey");
     }
 }
 
@@ -28,7 +28,7 @@ CreateRegistryKey(PWCHAR pSubKey)
 
     if (dwRet != ERROR_SUCCESS)
     {
-        ErrorExit("RegCreateKeyEx");
+		PrintError("RegCreateKeyEx");
     }
 
     return hkResult;
@@ -43,7 +43,7 @@ WriteRegistryKey(HKEY hKey, PWCHAR pSubKey, PWCHAR pValueName, PWCHAR strData)
     if (ERROR_SUCCESS != dwRet)
     {
         RegCloseKey(hKey);
-        ErrorExit("RegSetValueEx");
+		PrintError("RegSetValueEx");
     }
 }
 
@@ -67,7 +67,7 @@ ReadRegistryKey(HKEY hKey, PWCHAR pSubKey, PWCHAR pValueName)
     if (dwRet != ERROR_SUCCESS)
     {
         RegCloseKey(hKey);
-        ErrorExit("RegQueryValueEx");
+		PrintError("RegQueryValueEx");
     }
 }
 

@@ -87,6 +87,7 @@ pfnHttpSendRequestW TrueHttpSendRequestW = nullptr;
 pfnInternetReadFile TrueInternetReadFile = nullptr;
 
 pfnSetWindowsHookExW TrueSetWindowsHookExW = nullptr;
+pfnCreateServiceW TrueCreateServiceW = nullptr;
 
 CRITICAL_SECTION gInsideHookLock, gHookDllLock;
 BOOL gInsideHook = FALSE;
@@ -684,6 +685,35 @@ HookWinUserAPIs(BOOL Attach)
 }
 
 VOID
+HookAdvapi32APIs(BOOL Attach)
+{
+	LogMessage(L"Attaching to advapi32");
+
+	TrueCreateServiceW = (pfnCreateServiceW)GetAPIAddress((PSTR) "CreateServiceW", (PWSTR)L"advapi32.dll");
+	if (TrueCreateServiceW == NULL)
+	{
+		EtwEventWriteString(ProviderHandle, 0, 0, L"CreateServiceW() is NULL");
+	}
+
+	HookBegingTransation();
+
+	if (Attach)
+	{
+		ATTACH(CreateServiceW);
+	}
+	else
+	{
+		DETACH(CreateServiceW);
+	}
+
+	HookCommitTransaction();
+
+	LogMessage(L"Hooked to advapi32 done");
+
+	gHookInfo.IsAdvapi32Hooked = TRUE;
+}
+
+VOID
 HookNtAPIs()
 {
     LogMessage(L"HookNtAPIs Begin");
@@ -705,11 +735,11 @@ HookNtAPIs()
     ATTACH(NtOpenFile);
     ATTACH(NtCreateFile);
     // ATTACH(NtReadFile);
-    ATTACH(NtWriteFile);
+    // ATTACH(NtWriteFile);
     ATTACH(NtDeleteFile);
-    ATTACH(NtSetInformationFile);
-    ATTACH(NtQueryDirectoryFile);
-    ATTACH(NtQueryInformationFile);
+    // ATTACH(NtSetInformationFile);
+    // ATTACH(NtQueryDirectoryFile);
+    // ATTACH(NtQueryInformationFile);
     //ATTACH(NtQueryAttributesFile);
     //ATTACH(NtQueryFullAttributesFile);
 
@@ -748,8 +778,8 @@ HookNtAPIs()
 
     ATTACH(NtQuerySystemInformation);
     ATTACH(NtQueryVolumeInformationFile);
-    // ATTACH(RtlDecompressBuffer);
-    // ATTACH(NtDelayExecution);
+    ATTACH(RtlDecompressBuffer);
+    ATTACH(NtDelayExecution);
     ATTACH(NtLoadDriver);
     //ATTACH(NtDeviceIoControlFile);
 
@@ -757,13 +787,13 @@ HookNtAPIs()
     // Memory APIs.
     //
 
-    // ATTACH(NtQueryVirtualMemory);
-    // ATTACH(NtReadVirtualMemory);
-    // ATTACH(NtWriteVirtualMemory);
-    // ATTACH(NtFreeVirtualMemory);
+     ATTACH(NtQueryVirtualMemory);
+     ATTACH(NtReadVirtualMemory);
+     ATTACH(NtWriteVirtualMemory);
+	ATTACH(NtFreeVirtualMemory);
     // ATTACH(NtMapViewOfSection);
     // ATTACH(NtAllocateVirtualMemory);
-    // ATTACH(NtUnmapViewOfSection);
+    ATTACH(NtUnmapViewOfSection);
     ATTACH(NtProtectVirtualMemory);
 
     HookCommitTransaction();
@@ -798,6 +828,14 @@ HookDll(PWCHAR DllName)
             HookWinUserAPIs(TRUE);
         }
     }
+
+	else if (_wcsstr(DllName, L"advapi32.dll") != NULL)
+	{
+		if (!gHookInfo.IsAdvapi32Hooked)
+		{
+			HookAdvapi32APIs(TRUE);
+		}
+	}
 
     LeaveCriticalSection(&gHookDllLock);
 }

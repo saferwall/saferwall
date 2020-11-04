@@ -195,6 +195,7 @@ HookNtFreeVirtualMemory(
         *RegionSize,
         _ReturnAddress());
 
+
     NTSTATUS Status = TrueNtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
 
     ReleaseHookGuard();

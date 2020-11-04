@@ -23,7 +23,7 @@
     <ProjectGuid>{C974828F-CC09-4BA6-B277-EF15C4296200}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HookDLL</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -224,6 +224,7 @@
     <ClInclude Include="systemapi.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="winregapi.h" />
+    <ClInclude Include="winsvc.h" />
     <ClInclude Include="winuserapi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -248,6 +249,7 @@
     <ClCompile Include="synchapi.cpp" />
     <ClCompile Include="systemapi.cpp" />
     <ClCompile Include="winregapi.cpp" />
+    <ClCompile Include="winsvc.cpp" />
     <ClCompile Include="winuserapi.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

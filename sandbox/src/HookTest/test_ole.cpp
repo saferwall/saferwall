@@ -11,7 +11,7 @@ TestOleHooks()
     hres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (FAILED(hres))
     {
-        ErrorExit("CoInitializeEx");
+		PrintError("CoInitializeEx");
     }
 
     // Step 2: --------------------------------------------------
@@ -32,7 +32,7 @@ TestOleHooks()
     if (FAILED(hres) && hres != RPC_E_TOO_LATE)
     {
         CoUninitialize();
-        ErrorExit("CoInitializeSecurity");
+		PrintError("CoInitializeSecurity");
     }
 
     // Step 3: ---------------------------------------------------
@@ -45,7 +45,7 @@ TestOleHooks()
     if (FAILED(hres))
     {
         CoUninitialize();
-        ErrorExit("CoCreateInstance");
+		PrintError("CoCreateInstance");
     }
 
     // Step 4: -----------------------------------------------------
@@ -71,7 +71,7 @@ TestOleHooks()
     {
         pLoc->Release();
         CoUninitialize();
-        ErrorExit("pLoc->ConnectServer");
+		PrintError("pLoc->ConnectServer");
     }
 
     // Step 5: --------------------------------------------------
@@ -93,7 +93,7 @@ TestOleHooks()
         pSvc->Release();
         pLoc->Release();
         CoUninitialize();
-        ErrorExit("CoSetProxyBlanket");
+		PrintError("CoSetProxyBlanket");
     }
 
     // Step 6: --------------------------------------------------
@@ -113,7 +113,7 @@ TestOleHooks()
         pSvc->Release();
         pLoc->Release();
         CoUninitialize();
-        ErrorExit("pSvc->ExecQuery");
+		PrintError("pSvc->ExecQuery");
     }
 
     // Step 7: -------------------------------------------------

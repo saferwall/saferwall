@@ -323,6 +323,13 @@ HookNtContinue(_In_ PCONTEXT ContextRecord, _In_ BOOLEAN TestAlert)
             HookWinUserAPIs(TRUE);
         }
 
+		RtlInitUnicodeString(&ModulePath, (PWSTR)L"advapi32.dll");
+		Status = LdrGetDllHandle(NULL, 0, &ModulePath, &ModuleHandle);
+		if (Status == STATUS_SUCCESS && !gHookInfo.IsAdvapi32Hooked)
+		{
+			HookAdvapi32APIs(TRUE);
+		}
+
 		SfwSymInit();
         bFirstTime = FALSE;
 

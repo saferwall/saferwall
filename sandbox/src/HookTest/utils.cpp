@@ -1,7 +1,7 @@
 #include "header.h"
 
-VOID
-ErrorExit(const char *wszProcedureName)
+DWORD
+PrintError(const char *wszProcedureName)
 {
     WCHAR wszMsgBuff[512]; // Buffer for text.
     DWORD dwChars;         // Number of chars returned.
@@ -25,7 +25,7 @@ ErrorExit(const char *wszProcedureName)
         if (NULL == hInst)
         {
             printf("cannot load Ntdsbmsg.dll\n");
-            exit(1); // Could 'return' instead of 'exit'.
+			return dwErr;
         }
 
         // Try getting message text from ntdsbmsg.
@@ -42,7 +42,7 @@ ErrorExit(const char *wszProcedureName)
         wszProcedureName,
         dwErr,
         dwChars ? wszMsgBuff : L"Error message not found.");
-    exit(1); // Could 'return' instead of 'exit'.
+	return dwErr;
 }
 
 VOID
@@ -70,7 +70,7 @@ GetRandomDir(PWSTR szPathOut)
     Count = GetTempPath(MAX_PATH, TempPath);
     if (!Count)
     {
-        ErrorExit("GetTempPath");
+		PrintError("GetTempPath");
     }
     GetRandomString(RandomName, 8);
     PathCombineW(szPathOut, TempPath, RandomName);

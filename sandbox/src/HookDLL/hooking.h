@@ -12,6 +12,7 @@
 #include "ole.h"
 #include "net.h"
 #include "winuserapi.h"
+#include "winsvc.h"
 
 //
 // Prototypes
@@ -41,7 +42,8 @@ VOID
 HookDll(PWCHAR DllName);
 VOID
 HookWinUserAPIs(BOOL Attach);
-
+VOID
+HookAdvapi32APIs(BOOL Attach);
 //
 // Unfortunatelly sprintf-like functions are not exposed
 // by ntdll.lib, which we're linking against.  We have to
@@ -64,5 +66,6 @@ typedef struct HookInfo
 {
     BOOL IsOleHooked;
     BOOL IsWinInetHooked;
-    BOOL IsUser32Hooked;
+	BOOL IsUser32Hooked;
+	BOOL IsAdvapi32Hooked;
 } HookInfo;
