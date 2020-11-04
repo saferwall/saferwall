@@ -48,6 +48,14 @@ func main() {
 
 ```
 
+## Notes about testing
+
+The score function acts as a classifier returning true if the given string is gibberish false otherwise.
+Therefore the rate of false positives points to the number of non-gibberish strings marked as gibberish
+a false negative in this case is when a gibberish string is marked as non-gibberish.
+
+The score function is evaluated using accuracy, precision and recall.
+
 ## References
 
 - [Nostril : A Nonsense String Evaluator Written in Python](https://www.theoj.org/joss-papers/joss.00596/10.21105.joss.00596.pdf)

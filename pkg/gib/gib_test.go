@@ -315,6 +315,49 @@ func TestScoreFunctionOnRealData(t *testing.T) {
 
 }
 
+func TestScoreFunctionOnLudiso(t *testing.T) {
+
+	// this test runs on ludiso dataset similar to the above test
+	// we expect all test cases to be real strings
+	ludiso, err := readLines("./testdata/ludiso.txt")
+	if err != nil {
+		t.Fatal("could not read data file failed with error :", err)
+	}
+	dataset, err := loadDataset("./data/ngram.json")
+	if err != nil {
+		t.Fatal("failed to read ngram dataset with error :", err)
+	}
+
+	isGibberish := NewScorer(dataset)
+
+	var fpRate int
+	var tpRate int
+	var fnRate int
+	var tnRate int
+
+	for _, s := range ludiso {
+		s = sanitize(s)
+		if len(s) < MinLength {
+			continue
+		}
+
+		isRandom, err := isGibberish(s)
+		if err != nil {
+			t.Fatalf("failed to detect %s with error : %s", s, err.Error())
+		}
+		// the given string was real (negative class) but was tagged as positive class
+		tnRate += boolToInt(!isRandom)
+		fpRate += boolToInt(isRandom)
+
+	}
+
+	precision := Precision(tpRate, fpRate) * 100
+	recall := Recall(tpRate, fnRate) * 100
+	accuracy := Accuracy(tpRate, fpRate, tnRate, fnRate) * 100
+	testResults := fmt.Sprintf("Test Results : \n Accuracy %f %% Precision : %f %% \t Recall %f %% \n True Positives : %d \t True Negatives : %d \n False Positives : %d \t False Negatives : %d\n ", accuracy, precision, recall, tpRate, tnRate, fpRate, fnRate)
+	t.Log(testResults)
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {
@@ -330,4 +373,15 @@ func readLines(path string) ([]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	return lines, scanner.Err()
+}
+
+// boolToInt
+func boolToInt(b bool) int {
+
+	if b {
+		return 1
+	}
+
+	return 0
+
 }
