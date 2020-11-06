@@ -1,27 +1,26 @@
 FROM centos:centos8
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
-LABEL description="ServerProtect for Linux"
+LABEL version="0.0.3"
+LABEL description="TrendMicro ServerProtect for Linux in a docker container"
 
 # Installation guide: https://docs.trendmicro.com/all/ent/splx/v3.0/en-us/splx_3.0_gsg.pdf
 
-# Vars
+# Arguments and environment variable.
 ARG TREND_MICRO_LICENSE_KEY
 ENV TREND_MICRO_PKG_NAME SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
 ENV TREND_MICRO_URL https://files.trendmicro.com/products/splx/$TREND_MICRO_PKG_NAME
 ENV TREND_MICRO_CFG /opt/TrendMicro/SProtectLinux/tmsplx.xml
-ENV TREND_MICRO_SLPXMAIN /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain
+ENV TREND_MICRO_SLPXMAIN    /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain
 
 # Fix the locales issue first.
 # https://github.com/CentOS/sig-cloud-instance-images/issues/71
 RUN yum -y install glibc-langpack-en
 
-## Install dependencies
-RUN yum -y install perl-Sys-Syslog bzip2
+## Install dependencies.
+RUN yum -y install perl-Sys-Syslog bzip2 wget
 
 # Download TrendMicro.
-ADD $TREND_MICRO_URL /tmp/
-# COPY $TREND_MICRO_PKG_NAME /tmp/
+RUN wget -q $TREND_MICRO_URL -P /tmp/
 
 # Unpack it & Install it.
 # 1. Do you agree to the above license terms? (yes or no) 
@@ -31,23 +30,36 @@ RUN tar zxvf /tmp/$TREND_MICRO_PKG_NAME -C /tmp/ \
 
 # Disable RealTime Scan.
 RUN old='"RealtimeScan" Value="1"' && new='"RealtimeScan" Value="0"' \
-    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
-
-# Do not take any action when a file is detected.
-RUN old='"ManualAllTypesAction" Value="3-2"' && new='"ManualAllTypesAction" Value="0-0"' \
-    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
-
-# Disable sending a notification when there is a virus outbreak.
-RUN old='"VirusOutbreak" Value="1"' && new='"VirusOutbreak" Value="0"' \
-    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
-
-# Disable any scheduled update + any scheduled scan runs.
-RUN old='"Schedule" Value="2"' && new='"Schedule" Value="0"' \
-    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG
-
-# Activate it.
-RUN /etc/init.d/splx restart \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG \
+    # Do not take any action when a file is detected.
+    && old='"ManualAllTypesAction" Value="3-2"' && new='"ManualAllTypesAction" Value="0-0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG \
+    # Disable sending a notification when there is a virus outbreak.
+    && old='"VirusOutbreak" Value="1"' && new='"VirusOutbreak" Value="0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG \
+    # Disable any scheduled update + any scheduled scan runs.
+    && old='"Schedule" Value="2"' && new='"Schedule" Value="0"' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_CFG \
+    # Activate it.
+    && /etc/init.d/splx restart \
     && $TREND_MICRO_SLPXMAIN -q $TREND_MICRO_LICENSE_KEY
 
-# Launch an update.
+# Update virus definition file.
 RUN $TREND_MICRO_SLPXMAIN -u
+
+# Download EICAR Anti-Virus Test File.
+ADD http://www.eicar.org/download/eicar.com.txt eicar
+
+# Performs a simple detection test.
+# ServerProtect does not seem to be able to scan a file directly,
+# it only take a directory as argument. So we create a tmp dir
+# and we place a copy of the file inside.
+RUN mkdir /tmp/sample  \
+    && cp /eicar /tmp/sample/ \
+    && rm -f /var/log/TrendMicro/SProtectLinux/* \
+    && $TREND_MICRO_SLPXMAIN -m /tmp/sample/ \
+    && sleep 15s \
+    && cat /var/log/TrendMicro/SProtectLinux/Virus* | grep -q 'virus_name=Eicar_test_file'
+
+# Clean up
+RUN rm -rf /tmp/* 

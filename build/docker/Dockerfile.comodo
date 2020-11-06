@@ -1,31 +1,33 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="Comodo Antivirus for Linux in a docker container"
 
-# Vars
-ENV COMODO_URL          http://download.comodo.com/cis/download/installs/linux/cav-linux_x64.deb
-ENV COMODO_UPDATE       http://download.comodo.com/av/updates58/sigs/bases/bases.cav
-ENV COMODO_INSTALL_DIR  /opt/COMODO
+# Environment variable.
+ENV COMODO_INSTALL_DIR /opt/COMODO
+ENV COMODO_CMDSCAN $COMODO_INSTALL_DIR/cmdscan
+ENV COMODO_BASES_CAV_PATH $COMODO_INSTALL_DIR/scanners/bases.cav
+ENV COMODO_UPDATE http://download.comodo.com/av/updates58/sigs/bases/bases.cav
+ENV COMODO_URL http://download.comodo.com/cis/download/installs/linux/cav-linux_x64.deb
 
-
-# Install dependencies
+# Install dependencies.
 RUN apt-get update \
-    && apt-get install wget binutils -y
+    && apt-get install -qq wget binutils
 
-# Install Comodo
-RUN wget $COMODO_URL -P /tmp \
-	&& cd /tmp && ar x cav-linux_x64.deb \
+# Install COMODO.
+RUN wget -q $COMODO_URL -P /tmp \
+	&& cd /tmp \
+	&& ar x cav-linux_x64.deb \
 	&& tar zxvf /tmp/data.tar.gz -C /
 
-# Update the VDF
-ADD $COMODO_UPDATE /opt/COMODO/scanners/bases.cav
+# Update virus definition file.
+ADD $COMODO_UPDATE $COMODO_BASES_CAV_PATH
 
-# Add the EICAR Anti-Virus Test File
+# Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Test detection
-RUN /opt/COMODO/cmdscan -v -s /eicar ; exit 0
+# Performs a simple detection test.
+RUN $COMODO_CMDSCAN -v -s /eicar | grep -q 'Found Virus, Malware Name is Malware'
 
 # Clean up
 RUN rm -rf /tmp/* \

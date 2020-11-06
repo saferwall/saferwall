@@ -14,7 +14,8 @@
 
 
 compile-multiav-server: protobuf-generate-api	## Compile gRPC server
-	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go
+	go build -ldflags "-s -w" -o $(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/bin/server \
+		$(ROOT_DIR)/build/mk/multiav.$(AV_VENDOR)/server.go
 
 multiav-build-av:	## build an AV inside a docker contrainer.
 	$(eval DOCKER_BUILD_ARGS := "")
@@ -27,7 +28,7 @@ ifeq ($(AV_VENDOR),symantec)
 endif
 
 ifeq ($(AV_VENDOR),eset)
-	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
+	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_LICENSE_KEY=$(ESET_LICENSE_KEY)")
 endif
 
 ifeq ($(AV_VENDOR),drweb)
@@ -35,14 +36,15 @@ ifeq ($(AV_VENDOR),drweb)
 endif
 
 ifeq ($(AV_VENDOR),bitdefender)
-	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
+	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_URL=$(BITDEFENDER_URL) --build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
 ifeq ($(AV_VENDOR),trendmicro)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg TREND_MICRO_LICENSE_KEY=$(TREND_MICRO_LICENSE_KEY)")
 endif
 
-	@sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	@sudo make docker-build ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) \
+		DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-release-av:		## Release an AV inside a docker contrainer.
 	$(eval DOCKER_BUILD_ARGS := "")
@@ -55,7 +57,7 @@ ifeq ($(AV_VENDOR),symantec)
 endif
 
 ifeq ($(AV_VENDOR),eset)
-	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_USER=$(ESET_USER) --build-arg ESET_PWD=$(ESET_PWD)")
+	$(eval DOCKER_BUILD_ARGS = "--build-arg ESET_LICENSE_KEY=$(ESET_LICENSE_KEY)")
 endif
 
 ifeq ($(AV_VENDOR),drweb)
@@ -63,26 +65,28 @@ ifeq ($(AV_VENDOR),drweb)
 endif
 
 ifeq ($(AV_VENDOR),bitdefender)
-	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
+	$(eval DOCKER_BUILD_ARGS = "--build-arg BITDEFENDER_URL=$(BITDEFENDER_URL) --build-arg BITDEFENDER_LICENSE_KEY=$(BITDEFENDER_LICENSE_KEY)")
 endif
 
 ifeq ($(AV_VENDOR),trendmicro)
 	$(eval DOCKER_BUILD_ARGS = "--build-arg TREND_MICRO_LICENSE_KEY=$(TREND_MICRO_LICENSE_KEY)")
 endif
 
-	@sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) VERSION=0.0.2 DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
+	@sudo make docker-release ARGS=$(DOCKER_BUILD_ARGS) IMG=$(AV_VENDOR) \
+		VERSION=$(SAFERWALL_VER) DOCKER_FILE=build/docker/Dockerfile.$(AV_VENDOR) DOCKER_DIR=build/data
 
 multiav-build-av-go:	## Build the AV with the gRPC server
-	sudo make docker-build IMG=go$(AV_VENDOR) VERSION=0.0.2 \
+	sudo make docker-build IMG=go$(AV_VENDOR) \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=.
 
 multiav-release-av-go:	## Release the AV with the gRPC server
-	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=0.0.2 \
+	sudo make docker-release IMG=go$(AV_VENDOR) VERSION=$(SAFERWALL_VER) \
 	 DOCKER_FILE=build/docker/Dockerfile.go$(AV_VENDOR) \
 	 DOCKER_DIR=.
 
-AVs = avast avira bitdefender clamav drweb comodo eset fsecure kaspersky mcafee sophos symantec trendmicro windefender
+AVs = avast avira bitdefender clamav drweb comodo eset fsecure \
+		kaspersky mcafee sophos symantec trendmicro windefender
 multiav-build: 	## Build all AVs.
 	for av in $(AVs) ; do \
 		echo "${GREEN} [*] =============== Building $$av =============== ${RESET}" ; \

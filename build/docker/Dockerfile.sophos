@@ -1,35 +1,37 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="Sophos Anti-Virus for Linux in a docker container"
 
-# Vars
+# Arguments and environment variable.
 ARG SOPHOS_URL
 ENV SOPHOS_INSTALL_DIR      /opt/sophos
 ENV SOPHOS_TMP	       /tmp/sophos
 ENV SOPHOS_INSTALL_SCRIPT	$SOPHOS_TMP/sophos-av/install.sh
 ENV SOPHOS_INSTALL_ARCHIVE 	$SOPHOS_TMP/sav-linux-free
 ENV SOPHOS_INSTALL_ARGS	--update-free --acceptlicence --autostart=False --enableOnBoot=False --automatic --ignore-existing-installation --update-source-type=s
+ENV SOPHOS_SCANNER /opt/sophos/bin/savscan
 
-## Install dependencies
+## Install dependencies.
 RUN apt-get update \
-    && apt-get install wget -y
+       && apt-get install -qq wget
 
-# Install Sophos
+# Install Sophos.
 RUN mkdir $SOPHOS_TMP \
-       && wget $SOPHOS_URL -P $SOPHOS_TMP 	
-RUN tar zxvf $SOPHOS_INSTALL_ARCHIVE -C $SOPHOS_TMP \
+       && wget -q $SOPHOS_URL -P $SOPHOS_TMP \
+       && tar zxvf $SOPHOS_INSTALL_ARCHIVE -C $SOPHOS_TMP \
 	&& $SOPHOS_INSTALL_SCRIPT $SOPHOS_INSTALL_DIR $SOPHOS_INSTALL_ARGS
 	
-## Update Anti-Virus for Linux
+# Update virus definition file.
 RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh
 
-# Add the EICAR Anti-Virus Test File
+# Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Test detection
-RUN /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
+# Performs a simple detection test.
+RUN $SOPHOS_SCANNER -f -nc -nb -ss -archive -loopback \
+       -mime -oe -tnef -pua eicar | grep -q 'EICAR-AV-Test'
 
-# Clean up
+# Clean up.
 RUN rm -rf /tmp/* \
        && rm -rf /var/lib/apt/lists/*

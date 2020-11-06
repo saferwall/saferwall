@@ -1,39 +1,40 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.3"
 LABEL description="Windows Defender in a docker container"
 
-# Vars
+# Environment variable.
 ENV WINDOWS_DEFENDER_UPDATE         https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86
 ENV WINDOWS_DEFENDER_LOADLIBRARY    https://codeload.github.com/taviso/loadlibrary/zip/master
 ENV WINDOWS_DEFENDER_INSTALL_DIR    /opt/windows-defender
 ENV WINDOWS_DEFENDER_TMP            /tmp/windows-defender
 
-# Install Windows Defender
+# Install Windows Defender.
 RUN dpkg --add-architecture i386 \
     && apt-get update \ 
-    && apt-get install curl wget unzip gcc-multilib exiftool cabextract build-essential libreadline-dev:i386 libc6-i386 -y \
+    && apt-get install -qq curl wget unzip gcc-multilib \
+        exiftool cabextract build-essential libreadline-dev:i386 libc6-i386  \
     && mkdir $WINDOWS_DEFENDER_TMP \
-    && wget $WINDOWS_DEFENDER_LOADLIBRARY -P $WINDOWS_DEFENDER_TMP \
+    && wget -q $WINDOWS_DEFENDER_LOADLIBRARY -P $WINDOWS_DEFENDER_TMP \
     && cd $WINDOWS_DEFENDER_TMP \ 
     && unzip -o $WINDOWS_DEFENDER_TMP/master \
     && cd $WINDOWS_DEFENDER_TMP/loadlibrary-master \
     && make -j2 \
     && mv $WINDOWS_DEFENDER_TMP/loadlibrary-master $WINDOWS_DEFENDER_INSTALL_DIR
 
-# Update the VDF
-RUN apt-get install libreadline-dev -y \
-    && curl -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
+# Update virus definition file.
+RUN apt-get install -qq libreadline-dev \
+    && curl -sS -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
     && cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
     && cabextract mpam-fe.exe \
     && rm mpam-fe.exe
 
-# Add EICAR Anti-Virus Test File
+# Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Performs a simple test
-# Commented out as docker does not allow building image with custom seccomp profile.
-# RUN cd $WINDOWS_DEFENDER_INSTALL_DIR && ./mpclient /eicar
+# Performs a simple detection test.
+RUN cd $WINDOWS_DEFENDER_INSTALL_DIR \
+    && ./mpclient /eicar 2>&1 | grep -q 'Virus:DOS/EICAR_Test_File'
 
 # Clean up
 RUN rm -rf WINDOWS_DEFENDER_TMP \

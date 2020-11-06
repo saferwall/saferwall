@@ -1,10 +1,12 @@
 REPO = saferwall
 
 docker-build: ## Build the container
-	@docker build $(ARGS) -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	@docker build $(ARGS) -t $(REPO)/$(IMG) \
+		-f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-build-nc: ## Build the container without caching
-	@docker build ${ARGS} --no-cache -t $(REPO)/$(IMG) -f $(DOCKER_FILE) $(DOCKER_DIR)
+	@docker build ${ARGS} --no-cache -t $(REPO)/$(IMG) \
+		-f $(DOCKER_FILE) $(DOCKER_DIR)
 
 docker-run: ## Run container on port configured in `config.env`
 	docker run -d -p 50051:50051 $(REPO)/$(IMG)
@@ -30,7 +32,7 @@ docker-tag: docker-tag-latest docker-tag-version ## Generate container tags for 
 
 docker-tag-latest: 	## Generate container `{version}` tag
 	@echo 'create tag latest'
-	docker tag $(REPO)/$(IMG) $(IMG):latest
+	docker tag $(REPO)/$(IMG) $(REPO)/$(IMG):latest
 
 docker-tag-version: 	## Generate container `latest` tag
 	@echo 'create tag $(VERSION)'

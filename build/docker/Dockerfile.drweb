@@ -1,9 +1,9 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="Dr.Web Anti-Virus for Linux in a docker container"
 
-# Vars
+# Arguments and environment variable.
 ARG DR_WEB_LICENSE_KEY
 ENV DR_WEB_MAJOR_VERSION    11.1
 ENV DR_WEB_MINOR_VERSION    1
@@ -12,10 +12,10 @@ ENV DR_WEB_URL		        https://download.geo.drweb.com/pub/drweb/unix/workstatio
 
 # Install dependencies.
 RUN apt-get update \
-    && apt-get install wget netbase -y
+    && apt-get install -qq wget netbase
 
 # Download Dr.Web installer.
-RUN wget $DR_WEB_URL -P /tmp \
+RUN wget -q $DR_WEB_URL -P /tmp \
     && chmod +x /tmp/$DR_WEB_INSTALLER \
     && /tmp/$DR_WEB_INSTALLER -- --non-interactive
 
@@ -23,9 +23,12 @@ RUN wget $DR_WEB_URL -P /tmp \
 RUN /opt/drweb.com/bin/drweb-configd -d  \
     && /opt/drweb.com/bin/drweb-ctl license --GetRegistered $DR_WEB_LICENSE_KEY
 
-# Trigger an update.
+# Update virus definition file.
 RUN /opt/drweb.com/bin/drweb-configd -d  \
     && /opt/drweb.com/bin/drweb-ctl update &> /dev/null; exit 0
+
+# Download EICAR Anti-Virus Test File.
+ADD http://www.eicar.org/download/eicar.com.txt eicar
 
 # Wait for the update the finish and test detection.
 RUN /opt/drweb.com/bin/drweb-configd -d \

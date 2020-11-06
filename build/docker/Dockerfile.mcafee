@@ -1,37 +1,37 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="McAfee VirusScan Command Line Scanner in a docker container"
 
-# Vars
-ENV MCAFEE_URL			http://b2b-download.mcafee.com/products/evaluation/vcl/l64/vscl-l64-604-e.tar.gz
-ENV MCAFEE_UPDATE		http://download.nai.com/products/DatFiles/4.x/nai/
+# Environment variable.
 ENV MCAFEE_INSTALL_DIR	/opt/mcafee
 ENV MCAFEE_TMP			/tmp/mcafee
+ENV MCAFEE_UPDATE		http://download.nai.com/products/DatFiles/4.x/nai/
+ENV MCAFEE_URL			http://b2b-download.mcafee.com/products/evaluation/vcl/l64/vscl-l64-604-e.tar.gz
 
-# Install dependencies
+# Install dependencies.
 RUN apt-get update \
-	&& apt-get install make wget unzip -y
+	&& apt-get install -qq make wget unzip
 
-# Install McAfee
+# Install McAfee.
 RUN mkdir $MCAFEE_TMP \
-	&& wget -N $MCAFEE_URL -P $MCAFEE_TMP \
+	&& wget -q -N $MCAFEE_URL -P $MCAFEE_TMP \
 	&& mkdir $MCAFEE_INSTALL_DIR \
 	&& tar zxvf $MCAFEE_TMP/vscl-l64-604-e.tar.gz -C $MCAFEE_INSTALL_DIR
 
-# Update McAfee
-RUN wget -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
+# Update virus definition file.
+RUN wget -q -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
 	&& cd $MCAFEE_TMP \
 	&& unzip -o 'avvepo*' \
 	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
 	&& $MCAFEE_INSTALL_DIR/uvscan --decompress
 
-# Add the EICAR Anti-Virus Test File
+# Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Test detection
-RUN /opt/mcafee/uvscan eicar; exit 0
+# Performs a simple detection test.
+RUN /opt/mcafee/uvscan eicar | grep -q 'EICAR test file NOT a virus'
 
-# Clean up
+# Clean up.
 RUN rm -rf /tmp/* \
        && rm -rf /var/lib/apt/lists/*

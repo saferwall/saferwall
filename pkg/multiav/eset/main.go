@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	cmd = "/opt/eset/esets/sbin/esets_scan"
+	cls = "/opt/eset/efs/sbin/cls/cls"
 )
 
 // Result represents detection results.
@@ -30,8 +30,10 @@ func ScanFile(filePath string) (Result, error) {
 	// --clean-mode=MODE         use cleaning MODE for infected objects.
 	// 							 Available options: none, standard (default),
 	// 							 strict, rigorous, delete
-	out, err := utils.ExecCommand(cmd, "--unsafe", "--unwanted",
-		"--clean-mode=NONE", filePath)
+	// --no-quarantine           do not copy detected files to Quarantine
+
+	out, err := utils.ExecCommand(cls, "--unsafe", "--unwanted",
+		"--clean-mode=NONE", "--no-quarantine", filePath)
 
 	// Exit codes:
 	//  0    no threat found
@@ -46,9 +48,9 @@ func ScanFile(filePath string) (Result, error) {
 	}
 
 	// Scan started at:   Tue Jan  1 01:32:57 2019
-	// name="/samples/aa.exx", threat="a variant of Win32/Injector.BIIZ trojan", action="", info=""
+	// name="/samples/Wauchos.exe", result="Win32/TrojanDownloader.Wauchos.A trojan", action="retained", info=""
 
-	re := regexp.MustCompile(`threat="([\s\w/.]+)"`)
+	re := regexp.MustCompile(`result="([\s\w/.]+)"`)
 	l := re.FindStringSubmatch(out)
 	if len(l) < 1 {
 		return res, nil
@@ -57,7 +59,7 @@ func ScanFile(filePath string) (Result, error) {
 	// Clean up detection name
 	det := l[1]
 	det = strings.TrimPrefix(det, "a variant of")
-	det = strings.TrimSuffix(det, "potentially unwanted application")
+det = strings.TrimSuffix(det, "potentially unwanted application")
 	det = strings.TrimSuffix(det, "potentially unsafe application")
 	det = strings.TrimSuffix(det, " trojan")
 	det = strings.TrimSuffix(det, " Constructor")
@@ -72,7 +74,7 @@ func ScanFile(filePath string) (Result, error) {
 func GetProgramVersion() (string, error) {
 
 	// Execute the scanner with the given file path
-	out, err := utils.ExecCommand(cmd, "--version")
+	out, err := utils.ExecCommand(cls, "--version")
 	if err != nil {
 		return "", err
 	}

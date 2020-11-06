@@ -1,46 +1,75 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="ESET File Server Security for Linux in a docker container"
 
-# Vars
-ARG ESET_USER
-ARG ESET_PWD
+# Arguments and environment variable.
+ARG ESET_LICENSE_KEY
+ENV ESET_TEMP /tmp/eset
+ENV ESET_SCANNER /opt/eset/efs/sbin/cls/cls
+ENV ESET_LIC_MANAGER /opt/eset/efs/sbin/lic
+ENV ESET_UPD_UTILITY /opt/eset/efs/bin/upd
+ENV ESET_URL https://download.eset.com/com/eset/apps/business/efs/linux/latest/efs.x86_64.bin
+ENV ESET_SVC /opt/eset/efs/sbin/startd
+ENV ESET_CFG /opt/eset/efs/sbin/cfg
+ENV ESET_TEMP_CFG /tmp/export.xml
+ENV DEBIAN_FRONTEND noninteractive
 
-ENV ESET_URL		https://download.eset.com/com/eset/apps/business/es/linux/latest/esets.amd64.deb.bin
-ENV ESET_LICENSE	ERA-Endpoint.lic
-ENV ESET_CONFIG_DIR	/etc/opt/eset
-ENV ESET_INSTALL_DIR	/opt/eset
-ENV ESET_TEMP		/tmp/eset
+# Install dependencies.
+RUN apt-get -qq update \
+	&& apt-get install -qq -y wget
 
-# Install dependencies
-RUN apt-get update \
-    && apt-get install wget libc6-i386 ed -y
+# Download Eset File Security for Linux.
+RUN wget -q $ESET_URL -P $ESET_TEMP
 
-# Install ESET
-RUN mkdir $ESET_TEMP \
-	&& wget -N $ESET_URL --user=$ESET_USER --password=$ESET_PWD -P $ESET_TEMP \
-	&& chmod +x $ESET_TEMP/esets.amd64.deb.bin \
-	&& $ESET_TEMP/esets.amd64.deb.bin --skip-license
-
-# Copy License Key
-ADD ERA-Endpoint.lic $ESET_CONFIG_DIR/esets/license/ERA-Endpoint.lic
-
-# Update the config
-RUN sed -i "s/#av_update_username = \"\"/av_update_username = \"$ESET_USER\"/g" $ESET_CONFIG_DIR/esets/esets.cfg \
-	&& sed -i "s/#av_update_password = \"\"/av_update_password = \"$ESET_PWD\"/g" $ESET_CONFIG_DIR/esets/esets.cfg \
-	&& $ESET_INSTALL_DIR/esets/sbin/esets_lic --import=$ESET_INSTALL_DIR/esets/etc/license/
-
-# Update the VDF
-RUN /opt/eset/esets/sbin/esets_update
-
-# Add the EICAR Anti-Virus Test File
+# Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
 
-# Test detection
-RUN /opt/eset/esets/sbin/esets_scan --clean-mode=NONE eicar ; exit 0
+# Install it.
+RUN yes | sh $ESET_TEMP/efs.x86_64.bin --no-gui --accept-license
+
+# License Activation, update and custom configuration.
+RUN $ESET_SVC --daemonize \
+	&& sleep 3s \
+	&& $ESET_LIC_MANAGER --key $ESET_LICENSE_KEY \
+	&& echo "Updating ..." \ 
+	&& $ESET_UPD_UTILITY --update --accept-license \
+	&& echo "Exporting config" \ 
+	&& $ESET_CFG --export-xml=$ESET_TEMP_CFG \
+	# Disable LiveGrid.
+	&& old='NAME="LiveGridEnabled" TYPE="number" VALUE="1"' \
+	&& new='NAME="LiveGridEnabled" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable statistics submission.
+	&& old='"SubmitStatistics" TYPE="number" VALUE="1"' \
+	&& new='"SubmitStatistics" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable infected files submission.
+	&& old='NAME="SubmitInfectedFiles" TYPE="number" VALUE="1"' \
+	&& new='NAME="SubmitInfectedFiles" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable suspicious executables submission.
+	&& old='NAME="SubmitSuspiciousExecutables" TYPE="number" VALUE="1"' \
+	&& new='NAME="SubmitSuspiciousExecutables" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable suspicious archives submission.
+	&& old='NAME="SubmitSuspiciousArchives" TYPE="number" VALUE="1"' \
+	&& new='NAME="SubmitSuspiciousArchives" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable suspicious scripts submission.
+	&& old='NAME="SubmitSuspiciousScripts" TYPE="number" VALUE="1"' \
+	&& new='NAME="SubmitSuspiciousScripts" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	# Disable suspicious other submission.
+	&& old='NAME="SubmitSuspiciousOther" TYPE="number" VALUE="1"' \
+	&& new='NAME="SubmitSuspiciousOther" TYPE="number" VALUE="0"' \
+    && sed -i "s|$old|$new|g" $ESET_TEMP_CFG \
+	&& cat $ESET_TEMP_CFG \
+	# Import new config.
+	&& $ESET_CFG --import-xml=/tmp/export.xml \
+	&& echo "Scanning eicar ..." \ 
+	&& $ESET_SCANNER --clean-mode=NONE eicar | grep -q 'Eicar test file'
 
 # Clean up
 RUN rm -rf $ESET_TEMP \
 	&& rm -rf /var/lib/apt/lists/*
-
