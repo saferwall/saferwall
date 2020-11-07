@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,29 +30,28 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/mcafee:0.0.2
+FROM saferwall/mcafee:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="gRPC server over linux version of McAfee"
 
-# Vars
+# Environment variables.
 ENV MCAFEE_UPDATE		http://download.nai.com/products/DatFiles/4.x/nai/
 ENV MCAFEE_INSTALL_DIR	/opt/mcafee
 ENV MCAFEE_TMP			/tmp/mcafee
 ENV MCAFEE_DB_UPDATE_DATE	/av_db_update_date.txt
 
-# Update McAfee
+# Update virus definition file.
 RUN wget -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
 	&& cd $MCAFEE_TMP \
 	&& unzip -o 'avvepo*' \
 	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
 	&& $MCAFEE_INSTALL_DIR/uvscan --decompress \
-    && rm -rf /tmp/*
+    && rm -rf /tmp/* \
+    && echo -n "$(date +%s)" >> $MCAFEE_DB_UPDATE_DATE
 
-RUN echo -n "$(date +%s)" >> $MCAFEE_DB_UPDATE_DATE
-
-# Test detection
-RUN /opt/mcafee/uvscan eicar; exit 0
+# Performs a simple detection test.
+RUN /opt/mcafee/uvscan eicar | grep -q 'EICAR test file NOT a virus'
 
 # Copy our static executable.
 COPY --from=builder /go/bin/mcafeescanner /bin/mcafeescanner
@@ -60,12 +59,12 @@ COPY --from=builder /go/bin/mcafeescanner /bin/mcafeescanner
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions
-RUN usermod -u 101 saferwall
-RUN groupmod -g 102 saferwall
-RUN chown -R saferwall:saferwall $MCAFEE_INSTALL_DIR
+# Update permissions.
+RUN usermod -u 101 saferwall \
+    && groupmod -g 102 saferwall \
+    && chown -R saferwall:saferwall $MCAFEE_INSTALL_DIR
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
 ENTRYPOINT ["/bin/mcafeescanner"]

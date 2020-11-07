@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,34 +30,41 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/eset:0.0.2
+FROM saferwall/eset:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="ESET File Server Security for Linux in a docker container"
 
-# Vars
-ENV ESET_CONFIG_DIR 	/etc/opt/eset
-ENV ESET_INSTALL_DIR 	/opt/eset
+# Environment variables.
+ENV ESET_SVC /opt/eset/efs/sbin/startd
+ENV ESET_UPD_UTILITY /opt/eset/efs/bin/upd
+ENV ESET_SCANNER /opt/eset/efs/sbin/cls/cls
 ENV ESET_DB_UPDATE_DATE	/av_db_update_date.txt
 
-# Update the VDF
-RUN /opt/eset/esets/sbin/esets_update \
-	&& echo -n "$(date +%s)" >> $ESET_DB_UPDATE_DATE
+# Update & test detection.
+RUN $ESET_SVC --daemonize \
+	&& sleep 3s \
+	&& echo "Updating ..." \ 
+	&& $ESET_UPD_UTILITY --update --accept-license \
+	&& echo -n "$(date +%s)" >> $ESET_DB_UPDATE_DATE \
+	&& echo "Scanning eicar ..." \ 
+	&& $ESET_SCANNER --clean-mode=NONE /root/eicar | grep -q 'Eicar test file'
 
-# Copy our binary
+# Copy our binary.
 COPY --from=builder /go/bin/esetscanner /bin/esetscanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
 	&& useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions
-RUN usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall \
-	&& chown -R saferwall:saferwall $ESET_CONFIG_DIR \
-	&& chown -R saferwall:saferwall $ESET_INSTALL_DIR
+# Update permissions.
+RUN usermod -u 103 Debian-exim \
+	&& groupmod -g 103 Debian-exim \
+	&& groupmod -g 104 crontab \
+	&& usermod -u 101 saferwall \
+	&& groupmod -g 102 saferwall
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
 ENTRYPOINT ["/bin/esetscanner"]

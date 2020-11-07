@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,20 +30,21 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/sophos:0.0.2
+FROM saferwall/sophos:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="gRPC server over linux version of Sophos"
 
-# Vars
+# Environment variables.
 ENV SOPHOS_DB_UPDATE_DATE	/av_db_update_date.txt
 
-# Update the VDF
+# Update virus definition file.
 RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh \
     && echo -n "$(date +%s)" >> $SOPHOS_DB_UPDATE_DATE
 
-# Test detection
-RUN /opt/sophos/bin/savscan -f -nc -nb -ss -archive -loopback -mime -oe -tnef -pua eicar; exit 0
+# Performs a simple detection test.
+RUN $SOPHOS_SCANNER -f -nc -nb -ss -archive -loopback \
+       -mime -oe -tnef -pua eicar | grep -q 'EICAR-AV-Test'
 
 # Copy our static executable.
 COPY --from=builder /go/bin/sophosscanner /bin/sophosscanner
@@ -51,11 +52,11 @@ COPY --from=builder /go/bin/sophosscanner /bin/sophosscanner
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall && useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions
-RUN usermod -u 101 saferwall
-RUN groupmod -g 102 saferwall
+# Update permissions.
+RUN usermod -u 101 saferwall \
+    && groupmod -g 102 saferwall
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
 ENTRYPOINT ["/bin/sophosscanner"]

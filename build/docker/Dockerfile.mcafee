@@ -3,7 +3,7 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.3"
 LABEL description="McAfee VirusScan Command Line Scanner in a docker container"
 
-# Environment variable.
+# Environment variables.
 ENV MCAFEE_INSTALL_DIR	/opt/mcafee
 ENV MCAFEE_TMP			/tmp/mcafee
 ENV MCAFEE_UPDATE		http://download.nai.com/products/DatFiles/4.x/nai/

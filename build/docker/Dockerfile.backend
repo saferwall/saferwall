@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -25,14 +25,13 @@ COPY /web .
 # Build the go app.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /go/bin/server .
 
-
 ############################
 # STEP 2 build a small image
 ############################
 
 FROM debian:stretch-slim as final
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="Saferwall backend"
 
 WORKDIR /backend

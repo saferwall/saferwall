@@ -6,7 +6,7 @@ LABEL description="The Open Source ClamAV Antivirus in a docker container"
 # Install ClamAV.
 RUN apk --no-cache add clamav clamav-libunrar clamav-daemon
 
-# Update ClamAV.
+# Update virus definition file.
 RUN freshclam
 
 # Download EICAR Anti-Virus Test File.

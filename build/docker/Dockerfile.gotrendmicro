@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,24 +30,33 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/trendmicro:0.0.2
+FROM saferwall/trendmicro:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="gRPC server over linux version of TrendMicro"
 
-# Vars
+# Environment variables.
 ENV TREND_MICRO_DB_UPDATE_DATE    /av_db_update_date.txt
 
-# Start the service
-RUN /etc/init.d/splx start
-
-# Launch an update.
-RUN cd /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp \
+# Update virus definition file.
+RUN /etc/init.d/splx start \
+    && cd /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp \
     && ./splxmain -u \
     && echo -n "$(date +%s)" >> $TREND_MICRO_DB_UPDATE_DATE
 
 # Copy our static executable.
-COPY --from=builder /go/bin/trendmicroscanner /bin/trendmicroscanner.
+COPY --from=builder /go/bin/trendmicroscanner /bin/trendmicroscanner
+
+# Performs a simple detection test.
+# ServerProtect does not seem to be able to scan a file directly,
+# it only take a directory as argument. So we create a tmp dir
+# and we place a copy of the file inside.
+RUN mkdir -p /tmp/sample/  \
+    && cp /eicar /tmp/sample/ \
+    && rm -f /var/log/TrendMicro/SProtectLinux/* \
+    && $TREND_MICRO_SLPXMAIN -m /tmp/sample/ \
+    && sleep 15s \
+    && cat /var/log/TrendMicro/SProtectLinux/Virus* | grep -q 'virus_name=Eicar_test_file'
 
 # Install requirements.
 RUN yum install -y sudo
@@ -58,11 +67,11 @@ RUN groupadd -r saferwall \
 
 # Update permissions
 RUN usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall
-RUN usermod -aG wheel saferwall \
+	&& groupmod -g 102 saferwall \
+    && usermod -aG wheel saferwall \
 	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Switch to our user
 USER saferwall
 
-ENTRYPOINT ["/bin/trendmicroscanner"]
+ENTRYPOINT ["sudo", "/bin/trendmicroscanner"]

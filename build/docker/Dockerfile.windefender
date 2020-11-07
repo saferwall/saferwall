@@ -3,7 +3,7 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.3"
 LABEL description="Windows Defender in a docker container"
 
-# Environment variable.
+# Environment variables.
 ENV WINDOWS_DEFENDER_UPDATE         https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86
 ENV WINDOWS_DEFENDER_LOADLIBRARY    https://codeload.github.com/taviso/loadlibrary/zip/master
 ENV WINDOWS_DEFENDER_INSTALL_DIR    /opt/windows-defender

@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,23 +30,23 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/avast:0.0.2
+FROM saferwall/avast:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="gRPC server over linux version of Avast"
 
-# Vars
+# Environment variables.
 ENV AVAST_DB_UPDATE_DATE	/av_db_update_date.txt
 
-# Update VPS
+# Update virus definition file.
 RUN /var/lib/avast/Setup/avast.vpsupdate \
 	&&  echo -n "$(date +%s)" >> $AVAST_DB_UPDATE_DATE
 
 # Copy our static executable.
 COPY --from=builder /go/bin/avastscanner /bin/avastscanner
 
-# Install requirements
-RUN apt-get update && apt-get install sudo -y
+# Install requirements.
+RUN apt-get update && apt-get -qq install sudo
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
@@ -54,8 +54,8 @@ RUN groupadd -r saferwall \
 
 # Update permissions
 RUN usermod -aG sudo saferwall \
-	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-RUN usermod -u 101 saferwall \
+	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+	&& usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall
 
 # Switch to our user

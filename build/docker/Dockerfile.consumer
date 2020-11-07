@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -18,7 +18,6 @@ RUN echo "Installing Capstone..." \
     && cd capstone \
     && ./make.sh \
     && ./make.sh install
-
 
 # Copy go mod and sum files
 COPY go.mod go.sum ./
@@ -38,14 +37,13 @@ RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags
 ############################
 FROM ubuntu:bionic
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="NSQ consumer in a docker container"
-
 
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \ 
     && apt-get update \
-    && apt-get install --no-install-recommends wget unzip ca-certificates -y
+    && apt-get install -qq --no-install-recommends wget unzip ca-certificates
 
 ######## Installing TRiD ########
 RUN echo "Installing TRiD..." \
@@ -61,11 +59,11 @@ RUN echo "Installing TRiD..." \
 
 ####### Installing Exiftool #######
 RUN echo "Installing Exiftool..." \
-    && apt-get install libimage-exiftool-perl -y
+    && apt-get install -qq libimage-exiftool-perl
 
 ####### Installing File #######
 RUN echo "Installing File..." \
-    && apt-get install file -y
+    && apt-get install -qq file
 
 ####### Installing DiE #######
 ENV DIE_VERSION     2.03
@@ -118,7 +116,7 @@ RUN chown -R saferwall:saferwall . \
 	&& chown -R saferwall:saferwall $DIE_DIR \
 	&& chown -R saferwall:saferwall $YARA_RULES_DIR
 
-# Cleanup
+# Cleanup.
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
 

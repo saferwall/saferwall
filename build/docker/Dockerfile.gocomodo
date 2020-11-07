@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.14-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -30,17 +30,17 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/comodo:0.0.2
+FROM saferwall/comodo:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.2"
+LABEL version="0.0.3"
 LABEL description="gRPC server over linux version of Comodo"
 
-# Vars
+# Environment variables.
 ENV COMODO_INSTALL_DIR  	/opt/COMODO
 ENV COMODO_UPDATE       	http://download.comodo.com/av/updates58/sigs/bases/bases.cav
 ENV COMODO_DB_UPDATE_DATE	/av_db_update_date.txt
 
-# Update the VDF
+# Update virus definition file.
 ADD $COMODO_UPDATE /opt/COMODO/scanners/bases.cav
 RUN echo -n "$(date +%s)" >> $COMODO_DB_UPDATE_DATE
 
@@ -55,7 +55,7 @@ RUN usermod -u 101 saferwall
 RUN groupmod -g 102 saferwall
 RUN chown -R saferwall:saferwall $COMODO_INSTALL_DIR
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
 ENTRYPOINT ["/bin/comodoscanner"]

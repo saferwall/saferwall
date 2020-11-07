@@ -3,7 +3,7 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.3"
 LABEL description="Comodo Antivirus for Linux in a docker container"
 
-# Environment variable.
+# Environment variables.
 ENV COMODO_INSTALL_DIR /opt/COMODO
 ENV COMODO_CMDSCAN $COMODO_INSTALL_DIR/cmdscan
 ENV COMODO_BASES_CAV_PATH $COMODO_INSTALL_DIR/scanners/bases.cav
