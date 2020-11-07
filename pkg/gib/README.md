@@ -39,6 +39,17 @@ func main() {
   // Will return `False`.
   fmt.Println(isGibberish(nonRandomString))
 ```
+## Limitations
+
+```gib``` is strongly based on ```nostril``` and re-uses its training data for filtering strings.
+Thus ```gib``` limitations are similar, it only supports American English words and will generate false positives
+due to the problem domain.
+
+The idea behind both is to fine tune certain scoring values such as length and repition based on its training corpus.
+A custom IDF value is computed for each given string, the default n-gram value is set to 4 similar to the dataset provided.
+
+To make an analogy to how TF-IDF is used in document classification, nonsense strings are those that use unusual n-grams and thus score highly, while real/meaningful strings are those that use more common n-grams and thus score lower. The Nostril package includes a precomputed table of n-gram weights derived by training the system on a large set of strings constructed from concatenated American English words, real text corpora, and other inputs. Parameter values were optimized using the evolutionary algorithm NSGA-II.
+
 
 ## Notes about testing
 
