@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 // Package gib implements gibberish strings evaluation.
 // file ngram.go implements N-Grams data structures and utility functions.
 package gib
@@ -9,21 +13,20 @@ type NGramSet struct {
 	Set map[string][]string
 }
 
-// NewNGramSet creates a new instance of ngram set
+// NewNGramSet creates a new instance of ngram set.
 func NewNGramSet() NGramSet {
 	set := make(map[string][]string, 0)
-
 	return NGramSet{
 		Set: set,
 	}
 }
 
-// Add a new string to an ngram set
+// Add a new string to an ngram set.
 func (n *NGramSet) Add(ngram string, s string) {
 	n.Set[ngram] = append(n.Set[ngram], s)
 }
 
-// NewNGramDict creates a new instance of ngram dict
+// NewNGramDict creates a new instance of ngram dict.
 func NewNGramDict(keys []string, values []Score) NGramScores {
 
 	// if len(keys) != len(values) throw an error

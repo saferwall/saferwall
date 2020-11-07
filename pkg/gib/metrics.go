@@ -1,4 +1,9 @@
-// Package gib metrics.go implements accuracy metrics for rating detection on several test cases.
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+// Package gib metrics.go implements accuracy metrics for rating detection on
+//several test cases.
 package gib
 
 // Labels : positive class is gibberish and negative class is correct string
@@ -19,7 +24,8 @@ func Accuracy(truePositiveCount, falsePositiveCount, trueNegativeCount, falseNeg
 	return (tpCount + tnCount) / (tpCount + fpCount + tnCount + fnCount)
 }
 
-// Precision is a metric to answer the question "What proportion of positive identifications was actually correct"
+// Precision is a metric to answer the question:
+// "What proportion of positive identifications was actually correct".
 func Precision(truePositiveCount, falsePositiveCount int) float64 {
 
 	tpCount := float64(truePositiveCount)
@@ -29,7 +35,8 @@ func Precision(truePositiveCount, falsePositiveCount int) float64 {
 	return tpCount / (tpCount + fpCount)
 }
 
-// Recall is a metric to answer the question "What proportion of actual positives was identified correctly?"
+// Recall is a metric to answer the question:
+// "What proportion of actual positives was identified correctly?"
 func Recall(truePositiveCount, falseNegativeCount int) float64 {
 
 	tpCount := float64(truePositiveCount)

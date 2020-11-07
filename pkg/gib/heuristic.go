@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 // Package gib heuristic.go implements heuristic pattern matching on strings.
 package gib
 
@@ -35,7 +39,7 @@ var simplePatterns = []string{
 }
 
 func sanitize(s string) string {
-	// Make a Regex to say we only want letters and numbers
+	// Make a Regex to say we only want letters and numbers.
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	processedString := reg.ReplaceAllString(s, "")
 	return strings.ToLower(processedString)

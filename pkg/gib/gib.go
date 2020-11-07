@@ -1,3 +1,7 @@
+// Copyright 2020 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 // Package gib implements a gibberish string evaluator.
 package gib
 
@@ -8,21 +12,30 @@ import (
 )
 
 const (
-	// MinLength represents minimal length of a string to process
+	// MinLength represents minimal length of a string to process.
 	MinLength = 6
-	// DefaultNgramLength is the default ngram length of the prepared dataset
+	// DefaultNgramLength is the default ngram length of the prepared dataset.
 	DefaultNgramLength = 4
-	// Dataset is the file path to the ngram dataset collected from a corpora
+	// Dataset is the file path to the ngram dataset collected from a corpora.
 	Dataset = "./data/ngram.json"
 )
 
+// Options provides different option to create a new scorer.
+type Options struct {
+	dataset string
+}
+
 var (
-	lowerCaseLetters          = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	lowerCaseLetters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i",
+		"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
+		"y", "z"}
 	scoreLenThreshold float64 = 25.
 	scoreLenPenalty   float64 = 0.9233
 	scoreRepPenalty   float64 = 0.9674
 	// MinScore represents the absolute minimal score for any given string
 	MinScore float64 = 8.6
+
+	errLoadingDataset = errors.New("Failed to load dataset")
 )
 
 // ngramsFromString returns a list of all n-grams of length n in a given string s.
@@ -37,7 +50,7 @@ func ngramsFromString(s string, n int) []string {
 	return ngrams
 }
 
-// allNgrams returns a list of all possible n-grams
+// allNgrams returns a list of all possible n-grams.
 func allNgrams(n int) []string {
 	if n == 0 {
 		return []string{}
@@ -54,12 +67,12 @@ func allNgrams(n int) []string {
 	return newNgrams
 }
 
-// ngramIDFValue computes scores using modified TF-IDF
+// ngramIDFValue computes scores using modified TF-IDF.
 func ngramIDFValue(totalStrings, stringFreq, totalFreq, maxFreq float64) float64 {
 	return math.Log2(totalStrings / (1. + stringFreq))
 }
 
-// highestIDF computes highest idf value in map of ngram frequencies
+// highestIDF computes highest idf value in map of ngram frequencies.
 func highestIDF(ngramFreq NGramScores) float64 {
 
 	max := 0.
@@ -69,8 +82,8 @@ func highestIDF(ngramFreq NGramScores) float64 {
 	return max
 }
 
-// highestFreq computes highest total frequency of any n-gram in a map of n-gram score
-// values for a given corpus.
+// highestFreq computes highest total frequency of any n-gram in a map of
+// n-gram score values for a given corpus.
 func highestFreq(ngramFreq NGramScores) float64 {
 	max := 0.
 	for _, ngram := range ngramFreq {
@@ -79,7 +92,7 @@ func highestFreq(ngramFreq NGramScores) float64 {
 	return max
 }
 
-// nGramValues computes n-gram statistics across a given corpus of strings
+// nGramValues computes n-gram statistics across a given corpus of strings.
 func nGramValues(corpus []string, n int, reAdjust bool) NGramScores {
 	var counts = make(map[string]int, n)
 	var occurrences = NewNGramSet()
@@ -107,7 +120,8 @@ func nGramValues(corpus []string, n int, reAdjust bool) NGramScores {
 	for ngram, strings := range occurrences.Set {
 		stringFreq := len(strings)
 		totalFreq := counts[ngram]
-		score := ngramIDFValue(float64(numStrings), float64(stringFreq), float64(totalFreq), float64(maxFreq))
+		score := ngramIDFValue(float64(numStrings), float64(stringFreq),
+			float64(totalFreq), float64(maxFreq))
 		generatedNGrams[ngram] = [3]float64{
 			float64(stringFreq),
 			float64(totalFreq),
@@ -132,7 +146,8 @@ func nGramValues(corpus []string, n int, reAdjust bool) NGramScores {
 }
 
 // TFIDFScoreFunction generates a function that computes a score given a string.
-func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64, lenPenalty float64, repPenalty float64) func(string) float64 {
+func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64,
+	lenPenalty float64, repPenalty float64) func(string) float64 {
 
 	// Formula
 	// S : a string to score
@@ -161,12 +176,14 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64, lenPenal
 			ngramCounts[ngram]++
 		}
 		numNGrams := len(ngramsInStr)
-		lengthPenalty := math.Pow(math.Max(0., float64(numNGrams)-lenThres), lenPenalty)
+		lengthPenalty := math.Pow(math.Max(0., float64(numNGrams)-lenThres),
+			lenPenalty)
 		// compute the scores
 		scores := make([]float64, 0)
 		score := lengthPenalty
 		for n, c := range ngramCounts {
-			sc := ngramFreq.IDF(n) * math.Pow(float64(c), repPenalty) * (0.5 + 0.5*(float64(c)/maxFreq))
+			sc := ngramFreq.IDF(n) * math.Pow(float64(c), repPenalty) *
+				(0.5 + 0.5*(float64(c)/maxFreq))
 			scores = append(scores, sc)
 			score += sc
 		}
@@ -178,21 +195,26 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64, lenPenal
 }
 
 // NewScorer creates a new scoring function
-func NewScorer(ngramFreq NGramScores) func(string) (bool, error) {
+func NewScorer(opts *Options) func(string) (bool, error) {
 
-	tfidfScorer := TFIDFScoreFunction(ngramFreq, DefaultNgramLength, scoreLenThreshold, scoreLenPenalty, scoreRepPenalty)
+	var ngramFreq NGramScores
+
+	if opts != nil {
+		ngramFreq, _ = loadDataset(opts.dataset)
+	} else {
+		ngramFreq, _ = loadDataset(Dataset)
+	}
+
+	tfidfScorer := TFIDFScoreFunction(ngramFreq, DefaultNgramLength,
+		scoreLenThreshold, scoreLenPenalty, scoreRepPenalty)
 
 	scorer := func(s string) (bool, error) {
-
 		s = sanitize(s)
-
 		if len(s) < MinLength {
 			return false, errors.New("string to score is too short min length is 6")
 		}
 		score := tfidfScorer(s)
-
 		result := score > MinScore
-
 		return result, nil
 	}
 
