@@ -195,14 +195,21 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64,
 }
 
 // NewScorer creates a new scoring function
-func NewScorer(opts *Options) func(string) (bool, error) {
+func NewScorer(opts *Options) (func(string) (bool, error), error) {
 
 	var ngramFreq NGramScores
+	var err error
 
 	if opts != nil {
-		ngramFreq, _ = loadDataset(opts.dataset)
+		ngramFreq, err = loadDataset(opts.dataset)
+		if err != nil {
+			return nil, errors.New("failed to load dataset with error " + err.Error())
+		}
 	} else {
-		ngramFreq, _ = loadDataset(Dataset)
+		ngramFreq, err = loadDataset(Dataset)
+		if err != nil {
+			return nil, errors.New("failed to load dataset with error " + err.Error())
+		}
 	}
 
 	tfidfScorer := TFIDFScoreFunction(ngramFreq, DefaultNgramLength,
@@ -218,5 +225,5 @@ func NewScorer(opts *Options) func(string) (bool, error) {
 		return result, nil
 	}
 
-	return scorer
+	return scorer, nil
 }
