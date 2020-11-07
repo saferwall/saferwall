@@ -40,9 +40,10 @@ var simplePatterns = []string{
 
 func sanitize(s string) string {
 	// Make a Regex to say we only want letters and numbers.
-	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	s = strings.ToLower(s)
+	reg := regexp.MustCompile("[^a-zA-Z]+")
 	processedString := reg.ReplaceAllString(s, "")
-	return strings.ToLower(processedString)
+	return processedString
 }
 
 func simpleNonSense(text string) bool {

@@ -355,7 +355,7 @@ func TestOnMacroDocs(t *testing.T) {
 	}{
 		{
 			input:    "H67oooeewxpd8ll",
-			expected: false,
+			expected: true,
 		}, {
 			input:    "IGwkqQGAL(lAwPHFBmE + lAwPHFBmE)",
 			expected: true,
