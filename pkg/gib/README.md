@@ -1,7 +1,7 @@
 # gib : A String Gibberish Detector in Golang
 
 *gib* is a package to detect gibberish strings in Golang. This utility is useful when analyzing textual artefacts in malwares. To cite how we're using this package:
-  - Macro documents/scripts usually obfuscate their code by randomizing variables and function names, applying `gib` over extracted tokens is a simnple way to tell when  is a simple heuritic/ ML feature to raise.
+  - Macro documents/scripts usually obfuscate their code by randomizing variables and function names, applying `gib` over extracted tokens is a simple heuritic/ ML feature to raise when such a situation happens.
   - Be able to tell when malwares drop random files names, or uses random PE section names. Well you get the idea :)
 
 ## Installation
@@ -30,14 +30,8 @@ func main() {
   randomString := "asdqwfbeqbfuilac"
   nonRandomString := "CreateNewUser"
   
-  // path to the provided default dataset
-  datasetPath := "/home/user/go/github.com/saferwall/saferwall/pkg/gib/data/ngram.json"
-  
-  // load dataset as an ngram score table
-  defaultDataset := gib.LoadDataset(pathToDataset)
-
-  // create a new gibberish detector
-  isGibberish := gib.NewScorer(defaultDataset)
+  // Create a new gibberish detector
+  isGibberish := gib.NewScorer(nil)
 
   // Will return `True`.
   fmt.Println(isGibberish(randomString))
