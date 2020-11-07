@@ -110,7 +110,7 @@ couchbase-operator:
     # image config
     image:
       repository: couchbase/operator
-      tag: 2.0.1
+      tag: 2.0.2
     imagePullPolicy: IfNotPresent
     # imagePullSecrets is an optional list of references to secrets  to use for pulling images
     imagePullSecrets: []
@@ -126,13 +126,64 @@ couchbase-operator:
     # tolerations of pod match nodes with corresponding taints
     tolerations: []
 
+
+  # admissionController is the controller for couchbase admission controller
+  # name is derived from chart
+  admissionController:
+    name: "couchbase-admission-controller"
+    image:
+      repository: couchbase/admission-controller
+      tag: 2.0.2
+    imagePullPolicy: IfNotPresent
+    # imagePullSecrets is an optional list of references to secrets  to use for pulling images
+    imagePullSecrets: []
+    verboseLogging: false
+
+  # admissionService exposes validation to cluster. This service
+  # is over https and certs are auto-generated based on serviceName.
+  admissionService:
+    # name of the service (auto-generated)
+    name:
+    # port service exposes
+    port: 443
+    targetPort: 8443
+
+  # admissionCA can be used to override the Certs that will be used
+  # to sign the keys used by the admsission operator.
+  admissionCA:
+    # A base64 encoded PEM format certificate
+    cert:
+    # A base64 encoded PEM format private key
+    key:
+    # Expiry time of CA in days for generated certs
+    expiration: 365
+
+  # secret with client certs mounted within the admission controller.
+  admissionSecret:
+    # name of the secret (auto-generated)
+    name:
+    # PEM format certificate (auto-generated)
+    # override via --set-file
+    cert:
+    # PEM format certificate (auto-generated)
+    # override via --set-file
+    key:
+
+
   # Default values for couchbase-cluster
   cluster:
     # name of the cluster. defaults to name of chart release
     name:
     # image is the base couchbase image and version of the couchbase cluster
     image: "couchbase/server:6.5.1"
+    # guarantees that the pods in the same cluster are unable to be scheduled on the same node
+    antiAffinity: false
     security:
+      ## username of the cluster admin.
+      # username: Administrator
+      ## password of the cluster admin.
+      ## auto-generated when empty
+      # password:
       # adminSecret is name of secret to use instead of using
       # the default secret with username and password specified above
       adminSecret: "cb-admin-secret"
@@ -158,6 +209,8 @@ couchbase-operator:
       # Allowed values are NodePort and LoadBalancer.
       # If this field is LoadBalancer then you must also define a spec.dns.domain.
       exposedFeatureServiceType: NodePort
+      # This controls routing to external services.
+      exposedFeatureTrafficPolicy: Local
       # The dynamic DNS configuration to use when exposing services
       dns:
       # Custom map of annotations to be added to console and per-pod (exposed feature) services
@@ -179,7 +232,7 @@ couchbase-operator:
       # managed determines whether Automated Backup is enabled
       managed: true
       # image used by the Operator to perform backup or restore
-      image: couchbase/operator-backup:6.5.1
+      image: couchbase/operator-backup:6.5.1-104
       # optional service account to use when performing backups
       # service account will be created if it does not exist
       serviceAccountName:
@@ -190,7 +243,7 @@ couchbase-operator:
         enabled: false
         # image used by the Operator to perform metric collection
         # (injected as a "sidecar" in each Couchbase Server Pod)
-        image: couchbase/exporter:1.0.1
+        image: couchbase/exporter:1.0.2
         # Optional Kubernetes secret that clients use to access Prometheus metrics
         authorizationSecret:
     # Cluster wide settings for nodes and services
@@ -264,28 +317,30 @@ couchbase-operator:
           - analytics
           - eventing
         # volume claims to use for persistent storage
-        volumeMounts: {}
+        volumeMounts:
+          default: couchbase
+          data: couchbase
+          index: couchbase
         # ServerGroups define the set of availability zones we want to distribute pods over.
         serverGroups: []
         # Pod defines the policy to create pod for the couchbase pod.
         pod:
-          volumeMounts:
-            default: couchbase
-            data:  couchbase
+          spec:
+            containers:
     # VolumeClaimTemplates define the desired characteristics of a volume
     # that can be requested and claimed by a pod.
     volumeClaimTemplates:
-      - metadata:
-          name: couchbase
-        spec:
-          storageClassName: standard
-          resources:
-            requests:
-              storage: 2Gi
+    - metadata:
+        name: couchbase
+      spec:
+        storageClassName: default
+        resources:
+          requests:
+            storage: 2Gi
 
   # couchbase buckets to create
   # disable default bucket creation by setting
-  # couchbaseBuckets.default: null
+  couchbaseBuckets.default: null
   #
   # setting default to null throws warning https://github.com/helm/helm/issues/5184
   buckets:
@@ -332,6 +387,95 @@ couchbase-operator:
       enableIndexReplica: false
       # data compression mode for the bucket to run in [off, passive, active]
       compressionMode: "passive"
+
+  # RBAC users to create
+  # (requires couchbase server 6.5.0 and higher)
+  users: {}
+  #
+  # Uncomment to create an example user named 'developer'
+  #
+  # developer:
+  #   # password to use for user authentication
+  #   # (alternatively use authSecret)
+  #   password: password
+  #   # optional secret to use containing user password
+  #   authSecret:
+  #   # domain of user authentication
+  #   authDomain: local
+  #   # roles attributed to group
+  #   roles:
+  #     - name: bucket_admin
+  #       bucket: default
+
+  # TLS Certs that will be used to encrypt traffic between operator and couchbase
+  tls:
+    # enable to auto create certs
+    generate: false
+    # Expiry time of CA in days for generated certs
+    expiration: 365
+
+  # syncGateway configuration
+  syncGateway:
+    # name of the sync gatway pod.
+    # defaults to name of chart
+    name:
+    # database config
+    config:
+      logging:
+        console:
+          enabled: true
+          log_level: "debug"
+          log_keys:
+          - "*"
+      # databases is a list containing
+      # bucket replication configs
+      databases:
+        db:
+          # bucket replicated to sync gateway
+          bucket: default
+          # guest user config
+          users:
+            GUEST:
+              # disable creation of guest user
+              disabled: false
+              # channels guest user may access.
+              # defaults to all channels
+              admin_channels: ["*"]
+          # server to connect db to, defaults to cluster server
+          server:
+          # username of db admin, defaults to cluster admin username
+          username:
+          # password of db admin, defaults to cluster admin password
+          password:
+          allow_conflicts: false
+          revs_limit: 20
+          enable_shared_bucket_access: true
+    # Type of service to use for exposing Sync Gateway
+    # Set as empty string to prevent service creation
+    exposeServiceType: ClusterIP
+    # image of the sync gateway container
+    image:
+      repository: couchbase/sync-gateway
+      tag: 2.7.3-enterprise
+    imagePullPolicy: IfNotPresent
+    # Optional secret to use with prepoulated database config
+    configSecret:
+    # optional ca.cert for tls connection
+    # of all databases
+    cacert:
+
+
+  # coredns service config to be applied to
+  # pods for cross-cluster deployments
+  coredns:
+    # name kubernete service which exposes nameserver (ie coredns)
+    service:
+    # search list for host-name lookup
+    searches:
+    - default.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
+
 
 ########### NSQ ###########
 nsq:

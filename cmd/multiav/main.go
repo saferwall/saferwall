@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	avastclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/client"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
@@ -74,6 +75,7 @@ func parseFlags() (string, []grpc.DialOption, string, string) {
 
 func scan(engine string, filePath string, conn *grpc.ClientConn) {
 
+	
 	var res multiav.ScanResult
 	var err error
 
@@ -119,12 +121,21 @@ func scan(engine string, filePath string, conn *grpc.ClientConn) {
 
 func main() {
 	serverAddr, _, filePath, engine := parseFlags()
-
 	conn, err := multiav.GetClientConn(serverAddr)
 	if err != nil {
 		log.Fatalf("Failed to dial for engine %s : %v", engine, err)
 	}
 	defer conn.Close()
+
+	// Single File Scan.
+	isDir, err := utils.IsDirectory(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+ 	if !isDir {
+		scan(engine, filePath, conn)
+		os.Exit(0)
+	}
 
 	// To avoid having to send the samples to inside 
 	// the container, we map the volume as follow:
@@ -134,9 +145,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to walk dir %s : %v", filePath, err)
 	}
+	
+	start := time.Now()
 	for _, file := range files {
-		scan(engine, file, conn)
+	 	scan(engine, file, conn)
 	}
 
-
+	elapsed := time.Since(start)
+	log.Printf("Execution took %s", elapsed)
 }

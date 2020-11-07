@@ -42,7 +42,7 @@ export AWS_EFS_TOKEN = example-efs
         - `make multiav-release-go`
 6. Install Helm: `make helm-install`.
 7. Add the required Helm Charts repositories: `make helm-add-repos`.
-8. Fetch Helm dependecies: `make helm-update-dependency`.
+8. Fetch Helm dependecies: `make helm-update-dep`.
 9. Init cert manager: `make k8s-init-cert-manager`.
 10. Edit the `deployments/saferwall/values.yaml`
     - Set `efs-provisioner.enabled` to true.
@@ -60,7 +60,7 @@ export AWS_EFS_TOKEN = example-efs
 - With multiple master nodes, you will be able both to do graceful (zero-downtime) upgrades and you will be able to survive AZ failures.
 - Harden Kubernetes API to be accessible only from alllowed IPs via firewall rules or change the kops cluster config with the `kubernetesApiAccess`.
 
-## Billing Tips
+## Billing Reduction Tips
 
 - Opt for EC2 Spot Instances and reserved instances.
 - Support kubernetes cluster with on-demand instances, which can take up the slack in the event of any interruptions to spot instances. This will improve availability and reliability.
@@ -71,3 +71,24 @@ export AWS_EFS_TOKEN = example-efs
 	- 101-250 nodes: m3.2xlarge
 	- 251-500 nodes: c4.4xlarge
 	- more than 500 nodes: c4.8xlarge
+
+## CPU/MEM usage per service
+
+- The memory and cpu allocation are observed at peak time, it represents the maximum memory/cpu that the engine uses during a file scan. We scanned multiple file format as they could trigger different component of the engine to realistically estime these numbers.
+- Some engines like ClamAV have a daemonized version, those are generally faster because the rules are loaded only once.
+
+| Service       | CPU Util | Mem Util  | Performance |
+| --------------|:--------:| :--------:|:-----------:|
+| AV Avast      |  1 core  |   1260MB  |     Fast    |
+| AV Avira      |  1 core  |   200MB   |     Slow    |
+| AV Bitdefender|  1 core  |   600MB   |     Slow    |
+| AV ClamAV     |  1 core  |   1700MB  |     Fast    |
+| AV COMODO     |  1 core  |   300MB   |     Medium  |
+| AV DrWeb      | 1.2 core |   580MB   |     Fast    |
+| AV ESET       |  1 core  |   220MB   |     Medium  |
+| AV FSecure    |  1 core  |   420MB   |     Fast    |
+| AV McAfee     |  1 core  |   400MB   |     Medium  |
+| AV Sophos     |  1 core  |   300MB  |     Medium    |
+| AV Symantec   | 0.4 core |    300MB  |     Medium  |
+| AV TrendMicro |  core  |   MB  |         |
+| AV Windefender|  core  |   MB  |         |
