@@ -42,6 +42,9 @@ ENV SYMANTEC_VAR_DIR		/var/symantec
 ENV SYMANTEC_DB_UPDATE_DATE	/av_db_update_date.txt
 ENV SYMANTEC_SCANNER /opt/Symantec/symantec_antivirus/sav
 
+# Download EICAR Anti-Virus Test File.
+ADD http://www.eicar.org/download/eicar.com.txt eicar
+
 # Update virus definition file.
 RUN /etc/init.d/symcfgd start \
 	&& /etc/init.d/rtvscand start \ 
@@ -49,8 +52,8 @@ RUN /etc/init.d/symcfgd start \
 	&& $SYMANTEC_SAV liveupdate --update \
 	&& $SYMANTEC_SAV info --defs \
 	&& echo -n "$(date +%s)" >> $SYMANTEC_DB_UPDATE_DATE \
-    && $SYMANTEC_SCANNER manualscan --clscan /eicar \
-    && TODAY=`date '+%m%d%Y'` ; cat /var/symantec/sep/Logs/$TODAY.log | grep -q 'EICAR Test String'
+    && $SYMANTEC_SCANNER manualscan --clscan /eicar | grep -q 'EICAR Test String' \
+    && TODAY=`date '+%m%d%Y'` ; cat /var/symantec/sep/Logs/$TODAY.log
 
 # Copy our static executable.
 COPY --from=builder /go/bin/symantecscanner /bin/symantecscanner
