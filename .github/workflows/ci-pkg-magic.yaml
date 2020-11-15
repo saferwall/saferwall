@@ -1,4 +1,4 @@
-name: Go Packages
+name: Go Magic Package
 
 on:
   push:

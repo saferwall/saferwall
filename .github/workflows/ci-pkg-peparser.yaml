@@ -1,4 +1,4 @@
-name: Go gib Package
+name: PE Parser Package
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 jobs:
 
   build:
-    name: Build & Test Gib Go Package
+    name: Build & Test PE Parser Go Package
     runs-on: ubuntu-20.04
     steps:
 
@@ -22,10 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Install Dependency.
-      run: sudo apt update && sudo apt install -qq wamerican
-
     - name: Test
       run: |
-        cd pkg/gib \
+        cd pkg/peparser \
         && go test -v
