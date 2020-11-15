@@ -10,7 +10,7 @@ on:
 jobs:
 
   build:
-    name: Build & Test Packer Go Package
+    name: Build & Test TriD Go Package
     runs-on: ubuntu-20.04
     steps:
 
@@ -22,7 +22,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Setup config
+      run: cp example.env .env
+    
+    - name: Install dependency
+      uses: make die-install
+
     - name: Test
       run: |
-        cd pkg/packer \
+        cd pkg/trid \
+        && export LC_ALL=C \
         && go test -v
+

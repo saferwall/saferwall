@@ -6,6 +6,3 @@ die-install:	## Install DiE
 	wget -N $(DIE_URL) -O $(DIE_ZIP)
 	tar zxvf $(DIE_ZIP) -C /tmp
 	sudo mv /tmp/die_lin64_portable/ /opt/die/
-
-
-

@@ -15,8 +15,8 @@ const (
 	Command = "/opt/die/diec.sh"
 )
 
-// Scan a file using exiftool
-// This will execute exigtool command line tool and read the stdout
+// Scan a file using Detect It Easy.
+// This will execute die cli and read the stdout.
 func Scan(FilePath string) ([]string, error) {
 
 	args := []string{FilePath}
@@ -28,7 +28,7 @@ func Scan(FilePath string) ([]string, error) {
 	return parseOutput(output), nil
 }
 
-// parseOutput parse TriD stdout, returns an array of strings
+// parseOutput parse DiE stdout, returns an array of strings.
 func parseOutput(tridout string) []string {
 	keepLines := []string{}
 	lines := strings.Split(tridout, "\n")

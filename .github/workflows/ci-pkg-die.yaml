@@ -10,7 +10,7 @@ on:
 jobs:
 
   build:
-    name: Build & Test Gib Go Package
+    name: Build & Test DiE Go Package
     runs-on: ubuntu-20.04
     steps:
 
@@ -22,10 +22,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Install Dependency.
-      run: sudo apt update && sudo apt install -qq wamerican
+    - name: Setup config
+      run: cp example.env .env
+  
+    - name: Install dependency
+      uses: make die-install
 
     - name: Test
       run: |
-        cd pkg/gib \
+        cd pkg/packer \
         && go test -v
