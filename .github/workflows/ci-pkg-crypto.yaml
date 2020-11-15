@@ -10,7 +10,7 @@ on:
 jobs:
 
   build:
-    name: Build
+    name: Build & Test Crypto Go Package
     runs-on: ubuntu-20.04
     steps:
 
@@ -22,7 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Build/Test Crypto Pkg
+    - name: Test
       run: |
         cd pkg/crypto \
-        go test -v
+        && go test -v
