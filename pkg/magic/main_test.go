@@ -12,7 +12,8 @@ var magictests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/putty.exe", "PE32 executable (GUI) Intel 80386, for MS Windows"},
+	{"../../test/multiav/clean/putty.exe", 
+	"PE32 executable (GUI) Intel 80386, for MS Windows"},
 }
 
 func TestMagicScan(t *testing.T) {

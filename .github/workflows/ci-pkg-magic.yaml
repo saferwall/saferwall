@@ -3,8 +3,7 @@ name: Go Packages
 on:
   push:
     branches: [ master ]
-    paths:
-    - 'pkg/crypto/**'
+
   pull_request:
     branches: [ master ]
 
@@ -23,8 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Build and Test
+    - name: Build/Test Magic Pkg
       run: |
-        cd pkg/crypto \
+        cd pkg/magic \
         go test -v
-  
