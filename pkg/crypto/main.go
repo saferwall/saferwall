@@ -14,7 +14,7 @@ import (
 	"hash/crc32"
 	"log"
 
-	"github.com/LordNoteworthy/ssdeep"
+	"github.com/glaslos/ssdeep"
 )
 
 // Result contains result for all hashes

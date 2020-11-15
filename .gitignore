@@ -59,6 +59,7 @@ deployments/saferwall/charts/*.tgz
 
 # IDEs
 **/*.vscode/
+tags
 
 # Vagrant
 .vagrant/

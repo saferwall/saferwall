@@ -1,0 +1,30 @@
+name: Go Packages
+
+on:
+  push:
+    branches: [ $default-branch ]
+    paths:
+    - 'pkg/crypto/**'
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.14
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build and Test
+      run: |
+        cd pkg/crypto \
+        go test -v
+  
