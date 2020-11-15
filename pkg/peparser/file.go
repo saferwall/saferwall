@@ -31,7 +31,7 @@ type File struct {
 	DelayImports []DelayImport               `json:",omitempty"`
 	BoundImports []BoundImportDescriptorData `json:",omitempty"`
 	GlobalPtr    uint32                      `json:",omitempty"`
-	CLRHeader    *ImageCOR20Header           `json:",omitempty"`
+	CLR    		 CLRData           			 	 `json:",omitempty"`
 	IAT          []IATEntry					 `json:",omitempty"`
 	Header       []byte
 	data         mmap.MMap

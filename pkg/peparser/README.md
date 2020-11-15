@@ -22,7 +22,7 @@
     - Load Config Directory (SEH, GFID, GIAT, Guard LongJumps, CHPE, Dynamic Value Reloc Table, Enclave Configuration, Volatile Metadata tables).
     - Bound Import Table
     - Delay Import Table
-    - COM Table
+    - COM Table (CLR Metadata Header, Metadata Table Streams)
 - Report several anomalies
 
 ## Installing
