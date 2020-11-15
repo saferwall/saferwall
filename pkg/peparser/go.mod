@@ -1,6 +1,6 @@
 module github.com/saferwall/saferwall/pkg/peparser
 
-go 1.13
+go 1.14
 
 require (
 	github.com/edsrzf/mmap-go v1.0.0

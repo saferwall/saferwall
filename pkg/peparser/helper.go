@@ -309,6 +309,16 @@ func (pe *File) getStringFromData(offset uint32, data []byte) []byte {
 	return data[offset:end]
 }
 
+// getStringAtOffset returns a string given an offset.
+func (pe *File) getStringAtOffset (offset, size uint32) (string, error) {
+	if offset+size > pe.size {
+		return "", ErrOutsideBoundary
+	}
+
+	str := string(pe.data[offset:offset+size])
+	return strings.Replace(str, "\x00", "", -1), nil
+}
+
 // getData returns the data given an RVA regardless of the section where it lies on.
 func (pe *File) getData(rva, length uint32) ([]byte, error) {
 
