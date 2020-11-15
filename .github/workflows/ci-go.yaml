@@ -2,11 +2,11 @@ name: Go Packages
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ master ]
     paths:
     - 'pkg/crypto/**'
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ master ]
 
 jobs:
 

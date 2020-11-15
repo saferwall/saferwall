@@ -42,13 +42,12 @@ ENV ESET_SCANNER /opt/eset/efs/sbin/cls/cls
 ENV ESET_DB_UPDATE_DATE	/av_db_update_date.txt
 
 # Update & test detection.
-RUN $ESET_SVC --daemonize \
-	&& sleep 3s \
-	&& echo "Updating ..." \ 
+RUN /etc/init.d/efs restart \
+	&& /etc/init.d/efs status \
+	&& /etc/init.d/efs restart \
 	&& $ESET_UPD_UTILITY --update --accept-license \
 	&& echo -n "$(date +%s)" >> $ESET_DB_UPDATE_DATE \
-	&& echo "Scanning eicar ..." \ 
-	&& $ESET_SCANNER --clean-mode=NONE /root/eicar | grep -q 'Eicar test file'
+	&& $ESET_SCANNER --clean-mode=NONE /eicar | grep -q 'Eicar test file'
 
 # Copy our binary.
 COPY --from=builder /go/bin/esetscanner /bin/esetscanner

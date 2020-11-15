@@ -52,8 +52,9 @@ RUN /etc/init.d/symcfgd start \
 	&& $SYMANTEC_SAV liveupdate --update \
 	&& $SYMANTEC_SAV info --defs \
 	&& echo -n "$(date +%s)" >> $SYMANTEC_DB_UPDATE_DATE \
-    && $SYMANTEC_SCANNER manualscan --clscan /eicar | grep -q 'EICAR Test String' \
-    && TODAY=`date '+%m%d%Y'` ; cat /var/symantec/sep/Logs/$TODAY.log
+    && $SYMANTEC_SCANNER manualscan --clscan /eicar || true \ 
+	&& TODAY="$(date '+%m%d%Y')" \
+	&& cat /var/symantec/sep/Logs/$TODAY.log | grep -q 'EICAR Test String'
 
 # Copy our static executable.
 COPY --from=builder /go/bin/symantecscanner /bin/symantecscanner

@@ -51,7 +51,7 @@ func main() {
 		grpclog.Fatalf("failed to read av db update date %v", err)
 	}
 
-	// attach the AviraScanner service to the server
+	// attach the ESETScanner service to the server
 	pb.RegisterEsetScannerServer(
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 

@@ -40,7 +40,8 @@ RUN /etc/init.d/symcfgd restart \
     && /etc/init.d/rtvscand start \ 
     && /etc/init.d/smcd start \
     && $SYMANTEC_SAV manualscan --clscan /eicar \
-    && TODAY=`date '+%m%d%Y'` ; cat /var/symantec/sep/Logs/$TODAY.log | grep -q 'EICAR Test String'
+	&& TODAY="$(date '+%m%d%Y')" \
+	&& cat /var/symantec/sep/Logs/$TODAY.log | grep -q 'EICAR Test String'
 
 # Clean up.
 RUN rm -rf $SYMANTEC_TMP \
