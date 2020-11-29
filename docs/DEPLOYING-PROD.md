@@ -5,7 +5,7 @@
     - If you have already `aws cli` installed and credentials configured, skip to step 2.
     - Otherwise, run `make awscli-install`.
 2. Install kops:
-    - If you have already `kops` 1.17+ installed, skip to step 3.
+    - If you have already `kops` 1.18+ installed, skip to step 3.
     - Otherwise, run `make kops-install`.
 3. Edit the file `.env` and rename the `KOPS_CLUSTER_NAME` and `KOPS_STATE_STORE` to your name of choice.
 ```mk
@@ -42,7 +42,7 @@ export AWS_EFS_TOKEN = example-efs
         - `make multiav-release-go`
 6. Install Helm: `make helm-install`.
 7. Add the required Helm Charts repositories: `make helm-add-repos`.
-8. Fetch Helm dependecies: `make helm-update-dep`.
+8. Fetch Helm dependencies: `make helm-update-dep`.
 9. Init cert manager: `make k8s-init-cert-manager`.
 10. Edit the `deployments/saferwall/values.yaml`
     - Set `efs-provisioner.enabled` to true.

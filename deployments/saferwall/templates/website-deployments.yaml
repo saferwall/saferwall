@@ -21,4 +21,11 @@ spec:
           imagePullPolicy: "{{ .Values.website.image.pullPolicy }}"
           ports:
             - containerPort: {{ .Values.website.containerPort }}
+          resources:
+            requests:
+              memory: "{{ .Values.website.resources.requests.memory }}"
+              cpu: "{{ .Values.website.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.website.resources.limits.memory }}"
+              cpu: "{{ .Values.website.resources.limits.cpu }}"
 {{- end }}

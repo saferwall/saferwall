@@ -38,7 +38,7 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
 6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`, this will also enable ingress nginx.
 7. Install Helm: `make helm-install`.
 8. Add the required Helm Charts repositories: `make helm-add-repos`.
-9. Fetch Helm dependecies: `make helm-update-dep`.
+9. Fetch Helm dependencies: `make helm-update-dep`.
 10. Edit the `deployments/saferwall/values.yaml`
     - If you are interested to see the logs in EFK:
         - Set `elasticsearch.enabled` to true.

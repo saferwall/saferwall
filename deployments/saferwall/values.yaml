@@ -540,6 +540,13 @@ backend:
     type: ClusterIP
     port: 80
     targetPort: 8080
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+    limits:
+      memory: 500Mi
+      cpu: 500m
 
 ########### FRONTEND ###########
 frontend:
@@ -555,7 +562,13 @@ frontend:
     type: ClusterIP
     port: 80
     targetPort: 80
-
+  resources:
+    requests:
+      memory: 50Mi
+      cpu: 50m
+    limits:
+      memory: 100Mi
+      cpu: 100m
 ########### CONSUMER ###########
 consumer:
   enabled: true
@@ -565,7 +578,13 @@ consumer:
     repository: saferwall/consumer
     tag: latest
     pullPolicy: Always
-
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+    limits:
+      memory: 500Mi
+      cpu: 500m
 ########### WEBSITE ###########
 website:
   enabled: false
@@ -580,7 +599,13 @@ website:
     type: ClusterIP
     port: 80
     targetPort: 4000
-
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+    limits:
+      memory: 1000Mi
+      cpu: 200m
 ########### MULTIAV ###########
 multiav:
   enabled: true

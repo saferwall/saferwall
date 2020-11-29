@@ -26,6 +26,13 @@ spec:
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           ports:
             - containerPort: {{ .Values.backend.containerPort }}
+          resources:
+            requests:
+              memory: "{{ .Values.backend.resources.requests.memory }}"
+              cpu: "{{ .Values.backend.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.backend.resources.limits.memory }}"
+              cpu: "{{ .Values.backend.resources.limits.cpu }}"
           env:
             - name: ENVIRONMENT
               value: "prod"

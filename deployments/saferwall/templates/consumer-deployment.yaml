@@ -27,6 +27,13 @@ spec:
             mountPath: /samples
           - name:  {{ $.Release.Name }}-consumer-configmap-volume
             mountPath: /consumer/configs/
+          resources:
+            requests:
+              memory: "{{ .Values.consumer.resources.requests.memory }}"
+              cpu: "{{ .Values.consumer.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.consumer.resources.limits.memory }}"
+              cpu: "{{ .Values.consumer.resources.limits.cpu }}"
           env:
             - name: ENVIRONMENT
               value: "prod"
