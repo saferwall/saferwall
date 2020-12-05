@@ -7,7 +7,7 @@ dependencies:
   version: 2.0.2
 - name: efs-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.13.0
+  version: 0.13.1
 - name: nfs-server-provisioner
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.1.1
@@ -27,7 +27,7 @@ dependencies:
   repository: https://helm.elastic.co
   version: 7.9.3
 - name: prometheus-operator
-  repository: https://kubernetes-charts.storage.googleapis.com/
+  repository: https://prometheus-community.github.io/helm-charts
   version: 9.3.2
-digest: sha256:b6be8a0e16603b78c9757dc5b2bda59d9f440027ec67c3801e6697261c52e937
-generated: "2020-10-27T08:16:00.595304408+11:00"
+digest: sha256:3d04e1e1e6435b43fc8427ab13c3a5dd75680b127bec5b791ec70e44df27d09e
+generated: "2020-12-06T10:38:16.759237895+11:00"

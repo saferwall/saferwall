@@ -15,6 +15,7 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add elastic https://helm.elastic.co
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	# Update your local Helm chart repository cache.
 	helm repo update
 
