@@ -924,7 +924,8 @@ func GetActivitiy(c echo.Context) error {
 		"WHERE activity.`type` == 'follow' AND activity.`content`.`user` == $user"
 
 	// Execute Query
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	rows, err := db.Cluster.Query(query, 
+		&gocb.QueryOptions{NamedParameters: params, Adhoc:true,})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": err.Error(),

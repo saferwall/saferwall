@@ -58,7 +58,7 @@ func Connect() {
 
 	Cluster = cluster
 
-	/* Create primary indexs */
+	// Create primary indexs.
 	mgr := cluster.QueryIndexes()
 	err = mgr.CreatePrimaryIndex("users", &gocb.CreatePrimaryQueryIndexOptions{
 		IgnoreIfExists: true,
@@ -72,6 +72,33 @@ func Connect() {
 	})
 	if err != nil {
 		log.Errorf("Failed to create an index over files bucket, reason: %v", err)
+	}
+
+	// Create secondary indexes.
+	err = mgr.CreateIndex("users", "idx_username", []string{"username"},
+		&gocb.CreateQueryIndexOptions{
+			IgnoreIfExists: true})
+	if err != nil {
+		log.Errorf("Failed to create secondary index (idx_username) over users bucket, reason: %v", err)
+	}
+	err = mgr.CreateIndex("users", "idx_email", []string{"email"},
+		&gocb.CreateQueryIndexOptions{
+			IgnoreIfExists: true})
+	if err != nil {
+		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
+	}
+	err = mgr.CreateIndex("files", "idx_sha256", []string{"sha256"},
+		&gocb.CreateQueryIndexOptions{
+			IgnoreIfExists: true})
+	if err != nil {
+		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
+	}
+
+	err = mgr.CreateCove("files", "idx_sha256", []string{"sha256"},
+	&gocb.CreateQueryIndexOptions{
+		IgnoreIfExists: true})
+	if err != nil {
+		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
 	}
 
 	log.Infoln("Connected to couchbase")
