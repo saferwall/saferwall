@@ -5,39 +5,40 @@ import (
 	"log"
 	"os"
 	"time"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	avastclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
+	avast_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
 	aviraclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
+	avira_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	bitdefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
+	bitdefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
 	clamavclient "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
+	clamav_api "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	comodoclient "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
+	comodo_api "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
 	drwebclient "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
+	drweb_api "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	esetclient "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
+	eset_api "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
 	fsecureclient "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
+	fsecure_api "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
 	kasperskyclient "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
+	kaspersky_api "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
 	mcafeeclient "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
+	mcafee_api "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
 	sophosclient "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
+	sophos_api "github.com/saferwall/saferwall/pkg/grpc/multiav/sophos/proto"
 	symantecclient "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
+	symantec_api "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	trendmicroclient "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
+	trendmicro_api "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
-	"github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
+	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
-	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 var (
@@ -46,7 +47,7 @@ var (
 	serverAddr         = flag.String("server_addr", "172.17.0.2:50051", "The server address in the format of host:port")
 	serverHostOverride = flag.String("server_host_override", "x.test.saferwall.com", "The server name use to verify the hostname returned by TLS handshake")
 	filePath           = flag.String("path", "", "The file path or directory to scan")
-	engine           = flag.String("engine", "", "The antivirus engine used to scan the file")
+	engine             = flag.String("engine", "", "The antivirus engine used to scan the file")
 )
 
 // parseFlags parses the cmd line flags to create grpc conn.
@@ -75,7 +76,6 @@ func parseFlags() (string, []grpc.DialOption, string, string) {
 
 func scan(engine string, filePath string, conn *grpc.ClientConn) {
 
-	
 	var res multiav.ScanResult
 	var err error
 
@@ -113,11 +113,9 @@ func scan(engine string, filePath string, conn *grpc.ClientConn) {
 	if err != nil {
 		log.Printf("Failed to scan file [%s]: %v", engine, err)
 	}
-	
+
 	log.Print(filePath, res)
 }
-
-
 
 func main() {
 	serverAddr, _, filePath, engine := parseFlags()
@@ -132,12 +130,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
- 	if !isDir {
+	if !isDir {
 		scan(engine, filePath, conn)
 		os.Exit(0)
 	}
 
-	// To avoid having to send the samples to inside 
+	// To avoid having to send the samples to inside
 	// the container, we map the volume as follow:
 	// /samples:/samples, so we can just iterate over files
 	// in the host and send the file path in the gRPC call.
@@ -145,10 +143,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to walk dir %s : %v", filePath, err)
 	}
-	
+
 	start := time.Now()
 	for _, file := range files {
-	 	scan(engine, file, conn)
+		scan(engine, file, conn)
 	}
 
 	elapsed := time.Since(start)
