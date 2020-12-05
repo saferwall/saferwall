@@ -8,6 +8,7 @@ import (
 	gocb "github.com/couchbase/gocb/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"time"
 )
 
 var (
@@ -41,18 +42,28 @@ func Connect() {
 		Password: cbPassword,
 	}
 
-	/* Init our cluster */
+	// Init our cluster.
 	server := viper.GetString("db.server")
 	cluster, err := gocb.Connect(server, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// get a bucket reference over users
+	// Get a bucket reference over users.
 	UsersBucket = cluster.Bucket("users")
 	FilesBucket = cluster.Bucket("files")
 
-	// get a collection reference
+	// We wait until the bucket is definitely connected and setup.
+	err = UsersBucket.WaitUntilReady(5*time.Second, nil)
+	if err != nil {
+		log.Errorf("Failed to WaitUntilReady for users bucket, reason: %v", err)
+	}
+	err = FilesBucket.WaitUntilReady(5*time.Second, nil)
+	if err != nil {
+		log.Errorf("Failed to WaitUntilReady for files bucket, reason: %v", err)
+	}
+
+	// Get a collection reference.
 	UsersCollection = UsersBucket.DefaultCollection()
 	FilesCollection = FilesBucket.DefaultCollection()
 
@@ -90,13 +101,6 @@ func Connect() {
 	err = mgr.CreateIndex("files", "idx_sha256", []string{"sha256"},
 		&gocb.CreateQueryIndexOptions{
 			IgnoreIfExists: true})
-	if err != nil {
-		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
-	}
-
-	err = mgr.CreateCove("files", "idx_sha256", []string{"sha256"},
-	&gocb.CreateQueryIndexOptions{
-		IgnoreIfExists: true})
 	if err != nil {
 		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
 	}
