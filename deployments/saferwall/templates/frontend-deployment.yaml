@@ -2,18 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "saferwall.frontend.fullname" . }}
+  name: {{ template  "saferwall.fullname" . }}-frontend
   labels:
-    app: {{ include "saferwall.frontend.fullname" . }}
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-frontend
+{{ include "saferwall.labels" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "saferwall.frontend.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-frontend
   replicas:  {{ .Values.frontend.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ include "saferwall.frontend.fullname" . }}
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-frontend
+{{ include "saferwall.labels" . | indent 8 }}
     spec:
       {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:

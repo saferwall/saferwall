@@ -25,10 +25,11 @@ helm-create:		## Create a Helm deployment.
 
 helm-release:		## Install Helm release.
 	cd $(ROOT_DIR)/deployments \
-		&& helm install saferwall --generate-name
+		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
+		 -namespace default saferwall
 
 helm-upgrade:		## Upgrade a given release.
-	helm upgrade $(RELEASE_NAME) saferwall
+	helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall
 
 helm-update-dep: # Update Helm deployement dependecies
 	cd  $(ROOT_DIR)/deployments \

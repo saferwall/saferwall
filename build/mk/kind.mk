@@ -23,7 +23,7 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	--selector=app.kubernetes.io/component=controller \
 	--timeout=90s
 
-kind-delete-cluster:	## Delete Kind cluster.
+kind-down:	## Delete Kind cluster.
 	kind delete clusters saferwall
 
 kind-up: ## Deploy Kind cluster and install requirements.

@@ -333,14 +333,14 @@ couchbase-operator:
     - metadata:
         name: couchbase
       spec:
-        storageClassName: default
+        storageClassName: standard
         resources:
           requests:
             storage: 2Gi
 
   # couchbase buckets to create
   # disable default bucket creation by setting
-  couchbaseBuckets.default: null
+  buckets.default: null
   #
   # setting default to null throws warning https://github.com/helm/helm/issues/5184
   buckets:
@@ -483,6 +483,11 @@ nsq:
   nsqd:
     name: nsqd
     replicaCount: 2
+    persistence:
+      storageClass: "standard"
+      resources:
+        requests:
+          storage: 1Gi
   nsqlookupd:
     name: nsqlookupd
     replicaCount: 2

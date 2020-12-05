@@ -2,18 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "saferwall.consumer.fullname" . }}
+  name: {{ template  "saferwall.fullname" . }}-consumer
   labels:
-    app: {{ include "saferwall.consumer.fullname" . }}
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-consumer
+{{ include "saferwall.labels" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "saferwall.consumer.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-consumer
   replicas:  {{ .Values.consumer.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ include "saferwall.consumer.fullname" . }}
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-consumer
+{{ include "saferwall.labels" . | indent 8 }}
     spec:
       {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:
@@ -43,7 +46,7 @@ spec:
           claimName: {{ include "saferwall.fullname" . }}-samples
       - name: {{ $.Release.Name }}-consumer-configmap-volume
         configMap:
-          name: {{ include "saferwall.consumer.fullname" . }}
+          name: {{ include "saferwall.fullname" . }}-consumer
           items:
             - key: consumer_conf
               path: saferwall.prod.toml
@@ -58,6 +61,6 @@ spec:
           image: groundnuty/k8s-wait-for:v1.3
           imagePullPolicy: Always
           args:
-            - "pod"
-            - "-ltier=backend"
+            - 'pod'
+            - '-lapp.kubernetes.io/name={{ template "saferwall.name" . }}-backend'
 {{- end }}

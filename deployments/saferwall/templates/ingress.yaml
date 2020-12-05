@@ -24,14 +24,14 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ include "saferwall.frontend.fullname" . }}
+          serviceName: {{ include "saferwall.fullname" . }}-backend
           servicePort: {{ .Values.frontend.service.port }}
   - host: {{ .Values.global.backendDomainName }}
     http:
       paths:
       - path: /
         backend:
-          serviceName: {{ include "saferwall.backend.fullname" . }}
+          serviceName: {{ include "saferwall.fullname" . }}-frontend
           servicePort: {{ .Values.backend.service.port }}
 {{- if .Values.website.enabled }}
   - host: {{ .Values.global.websiteDomainName }}
@@ -39,6 +39,6 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ include "saferwall.website.fullname" . }}
+          serviceName: {{ include "saferwall.fullname" . }}-website
           servicePort: {{ .Values.website.service.port }}
 {{- end }}

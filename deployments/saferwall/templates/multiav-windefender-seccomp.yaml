@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ include "saferwall.multiav.fullname" . }}-seccomp
+  name: {{ include "saferwall.fullname" . }}-seccomp
   namespace: kube-system
   labels:
     security: seccomp
@@ -36,7 +36,7 @@ spec:
             path: /var/lib/kubelet/seccomp
         - name: profiles
           configMap:
-            name: {{ include "saferwall.multiav.fullname" . }}-seccomp-profile
+            name: {{ include "saferwall.fullname" . }}-seccomp-profile
 {{- end }}
 ---
 ## Seccomp-profile for Windows Defender
@@ -44,7 +44,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "saferwall.multiav.fullname" . }}-seccomp-profile
+  name: {{ include "saferwall.fullname" . }}-seccomp-profile
   namespace: kube-system
 data:
   my-profile.json: |

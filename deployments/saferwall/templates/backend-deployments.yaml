@@ -2,20 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "saferwall.backend.fullname" . }}
+  name: {{ template  "saferwall.fullname" . }}-backend
   labels:
-    app: {{ include "saferwall.backend.fullname" . }}
-    tier: backend
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-backend
+{{ include "saferwall.labels" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "saferwall.backend.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-backend
   replicas:  {{ .Values.backend.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ include "saferwall.backend.fullname" . }}
-        tier: backend
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-backend
+{{ include "saferwall.labels" . | indent 8 }}
     spec:
       {{ if eq .Values.global.privateRegistryServer true }}
       imagePullSecrets:
@@ -42,7 +43,7 @@ spec:
       volumes:
       - name: {{ $.Release.Name }}-configmap-volume
         configMap:
-          name: {{ include "saferwall.backend.fullname" . }}
+          name: {{ template  "saferwall.fullname" . }}-backend
           items:
             - key: backends_conf
               path: app.prod.toml
