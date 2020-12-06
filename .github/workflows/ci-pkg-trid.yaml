@@ -26,7 +26,7 @@ jobs:
       run: cp example.env .env
     
     - name: Install dependency
-      run: make die-install
+      run: make trid-install
 
     - name: Test
       run: |

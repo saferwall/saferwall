@@ -51,7 +51,14 @@ export AWS_EFS_TOKEN = example-efs
         - Set `elasticsearch.enabled` to true.
         - Set `kibana.enabled` to true. 
         - Set `filebeat.enabled` to true.
-    - Set `prometheus-operator.enabled` to true if you want to get metrics.
+    - Set `prometheus-operator.enabled` to true if you want to get metrics and:
+        - `kops edit cluster`:
+            ```yml
+            kubelet:
+                anonymousAuth: false
+                authenticationTokenWebhook: true
+                authorizationMode: Webhook
+            ```
 11. Install helm chart: `make helm-release`.
 
 ## Tips for deploying a production cluster

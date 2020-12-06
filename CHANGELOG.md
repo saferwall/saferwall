@@ -15,12 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A Vagrant image (virtualbox) to test locally the product.
 
 ### Changed
+- Add config option to choose log level.
+- Add various labels to k8s manifests and enforce resource req and limits.
+- Create seconday indexes for couchbase n1ql queries.
 - Replaced CircleCI with Github actions for unit testing go packages.
 - Force fail multiav docker build if eicar scanning fails.
 - Display only enabled antivirus thanks to [@nikAizuddin](https://github.com/nikAizuddin): [#248](https://github.com/saferwall/saferwall/pull/248)
 - Use specific Kubectl version.
 - Remove none driver support for `minikube` and replace it with `kind`.
-- Bump cert-manager, EKF, Prometheus, ingress-nginx, minio, couchbase helm chart versions.
+- Bump cert-manager, EKF, Prometheus, ingress-nginx, minio and efs-provionner, couchbase helm chart versions.
 - Retry building UI/Backend/MultiAV/Consumer docker imgs one more time when failed.
 - Improve the CONTRIBUTING doc.
 
