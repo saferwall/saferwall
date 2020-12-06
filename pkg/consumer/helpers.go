@@ -46,6 +46,36 @@ func loadConfig() {
 	log.Infof("Config %s was loaded", name)
 }
 
+func setupLogging() {
+
+	level := viper.GetString("consumer.log_level")
+	if len(level) > 0 {
+		switch level {
+		case "panic":
+			log.SetLevel(log.PanicLevel)
+		case "fatal":
+			log.SetLevel(log.FatalLevel)
+		case "error":
+			log.SetLevel(log.ErrorLevel)
+		case "warn":
+			log.SetLevel(log.WarnLevel)
+		case "info":
+			log.SetLevel(log.InfoLevel)
+		case "debug":
+			log.SetLevel(log.DebugLevel)
+		case "trace":
+			log.SetLevel(log.TraceLevel)
+		default:
+			log.SetLevel(log.WarnLevel)
+		}
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+}
+
 func login() string {
 	username := viper.GetString("backend.admin_user")
 	password := viper.GetString("backend.admin_pwd")

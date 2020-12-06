@@ -3,6 +3,10 @@ address = "http://localhost:8081"
 admin_user = "<admin>"
 admin_pwd = "<password>"
 
+[consumer]
+# Possible values "panic", "fatal", "error", "warn", "info", "debug", "trace"
+log_level = "warn" 
+
 [nsq]
 lookupd = ["localhost:4161",]
 

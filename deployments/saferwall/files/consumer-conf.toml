@@ -5,6 +5,10 @@ address = 'http://{{ include "saferwall.fullname" . }}-backend'
 admin_user = "Administrator"
 admin_pwd = "password"
 
+[consumer]
+# Possible values "panic", "fatal", "error", "warn", "info", "debug", "trace"
+log_level = "warn"
+
 [nsq]
 lookupd = [
 {{ $lookupdFullName := printf "%s-nsq-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}

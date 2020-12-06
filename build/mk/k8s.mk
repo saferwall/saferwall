@@ -153,5 +153,5 @@ k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
 	kubectl delete namespace cert-manager
 
-k8s-troubleshooting:
+k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'

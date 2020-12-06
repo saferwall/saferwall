@@ -141,12 +141,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
 	// Load consumer config
 	var err error
 	loadConfig()
+	
+	// Setup logging.
+	setupLogging()
 
 	// Set backend API address
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
