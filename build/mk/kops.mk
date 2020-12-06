@@ -58,7 +58,16 @@ kops-create-efs:				## Create AWS EFS file system
 kops-create-mount-targers:		## Create mount targets
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SubnetId' --output text | head -n 1 | cut -f 1 ))
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]' --output text | grep True | cut -f 2 ))
+	aws efs create-mount-target \
+		--file-system-id $(FS_ID) \
+		--subnet-id $(SUBNET) \
+		--security-group $(SEC_GROUP) \
+		--region $(AWS_REGION)
+	aws efs describe-mount-targets --file-system-id $(FS_ID)
+
+	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`masters.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`masters.${KOPS_CLUSTER_NAME}`, SubnetId]' --output text | grep True | cut -f 2 ))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
 		--subnet-id $(SUBNET) \

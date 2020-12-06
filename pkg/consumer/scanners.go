@@ -115,35 +115,35 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res.Sha256 = r.Sha256
 	res.Sha512 = r.Sha512
 	res.Ssdeep = r.Ssdeep
-	contextLogger.Info("crypto pkg success")
+	contextLogger.Debug("crypto pkg success")
 
 	// Get exif metadata.
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("exiftool pkg failed with: %v", err)
 	}
-	contextLogger.Info("exiftool pkg success")
+	contextLogger.Debug("exiftool pkg success")
 
 	// Get TriD.
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("trid pkg failed with: %v", err)
 	}
-	contextLogger.Info("trid pkg success")
+	contextLogger.Debug("trid pkg success")
 
 	// Get magic.
 	res.Magic, err = magic.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("magic pkg failed with: %v", err)
 	}
-	contextLogger.Info("magic pkg success")
+	contextLogger.Debug("magic pkg success")
 
 	// Get DiE
 	res.Packer, err = packer.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("die pkg failed with: %v", err)
 	}
-	contextLogger.Info("die pkg success")
+	contextLogger.Debug("die pkg success")
 
 	// Extract strings.
 	n := 10
@@ -169,7 +169,7 @@ func staticScan(sha256, filePath string, b []byte) result {
 		strResults = append(strResults, stringStruct{"asm", str})
 	}
 	res.Strings = strResults
-	contextLogger.Info("strings pkg success")
+	contextLogger.Debug("strings pkg success")
 
 	// Run the parsers
 	res.parseFile(b, filePath)
@@ -373,6 +373,6 @@ func multiAvScan(filePath string) map[string]interface{} {
 		}
 	}
 
-	contextLogger.Info("multiav pkg success")
+	contextLogger.Debug("multiav pkg success")
 	return multiavScanResults
 }

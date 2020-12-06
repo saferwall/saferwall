@@ -223,7 +223,7 @@ func GetFileByFields(fields []string, sha256 string) (File, error) {
 	params := make(map[string]interface{}, 1)
 	params["sha256"] = sha256
 	rows, err := db.Cluster.Query(query,
-		&gocb.QueryOptions{NamedParameters: params})
+		&gocb.QueryOptions{NamedParameters: params, Adhoc:true,})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err
