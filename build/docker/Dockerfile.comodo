@@ -21,7 +21,7 @@ RUN wget -q $COMODO_URL -P /tmp \
 	&& tar zxvf /tmp/data.tar.gz -C /
 
 # Update virus definition file.
-ADD $COMODO_UPDATE $COMODO_BASES_CAV_PATH
+RUN wget -q $COMODO_UPDATE -O $COMODO_BASES_CAV_PATH
 
 # Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
