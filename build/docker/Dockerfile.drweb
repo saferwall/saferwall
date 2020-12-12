@@ -6,7 +6,7 @@ LABEL description="Dr.Web Anti-Virus for Linux in a docker container"
 # Arguments and environment variable.
 ARG DR_WEB_LICENSE_KEY
 ENV DR_WEB_MAJOR_VERSION    11.1
-ENV DR_WEB_MINOR_VERSION    1
+ENV DR_WEB_MINOR_VERSION    2
 ENV DR_WEB_CTL              /opt/drweb.com/bin/drweb-ctl
 ENV DR_WEB_INSTALLER        drweb-$DR_WEB_MAJOR_VERSION.$DR_WEB_MINOR_VERSION-av-linux-amd64.run
 ENV DR_WEB_URL		        https://download.geo.drweb.com/pub/drweb/unix/workstation/$DR_WEB_MAJOR_VERSION/$DR_WEB_INSTALLER
