@@ -1,6 +1,9 @@
 package bytestats
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 const (
 	minLength = 256
@@ -11,7 +14,7 @@ const (
 // binCount counts the number of occurences of each byte value in a buffer.
 func binCount(buf []byte, minlength int) []int {
 
-	count := make([]int, minLength)
+	count := make([]int, minlength)
 
 	for _, b := range buf {
 		count[int(b)]++
@@ -31,9 +34,9 @@ func rollingWindow(buf []byte, window int) [][]byte {
 
 // shiftBytes applies right shift operator to all buffer values.
 func shiftBytes(buf []byte, s int) []byte {
-	b := make([]byte, s)
-	for _, v := range buf {
-		b = append(b, v>>s)
+	b := make([]byte, len(buf))
+	for idx, v := range buf {
+		b[idx] = v >> s
 	}
 	return b
 }
@@ -84,7 +87,7 @@ func sum(s []float32) float32 {
 // entropyBinCount calculates the coarse entropy histogram of byte values.
 func entropyBinCount(block []byte, window int) (int, []int) {
 
-	var H float64
+	var H float32
 	shiftedBlock := shiftBytes(block, 4)
 	c := binCount(shiftedBlock, 16)
 	p := apply(func(b float32) float32 {
@@ -96,7 +99,7 @@ func entropyBinCount(block []byte, window int) (int, []int) {
 		a := -float64(p[entry]) * math.Log2(float64(p[entry]))
 		tmp += a
 	}
-	H = tmp * 2
+	H = float32(tmp * 2.)
 	Hbin := int(H * 2)
 	if Hbin == 16. {
 		Hbin = 15.
@@ -105,30 +108,29 @@ func entropyBinCount(block []byte, window int) (int, []int) {
 }
 
 // asFeatureVector encodes the histogram entropy values to a singular vector
-func asFeatureVector(buf []byte, step, window int) []float32 {
-	output := make([][]float32, 16)
+func asFeatureVector(buf []byte, step, window int) []int {
+	output := make([][]int, 16)
 
 	for idx := range output {
-		output[idx] = make([]float32, 16)
+		output[idx] = make([]int, 16)
 	}
 
 	if len(buf) < window {
 		Hbin, c := entropyBinCount(buf, window)
-		output[Hbin] = vectorizeSum(output[Hbin], asFloat32(c))
+		output[Hbin] = vectorizeSum(output[Hbin], (c))
 	} else {
 		blocks := rollingWindow(buf, window)
 		for _, block := range blocks {
 			Hbin, c := entropyBinCount(block, window)
-			output[Hbin] = vectorizeSum(output[Hbin], asFloat32(c))
+			output[Hbin] = vectorizeSum(output[Hbin], (c))
 		}
 	}
-
 	return flatten2D(output)
 }
 
 // flatten2D flattens a 2D slice to a 1D slice
-func flatten2D(a [][]float32) []float32 {
-	r := make([]float32, 0)
+func flatten2D(a [][]int) []int {
+	r := make([]int, 0)
 
 	for _, row := range a {
 		for _, entry := range row {
@@ -139,11 +141,11 @@ func flatten2D(a [][]float32) []float32 {
 }
 
 // vectorizeSum computes the sum of two float32 vectors
-func vectorizeSum(a []float32, b []float32) []float32 {
+func vectorizeSum(a []int, b []int) []int {
 	if len(a) != len(b) {
-		panic("Operands could not be broadcasted together with incompatible dimensions")
+		panic(fmt.Sprintln("Operands could not be broadcasted together with incompatible dimensions", len(a), len(b)))
 	}
-	c := make([]float32, len(b))
+	c := make([]int, len(b))
 
 	for idx := range b {
 		c[idx] = a[idx] + b[idx]

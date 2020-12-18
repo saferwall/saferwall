@@ -1,6 +1,7 @@
 package bytestats
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,4 +49,13 @@ func TestRollingWindow(t *testing.T) {
 		actual := rollingWindow(tt.input, tt.window)
 		assert.EqualValues(t, tt.expected, actual)
 	}
+}
+
+func TestByteEntropyHistogram(t *testing.T) {
+
+	bytez, err := ioutil.ReadFile("C:\\Users\\kaplan\\Projects\\saferwall\\binaries\\cmd.exe")
+	if err != nil {
+		t.Fatal("failed to read file with error :", err)
+	}
+	t.Log(asFeatureVector(bytez, 1024, 2048))
 }
