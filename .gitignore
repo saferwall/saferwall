@@ -54,9 +54,6 @@ minio/
 build/packer/iso/
 build/packer/packer_cache/
 
-# Deployments
-deployments/saferwall/charts/*.tgz
-
 # IDEs
 **/*.vscode/
 tags
