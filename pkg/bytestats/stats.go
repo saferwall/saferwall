@@ -119,10 +119,10 @@ func asFeatureVector(buf []byte, step, window int) []int {
 		Hbin, c := entropyBinCount(buf, window)
 		output[Hbin] = vectorizeSum(output[Hbin], (c))
 	} else {
-		blocks := rollingWindow(buf, window)
+		blocks := sliceWithStep(rollingWindow(buf, window), step)
 		for _, block := range blocks {
 			Hbin, c := entropyBinCount(block, window)
-			output[Hbin] = vectorizeSum(output[Hbin], (c))
+			output[Hbin] = vectorizeSum(output[Hbin], c)
 		}
 	}
 	return flatten2D(output)
@@ -151,4 +151,14 @@ func vectorizeSum(a []int, b []int) []int {
 		c[idx] = a[idx] + b[idx]
 	}
 	return c
+}
+
+func sliceWithStep(blocks [][]byte, step int) [][]byte {
+	r := make([][]byte, len(blocks))
+
+	for idx := 0; idx < len(blocks); idx += step {
+		r[idx] = append(r[idx], blocks[idx]...)
+	}
+	return r
+
 }
