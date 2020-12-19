@@ -20,5 +20,5 @@ func ByteHistogram(buf []byte) []int {
 // ByteEntropyHistogram computes the byte-entropy histogram based on local features
 // following the description in https://arxiv.org/pdf/1508.03096.pdf.
 func ByteEntropyHistogram(buf []byte) []int {
-	return asFeatureVector(buf, SkipStep, RollingWindow)
+	return byteEntropyHist(buf, SkipStep, RollingWindow)
 }

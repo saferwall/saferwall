@@ -67,7 +67,7 @@ func TestByteEntropyHistogram(t *testing.T) {
 
 	for _, tt := range testCase {
 		bytez, _ := ioutil.ReadFile(tt.testBin)
-		vec := asFeatureVector(bytez, step, window)
+		vec := byteEntropyHist(bytez, step, window)
 		assert.Equal(t, len(tt.expected), len(vec))
 		assert.EqualValues(t, tt.expected, vec)
 	}
