@@ -5,12 +5,6 @@ import (
 	"math"
 )
 
-const (
-	minLength = 256
-	window    = 2048
-	step      = 1024
-)
-
 // binCount counts the number of occurences of each byte value in a buffer.
 func binCount(buf []byte, minlength int) []int {
 
