@@ -5,3 +5,21 @@ it is loosely based on [Deep Neural Network Based Malware Detection Using Two Di
 
 This module outputs byte historgram statistics and 2D byte & entropy statistics over byte
 values in a binary file.
+
+## Usage
+
+```golang
+package main
+
+func main() {
+    bytez,err := ioutil.ReadFile("bin/sh")
+    if err != nil {
+        panic(err)
+    }
+    // Compute a histogram of byte distributions
+    byteHistogram := ByteHistogram(bytez)
+    // Compute a byte-entropy histogram
+    byteEntropyHist := ByteEntropyHistogram(bytez)
+}
+
+```
