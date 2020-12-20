@@ -149,7 +149,7 @@ func (pe *File) ParseRichHeader() error {
 		rh.CompIDs = append(rh.CompIDs, cid)
 	}
 
-	pe.RichHeader = rh
+	pe.RichHeader = &rh
 
 	checksum := pe.RichHeaderChecksum()
 	if checksum != rh.XorKey {
