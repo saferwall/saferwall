@@ -99,6 +99,7 @@ type Export struct {
 func (pe *File) parseExportDirectory(rva, size uint32) error {
 
 	// Define some vars.
+	exp := Export{}
 	exportDir := ImageExportDirectory{}
 	errorMsg := fmt.Sprintf("Error parsing export directory at RVA: 0x%x", rva)
 
@@ -108,7 +109,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	if err != nil {
 		return errors.New(errorMsg)
 	}
-	pe.Export.Struct = exportDir
+	exp.Struct = exportDir
 
 	// We keep track of the bytes left in the file and use it to set a upper
 	// bound in the number of items that can be read from the different arrays.
@@ -151,7 +152,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 		return errors.New(errorMsg)
 	}
 
-	pe.Export.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
+	exp.Name = pe.getStringAtRVA(exportDir.Name, 0x100000)
 
 	maxFailedEntries := 10
 	var forwarderStr string
@@ -242,7 +243,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Export.Functions = append(pe.Export.Functions, newExport)
+		exp.Functions = append(exp.Functions, newExport)
 	}
 
 	if parsingFailed {
@@ -261,8 +262,8 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	}
 	parsingFailed = false
 	ordinals := make(map[uint32]bool)
-	for _, exp := range pe.Export.Functions {
-		ordinals[exp.Ordinal] = true
+	for _, export := range exp.Functions {
+		ordinals[export.Ordinal] = true
 	}
 	numNames = min(exportDir.NumberOfFunctions, safetyBoundary/4)
 	for i := uint32(0); i < numNames; i++ {
@@ -307,10 +308,10 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 			ForwarderRVA: forwarderOffset,
 		}
 
-		pe.Export.Functions = append(pe.Export.Functions, newExport)
-
+		exp.Functions = append(exp.Functions, newExport)
 	}
 
+	pe.Export = &exp
 	return nil
 }
 

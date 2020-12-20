@@ -226,7 +226,7 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 		certContent := pe.data[fileOffset+certSize : fileOffset+certHeader.Length]
 		pkcs, err = pkcs7.Parse(certContent)
 		if err != nil {
-			pe.Certificates = Certificate{Header: certHeader}
+			pe.Certificates = &Certificate{Header: certHeader}
 			return err
 		}
 
@@ -314,7 +314,7 @@ func (pe *File) parseSecurityDirectory(rva, size uint32) error {
 		fileOffset = nextOffset
 	}
 
-	pe.Certificates = Certificate{Header: certHeader, Content: pkcs,
+	pe.Certificates = &Certificate{Header: certHeader, Content: pkcs,
 		Info: certInfo, Verified: isValid}
 	return nil
 }

@@ -217,7 +217,7 @@ type CLRData struct {
 	MetadataStreamHeaders []*MetadataStreamHeader
 }
 
-func (pe *File) parseMetadataHeader(rva, size uint32) error {
+func (pe *File) parseMetadataHeader(rva, size uint32, clr *CLRData) error {
 	var err error
 	mh := MetadataHeader{}
 
@@ -251,7 +251,7 @@ func (pe *File) parseMetadataHeader(rva, size uint32) error {
 		return err
 	}
 
-	pe.CLR.MetadataHeader = &mh
+	clr.MetadataHeader = &mh
 
 	// Immediately following the MetadataHeader is a series of Stream Headers.
 	// A “stream” is to the metadata what a “section” is to the assembly. The
@@ -283,11 +283,10 @@ func (pe *File) parseMetadataHeader(rva, size uint32) error {
 			}
 		}
 
-		pe.CLR.MetadataStreamHeaders = append(pe.CLR.MetadataStreamHeaders, &sh)
+		clr.MetadataStreamHeaders = append(clr.MetadataStreamHeaders, &sh)
 
 	}
 	return nil
-
 }
 
 // The 15th directory entry of the PE header contains the RVA and size of the
@@ -298,6 +297,7 @@ func (pe *File) parseMetadataHeader(rva, size uint32) error {
 func (pe *File) parseCLRHeaderDirectory(rva, size uint32) error {
 
 	clr := CLRData{}
+
 	clrHeader := ImageCOR20Header{}
 	offset := pe.getOffsetFromRva(rva)
 	err := pe.structUnpack(&clrHeader, offset, size)
@@ -307,9 +307,9 @@ func (pe *File) parseCLRHeaderDirectory(rva, size uint32) error {
 	clr.CLRHeader = &clrHeader
 	if clrHeader.MetaData.VirtualAddress != 0 && clrHeader.MetaData.Size != 0 {
 		pe.parseMetadataHeader(clrHeader.MetaData.VirtualAddress,
-			clrHeader.MetaData.Size)
+			clrHeader.MetaData.Size, &clr)
 	}
 
-	pe.CLR = clr
+	pe.CLR = &clr
 	return nil
 }

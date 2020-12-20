@@ -313,6 +313,6 @@ func (pe *File) doParseResourceDirectory(rva, size, baseRVA, level uint32,
 func (pe *File) parseResourceDirectory(rva, size uint32) error {
 	var dirs []uint32
 	Resources, err := pe.doParseResourceDirectory(rva, size, 0, 0, dirs)
-	pe.Resources = Resources
+	pe.Resources = &Resources
 	return err
 }

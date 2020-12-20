@@ -150,7 +150,7 @@ func (pe *File) parseTLSDirectory(rva, size uint32) error {
 		}
 	}
 
-	pe.TLS = tls
+	pe.TLS = &tls
 	return nil
 }
 
