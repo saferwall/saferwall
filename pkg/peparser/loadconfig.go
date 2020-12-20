@@ -1332,15 +1332,15 @@ type VolatileMetadata struct {
 	InfoRangeTable []RangeTableEntry
 }
 type LoadConfig struct {
-	LoadCfgStruct    interface{}
-	SEH              []uint32
-	GFIDS            []CFGFunction
-	CFGIAT           []CFGIATEntry
-	CFGLongJump      []uint32
-	CHPE             HybridPE
-	DVRT             DVRT
-	Enclave          Enclave
-	VolatileMetadata VolatileMetadata
+	LoadCfgStruct    interface{}       `json:",omitempty"`
+	SEH              []uint32          `json:",omitempty"`
+	GFIDS            []CFGFunction     `json:",omitempty"`
+	CFGIAT           []CFGIATEntry     `json:",omitempty"`
+	CFGLongJump      []uint32          `json:",omitempty"`
+	CHPE             *HybridPE         `json:",omitempty"`
+	DVRT             *DVRT             `json:",omitempty"`
+	Enclave          *Enclave          `json:",omitempty"`
+	VolatileMetadata *VolatileMetadata `json:",omitempty"`
 }
 
 // ImageLoadConfigCodeIntegrity Code Integrity in loadconfig (CI).
@@ -1486,6 +1486,7 @@ type ImageVolatileMetadata struct {
 // The load configuration structure (IMAGE_LOAD_CONFIG_DIRECTORY) was formerly
 // used in very limited cases in the Windows NT operating system itself to
 // describe various features too difficult or too large to describe in the file
+
 // header or optional header of the image. Current versions of the Microsoft
 // linker and Windows XP and later versions of Windows use a new version of this
 // structure for 32-bit x86-based systems that include reserved SEH technology.
@@ -1623,34 +1624,36 @@ func (pe *File) parseLoadConfigDirectory(rva, size uint32) error {
 	}
 
 	// Save the load config struct.
-	pe.LoadConfig.LoadCfgStruct = loadCfg
+	loadConfig := LoadConfig{}
+	pe.LoadConfig = &loadConfig
+	loadConfig.LoadCfgStruct = loadCfg
 
 	// Retrieve SEH handlers if there are any..
 	if pe.Is32 {
 		handlers := pe.getSEHHandlers()
-		pe.LoadConfig.SEH = handlers
+		loadConfig.SEH = handlers
 	}
 
 	// Retrieve Control Flow Guard Function Targets if there are any.
-	pe.LoadConfig.GFIDS = pe.getControlFlowGuardFunctions()
+	loadConfig.GFIDS = pe.getControlFlowGuardFunctions()
 
 	// Retrieve Control Flow Guard IAT entries if there are any.
-	pe.LoadConfig.CFGIAT = pe.getControlFlowGuardIAT()
+	loadConfig.CFGIAT = pe.getControlFlowGuardIAT()
 
 	// Retrive Long jump target functions if there are any.
-	pe.LoadConfig.CFGLongJump = pe.getLongJumpTargetTable()
+	loadConfig.CFGLongJump = pe.getLongJumpTargetTable()
 
 	// Retrieve compiled hybrid PE metadata if there are any.
-	pe.LoadConfig.CHPE = pe.getHybridPE()
+	loadConfig.CHPE = pe.getHybridPE()
 
 	// Retrieve dynamic value relocation table if there are any.
-	pe.LoadConfig.DVRT = pe.getDynamicValueRelocTable()
+	loadConfig.DVRT = pe.getDynamicValueRelocTable()
 
 	// Retrieve enclave configuration if there are any.
-	pe.LoadConfig.Enclave = pe.getEnclaveConfiguration()
+	loadConfig.Enclave = pe.getEnclaveConfiguration()
 
 	// Retrieve volatile metadat table if there are any.
-	pe.LoadConfig.VolatileMetadata = pe.getVolatileMetadata()
+	loadConfig.VolatileMetadata = pe.getVolatileMetadata()
 
 	return nil
 }
@@ -1930,128 +1933,129 @@ func (pe *File) getLongJumpTargetTable() []uint32 {
 	return longJumpTargets
 }
 
-func (pe *File) getHybridPE() HybridPE {
+func (pe *File) getHybridPE() *HybridPE {
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	hybridPE := HybridPE{}
 
 	// CHPEMetadataPointer is found in index 31 of the struct.
-	if v.NumField() > 31 {
-		CHPEMetadataPointer := v.Field(31).Uint()
-		if CHPEMetadataPointer != 0 {
+	if v.NumField() <= 30 {
+		return nil
+	} 
 
-			var rva uint32
-			if pe.Is32 {
-				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
-				rva = uint32(CHPEMetadataPointer) - imageBase
-			} else {
-				imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
-				rva = uint32(CHPEMetadataPointer - imageBase)
-			}
-
-			// As the image chpe metadata structure changes over time,
-			// we first read its version to figure out which one we have to
-			// cast against.
-			fileOffset := pe.getOffsetFromRva(rva)
-			version, err := pe.ReadUint32(fileOffset)
-			if err != nil {
-				return hybridPE
-			}
-
-			var ImageCHPEMetaX86 interface{}
-
-			switch version {
-			case 0x1:
-				ImageCHPEMetaX86v1 := ImageCHPEMetadataX86v1{}
-				structSize := uint32(binary.Size(ImageCHPEMetaX86v1))
-				err = pe.structUnpack(&ImageCHPEMetaX86v1, fileOffset, structSize)
-				ImageCHPEMetaX86 = ImageCHPEMetaX86v1
-			case 0x2:
-				ImageCHPEMetaX86v2 := ImageCHPEMetadataX86v2{}
-				structSize := uint32(binary.Size(ImageCHPEMetaX86v2))
-				err = pe.structUnpack(&ImageCHPEMetaX86v2, fileOffset, structSize)
-				ImageCHPEMetaX86 = ImageCHPEMetaX86v2
-			case 0x3:
-			default:
-				ImageCHPEMetaX86v3 := ImageCHPEMetadataX86v3{}
-				structSize := uint32(binary.Size(ImageCHPEMetaX86v3))
-				err = pe.structUnpack(&ImageCHPEMetaX86v3, fileOffset, structSize)
-				ImageCHPEMetaX86 = ImageCHPEMetaX86v3
-			}
-
-			hybridPE.CHPEMetadata = ImageCHPEMetaX86
-
-			v := reflect.ValueOf(ImageCHPEMetaX86)
-			CHPECodeAddressRangeOffset := uint32(v.Field(1).Uint())
-			CHPECodeAddressRangeCount := int(v.Field(2).Uint())
-
-			// Code Ranges
-
-			/*
-				typedef struct _IMAGE_CHPE_RANGE_ENTRY {
-					union {
-						ULONG StartOffset;
-						struct {
-							ULONG NativeCode : 1;
-							ULONG AddressBits : 31;
-						} DUMMYSTRUCTNAME;
-					} DUMMYUNIONNAME;
-
-					ULONG Length;
-				} IMAGE_CHPE_RANGE_ENTRY, *PIMAGE_CHPE_RANGE_ENTRY;
-			*/
-
-			rva = CHPECodeAddressRangeOffset
-			for i := 0; i < CHPECodeAddressRangeCount; i++ {
-
-				codeRange := CodeRange{}
-				fileOffset := pe.getOffsetFromRva(rva)
-				begin, err := pe.ReadUint32(fileOffset)
-				if err != nil {
-					break
-				}
-
-				if begin&1 == 1 {
-					codeRange.Machine = 1
-					begin = uint32(int(begin) & ^1)
-				}
-				codeRange.Begin = begin
-
-				fileOffset += 4
-				size, err := pe.ReadUint32(fileOffset)
-				if err != nil {
-					break
-				}
-				codeRange.Length = size
-
-				hybridPE.CodeRanges = append(hybridPE.CodeRanges, codeRange)
-				rva += 8
-			}
-
-			// Compiler IAT
-			CompilerIATPointer := uint32(v.Field(10).Uint())
-			if CompilerIATPointer != 0 {
-				rva := CompilerIATPointer
-				for i := 0; i < 1024; i++ {
-					compilerIAT := CompilerIAT{}
-					compilerIAT.RVA = rva
-					fileOffset = pe.getOffsetFromRva(rva)
-					compilerIAT.Value, err = pe.ReadUint32(fileOffset)
-					if err != nil {
-						break
-					}
-
-					pe.LoadConfig.CHPE.CompilerIAT = append(
-						pe.LoadConfig.CHPE.CompilerIAT, compilerIAT)
-					rva += 4
-				}
-			}
-		}
+	CHPEMetadataPointer := v.Field(31).Uint()
+	if CHPEMetadataPointer == 0 {
+		return nil
+	}
+	var rva uint32
+	if pe.Is32 {
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).ImageBase
+		rva = uint32(CHPEMetadataPointer) - imageBase
+	} else {
+		imageBase := pe.NtHeader.OptionalHeader.(ImageOptionalHeader64).ImageBase
+		rva = uint32(CHPEMetadataPointer - imageBase)
 	}
 
-	return hybridPE
+	// As the image chpe metadata structure changes over time,
+	// we first read its version to figure out which one we have to
+	// cast against.
+	fileOffset := pe.getOffsetFromRva(rva)
+	version, err := pe.ReadUint32(fileOffset)
+	if err != nil {
+		return nil
+	}
+
+	var ImageCHPEMetaX86 interface{}
+
+	switch version {
+	case 0x1:
+		ImageCHPEMetaX86v1 := ImageCHPEMetadataX86v1{}
+		structSize := uint32(binary.Size(ImageCHPEMetaX86v1))
+		err = pe.structUnpack(&ImageCHPEMetaX86v1, fileOffset, structSize)
+		ImageCHPEMetaX86 = ImageCHPEMetaX86v1
+	case 0x2:
+		ImageCHPEMetaX86v2 := ImageCHPEMetadataX86v2{}
+		structSize := uint32(binary.Size(ImageCHPEMetaX86v2))
+		err = pe.structUnpack(&ImageCHPEMetaX86v2, fileOffset, structSize)
+		ImageCHPEMetaX86 = ImageCHPEMetaX86v2
+	case 0x3:
+	default:
+		ImageCHPEMetaX86v3 := ImageCHPEMetadataX86v3{}
+		structSize := uint32(binary.Size(ImageCHPEMetaX86v3))
+		err = pe.structUnpack(&ImageCHPEMetaX86v3, fileOffset, structSize)
+		ImageCHPEMetaX86 = ImageCHPEMetaX86v3
+	}
+
+	hybridPE.CHPEMetadata = ImageCHPEMetaX86
+
+	v = reflect.ValueOf(ImageCHPEMetaX86)
+	CHPECodeAddressRangeOffset := uint32(v.Field(1).Uint())
+	CHPECodeAddressRangeCount := int(v.Field(2).Uint())
+
+	// Code Ranges
+
+	/*
+		typedef struct _IMAGE_CHPE_RANGE_ENTRY {
+			union {
+				ULONG StartOffset;
+				struct {
+					ULONG NativeCode : 1;
+					ULONG AddressBits : 31;
+				} DUMMYSTRUCTNAME;
+			} DUMMYUNIONNAME;
+
+			ULONG Length;
+		} IMAGE_CHPE_RANGE_ENTRY, *PIMAGE_CHPE_RANGE_ENTRY;
+	*/
+
+	rva = CHPECodeAddressRangeOffset
+	for i := 0; i < CHPECodeAddressRangeCount; i++ {
+
+		codeRange := CodeRange{}
+		fileOffset := pe.getOffsetFromRva(rva)
+		begin, err := pe.ReadUint32(fileOffset)
+		if err != nil {
+			break
+		}
+
+		if begin&1 == 1 {
+			codeRange.Machine = 1
+			begin = uint32(int(begin) & ^1)
+		}
+		codeRange.Begin = begin
+
+		fileOffset += 4
+		size, err := pe.ReadUint32(fileOffset)
+		if err != nil {
+			break
+		}
+		codeRange.Length = size
+
+		hybridPE.CodeRanges = append(hybridPE.CodeRanges, codeRange)
+		rva += 8
+	}
+
+	// Compiler IAT
+	CompilerIATPointer := uint32(v.Field(10).Uint())
+	if CompilerIATPointer != 0 {
+		rva := CompilerIATPointer
+		for i := 0; i < 1024; i++ {
+			compilerIAT := CompilerIAT{}
+			compilerIAT.RVA = rva
+			fileOffset = pe.getOffsetFromRva(rva)
+			compilerIAT.Value, err = pe.ReadUint32(fileOffset)
+			if err != nil {
+				break
+			}
+
+			pe.LoadConfig.CHPE.CompilerIAT = append(
+				pe.LoadConfig.CHPE.CompilerIAT, compilerIAT)
+			rva += 4
+		}
+	}
+	return &hybridPE
 }
 
-func (pe *File) getDynamicValueRelocTable() DVRT {
+func (pe *File) getDynamicValueRelocTable() *DVRT {
 
 	var structSize uint32
 	var imgDynRelocSize uint32
@@ -2060,18 +2064,18 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	if v.NumField() <= 35 {
-		return dvrt
+		return nil
 	}
 
 	DynamicValueRelocTableOffset := v.Field(34).Uint()
 	DynamicValueRelocTableSection := v.Field(35).Uint()
 	if DynamicValueRelocTableOffset == 0 || DynamicValueRelocTableSection == 0 {
-		return dvrt
+		return nil
 	}
 
 	section := pe.getSectionByName(".reloc")
 	if section == nil {
-		return dvrt
+		return nil
 	}
 
 	// Get the dynamic value relocation table.
@@ -2080,7 +2084,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 	structSize = uint32(binary.Size(imgDynRelocTable))
 	err := pe.structUnpack(&imgDynRelocTable, offset, structSize)
 	if err != nil {
-		return dvrt
+		return nil
 	}
 
 	dvrt.ImgDynRelocTable = imgDynRelocTable
@@ -2101,7 +2105,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 				imgDynRelocSize = uint32(binary.Size(imgDynReloc))
 				err = pe.structUnpack(&imgDynReloc, offset, imgDynRelocSize)
 				if err != nil {
-					return dvrt
+					return nil
 				}
 				relocEntry.ImgDynReloc = imgDynReloc
 				baseBlockSize = imgDynReloc.BaseRelocSize
@@ -2110,7 +2114,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 				imgDynRelocSize = uint32(binary.Size(imgDynReloc))
 				err = pe.structUnpack(&imgDynReloc, offset, imgDynRelocSize)
 				if err != nil {
-					return dvrt
+					return nil
 				}
 				relocEntry.ImgDynReloc = imgDynReloc
 				baseBlockSize = imgDynReloc.BaseRelocSize
@@ -2127,7 +2131,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 				structSize = uint32(binary.Size(baseReloc))
 				err = pe.structUnpack(&baseReloc, offset, structSize)
 				if err != nil {
-					return dvrt
+					return nil
 				}
 
 				relocBlock.ImgBaseReloc = baseReloc
@@ -2137,7 +2141,7 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 					typeOffset := TypeOffset{}
 					typeOffset.Value, err = pe.ReadUint16(offset)
 					if err != nil {
-						return dvrt
+						return nil
 					}
 
 					typeOffset.DynamicSymbolOffset = typeOffset.Value & 0xfff
@@ -2163,21 +2167,21 @@ func (pe *File) getDynamicValueRelocTable() DVRT {
 		fmt.Print("Got version 2 !")
 	}
 
-	return dvrt
+	return &dvrt
 }
 
-func (pe *File) getEnclaveConfiguration() Enclave {
+func (pe *File) getEnclaveConfiguration() *Enclave {
 
 	enclave := Enclave{}
 
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	if v.NumField() <= 40 {
-		return enclave
+		return nil
 	}
 
 	EnclaveConfigurationPointer := v.Field(40).Uint()
 	if EnclaveConfigurationPointer == 0 {
-		return enclave
+		return nil
 	}
 
 	if pe.Is32 {
@@ -2188,7 +2192,7 @@ func (pe *File) getEnclaveConfiguration() Enclave {
 		offset := pe.getOffsetFromRva(rva)
 		err := pe.structUnpack(&imgEnclaveCfg, offset, imgEnclaveCfgSize)
 		if err != nil {
-			return enclave
+			return nil
 		}
 		enclave.Config = imgEnclaveCfg
 	} else {
@@ -2199,7 +2203,7 @@ func (pe *File) getEnclaveConfiguration() Enclave {
 		offset := pe.getOffsetFromRva(rva)
 		err := pe.structUnpack(&imgEnclaveCfg, offset, imgEnclaveCfgSize)
 		if err != nil {
-			return enclave
+			return nil
 		}
 		enclave.Config = imgEnclaveCfg
 	}
@@ -2216,17 +2220,17 @@ func (pe *File) getEnclaveConfiguration() Enclave {
 		imgEncImpSize := uint32(binary.Size(imgEncImp))
 		err := pe.structUnpack(&imgEncImp, offset, imgEncImpSize)
 		if err != nil {
-			return enclave
+			return nil
 		}
 
 		offset += imgEncImpSize
 		enclave.Imports = append(enclave.Imports, imgEncImp)
 	}
 
-	return enclave
+	return nil
 }
 
-func (pe *File) getVolatileMetadata() VolatileMetadata {
+func (pe *File) getVolatileMetadata() *VolatileMetadata {
 
 	volatileMeta := VolatileMetadata{}
 	imgVolatileMeta := ImageVolatileMetadata{}
@@ -2234,12 +2238,12 @@ func (pe *File) getVolatileMetadata() VolatileMetadata {
 
 	v := reflect.ValueOf(pe.LoadConfig.LoadCfgStruct)
 	if v.NumField() <= 41 {
-		return volatileMeta
+		return nil
 	}
 
 	VolatileMetadataPointer := v.Field(41).Uint()
 	if VolatileMetadataPointer == 0 {
-		return volatileMeta
+		return nil
 	}
 
 	if pe.Is32 {
@@ -2254,14 +2258,14 @@ func (pe *File) getVolatileMetadata() VolatileMetadata {
 	imgVolatileMetaSize := uint32(binary.Size(imgVolatileMeta))
 	err := pe.structUnpack(&imgVolatileMeta, offset, imgVolatileMetaSize)
 	if err != nil {
-		return volatileMeta
+		return nil
 	}
 	volatileMeta.Struct = imgVolatileMeta
 
 	if imgVolatileMeta.VolatileAccessTable != 0 &&
 		imgVolatileMeta.VolatileAccessTableSize != 0 {
 		offset := pe.getOffsetFromRva(imgVolatileMeta.VolatileAccessTable)
-		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize / 4; i++ {
+		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize/4; i++ {
 			accessRVA, err := pe.ReadUint32(offset)
 			if err != nil {
 				break
@@ -2275,7 +2279,7 @@ func (pe *File) getVolatileMetadata() VolatileMetadata {
 	if imgVolatileMeta.VolatileInfoRangeTable != 0 && imgVolatileMeta.VolatileAccessTableSize != 0 {
 		offset := pe.getOffsetFromRva(imgVolatileMeta.VolatileInfoRangeTable)
 		rangeEntrySize := uint32(binary.Size(RangeTableEntry{}))
-		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize / 	    rangeEntrySize; i++ {
+		for i := uint32(0); i < imgVolatileMeta.VolatileAccessTableSize/rangeEntrySize; i++ {
 			entry := RangeTableEntry{}
 			err := pe.structUnpack(&entry, offset, rangeEntrySize)
 			if err != nil {
@@ -2287,5 +2291,5 @@ func (pe *File) getVolatileMetadata() VolatileMetadata {
 		}
 	}
 
-	return volatileMeta
+	return &volatileMeta
 }

@@ -5,10 +5,10 @@
 package pe
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"errors"
 
 	mmap "github.com/edsrzf/mmap-go"
 )
@@ -16,23 +16,23 @@ import (
 // A File represents an open PE file.
 type File struct {
 	DosHeader    ImageDosHeader              `json:",omitempty"`
-	RichHeader   RichHeader                  `json:",omitempty"`
+	RichHeader   *RichHeader                 `json:",omitempty"`
 	NtHeader     ImageNtHeader               `json:",omitempty"`
 	Sections     []ImageSectionHeader        `json:",omitempty"`
 	Imports      []Import                    `json:",omitempty"`
-	Export       Export                      `json:",omitempty"`
+	Export       *Export                     `json:",omitempty"`
 	Debugs       []DebugEntry                `json:",omitempty"`
 	Relocations  []Relocation                `json:",omitempty"`
-	Resources    ResourceDirectory           `json:",omitempty"`
-	TLS          TLSDirectory                `json:",omitempty"`
-	LoadConfig   LoadConfig                  `json:",omitempty"`
+	Resources    *ResourceDirectory          `json:",omitempty"`
+	TLS          *TLSDirectory               `json:",omitempty"`
+	LoadConfig   *LoadConfig                 `json:",omitempty"`
 	Exceptions   []Exception                 `json:",omitempty"`
-	Certificates Certificate                 `json:",omitempty"`
+	Certificates *Certificate                `json:",omitempty"`
 	DelayImports []DelayImport               `json:",omitempty"`
 	BoundImports []BoundImportDescriptorData `json:",omitempty"`
 	GlobalPtr    uint32                      `json:",omitempty"`
-	CLR    		 CLRData           			 	 `json:",omitempty"`
-	IAT          []IATEntry					 `json:",omitempty"`
+	CLR          *CLRData                    `json:",omitempty"`
+	IAT          []IATEntry                  `json:",omitempty"`
 	Header       []byte
 	data         mmap.MMap
 	closer       io.Closer
@@ -142,7 +142,7 @@ func (pe *File) PrettyDataDirectory(entry int) string {
 // it refers to.
 func (pe *File) ParseDataDirectories() error {
 
-	foundErr := false 
+	foundErr := false
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
 
@@ -175,9 +175,6 @@ func (pe *File) ParseDataDirectories() error {
 	// Iterate over data directories and call the appropriate function.
 	for entryIndex := 0; entryIndex < ImageNumberOfDirectoryEntries; entryIndex++ {
 
-		if entryIndex != 14 {
-			continue
-		}
 		var va, size uint32
 		switch pe.Is64 {
 		case true:
