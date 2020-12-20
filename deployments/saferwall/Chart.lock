@@ -1,7 +1,7 @@
 dependencies:
 - name: minio
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 5.0.31
+  repository: https://helm.min.io/
+  version: 8.0.8
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
   version: 2.0.2
@@ -29,5 +29,8 @@ dependencies:
 - name: prometheus-operator
   repository: https://prometheus-community.github.io/helm-charts
   version: 9.3.2
-digest: sha256:3d04e1e1e6435b43fc8427ab13c3a5dd75680b127bec5b791ec70e44df27d09e
-generated: "2020-12-06T10:38:16.759237895+11:00"
+- name: cluster-autoscaler
+  repository: https://kubernetes.github.io/autoscaler
+  version: 9.2.0
+digest: sha256:5c66060bdaca6d9462115ab5b23655ea6a22fcd6e0b48b045c4d92c4d762fe75
+generated: "2020-12-21T08:58:57.676651167+11:00"

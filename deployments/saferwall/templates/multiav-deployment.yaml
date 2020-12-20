@@ -38,7 +38,6 @@ spec:
             limits:
               cpu: "{{ $root.Values.multiav.resources.limits.cpu }}"
               memory: "{{ $root.Values.multiav.resources.limits.memory }}"
-
           volumeMounts:
             - name: samples
               mountPath: /samples

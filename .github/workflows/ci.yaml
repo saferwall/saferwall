@@ -75,8 +75,6 @@ jobs:
       - name: Install Helm, add repos, and build dependencies
         run: |
             make helm-install \
-            && make helm-add-repos \
-            && make helm-update-dep \
             && sudo make k8s-init-cert-manager
         
       - name: Helm Release

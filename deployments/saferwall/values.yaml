@@ -476,7 +476,6 @@ couchbase-operator:
     - svc.cluster.local
     - cluster.local
 
-
 ########### NSQ ###########
 nsq:
   enabled: true
@@ -530,7 +529,12 @@ cert-manager:
     # defaultIssuerName: letsencrypt-prod
     # defaultIssuerName: letsencrypt-staging
     defaultIssuerKind: ClusterIssuer
-
+########## CLUSTER-AUTOSCALER ############
+cluster-autoscaler:
+  enabled: false
+  autoDiscovery:
+  # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
+    clusterName: kops.saferwall.com
 ########### BACKEND ###########
 backend:
   enabled: true

@@ -954,10 +954,10 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@fortawesome/fontawesome-free@^5.12.0":
-  version "5.12.0"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.12.0.tgz#8ceb9f09edfb85ea18a6c7bf098f6f5dd5ffd62b"
-  integrity sha512-vKDJUuE2GAdBERaQWmmtsciAMzjwNrROXA5KTGSZvayAsmuTGjam5z6QNqNPCwDfVljLWuov1nEC3mEQf/n6fQ==
+"@fortawesome/fontawesome-free@^5.12.1":
+  version "5.15.1"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.15.1.tgz#ccfef6ddbe59f8fe8f694783e1d3eb88902dc5eb"
+  integrity sha512-OEdH7SyC1suTdhBGW91/zBfR6qaIhThbcN8PUXtXilY4GYnSBbVqOntdHbC1vXwsDnX0Qix2m2+DSU1J51ybOQ==
 
 "@hapi/address@2.x.x":
   version "2.1.4"
@@ -2161,7 +2161,7 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.9.1.tgz#7e33d8f7d449b3f673cd72deb9abdc552dbe528e"
   integrity sha512-wMHVg2EOHaMRxbzgFJ9gtjOOCrI80OHLG14rxi28XwOW8ux6IiEbRCGGGqCtdAIg4FQCbW20k9RsT4y3gJlFug==
 
-axios@^0.19.0:
+axios@^0.19.2:
   version "0.19.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.19.2.tgz#3ea36c5d8818d0d5f8a8a97a6d36b86cdc00cb27"
   integrity sha512-fjgm5MvRHLhx+osE2xoekY70AhARk3a6hkN+3Io1jc00jtquGvxYlKlsFUhmUET0V5te6CcZI7lcv2Ym61mjHA==

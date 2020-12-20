@@ -13,8 +13,8 @@ maintainers:
       email: admin@saferwall.com
 dependencies:
     - name: minio
-      version: 5.0.31
-      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 8.0.8
+      repository: https://helm.min.io/
       condition: minio.enabled
     - name: couchbase-operator
       version: 2.0.2
@@ -52,3 +52,7 @@ dependencies:
       version: 9.3.2
       repository: https://prometheus-community.github.io/helm-charts
       condition: prometheus-operator.enabled
+    - name: cluster-autoscaler
+      version: 9.2.0
+      repository: https://kubernetes.github.io/autoscaler
+      condition: cluster-autoscaler.enabled

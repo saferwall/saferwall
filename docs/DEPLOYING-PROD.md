@@ -41,10 +41,8 @@ export AWS_EFS_TOKEN = example-efs
         - `make multiav-release`
         - `make multiav-release-go`
 6. Install Helm: `make helm-install`.
-7. Add the required Helm Charts repositories: `make helm-add-repos`.
-8. Fetch Helm dependencies: `make helm-update-dep`.
-9. Init cert manager: `make k8s-init-cert-manager`.
-10. Edit the `deployments/saferwall/values.yaml`
+7. Init cert manager: `make k8s-init-cert-manager`.
+8. Edit the `deployments/saferwall/values.yaml`
     - Set `efs-provisioner.enabled` to true.
     - Set `couchbase-operator.cluster.volumeClaimTemplates.spec.storageClassName` to `default`.
     - If you are interested to see the logs in EFK:
@@ -59,7 +57,7 @@ export AWS_EFS_TOKEN = example-efs
                 authenticationTokenWebhook: true
                 authorizationMode: Webhook
             ```
-11. Install helm chart: `make helm-release`.
+9. Install helm chart: `make helm-release`.
 
 ## Tips for deploying a production cluster
 
