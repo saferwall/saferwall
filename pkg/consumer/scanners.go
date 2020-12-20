@@ -5,9 +5,11 @@
 package main
 
 import (
+	"io/ioutil"
 	"strings"
 	"time"
 
+	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
@@ -17,12 +19,12 @@ import (
 	avira_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	bitdefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/client"
 	bitdefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
-	drwebclient "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/client"
-	drweb_api "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	clamavclient "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/client"
 	clamav_api "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	comodoclient "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/client"
 	comodo_api "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
+	drwebclient "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/client"
+	drweb_api "github.com/saferwall/saferwall/pkg/grpc/multiav/drweb/proto"
 	esetclient "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/client"
 	eset_api "github.com/saferwall/saferwall/pkg/grpc/multiav/eset/proto"
 	fsecureclient "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/client"
@@ -53,24 +55,26 @@ type stringStruct struct {
 	Value    string `json:"value"`
 }
 type result struct {
-	Md5     string                 `json:"md5,omitempty"`
-	Sha1    string                 `json:"sha1,omitempty"`
-	Sha256  string                 `json:"sha256,omitempty"`
-	Sha512  string                 `json:"sha512,omitempty"`
-	Ssdeep  string                 `json:"ssdeep,omitempty"`
-	Crc32   string                 `json:"crc32,omitempty"`
-	Magic   string                 `json:"magic,omitempty"`
-	Size    int64                  `json:"size,omitempty"`
-	Exif    map[string]string      `json:"exif,omitempty"`
-	TriD    []string               `json:"trid,omitempty"`
-	Tags    map[string]interface{} `json:"tags,omitempty"`
-	Packer  []string               `json:"packer,omitempty"`
-	LastScanned  	*time.Time     `json:"last_scanned,omitempty"`
-	Strings []stringStruct         `json:"strings,omitempty"`
-	MultiAV map[string]interface{} `json:"multiav,omitempty"`
-	Status  int                    `json:"status,omitempty"`
-	PE      peparser.File          `json:"pe,omitempty"`
-	Type    string                 `json:"type,omitempty"`
+	Md5         string                 `json:"md5,omitempty"`
+	Sha1        string                 `json:"sha1,omitempty"`
+	Sha256      string                 `json:"sha256,omitempty"`
+	Sha512      string                 `json:"sha512,omitempty"`
+	Ssdeep      string                 `json:"ssdeep,omitempty"`
+	Crc32       string                 `json:"crc32,omitempty"`
+	Magic       string                 `json:"magic,omitempty"`
+	Size        int64                  `json:"size,omitempty"`
+	Exif        map[string]string      `json:"exif,omitempty"`
+	TriD        []string               `json:"trid,omitempty"`
+	Tags        map[string]interface{} `json:"tags,omitempty"`
+	Packer      []string               `json:"packer,omitempty"`
+	LastScanned *time.Time             `json:"last_scanned,omitempty"`
+	Strings     []stringStruct         `json:"strings,omitempty"`
+	MultiAV     map[string]interface{} `json:"multiav,omitempty"`
+	Status      int                    `json:"status,omitempty"`
+	PE          peparser.File          `json:"pe,omitempty"`
+	Histogram   []int                  `json:"histogram,omitempty"`
+	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
+	Type        string                 `json:"type,omitempty"`
 }
 
 func (res *result) parseFile(b []byte, filePath string) {
@@ -95,8 +99,15 @@ func (res *result) parseFile(b []byte, filePath string) {
 		if err != nil {
 			contextLogger.Errorf("pe parser failed: %v", err)
 		}
-		
+
 		res.PE = pe
+
+		// Extract Byte Histogram
+		res.Histogram, res.ByteEntropy, err = parseBinaryProgramFeatures(filePath)
+		if err != nil {
+			contextLogger.Errorf("bsytestat pkg failed with: %v", err)
+		}
+		contextLogger.Debug("bytestats pkg success")
 	}
 }
 
@@ -199,11 +210,24 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 	for i := range pe.Certificates.Content.Certificates {
 		pe.Certificates.Content.Certificates[i].PublicKey = nil
 	}
-	
+
 	contextLogger.Info("pe pkg success")
 	return pe, err
 }
 
+func parseBinaryProgramFeatures(filepath string) ([]int, []int, error) {
+
+	buf, err := ioutil.ReadFile(filepath)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	histogram := bs.ByteHistogram(buf)
+	byteEntropy := bs.ByteEntropyHistogram(buf)
+
+	return histogram, byteEntropy, nil
+}
 func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 
 	// Get the address of AV gRPC server

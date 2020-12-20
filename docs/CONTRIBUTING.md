@@ -46,6 +46,8 @@ certbot-install                Install Certbot for nginx
 elastic-drop-db                Delete all indexes.
 ```
 
+Your commits **should** follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
 ## Developing on the backend
 
 - WIP
