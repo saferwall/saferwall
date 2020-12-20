@@ -101,6 +101,13 @@ func (res *result) parseFile(b []byte, filePath string) {
 		}
 
 		res.PE = pe
+
+		// Extract Byte Histogram
+		res.Histogram, res.ByteEntropy, err = parseBinaryProgramFeatures(filePath)
+		if err != nil {
+			contextLogger.Errorf("bsytestat pkg failed with: %v", err)
+		}
+		contextLogger.Debug("bytestats pkg success")
 	}
 }
 
@@ -148,13 +155,6 @@ func staticScan(sha256, filePath string, b []byte) result {
 		contextLogger.Errorf("die pkg failed with: %v", err)
 	}
 	contextLogger.Debug("die pkg success")
-
-	// Extract Byte Histogram
-	res.Histogram, res.ByteEntropy, err = parseBinaryProgramFeatures(filePath)
-	if err != nil {
-		contextLogger.Errorf("bsytestat pkg failed with: %v", err)
-	}
-	contextLogger.Debug("bytestats pkg success")
 
 	// Extract strings.
 	n := 10
