@@ -10,13 +10,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/kjk/betterguid"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/kjk/betterguid"
 
 	"github.com/couchbase/gocb/v2"
 	"github.com/dgrijalva/jwt-go"
@@ -36,6 +37,7 @@ import (
 const (
 	sha256regex = "^[a-f0-9]{64}$"
 )
+
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -71,13 +73,15 @@ type File struct {
 	Packer          []string               `json:"packer,omitempty"`
 	FirstSubmission *time.Time             `json:"first_submission,omitempty"`
 	LastSubmission  *time.Time             `json:"last_submission,omitempty"`
-	LastScanned  	*time.Time             `json:"last_scanned,omitempty"`
+	LastScanned     *time.Time             `json:"last_scanned,omitempty"`
 	Submissions     []submission           `json:"submissions,omitempty"`
 	Strings         []stringStruct         `json:"strings,omitempty"`
 	MultiAV         map[string]interface{} `json:"multiav,omitempty"`
 	Status          int                    `json:"status,omitempty"`
 	Comments        []Comment              `json:"comments,omitempty"`
 	PE              *peparser.File         `json:"pe,omitempty"`
+	Histogram       []int                  `json:"histogram,omitempty"`
+	ByteEntropy     []int                  `json:"byte_entropy,omitempty"`
 	Type            string                 `json:"type,omitempty"`
 }
 
@@ -223,7 +227,7 @@ func GetFileByFields(fields []string, sha256 string) (File, error) {
 	params := make(map[string]interface{}, 1)
 	params["sha256"] = sha256
 	rows, err := db.Cluster.Query(query,
-		&gocb.QueryOptions{NamedParameters: params, Adhoc:true,})
+		&gocb.QueryOptions{NamedParameters: params, Adhoc: true})
 	if err != nil {
 		fmt.Println("Error executing n1ql query:", err)
 		return row, err

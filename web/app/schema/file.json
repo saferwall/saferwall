@@ -227,6 +227,14 @@
       "description": "status of file analysis",
       "type": "integer"
     },
+    "histogram": {
+      "description": "Bytes histogram",
+      "type": "array"
+    },
+    "byte_entropy": {
+      "description": "Bytes entropy",
+      "type": "array"
+    },
     "type": {
       "description": "File format type",
       "type": "string"

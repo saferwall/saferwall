@@ -90,7 +90,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 
-	// Download the sample
+	// Download the sample.
 	bucketName := viper.GetString("minio.spacename")
 	filePath := path.Join("/samples", sha256)
 	var b []byte
@@ -99,7 +99,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 
-	// static scanning
+	// Static scanning
 	res = staticScan(sha256, filePath, b)
 
 	// multiav scanning
@@ -135,7 +135,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd
+	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }
 

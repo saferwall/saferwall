@@ -5,11 +5,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"strings"
 	"time"
 
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
+
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
@@ -102,11 +102,9 @@ func (res *result) parseFile(b []byte, filePath string) {
 
 		res.PE = pe
 
-		// Extract Byte Histogram
-		res.Histogram, res.ByteEntropy, err = parseBinaryProgramFeatures(filePath)
-		if err != nil {
-			contextLogger.Errorf("bsytestat pkg failed with: %v", err)
-		}
+		// Extract Byte Histogram and byte entropy.
+		res.Histogram = bs.ByteHistogram(b)
+		res.ByteEntropy = bs.ByteEntropyHistogram(b)
 		contextLogger.Debug("bytestats pkg success")
 	}
 }
@@ -215,19 +213,6 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 	return pe, err
 }
 
-func parseBinaryProgramFeatures(filepath string) ([]int, []int, error) {
-
-	buf, err := ioutil.ReadFile(filepath)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	histogram := bs.ByteHistogram(buf)
-	byteEntropy := bs.ByteEntropyHistogram(buf)
-
-	return histogram, byteEntropy, nil
-}
 func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 
 	// Get the address of AV gRPC server
