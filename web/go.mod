@@ -14,7 +14,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
 	github.com/saferwall/saferwall/pkg/peparser v0.1.0
-	github.com/saferwall/saferwall/pkg/utils v0.0.4
+	github.com/saferwall/saferwall/pkg/utils v0.0.5
 	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/viper v1.7.1
 	github.com/xeipuuv/gojsonschema v1.2.0

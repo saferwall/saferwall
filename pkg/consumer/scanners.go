@@ -202,13 +202,8 @@ func parsePE(filePath string) (*peparser.File, error) {
 	}
 	defer pe.Close()
 
-	// Do the actual parsing
+	// Parse the PE.
 	err = pe.Parse()
-
-	// Dirty hack to fix json marshalling
-	for i := range pe.Certificates.Content.Certificates {
-		pe.Certificates.Content.Certificates[i].PublicKey = nil
-	}
 
 	contextLogger.Info("pe pkg success")
 	return pe, err
@@ -288,8 +283,10 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	}
 	c <- multiav.ScanResult{Enabled: enabled, Output: res.Output, Infected: res.Infected, Update: res.Update}
 
-	if err = utils.DeleteFile(filecopyPath); err != nil {
-		contextLogger.Errorf("Failed to delete file path %s.", filecopyPath)
+	if utils.Exists(filecopyPath) {
+		if err = utils.DeleteFile(filecopyPath); err != nil {
+			contextLogger.Errorf("Failed to delete file path %s.", filecopyPath)
+		}
 	}
 }
 

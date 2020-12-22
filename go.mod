@@ -16,7 +16,7 @@ require (
 	github.com/saferwall/saferwall/pkg/bytestats v0.0.0-20201219165103-e06698879bec
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
 	github.com/saferwall/saferwall/pkg/peparser v0.1.0
-	github.com/saferwall/saferwall/pkg/utils v0.0.4
+	github.com/saferwall/saferwall/pkg/utils v0.0.5
 	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v1.0.0
