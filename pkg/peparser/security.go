@@ -156,9 +156,9 @@ func (pe *File) Authentihash() []byte {
 	// image. The NumberOfSections field of COFF File Header indicates how big
 	// the table should be. Do not include any section headers in the table
 	// whose SizeOfRawData field is zero.
-	sections := []ImageSectionHeader{}
+	sections := []Section{}
 	for _, section := range pe.Sections {
-		if section.SizeOfRawData != 0 {
+		if section.Header.SizeOfRawData != 0 {
 			sections = append(sections, section)
 		}
 	}
@@ -174,8 +174,8 @@ func (pe *File) Authentihash() []byte {
 	// SectionHeader structure to determine the amount of data to hash.
 	// Add the section’s SizeOfRawData value to SUM_OF_BYTES_HASHED.
 	for _, s := range sections {
-		sectionData := pe.data[s.PointerToRawData : s.PointerToRawData+s.SizeOfRawData]
-		SumOfBytesHashes += s.SizeOfRawData
+		sectionData := pe.data[s.Header.PointerToRawData : s.Header.PointerToRawData+s.Header.SizeOfRawData]
+		SumOfBytesHashes += s.Header.SizeOfRawData
 		h.Write(sectionData)
 	}
 

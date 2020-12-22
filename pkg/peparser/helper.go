@@ -161,7 +161,7 @@ func IsPrintable(s string) bool {
 }
 
 // getSectionByRva returns the section containing the given address.
-func (pe *File) getSectionByRva(rva uint32) *ImageSectionHeader {
+func (pe *File) getSectionByRva(rva uint32) *Section {
 	for _, section := range pe.Sections {
 		if section.Contains(rva, pe) {
 			return &section
@@ -180,15 +180,16 @@ func (pe *File) getSectionNameByRva(rva uint32) string {
 	return ""
 }
 
-func (pe *File) getSectionByOffset(offset uint32) *ImageSectionHeader {
+func (pe *File) getSectionByOffset(offset uint32) *Section {
 	for _, section := range pe.Sections {
-		if section.PointerToRawData == 0 {
+		if section.Header.PointerToRawData == 0 {
 			continue
 		}
 
-		adjustedPointer := pe.adjustFileAlignment(section.PointerToRawData)
+		adjustedPointer := pe.adjustFileAlignment(
+			section.Header.PointerToRawData)
 		if adjustedPointer <= offset &&
-			offset < (adjustedPointer+section.SizeOfRawData) {
+			offset < (adjustedPointer+section.Header.SizeOfRawData) {
 			return &section
 		}
 	}
@@ -207,8 +208,8 @@ func (pe *File) getOffsetFromRva(rva uint32) uint32 {
 		}
 		return ^uint32(0)
 	}
-	sectionAlignment := pe.adjustSectionAlignment(section.VirtualAddress)
-	fileAlignment := pe.adjustFileAlignment(section.PointerToRawData)
+	sectionAlignment := pe.adjustSectionAlignment(section.Header.VirtualAddress)
+	fileAlignment := pe.adjustFileAlignment(section.Header.PointerToRawData)
 	return rva - sectionAlignment + fileAlignment
 }
 
@@ -222,7 +223,7 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 		}
 
 		for _, section := range pe.Sections {
-			vaddr := pe.adjustSectionAlignment(section.VirtualAddress)
+			vaddr := pe.adjustSectionAlignment(section.Header.VirtualAddress)
 			if vaddr < minAddr {
 				minAddr = vaddr
 			}
@@ -239,15 +240,15 @@ func (pe *File) getRvaFromOffset(offset uint32) uint32 {
 		log.Println("data at Offset can't be fetched. Corrupt header?")
 		return ^uint32(0)
 	}
-	sectionAlignment := pe.adjustSectionAlignment(section.VirtualAddress)
-	fileAlignment := pe.adjustFileAlignment(section.PointerToRawData)
+	sectionAlignment := pe.adjustSectionAlignment(section.Header.VirtualAddress)
+	fileAlignment := pe.adjustFileAlignment(section.Header.PointerToRawData)
 	return offset - fileAlignment + sectionAlignment
 }
 
 func (pe *File) getSectionByName(secName string) (section *ImageSectionHeader) {
 	for _, section := range pe.Sections {
 		if section.NameString() == secName {
-			return &section
+			return &section.Header
 		}
 
 	}
@@ -310,12 +311,12 @@ func (pe *File) getStringFromData(offset uint32, data []byte) []byte {
 }
 
 // getStringAtOffset returns a string given an offset.
-func (pe *File) getStringAtOffset (offset, size uint32) (string, error) {
+func (pe *File) getStringAtOffset(offset, size uint32) (string, error) {
 	if offset+size > pe.size {
 		return "", ErrOutsideBoundary
 	}
 
-	str := string(pe.data[offset:offset+size])
+	str := string(pe.data[offset : offset+size])
 	return strings.Replace(str, "\x00", "", -1), nil
 }
 
@@ -479,7 +480,6 @@ func (pe *File) IsDriver() bool {
 	commonDriverSectionNames := []string{"page", "paged", "nonpage", "init"}
 	for _, section := range pe.Sections {
 		s := strings.ToLower(section.NameString())
-		s = strings.Replace(s, "\x00", "", -1)
 		if stringInSlice(s, commonDriverSectionNames) &&
 			(subsystem&ImageSubsystemNativeWindows != 0 ||
 				subsystem&ImageSubsystemNative != 0) {
@@ -582,7 +582,7 @@ func (pe *File) Checksum() uint32 {
 
 // ReadUint64 read a uint64 from a buffer.
 func (pe *File) ReadUint64(offset uint32) (uint64, error) {
-	if offset + 8 > pe.size {
+	if offset+8 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
@@ -591,7 +591,7 @@ func (pe *File) ReadUint64(offset uint32) (uint64, error) {
 
 // ReadUint32 read a uint32 from a buffer.
 func (pe *File) ReadUint32(offset uint32) (uint32, error) {
-	if offset + 4 > pe.size {
+	if offset+4 > pe.size {
 		return 0, ErrOutsideBoundary
 	}
 
