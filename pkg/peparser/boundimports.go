@@ -80,8 +80,9 @@ func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 		if section == nil {
 			safetyBoundary = pe.size - fileOffset
 			for _, section := range pe.Sections {
-				if section.PointerToRawData > fileOffset {
-					sectionsAfterOffset = append(sectionsAfterOffset, section.PointerToRawData)
+				if section.Header.PointerToRawData > fileOffset {
+					sectionsAfterOffset = append(
+						sectionsAfterOffset, section.Header.PointerToRawData)
 				}
 			}
 			if len(sectionsAfterOffset) > 0 {
@@ -90,12 +91,12 @@ func (pe *File) parseBoundImportDirectory(rva, size uint32) (err error) {
 				firstSectionAfterOffset := Min(sectionsAfterOffset)
 				section = pe.getSectionByOffset(firstSectionAfterOffset)
 				if section != nil {
-					safetyBoundary = section.PointerToRawData - fileOffset
+					safetyBoundary = section.Header.PointerToRawData - fileOffset
 				}
 			}
 		} else {
 			sectionLen := uint32(len(section.Data(0, 0, pe)))
-			safetyBoundary = (section.PointerToRawData + sectionLen) - fileOffset
+			safetyBoundary = (section.Header.PointerToRawData + sectionLen) - fileOffset
 		}
 
 		if section == nil {

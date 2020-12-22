@@ -49,7 +49,7 @@ import (
 )
 
 func main() {
-    pe, err := peparser.Open("C:\\Binaries\\notepad.exe")
+    pe, err := peparser.New("C:\\Binaries\\notepad.exe", nil)
 	if err != nil {
 		log.Fatalf("Error while opening file: %s, reason: %s", filename, err)
     }

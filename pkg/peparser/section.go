@@ -6,10 +6,10 @@ package pe
 
 import (
 	"encoding/binary"
+	"math"
 	"reflect"
 	"sort"
 	"strings"
-	"math"
 )
 
 const (
@@ -226,6 +226,12 @@ type ImageSectionHeader struct {
 	Characteristics uint32
 }
 
+// Section represents a PE section header, plus additionnal data like entropy.
+type Section struct {
+	Header  ImageSectionHeader
+	Entropy float64 `json:",omitempty"`
+}
+
 // ParseSectionHeader parses the PE section headers. Each row of the section
 // table is, in effect, a section header. It must immediately follow the PE
 // header.
@@ -240,50 +246,51 @@ func (pe *File) ParseSectionHeader() (err error) {
 	// Track invalid/suspicous values while parsing sections.
 	maxErr := 3
 
-	section := ImageSectionHeader{}
+	secHeader := ImageSectionHeader{}
 	numberOfSections := pe.NtHeader.FileHeader.NumberOfSections
-	sectionHeaderSize := uint32(binary.Size(section))
+	secHeaderSize := uint32(binary.Size(secHeader))
 
 	// The section header indexing in the table is one-based, with the order of
 	// the sections defined by the linker. The sections follow one another
-	// contiguously in the order defined by the section header table, with 
+	// contiguously in the order defined by the section header table, with
 	// starting RVAs aligned by the value of the SectionAlignment field of the
 	// PE header.
 	for i := uint16(0); i < numberOfSections; i++ {
-		err := pe.structUnpack(&section, offset, sectionHeaderSize)
+		err := pe.structUnpack(&secHeader, offset, secHeaderSize)
 		if err != nil {
 			return err
 		}
 
 		countErr := 0
-		if (ImageSectionHeader{}) == section {
-			pe.Anomalies = append(pe.Anomalies, "Section `"+
-				section.NameString()+"` Contents are null-bytes")
+		sec := Section{Header:secHeader}
+		secName := sec.NameString()
+
+		if (ImageSectionHeader{}) == secHeader {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+"` Contents are null-bytes")
 			countErr++
 		}
 
-		if section.SizeOfRawData+section.PointerToRawData > pe.size {
-			pe.Anomalies = append(pe.Anomalies, "Section `"+
-				section.NameString()+"` SizeOfRawData is larger than file")
+		if secHeader.SizeOfRawData+secHeader.PointerToRawData > pe.size {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+
+				"` SizeOfRawData is larger than file")
 			countErr++
 		}
 
-		if pe.adjustFileAlignment(section.PointerToRawData) > pe.size {
-			pe.Anomalies = append(pe.Anomalies, "Section `"+
-				section.NameString()+"` PointerToRawData points beyond the "+
-				"end of the file")
+		if pe.adjustFileAlignment(secHeader.PointerToRawData) > pe.size {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+
+				"` PointerToRawData points beyond the end of the file")
 			countErr++
 		}
 
-		if section.VirtualSize > 0x10000000 {
-			pe.Anomalies = append(pe.Anomalies, "Section `"+
-				section.NameString()+"` VirtualSize is extremely large > 256MiB")
+		if secHeader.VirtualSize > 0x10000000 {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+
+				"` VirtualSize is extremely large > 256MiB")
 			countErr++
 		}
 
-		if pe.adjustSectionAlignment(section.VirtualAddress) > 0x10000000 {
-			pe.Anomalies = append(pe.Anomalies, "Section `"+
-				section.NameString()+"` VirtualAddress is beyond 0x10000000")
+		if pe.adjustSectionAlignment(secHeader.VirtualAddress) > 0x10000000 {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+
+				"` VirtualAddress is beyond 0x10000000")
 			countErr++
 		}
 
@@ -294,10 +301,9 @@ func (pe *File) ParseSectionHeader() (err error) {
 		case false:
 			fileAlignment = pe.NtHeader.OptionalHeader.(ImageOptionalHeader32).FileAlignment
 		}
-		if fileAlignment != 0 && section.PointerToRawData%fileAlignment != 0 {
-			pe.Anomalies = append(
-				pe.Anomalies, "Section `"+section.NameString()+
-					"` PointerToRawData is not multiple of FileAlignment")
+		if fileAlignment != 0 && secHeader.PointerToRawData%fileAlignment != 0 {
+			pe.Anomalies = append(pe.Anomalies, "Section `"+secName+
+				"` PointerToRawData is not multiple of FileAlignment")
 			countErr++
 		}
 
@@ -305,8 +311,13 @@ func (pe *File) ParseSectionHeader() (err error) {
 			break
 		}
 
-		pe.Sections = append(pe.Sections, section)
-		offset += sectionHeaderSize
+		// Append to the list of sections.
+		if pe.opts.SectionEntropy {
+			sec.Entropy = sec.CalculateEntropy(pe)
+		}
+		pe.Sections = append(pe.Sections, sec)
+			
+		offset += secHeaderSize
 	}
 
 	// Sort the sections by their VirtualAddress. This will allow to check
@@ -314,7 +325,7 @@ func (pe *File) ParseSectionHeader() (err error) {
 	sort.Sort(byVirtualAddress(pe.Sections))
 
 	if pe.NtHeader.FileHeader.NumberOfSections > 0 && len(pe.Sections) > 0 {
-		offset += sectionHeaderSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
+		offset += secHeaderSize * uint32(pe.NtHeader.FileHeader.NumberOfSections)
 	}
 
 	// There could be a problem if there are no raw data sections
@@ -323,9 +334,10 @@ func (pe *File) ParseSectionHeader() (err error) {
 	// can't be found?
 	var rawDataPointers []uint32
 	for _, sec := range pe.Sections {
-		if sec.PointerToRawData > 0 {
+		if sec.Header.PointerToRawData > 0 {
 			rawDataPointers = append(
-				rawDataPointers, pe.adjustFileAlignment(sec.PointerToRawData))
+				rawDataPointers, pe.adjustFileAlignment(
+					sec.Header.PointerToRawData))
 		}
 	}
 
@@ -350,19 +362,19 @@ func (pe *File) ParseSectionHeader() (err error) {
 }
 
 // NameString returns string representation of a ImageSectionHeader.Name field.
-func (section *ImageSectionHeader) NameString() string {
-	return strings.Replace(string(section.Name[:]), "\x00", "", -1)
+func (section *Section) NameString() string {
+	return strings.Replace(string(section.Header.Name[:]), "\x00", "", -1)
 }
 
 // NextHeaderAddr returns the VirtualAddress of the next section.
-func (section *ImageSectionHeader) NextHeaderAddr(pe *File) uint32 {
+func (section *Section) NextHeaderAddr(pe *File) uint32 {
 	for i, currentSection := range pe.Sections {
 		if i == len(pe.Sections)-1 {
 			return 0
 		}
 
-		if reflect.DeepEqual(section, &currentSection) {
-			return pe.Sections[i+1].VirtualAddress
+		if reflect.DeepEqual(section.Header, &currentSection.Header) {
+			return pe.Sections[i+1].Header.VirtualAddress
 		}
 	}
 
@@ -370,7 +382,7 @@ func (section *ImageSectionHeader) NextHeaderAddr(pe *File) uint32 {
 }
 
 // Contains checks whether the section contains a given RVA.
-func (section *ImageSectionHeader) Contains(rva uint32, pe *File) bool {
+func (section *Section) Contains(rva uint32, pe *File) bool {
 
 	// Check if the SizeOfRawData is realistic. If it's bigger than the size of
 	// the whole PE file minus the start address of the section it could be
@@ -378,19 +390,19 @@ func (section *ImageSectionHeader) Contains(rva uint32, pe *File) bool {
 	// In either of those cases we take the VirtualSize.
 
 	var size uint32
-	adjustedPointer := pe.adjustFileAlignment(section.PointerToRawData)
-	if uint32(len(pe.data))-adjustedPointer < section.SizeOfRawData {
-		size = section.VirtualSize
+	adjustedPointer := pe.adjustFileAlignment(section.Header.PointerToRawData)
+	if uint32(len(pe.data))-adjustedPointer < section.Header.SizeOfRawData {
+		size = section.Header.VirtualSize
 	} else {
-		size = Max(section.SizeOfRawData, section.VirtualSize)
+		size = Max(section.Header.SizeOfRawData, section.Header.VirtualSize)
 	}
-	vaAdj := pe.adjustSectionAlignment(section.VirtualAddress)
+	vaAdj := pe.adjustSectionAlignment(section.Header.VirtualAddress)
 
 	// Check whether there's any section after the current one that starts before
 	// the calculated end for the current one. If so, cut the current section's
 	// size to fit in the range up to where the next section starts.
 	if section.NextHeaderAddr(pe) != 0 &&
-		section.NextHeaderAddr(pe) > section.VirtualAddress &&
+		section.NextHeaderAddr(pe) > section.Header.VirtualAddress &&
 		vaAdj+size > section.NextHeaderAddr(pe) {
 		size = section.NextHeaderAddr(pe) - vaAdj
 	}
@@ -399,10 +411,12 @@ func (section *ImageSectionHeader) Contains(rva uint32, pe *File) bool {
 }
 
 // Data returns a data chunk from a section.
-func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
+func (section *Section) Data(start, length uint32, pe *File) []byte {
 
-	pointerToRawDataAdj := pe.adjustFileAlignment(section.PointerToRawData)
-	virtualAddressAdj := pe.adjustSectionAlignment(section.VirtualAddress)
+	pointerToRawDataAdj := pe.adjustFileAlignment(
+		section.Header.PointerToRawData)
+	virtualAddressAdj := pe.adjustSectionAlignment(
+		section.Header.VirtualAddress)
 
 	var offset uint32
 	if start == 0 {
@@ -419,15 +433,15 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	if length != 0 {
 		end = offset + length
 	} else {
-		end = offset + section.SizeOfRawData
+		end = offset + section.Header.SizeOfRawData
 	}
 
 	// PointerToRawData is not adjusted here as we might want to read any
 	// possible extra bytes that might get cut off by aligning the start (and
 	// hence cutting something off the end)
-	if end > section.PointerToRawData+section.SizeOfRawData &&
-		section.PointerToRawData+section.SizeOfRawData > offset {
-		end = section.PointerToRawData + section.SizeOfRawData
+	if end > section.Header.PointerToRawData+section.Header.SizeOfRawData &&
+		section.Header.PointerToRawData+section.Header.SizeOfRawData > offset {
+		end = section.Header.PointerToRawData + section.Header.SizeOfRawData
 	}
 
 	if end > pe.size {
@@ -437,8 +451,8 @@ func (section *ImageSectionHeader) Data(start, length uint32, pe *File) []byte {
 	return pe.data[offset:end]
 }
 
-// Entropy calculates section entropy.
-func (section *ImageSectionHeader) Entropy(pe *File) float64 {
+// CalculateEntropy calculates section entropy.
+func (section *Section) CalculateEntropy(pe *File) float64 {
 	sectionData := section.Data(0, 0, pe)
 	if sectionData == nil {
 		return 0.0
@@ -454,7 +468,7 @@ func (section *ImageSectionHeader) Entropy(pe *File) float64 {
 		frequencies[v]++
 	}
 
-	var entropy float64 
+	var entropy float64
 	for _, p := range frequencies {
 		if p > 0 {
 			freq := float64(p) / sectionSize
@@ -466,21 +480,21 @@ func (section *ImageSectionHeader) Entropy(pe *File) float64 {
 }
 
 // byVirtualAddress sorts all sections by Virtual Address.
-type byVirtualAddress []ImageSectionHeader
+type byVirtualAddress []Section
 
 func (s byVirtualAddress) Len() int      { return len(s) }
 func (s byVirtualAddress) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s byVirtualAddress) Less(i, j int) bool {
-	return s[i].VirtualAddress < s[j].VirtualAddress
+	return s[i].Header.VirtualAddress < s[j].Header.VirtualAddress
 }
 
 // byPointerToRawData sorts all sections by PointerToRawData.
-type byPointerToRawData []ImageSectionHeader
+type byPointerToRawData []Section
 
 func (s byPointerToRawData) Len() int      { return len(s) }
 func (s byPointerToRawData) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s byPointerToRawData) Less(i, j int) bool {
-	return s[i].PointerToRawData < s[j].PointerToRawData
+	return s[i].Header.PointerToRawData < s[j].Header.PointerToRawData
 }
 
 // PrettySectionFlags returns the string representations of the

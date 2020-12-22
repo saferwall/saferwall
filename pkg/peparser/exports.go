@@ -164,7 +164,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	// read the image export directory
 	section := pe.getSectionByRva(exportDir.AddressOfNames)
 	if section != nil {
-		safetyBoundary = (section.VirtualAddress +
+		safetyBoundary = (section.Header.VirtualAddress +
 			uint32(len(section.Data(0, 0, pe)))) - exportDir.AddressOfNames
 	}
 
@@ -257,7 +257,7 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	// Overly generous upper bound
 	safetyBoundary = pe.size
 	if section != nil {
-		safetyBoundary = section.VirtualAddress +
+		safetyBoundary = section.Header.VirtualAddress +
 			uint32(len(section.Data(0, 0, pe))) - exportDir.AddressOfNames
 	}
 	parsingFailed = false

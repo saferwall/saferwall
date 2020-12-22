@@ -18,7 +18,7 @@ type File struct {
 	DosHeader    ImageDosHeader              `json:",omitempty"`
 	RichHeader   *RichHeader                 `json:",omitempty"`
 	NtHeader     ImageNtHeader               `json:",omitempty"`
-	Sections     []ImageSectionHeader        `json:",omitempty"`
+	Sections     []Section                   `json:",omitempty"`
 	Imports      []Import                    `json:",omitempty"`
 	Export       *Export                     `json:",omitempty"`
 	Debugs       []DebugEntry                `json:",omitempty"`
@@ -41,30 +41,44 @@ type File struct {
 	Anomalies    []string `json:",omitempty"`
 	size         uint32
 	f            *os.File
+	opts         *Options
 }
 
-// Open opens the named file using os.Open and prepares it for use as a PE binary.
-func Open(name string) (File, error) {
+// Options for Parsing
+type Options struct {
 
-	// Init an File instance
-	file := File{}
+	// Parse only the header, do not parse data directories, by default (false).
+	Fast bool
+
+	// Includes section entropy.
+	SectionEntropy bool
+}
+
+// New instaniates a file instance with options.
+func New(name string, opts *Options) (*File, error) {
 
 	f, err := os.Open(name)
 	if err != nil {
-		return file, err
+		return nil, err
 	}
 
 	// Memory map the file insead of using read/write.
 	data, err := mmap.Map(f, mmap.RDONLY, 0)
 	if err != nil {
 		f.Close()
-		return file, err
+		return nil, err
 	}
 
+	file := File{}
+	if opts != nil {
+		file.opts = opts
+	} else {
+		file.opts = &Options{}
+	}
 	file.data = data
 	file.size = uint32(len(file.data))
 	file.f = f
-	return file, nil
+	return &file, nil
 }
 
 // Close closes the File.
@@ -141,6 +155,11 @@ func (pe *File) PrettyDataDirectory(entry int) string {
 // array of 16 structures. Each array entry has a predefined meaning for what
 // it refers to.
 func (pe *File) ParseDataDirectories() error {
+
+	// In fast mode, do not parse data directories.
+	if pe.opts.Fast {
+		return nil
+	}
 
 	foundErr := false
 	oh32 := ImageOptionalHeader32{}
