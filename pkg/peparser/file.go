@@ -156,6 +156,11 @@ func (pe *File) PrettyDataDirectory(entry int) string {
 // it refers to.
 func (pe *File) ParseDataDirectories() error {
 
+	// In fast mode, do not parse data directories.
+	if pe.opts.Fast {
+		return nil
+	}
+
 	foundErr := false
 	oh32 := ImageOptionalHeader32{}
 	oh64 := ImageOptionalHeader64{}
