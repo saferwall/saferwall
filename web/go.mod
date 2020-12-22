@@ -13,7 +13,7 @@ require (
 	github.com/minio/minio-go/v6 v6.0.57
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/saferwall/pkg/crypto v0.0.1
-	github.com/saferwall/saferwall/pkg/peparser v0.0.19
+	github.com/saferwall/saferwall/pkg/peparser v0.0.20
 	github.com/saferwall/saferwall/pkg/utils v0.0.4
 	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/viper v1.7.1

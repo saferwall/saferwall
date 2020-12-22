@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
 - A portable executable (PE) file parser.
 - A UI for displaying PE parsing results.
+- `gib`: a package to detect gibberish strings.
+- `bytestats`: a package that implements byte and entropy statistics for binary files.
 
 ## [0.0.3] - 2020-11-01
 ### Added
