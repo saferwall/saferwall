@@ -164,8 +164,8 @@ github.com/saferwall/saferwall/pkg/bytestats v0.0.0-20201219165103-e06698879bec 
 github.com/saferwall/saferwall/pkg/bytestats v0.0.0-20201219165103-e06698879bec/go.mod h1:WuYBN+67eDhkkIskx/x0LEhfI36rB1KrfCHHZVhIniQ=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1 h1:0ijn2JFThOejq+EEdA5+c/Fx3vvKkBHCN6p6PTdosh8=
 github.com/saferwall/saferwall/pkg/crypto v0.0.1/go.mod h1:TBN1cZXPGz9JwipoK6DLoqQb2U/UY38Z34NJlqRLgnQ=
-github.com/saferwall/saferwall/pkg/peparser v0.0.20 h1:8Yvs3NH0GogO679K6bwpwr1d/2w1lsRVgQCtltO4wWY=
-github.com/saferwall/saferwall/pkg/peparser v0.0.20/go.mod h1:t6q6UigQV9ZwckvKVjCasiXUZtoE/knywWI7pfVniZk=
+github.com/saferwall/saferwall/pkg/peparser v0.1.0 h1:Bp7bxVW3c7LxD4ax7SrQexGhLb2v4/NJ9OS+8elND64=
+github.com/saferwall/saferwall/pkg/peparser v0.1.0/go.mod h1:t6q6UigQV9ZwckvKVjCasiXUZtoE/knywWI7pfVniZk=
 github.com/saferwall/saferwall/pkg/utils v0.0.1/go.mod h1:JuJN2uLw7LUVhn4MO6yG4X4q+8mErr0VU3ZX0QJ0n+A=
 github.com/saferwall/saferwall/pkg/utils v0.0.4 h1:ZXowI/a8+cOY+ujYdmnzQV3VMUOV/2Zolvkt9qFUuAA=
 github.com/saferwall/saferwall/pkg/utils v0.0.4/go.mod h1:ITc1BmRUmcus7WPPHbScdsQHXF8zHPCugqYK/N9NT04=

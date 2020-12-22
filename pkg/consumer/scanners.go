@@ -71,7 +71,7 @@ type result struct {
 	Strings     []stringStruct         `json:"strings,omitempty"`
 	MultiAV     map[string]interface{} `json:"multiav,omitempty"`
 	Status      int                    `json:"status,omitempty"`
-	PE          peparser.File          `json:"pe,omitempty"`
+	PE          *peparser.File          `json:"pe,omitempty"`
 	Histogram   []int                  `json:"histogram,omitempty"`
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Type        string                 `json:"type,omitempty"`
@@ -93,14 +93,13 @@ func (res *result) parseFile(b []byte, filePath string) {
 	}
 
 	// Parse it accrording to its type.
+	var err error
 	switch res.Type {
 	case "pe":
-		pe, err := parsePE(filePath)
+		res.PE, err = parsePE(filePath)
 		if err != nil {
 			contextLogger.Errorf("pe parser failed: %v", err)
 		}
-
-		res.PE = pe
 
 		// Extract Byte Histogram and byte entropy.
 		res.Histogram = bs.ByteHistogram(b)
@@ -186,8 +185,9 @@ func staticScan(sha256, filePath string, b []byte) result {
 	return res
 }
 
-func parsePE(filePath string) (pe peparser.File, err error) {
+func parsePE(filePath string) (*peparser.File, error) {
 
+	var err error
 	defer func() {
 		if e := recover(); e != nil {
 			err = e.(error)
@@ -195,9 +195,10 @@ func parsePE(filePath string) (pe peparser.File, err error) {
 	}()
 
 	// Open the file and prepare it to be parsed.
-	pe, err = peparser.Open(filePath)
+	opts := peparser.Options{SectionEntropy: true}
+	pe, err := peparser.New(filePath, &opts)
 	if err != nil {
-		return peparser.File{}, err
+		return nil, err
 	}
 	defer pe.Close()
 

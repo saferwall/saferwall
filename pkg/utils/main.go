@@ -317,6 +317,16 @@ func DeleteDirContent(dir string) error {
     return nil
 }
 
+// Exists reports whether the named file or directory exists.
+func Exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
 // Download downloads an object from a bucket.
 func Download(client *minio.Client, bucketName, filePath, objectName string) ([]byte, error) {
 	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
