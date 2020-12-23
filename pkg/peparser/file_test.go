@@ -29,7 +29,7 @@ func TestParse(t *testing.T) {
 	for _, tt := range tridtests {
 		t.Run(tt.in, func(t *testing.T) {
 			filePath := tt.in
-			mype, err := Open(filePath)
+			mype, err := New(filePath, nil)
 			if err != nil {
 				t.Errorf("TestParse(%s) failed, reason: %v", tt.in, err)
 				return

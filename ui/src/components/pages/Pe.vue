@@ -144,15 +144,12 @@ export default {
       return this.addAtPosition(keys, this.loadConfigSubSections, "LoadConfig")
     },
     loadConfigSubSections: function() {
-      var sections = Object.keys(this.pe.LoadConfig)
-      sections = sections.filter((section) => {
-        return (
-          section !== "LoadCfgStruct" && this.pe.LoadConfig[section] !== null
-        )
-      })
-      sections = this.addAtPosition(sections, ['Access RVA','Volatile Access Ranger'], 'VolatileMetadata')
-      sections = this.addAtPosition(sections, ['Code Ranger'], 'CHPE')
-
+      var sections = Object.keys(this.pe.LoadConfig || [])
+      sections = sections.filter((section) => section !== "LoadCfgStruct" && this.pe.LoadConfig[section] !== null)
+      if(this.pe.LoadConfig) {
+        sections = this.addAtPosition(sections, ['Access RVA','Volatile Access Ranger'], 'VolatileMetadata')
+        sections = this.addAtPosition(sections, ['Code Ranger'], 'CHPE')
+      }
       return sections
     },
   },

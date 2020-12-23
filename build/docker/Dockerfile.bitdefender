@@ -26,7 +26,7 @@ RUN sed -i 's/^CRCsum=.*$/CRCsum="0000000000"/' /tmp/$BITDEFENDER_INSTALLER \
 	&& sed -i 's/^Key = .*$/Key = "$BITDEFENDER_LICENSE_KEY"/' $BITDEFENDER_SCANNER_CONF
 
 # Update virus definition file.
-# RUN $BITDEFENDER_SCANNER --update
+RUN $BITDEFENDER_SCANNER --update
 
 # Download EICAR Anti-Virus Test File.
 ADD http://www.eicar.org/download/eicar.com.txt eicar
