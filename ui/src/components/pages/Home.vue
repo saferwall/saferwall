@@ -1,8 +1,8 @@
 <template>
   <div class="columns">
-    <div class="column"></div>
-    <div
-      class="column is-8 box"
+    <div class="column is-three-quarters">
+      <div
+      class="box"
       v-if="usersData.length > 0 && activitiesToShow.length > 0"
     >
       <div class="title">
@@ -23,7 +23,17 @@
         :key="index"
       />
     </div>
-    <div class="column"></div>
+    </div>
+    <div class="column ">
+      <div class="box">
+        <div class="title">
+          Hot Activities
+        </div>
+        <p id="no_activity" v-if="hotactivities.length === 0">
+          No hot Activities
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -38,6 +48,7 @@ export default {
     return {
       logged: false,
       activities: [],
+      hotactivities: [],
       usersData: [],
       actToShowCount: 0,
     }
@@ -132,12 +143,11 @@ export default {
   padding: 1.5em;
 }
 #no_activity {
-  font-size: 20px;
   font-weight: 200;
 }
 .title {
-  border-bottom: 1px solid;
-  border-color: #ededed;
+  border-bottom: 1px solid rgba(25,25,25,0.05);
+  font-size: 1.5rem;
   padding-bottom: 0.6em;
   margin-bottom: 1.2em;
 }

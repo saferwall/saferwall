@@ -111,18 +111,17 @@ export default {
 .tile {
   border: 1px solid !important;
   border-color: #d1d5da !important;
-  margin-left: 2em;
-  margin-right: 2em;
-  width: 90%;
+  width: 100%;
   padding: 0.7em;
+  border-radius: 3px;
   align-items: center;
 
-  #hash {
-    font-weight: bold;
-    cursor: pointer;
+  .data{
+    width: 100%;
   }
 
   .info {
+  
     svg {
       vertical-align: bottom;
     }
@@ -134,8 +133,8 @@ export default {
     .redTag {
       background-color: #f14668;
     }
-    #Av {
-      padding-left: 0.5em;
+    #Av{
+      margin-left: 15px;
     }
   }
   .button {

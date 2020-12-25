@@ -82,4 +82,14 @@ html {
 .component-fade-leave-to {
   opacity: 0;
 }
+
+#hash {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  cursor: pointer;
+}
+.no-shadow{
+  box-shadow: none;
+}
 </style>

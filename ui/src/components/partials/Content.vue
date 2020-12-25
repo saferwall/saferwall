@@ -2,7 +2,7 @@
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
       <div class="columns top_columns">
-        <div class="column is-9">
+        <div class="column is-9 box page-path">
           <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
               <li>
@@ -11,22 +11,22 @@
               <li class="is-active" v-if="route !== 'home'">
                 <a href="#" aria-current="page">{{ route }}</a>
               </li>
-              <li>
+              <li v-if="$route.params.hash">
                 <span>{{ $route.params.hash }}</span>
               </li>
             </ul>
           </nav>
         </div>
-        <div class="column ">
-          <div class="buttons" v-if="showButtons">
+        <div class="column no-shadow" v-if="showButtons">
+          <div class="buttons" >
             <Like :hash="hash" />
             <Download :hash="hash" />
             <Rescan :route="route" :hash="hash" />
           </div>
         </div>
       </div>
-      <div class="column placeholders">
-        <p class="no_file" v-if="!showContent">No file Specified</p>
+      <div v-if="!showContent" class="column ">
+        <p class="no_file placeholders" >No file Specified</p>
         <loader v-if="false"></loader>
       </div>
       <slot v-if="showContent"></slot>
@@ -126,25 +126,33 @@ export default {
 
 section.main-content {
   float: unset;
-  padding-top: 20px;
+  padding-top: $content-marging;
   margin-top: $header-height;
-  margin-left: $sidebar-width + 20px;
-
+  margin-left: $sidebar-width + $content-marging;
+  
   &:not(.fullwidth) {
-    width: calc(100% - 200px);
+    width: calc(100% - 60px * 2 );
   }
 
   &.fullwidth {
     width: 100%;
   }
 }
+.container{
+  padding: 0;
+}
 .breadcrumb {
+  padding: 10px 20px;
+  background: #fff;
+  border-radius: 3px;
+
   a {
     color: $primary-color;
   }
   span {
     padding-left: 10px;
   }
+  
 }
 .no_file {
   font-size: 20px;
@@ -154,11 +162,35 @@ section.main-content {
   margin-top: 1em;
   margin-bottom: 2em;
 }
-.placeholders {
-  margin-bottom: 2em;
+.buttons {
+  margin-left: 5px;
+  margin-bottom : unset;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  
+  *{
+    min-width: calc(100%/3.2);
+    margin: auto;
+  }
+  .button{
+    min-height: 41px;
+    padding: 0;
+  }
 }
-.buttons *{
-  display: block;
-  text-align:right;
+
+.top_columns{
+  margin-bottom: 20px;
+  max-width: 100%;
+
+  .column{
+    margin: 0;
+    padding: 0;
+    display:flex;
+  }
+  .page-path{
+    box-shadow: rgba(25,25,25,0.1) 1px 1px 5px;
+  }
 }
 </style>

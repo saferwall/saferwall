@@ -13,8 +13,7 @@
       ></i>
     </div>
     <p>
-      &lt;&#47;&gt; with <span class="heart">&#10084;</span> by
-      <a href="/">SaferWall</a>.
+      Made with <span class="heart">&#10084;</span> by <a href="/">SaferWall</a>
     </p>
   </div>
 </template>

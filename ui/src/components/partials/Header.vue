@@ -4,6 +4,12 @@
       <img
         src="../../assets/imgs/logo-horizontal_rescaled.png"
         alt="Saferwall"
+        class="logo-horizontal"
+      />
+      <img
+        src="../../assets/imgs/saferwall_jkdgq6_c_scale_w_800.png"
+        alt="Saferwall"
+        class="logo-square"
       />
     </router-link>
     <div class="mobile-nav" @click="showinmobile = !showinmobile">
@@ -24,7 +30,7 @@
       <ul>
         <!-- <li><router-link to="/">Search</router-link></li> -->
         <li>
-          <router-link :to="this.$routes.UPLOAD.path">
+          <router-link :to="this.$routes.UPLOAD.path" class="button-upload">
             <i class="icon fas fa-upload fa-2x"></i>
           </router-link>
         </li>
@@ -141,34 +147,36 @@ export default {
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 @import url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
-
-$header-height: 50px;
-
 header.dashboard-header {
   margin-right: 20px;
   background: #fff;
   height: $header-height;
   line-height: $header-height;
-  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
-  z-index: 99;
+  // box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+  border-bottom: 1px solid rgba(25,25,25,0.1);
+  z-index: 102;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   display: flex;
-
+  .logo-square{
+    display: none;
+  }
   .logo {
     float: left;
     line-height: 62px;
-    height: $header-height;
-    width: 200px;
+    height: 80px;
+    width: 250px;
     text-align: center;
+    margin: auto;
+    display: grid;
+    padding: 0 20px;
 
     img {
-      height: calc(#{$header-height - 10px});
-      display: inline-block;
-      margin-top: 5px;
-      width: auto;
+      width: 100%;
+      padding: 15px;
+      height: auto;
     }
   }
 
@@ -176,11 +184,12 @@ header.dashboard-header {
     // margin-left:20px;
     float: right;
     height: $header-height;
-    width: 50px;
+    width: $header-height;
     line-height: $header-height;
     border-left: solid 1px rgba(10, 10, 10, 0.1);
     border-right: solid 1px rgba(10, 10, 10, 0.1);
     text-align: center;
+    font-size: 2rem;
 
     @media screen and (min-width: 792px) {
       display: none;
@@ -192,8 +201,10 @@ header.dashboard-header {
     width: 500px;
     height: $header-height;
     position: relative;
+    padding-left: 15px;
     border-left: solid 1px rgba(black, 0.1);
     flex: 1;
+    margin-right: 30px;
 
     @media screen and (max-width: 1086px) {
       width: 400px;
@@ -229,7 +240,10 @@ header.dashboard-header {
       cursor: pointer;
     }
   }
-
+  .header-search input{
+    border-bottom: 1px solid rgba(25,25,25,0.1);
+    outline: none !important;
+  }
   nav.dashboard-nav {
     float: right;
     &,
@@ -248,11 +262,16 @@ header.dashboard-header {
       li {
         display: inline-block;
         line-height: $header-height;
-        border-left: solid 1px rgba(black, 0.1);
 
+        *{
+          max-height: $header-height !important;
+        }
+        // border-left: solid 1px rgba(black, 0.1);
+        // min-width: 90px;
+        text-align: center;
         a {
           display: inline-block;
-          margin: 0 15px 0 15px;
+          margin: 0 10px;
           font-size: 14px;
           color: #2c3e50;
           font-weight: 400;
@@ -262,7 +281,17 @@ header.dashboard-header {
             color: $primary-color;
           }
         }
-
+        span{
+          padding: 10px 20px;
+          background: #f7f7f7;
+          border-radius: 3px;
+        }
+        .button-upload{
+          border-radius: 3px;
+          padding: 0 50px;
+          background: #f7f7f7;
+          border-bottom: rgba(25,25,25,0.1) solid 1px;
+        }
         & > .profile {
           cursor: pointer;
           padding-left: 10px;
@@ -333,8 +362,9 @@ header.dashboard-header {
       top: 100px;
       width: 100%;
       background-color: #fff;
-      z-index: 9999999999;
-      box-shadow: 0 5px 10px rgba(10, 10, 10, 0.1);
+      z-index: 102;
+      border-bottom: 1px solid rgba(25,25,25,0.1);
+      // box-shadow: 0 5px 10px rgba(10, 10, 10, 0.1);
       padding-bottom: 10px;
 
       li {
@@ -369,7 +399,6 @@ header.dashboard-header {
   }
 
   @media screen and (max-width: 792px) {
-    padding-right: 20px;
 
     .header-search {
       position: fixed;
@@ -404,5 +433,21 @@ header.dashboard-header {
 .fa-cogs{
   vertical-align: bottom;
 }
-
+@media (min-width: 795px) {
+  .minimized .dashboard-header {
+    .logo{
+      width: $header-height - 1px; 
+      padding: 0;
+    }
+    .logo-horizontal{
+      display: none;
+    }
+    .logo-square{
+      display: block;
+    }
+    img{
+      padding :0 !important;
+    }
+  }
+}
 </style>

@@ -145,4 +145,7 @@ export default {
   margin: auto;
   width: 70%;
 }
+figure.media-left{
+  display: contents;
+}
 </style>
