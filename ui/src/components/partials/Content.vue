@@ -17,7 +17,7 @@
             </ul>
           </nav>
         </div>
-        <div class="column is-4">
+        <div class="column ">
           <div class="buttons" v-if="showButtons">
             <Like :hash="hash" />
             <Download :hash="hash" />
@@ -123,11 +123,12 @@ export default {
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
-$header-height: 50px;
+
 section.main-content {
-  float: right;
+  float: unset;
   padding-top: 20px;
   margin-top: $header-height;
+  margin-left: $sidebar-width + 20px;
 
   &:not(.fullwidth) {
     width: calc(100% - 200px);
@@ -155,5 +156,9 @@ section.main-content {
 }
 .placeholders {
   margin-bottom: 2em;
+}
+.buttons *{
+  display: block;
+  text-align:right;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <aside class="menu sidebar">
+  <aside class="menu sidebar modern">
     <ul class="menu-list">
       <li
         v-for="(item, index) in menuItems"
@@ -13,8 +13,8 @@
           @click.native="toggleDropdown(index)"
           v-if="showButton(item.title)"
         >
-          <span class="icon is-small"><i :class="item.icon"></i></span>
-          {{ item.title }}
+          <span class="m-icon icon is-small"><i :class="item.icon"></i></span>
+          <span class="m-title">{{ item.title }}</span>
           <span
             class="nbComments"
             v-if="item.title === 'Comments' && getHashContext !== ''"
@@ -32,20 +32,20 @@
           class="dropdown-container"
           v-if="item.children"
           :class="{ active: item.active }"
-          :style="{ height: item.dropdownHeight }"
         >
           <li
             v-for="(child, index) in item.children"
             :class="{
-              current: route.toLowerCase() === child.title.toLowerCase(),
+              current: route.toLowerCase() === child.title.toLowerCase() 
             }"
             :key="index"
           >
             <router-link
+              class="m-sub-item"
               :to="showButton(child.title) ? child.path : ''"
               :class="{ disabled: !showButton(child.title) }"
             >
-              {{ child.title }}
+              <span class="sub-title">{{ child.title }}</span>
             </router-link>
           </li>
         </ul>
@@ -122,7 +122,8 @@ export default {
       }))
     },
     route: function() {
-      return this.$route.path.replace(/\//g, "")
+      const routeName = this.$route.path.replace(/\/\//g, "/").split('/').filter(x=> x)[0] || "";
+      return routeName
     },
   },
   mounted() {
@@ -164,7 +165,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
-$header-height: 50px;
 aside.sidebar {
   background-color: #fff;
   position: fixed;
@@ -173,7 +173,7 @@ aside.sidebar {
   height: calc(100% - #{$header-height});
   width: 200px;
   box-shadow: 0 0 30px rgba(black, 0.05);
-  padding-top: 20px;
+  padding-top: 15px;
 
   .menu-list {
     .is-active {
@@ -183,6 +183,7 @@ aside.sidebar {
 
     .dropdown-icon {
       float: right;
+      line-height: 2rem;
 
       i {
         transition: all 0.2s;
@@ -197,11 +198,6 @@ aside.sidebar {
 
     .current {
       background-color: $primary-color;
-      color: #fff;
-
-      a {
-        color: #fff !important;
-      }
     }
 
     ul.dropdown-container {
@@ -233,18 +229,75 @@ aside.sidebar {
   }
 }
 .nbComments {
-  border: 1px solid black;
-  background-color: #4a4a4a;
-  color: white;
+  position: absolute;
+  border: 2px solid #00e0bfa6;
+  background-color: #ffffff;
+  color: black;
   display: inline-block;
   border-radius: 50%;
-  min-width: 1.8em;
-  height: 1.8em;
-  text-align: center;
-  margin-left: 5px;
-  font-size: 0.8em;
+  min-width: 1.9em;
+  height: 1.9em;
+  font-size: 0.7rem;
   font-weight: 600;
-  line-height: 1.5em;
-  padding: 1px;
+  line-height: 1rem;
+  margin-top: 25px;
+  margin-left: 5px;
 }
+.modern {
+  background-color: $primary-color;
+  transition: max-width 300ms;
+  max-width: $sidebar-width;
+  span {
+    text-align: center;
+  }
+  a .m-title{
+    display: none;
+  }
+  a .m-icon {
+    display: block;
+  }
+
+  a:not(.m-sub-item)  {
+    margin: 13px;
+    border-radius: 7px;
+    padding: 12px 0 6px 0px;
+  }
+
+  .menu-list{
+    li {
+      text-align: center;
+      line-height: 2rem;
+    }
+    .m-icon{
+      display: contents;
+      text-align: center;
+      font-size: 2rem;
+    }
+    .dropdown-icon{
+      display: none;
+    }
+
+    li .m-sub-item{
+      text-align: left;
+      padding: 0px 8px;
+    }
+  }
+  .current {
+    background-color: unset !important;
+    .m-icon{
+      background: $primary-color;
+    }
+    a{
+      background: lighten($primary-color, 3%) !important;
+      color:white;
+    }
+  }
+
+  .is-active > .current{
+      background: lighten($primary-color, 3%) !important;
+      color:white;
+  }
+
+}
+
 </style>
