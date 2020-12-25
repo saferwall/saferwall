@@ -141,6 +141,7 @@ export default {
 <style lang="scss" scoped>
 .box {
   padding: 1.5em;
+  display:grid;
 }
 #no_activity {
   font-weight: 200;

@@ -194,7 +194,12 @@ aside.sidebar {
   width: 200px;
   border-right: 1px solid rgba(25,25,25,0.1);
 
-.menu-list {
+  *{
+    transition: padding 100ms linear;
+    transition: margin 100ms linear;
+  }
+  
+  .menu-list {
     .is-active {
       background-color: transparent;
       color: #4a4a4a;
@@ -215,6 +220,9 @@ aside.sidebar {
       }
     }
 
+    li{
+      padding: 3px 0;
+    }
 
     ul.dropdown-container {
       transition:all 5s;
@@ -248,6 +256,9 @@ aside.sidebar {
       background-color: $primary-color;
     }
   }
+  li .m-icon{
+    margin-right: 0.5rem;
+  }
 }
 .sidebar:not(.minimizedsidebar){
   .nbComments {
@@ -264,6 +275,7 @@ aside.sidebar {
     margin-top: 27px;
     margin-left: 4px;
   }
+  
 }
 .minimized {
   
@@ -281,13 +293,7 @@ aside.sidebar {
     margin-top: 25px;
     margin-left: 5px;
   }
-  .sidebar:not(.minimizedsidebar){
-    li .m-icon{
-      margin-right: 0.5rem;
-    }
-  }
   .minimizedsidebar {
-    transition: max-width 300ms;
     max-width: $sidebar-width;
     span {
       text-align: center;

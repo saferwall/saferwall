@@ -1,7 +1,7 @@
 <template>
-  <div class="tile is-child box">
+  <div class="box">
     <h4 class="title">Submissions</h4>
-    <table class="table is-striped data-data">
+    <table class="table is-striped data-data data-table">
       <thead>
         <tr>
           <th>Data</th>
@@ -79,13 +79,12 @@ export default {
 @import "flag-icon-css/css/flag-icon.min.css";
 @import url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
 
-.data-data.table {
-  background: white;
-  .value-text {
-    vertical-align: top;
+
+.data-table{
+  display:unset;
+  tbody,thead,tr{
+    display: flex;
+    width: 100%;
   }
-}
-.tile {
-  height: max-content;
 }
 </style>

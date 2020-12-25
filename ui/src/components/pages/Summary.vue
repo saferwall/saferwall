@@ -1,14 +1,16 @@
 <template>
   <div>
-    <div class="tile is-ancestor">
-      <div class="tile is-parent is-vertical">
-        <!-- Basic Properties -->
+    <div class="columns is-1">
+      <div class="column is-6">
         <basicProperties :summaryData="summaryData" />
-        <!--ExifTool File Metadata-->
-        <div class="tile is-parent">
-          <exifTool :summaryData="summaryData" />
-          <submissions :summaryData="summaryData" />
-        </div>
+      </div>
+      <div class="column is-6">
+        <exifTool :summaryData="summaryData" />
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column">
+        <submissions :summaryData="summaryData" />
       </div>
     </div>
   </div>
@@ -45,9 +47,9 @@ export default {
 
 <style lang="scss">
 .data-data {
-  float: left;
   width: 100%;
   padding: 5px;
+  display: flex;
 
   &:nth-child(even) {
     background: rgba(black, 0.03);
@@ -59,7 +61,7 @@ export default {
   }
 
   .data-label {
-    float: left;
+    min-width: 100px;
     width: 10.5%;
     text-transform: capitalize;
     margin-right: 1.4em;
@@ -72,7 +74,6 @@ export default {
   }
 
   .data-value {
-    float: left;
 
     .value-text {
       transition: opacity 0.2s;
@@ -137,8 +138,5 @@ export default {
 .tile.is-parent {
   padding: 0;
   margin-bottom: 10px;
-}
-.tile.is-child {
-  margin-right: 18px !important;
 }
 </style>

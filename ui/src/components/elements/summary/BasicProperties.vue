@@ -1,5 +1,5 @@
 <template>
-  <div class="tile is-child box">
+  <div class="box">
     <h4 class="title">Basic Properties</h4>
     <div v-for="(i, index) in Properties" class="data-data" :key="index">
       <strong class="data-label">

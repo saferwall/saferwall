@@ -2,9 +2,11 @@ import Vue from "vue"
 import tokenManager from "../helpers/token"
 
 export default {
-  updateHash: (context, hash) => {
+  updateHash: (context, hash, fields = 'md5|sha1|sha256|sha512|ssdeep|crc32|magic|size|exif|trid|tags|packer|first_submission|last_submission|last_scanned|submissions') => {
     context.commit('setHashContext', hash)
-    context.dispatch('updateFileData', hash)
+    context.dispatch('updateFileData', {
+      hash: hash, fields: (fields instanceof Array) ? fields : fields.split('|')
+    })
   },
   updateLoggedIn: (context, payload) => {
     if (!payload) {
@@ -25,8 +27,14 @@ export default {
     context.commit("setLoggedIn", false)
     context.commit("setUserData", {})
   },
-  updateFileData: (context, hash) => {
-    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + hash)
+  updateFileData: (context, {
+    hash, fields = ['md5']
+  }) => {
+    console.log('fields', fields)
+    Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + hash + '?' + ((fields) => {
+      if (!fields || fields.length === 0) return '';
+      return 'fields=' + fields.join(',');
+    })(fields))
       .then((res) => {
         context.commit('setFileData', res.data)
       })
@@ -41,8 +49,8 @@ export default {
     Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + username)
       .then((res) => {
         Vue.prototype.$http.get(Vue.prototype.$api_endpoints.USERS + username + "/avatar", {
-            responseType: "arraybuffer",
-          }, )
+          responseType: "arraybuffer",
+        })
           .then((secRes) => {
             res.data.avatar = Buffer.from(secRes.data, 'binary').toString('base64')
             context.commit('setUserData', res.data)

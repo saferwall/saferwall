@@ -283,8 +283,8 @@ header.dashboard-header {
         }
         span{
           padding: 10px 20px;
-          background: #f7f7f7;
-          border-radius: 3px;
+          // background: #f7f7f7;
+          // border-radius: 3px;
         }
         .button-upload{
           border-radius: 3px;

@@ -2,7 +2,10 @@
   <section class="main-content" :class="{ fullwidth: fullwidth }">
     <div class="container is-fluid">
       <div class="columns top_columns">
-        <div class="column is-9 box page-path">
+        <div 
+          :class="showButtons ? 'is-9':''"
+          class="column box page-path"
+        >
           <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
               <li>
@@ -131,7 +134,7 @@ section.main-content {
   margin-left: $sidebar-width + $content-marging;
   
   &:not(.fullwidth) {
-    width: calc(100% - 60px * 2 );
+    width: calc(100% - 160px);
   }
 
   &.fullwidth {
@@ -181,6 +184,7 @@ section.main-content {
 }
 
 .top_columns{
+  margin: 0;
   margin-bottom: 20px;
   max-width: 100%;
 
@@ -193,4 +197,18 @@ section.main-content {
     box-shadow: rgba(25,25,25,0.1) 1px 1px 5px;
   }
 }
+
+@media (max-width: 800px) {
+  .buttons{
+    margin: 20px 0;
+
+    .button{
+      padding: 0;
+      min-width: 100%;
+      margin: 5px 0 !important;
+    }
+  }
+}
+
+
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="tile is-child box is-5">
+  <div class="box">
     <h4 class="title">ExifTool File Metadata</h4>
     <div v-for="(i, index) in summaryData.exif" :key="index" class="data-data">
       <strong class="data-label exif">

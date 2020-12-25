@@ -32,7 +32,7 @@ export default {
     return state.userData.following ? state.userData.following : []
   },
   isPE: state => {
-    if (Object.entries(state.fileData).length === 0)
+    if (!state.fileData || !state.fileData.magic || Object.entries(state.fileData).length === 0)
       return false
     return state.fileData.magic.substring(0, 2) === "PE"
   }

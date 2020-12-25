@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="minimized">
     <transition name="component-fade" mode="out-in">
       <component :is="layout">
         <router-view />
@@ -82,11 +82,12 @@ html {
 .component-fade-leave-to {
   opacity: 0;
 }
-
+*{
+  overflow-wrap: anywhere;
+}
 #hash {
   font-weight: bold;
-  overflow-wrap: anywhere;
-  max-width: 100%;
+ 
   cursor: pointer;
 }
 .no-shadow{
