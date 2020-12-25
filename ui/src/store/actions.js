@@ -28,7 +28,7 @@ export default {
     context.commit("setUserData", {})
   },
   updateFileData: (context, {
-    hash, fields = ['md5']
+    hash, fields
   }) => {
     console.log('fields', fields)
     Vue.prototype.$http.get(Vue.prototype.$api_endpoints.FILES + hash + '?' + ((fields) => {

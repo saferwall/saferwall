@@ -79,12 +79,8 @@ export default {
 @import "flag-icon-css/css/flag-icon.min.css";
 @import url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
 
-
-.data-table{
-  display:unset;
-  tbody,thead,tr{
-    display: flex;
-    width: 100%;
-  }
+.data-data{
+  width: 100%; 
+  display: inline-table;
 }
 </style>

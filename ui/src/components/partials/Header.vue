@@ -263,7 +263,7 @@ header.dashboard-header {
         display: inline-block;
         line-height: $header-height;
 
-        *{
+        ul , li, a{
           max-height: $header-height !important;
         }
         // border-left: solid 1px rgba(black, 0.1);
