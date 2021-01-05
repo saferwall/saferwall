@@ -24,7 +24,6 @@ sep-deb.zip
 **/*.lic-expired
 **/*.key-expired
 **/secrets.tar.gz
-build/data/install.conf
 SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
 
 ## old copy
