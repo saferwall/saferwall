@@ -65,24 +65,23 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	sha256 := string(m.Body)
 
-	// ALways include sha256 in our context logger.
+	// Always include sha256 in our context logger.
 	contextLogger = log.WithFields(log.Fields{"sha256": sha256})
+	contextLogger.Debug("Start processing ...")
 
-	contextLogger.Info("Start processing")
-
-	// set the file status to `processing`
-	res := result{}
+	// Set the file status to `processing`.
 	var err error
+	res := result{}
 	res.Status = processing
 
-	// Marshell results
+	// Marshell results.
 	var buff []byte
 	if buff, err = json.Marshal(res); err != nil {
-		contextLogger.Errorln("Failed to get object: ", err)
+		contextLogger.Error("Failed to json marshall object: ", err)
 		return err
 	}
 
-	// Update document
+	// Update document.
 	err = updateDocument(sha256, buff)
 	if err != nil {
 		contextLogger.Errorf("Failed to update document for file %s, reason: %s",
@@ -99,18 +98,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 
-	// Static scanning
+	// Static scanning.
 	res = staticScan(sha256, filePath, b)
 
-	// multiav scanning
+	// Multiav scanning.
 	multiavScanResults := multiAvScan(filePath)
 	res.MultiAV = map[string]interface{}{}
 	res.MultiAV["last_scan"] = multiavScanResults
 
-	// extract tags
+	// Extract tags.
 	res.getTags()
 
-	// analysis finished
+	// Analysis finished
 	res.Status = finished
 	now := time.Now().UTC()
 	res.LastScanned = &now
@@ -122,16 +121,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return err
 	}
 
-	// Update document
+	// Update document.
 	err = updateDocument(sha256, buff)
 	if err != nil {
 		contextLogger.Errorf("Failed to update document, reason: %s", err.Error())
 		return err
 	}
 
-	// Delete the file from nfs share.
-	if err = utils.DeleteFile(filePath); err != nil {
-		log.Errorf("Failed to delete file path %s.", filePath)
+	// Delete the file from the network share.
+	if utils.Exists(filePath) {
+		if err = utils.DeleteFile(filePath); err != nil {
+			log.Errorf("Failed to delete file path %s.", filePath)
+		}
 	}
 
 	// Returning nil signals to the consumer that the message has
@@ -141,20 +142,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
-	// Load consumer config
+	// Load consumer config.
 	var err error
 	loadConfig()
-	
+
 	// Setup logging.
 	setupLogging()
 
-	// Set backend API address
+	// Set backend API address.
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
-	// Login to backend
+	// Login to backend.
 	backendToken = login()
 
-	// Get an minio client instance
+	// Get an minio client instance.
 	accessKey := viper.GetString("minio.accesskey")
 	secKey := viper.GetString("minio.seckey")
 	endpoint := viper.GetString("minio.endpoint")
@@ -167,31 +168,33 @@ func main() {
 	// our new consumer.
 	config := nsq.NewConfig()
 
+	// Maximum number of times this consumer will attempt to process a message
+	// before giving up.
+	config.MaxAttempts = 2
+
+	// Maximum number of messages to allow in flight (concurrency knob).
+	config.MaxInFlight = 10
+
 	// We had messages still in flight when the RDY count was getting redistributed,
 	// which caused the connection with the in-flight messages to close prematurely.
 	// We fixed this by upping low_rdy_idle_timeout to 2 minutes in our NSQ client
-	// configuration: https://github.com/nsqio/go-nsq/issues/199
+	// configuration: https://github.com/nsqio/go-nsq/issues/199.
 	config.LowRdyIdleTimeout = time.Duration(2 * time.Minute)
 
 	// Fix: What's causing this are those "timed out" messages - NSQ isn't hearing
 	// back from your consumer and it's delivering the message to another consumer.
-	// failed ID not in flight (https://github.com/nsqio/nsq/issues/729)
+	// failed ID not in flight (https://github.com/nsqio/nsq/issues/729).
 	config.MsgTimeout = time.Duration(2 * time.Minute)
 
-	// Create a NewConsumer with the name of our topic, the channel, and our config
+	// Create a NewConsumer with the name of our topic, the channel, and our config.
 	consumer, err := nsq.NewConsumer("scan", "file", config)
 	if err != nil {
 		log.Errorln("Could not create consumer")
 	}
 
-	// Set the number of messages that can be in flight at any given time
-	// you'll want to set this number as the default is only 1. This can be
-	// a major concurrency knob that can change the performance of your application.
-	consumer.ChangeMaxInFlight(200)
-
 	// Here we set the logger to our NoopNSQLogger to quiet down the default logs.
-	// At Reverb we use a custom structured logging format so we'll take the logging
-	// from here.
+	// At Reverb we use a custom structured logging format so we'll take the
+	// logging from here.
 	consumer.SetLogger(
 		&NoopNSQLogger{},
 		nsq.LogLevelError,
@@ -200,7 +203,7 @@ func main() {
 	// Injects our handler into the consumer. You'll define one handler
 	// per consumer, but you can have as many concurrently running handlers
 	// as specified by the second argument. If your MaxInFlight is less
-	// than your number of concurrent handlers you'll  starve your workers
+	// than your number of concurrent handlers you'll starve your workers
 	// as there will never be enough in flight messages for your worker pool
 	consumer.AddConcurrentHandlers(
 		&MessageHandler{},
@@ -216,7 +219,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Infoln("Connected to nsqlookupd")
+	log.Info("Connected to nsqlookupd")
 
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal

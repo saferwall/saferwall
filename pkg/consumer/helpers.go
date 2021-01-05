@@ -158,6 +158,7 @@ func updateDocument(sha256 string, buff []byte) error {
 		contextLogger.Errorf("ioutil.ReadAll() failed with: %v", err)
 	}
 
-	contextLogger.Infof("Response status code: %d, text: %s", resp.StatusCode, string(d))
+	contextLogger.Debugf("Response status code: %d, text: %s", resp.StatusCode,
+		string(d))
 	return nil
 }
