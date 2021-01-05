@@ -105,5 +105,12 @@ func Connect() {
 		log.Errorf("Failed to create secondary index (idx_email) over users bucket, reason: %v", err)
 	}
 
+	err = mgr.CreateIndex("files", "idx_status", []string{"status"},
+		&gocb.CreateQueryIndexOptions{
+			IgnoreIfExists: true})
+	if err != nil {
+		log.Errorf("Failed to create secondary index (idx_status) over users bucket, reason: %v", err)
+	}
+
 	log.Infoln("Connected to couchbase")
 }

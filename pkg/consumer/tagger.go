@@ -7,8 +7,8 @@ package main
 import (
 	"strings"
 
-	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	"github.com/saferwall/saferwall/pkg/avlabel"
+	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 )
 
 // Compilers, Installers, Packers names as seen by DiE (Detect It Easy)
@@ -19,11 +19,14 @@ var sigMap = map[string]string{
 	"UPX":                                "upx",
 	"FSG":                                "fsg",
 	"ASPack":                             "aspack",
+	"RLPack":                             "rlpack",
 	"ASProtect":                          "asprotect",
 	"ACProtect":                          "acprotect",
 	"PECompact":                          "pecompact",
+	"PECrypt32":                          "pecrypt32",
 	"PE-Armor":                           "pe-armor",
 	"Petite":                             "petite",
+	"PELock":                             "pelock",
 	"tElock":                             "telock",
 	"EXECryptor":                         "execryptor",
 	"Obsidium":                           "obsidium",
@@ -31,6 +34,7 @@ var sigMap = map[string]string{
 	"Themida/Winlicense":                 "themida-winlicense",
 	"MoleBox":                            "molebox",
 	"ENIGMA":                             "enigma",
+	"MPRESS":                             "mpress",
 	"Armadillo":                          "armadillo",
 	"gcc":                                "gcc",
 	"MinGW":                              "mingw",
@@ -41,8 +45,11 @@ var sigMap = map[string]string{
 	"FASM":                               "fasm",
 	".NET":                               "dotnet",
 	"MFC":                                "mfc",
+	"Yoda's Crypter":                     "yodascrypter",
 	"Delphi":                             "delphi",
 	"AutoIt":                             "autoit",
+	"StarForce":                          "starforce",
+	"eXPressor":                          "expressor",
 	"sfx: Microsoft Cabinet":             "sfx-cab",
 	"Smart Assembly":                     "smart-assembly",
 	".NET Reactor":                       "dotnet-reactor",
@@ -79,7 +86,7 @@ func (f *result) getTags() error {
 		f.Tags[f.Type] = tags
 	}
 
-	// Packers/Protector/Compilers/Installers tags
+	// Packers/Protector/Compilers/Installers tags.
 	tags = nil
 	for _, out := range f.Packer {
 		if strings.Contains(out, "packer") ||
@@ -98,7 +105,7 @@ func (f *result) getTags() error {
 		f.Tags["packer"] = tags
 	}
 
-	// Multi AV tags
+	// Multi AV tags.
 	avMap := f.MultiAV["last_scan"].(map[string]interface{})
 	for engine, res := range avMap {
 		result := res.(multiav.ScanResult)
@@ -112,7 +119,7 @@ func (f *result) getTags() error {
 			case "windefender":
 				parsedDetection := avlabel.ParseWindefender(result.Output)
 				if len(parsedDetection) > 0 {
-					f.Tags["eset"] = []string{parsedDetection["Family"]}
+					f.Tags["windefender"] = []string{parsedDetection["Family"]}
 				}
 			case "avira":
 				parsedDetection := avlabel.ParseAvira(result.Output)
