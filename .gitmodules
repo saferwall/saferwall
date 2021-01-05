@@ -1,3 +1,6 @@
 [submodule "build/data/rules"]
 	path = build/data/rules
 	url = https://github.com/Yara-Rules/rules.git
+[submodule "pkg/sdk2json/sdk-api"]
+	path = pkg/sdk2json/sdk-api
+	url = https://github.com/MicrosoftDocs/sdk-api.git
