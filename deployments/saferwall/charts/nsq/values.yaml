@@ -19,7 +19,7 @@ nsqd:
   image:
     # Source: https://github.com/nsqio/nsq/blob/master/Dockerfile
     repository: "nsqio/nsq"
-    tag: "v1.1.0"
+    tag: "v1.2.0"
     pullPolicy: "Always"
   extraArgs:
   - --max-msg-timeout=4h
@@ -64,7 +64,7 @@ nsqlookupd:
   image:
     # Source: https://github.com/nsqio/nsq/blob/master/Dockerfile
     repository: "nsqio/nsq"
-    tag: "v1.1.0"
+    tag: "v1.2.0"
     pullPolicy: "Always"
   extraArgs: []
 
@@ -106,7 +106,7 @@ nsqadmin:
   image:
     # Source: https://github.com/nsqio/nsq/blob/master/Dockerfile
     repository: "nsqio/nsq"
-    tag: "v1.1.0"
+    tag: "v1.2.0"
     pullPolicy: "Always"
 
   resources:
