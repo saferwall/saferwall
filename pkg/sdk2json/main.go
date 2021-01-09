@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -13,41 +11,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dlclark/regexp2"
-
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
-	RegParam = `, `
-
+	// RegDllName extracts DLL name from markdown spec.
 	RegDllName = `req\.dll: (?P<DLL>[\w]+\.dll)`
 )
-
-func regexp2FindAllString(re *regexp2.Regexp, s string) []string {
-	var matches []string
-	m, _ := re.FindStringMatch(s)
-	for m != nil {
-		matches = append(matches, m.String())
-		m, _ = re.FindNextMatch(m)
-	}
-	return matches
-}
-
-func regSubMatchToMapString(regEx, s string) (paramsMap map[string]string) {
-
-	r := regexp.MustCompile(regEx)
-	match := r.FindStringSubmatch(s)
-
-	paramsMap = make(map[string]string)
-	for i, name := range r.SubexpNames() {
-		if i > 0 && i <= len(match) {
-			paramsMap[name] = match[i]
-		}
-	}
-	return
-}
-
 
 func removeAnnotations(apiPrototype string) string {
 	apiPrototype = strings.Replace(apiPrototype, "_Must_inspect_result_", "", -1)
@@ -59,12 +29,7 @@ func removeAnnotations(apiPrototype string) string {
 	apiPrototype = strings.Replace(apiPrototype, "__out_data_source(FILE)", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, " OPTIONAL", "", -1)
 
-
 	return apiPrototype
-}
-
-func standardizeSpaces(s string) string {
-	return strings.Join(strings.Fields(s), " ")
 }
 
 func standardize(s string) string {
@@ -80,85 +45,6 @@ func standardize(s string) string {
 	return s
 }
 
-// WriteStrSliceToFile writes a slice of string line by line to a file.
-func WriteStrSliceToFile(filename string, data []string) (int, error) {
-	// Open a new file for writing only
-	file, err := os.OpenFile(
-		filename,
-		os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
-		0666,
-	)
-	if err != nil {
-		return 0, err
-	}
-	defer file.Close()
-
-	// Create a new writer.
-	w := bufio.NewWriter(file)
-	nn := 0
-	for _, s := range data {
-		n, _ := w.WriteString(s + "\n")
-		nn += n
-	}
-
-	w.Flush()
-	return nn, nil
-}
-
-// Read a whole file into the memory and store it as array of lines
-func readLines(path string) (lines []string, err error) {
-
-	var (
-		part   []byte
-		prefix bool
-	)
-
-	// Start by getting a file descriptor over the file
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	for {
-		if part, prefix, err = reader.ReadLine(); err != nil {
-			break
-		}
-		buffer.Write(part)
-		if !prefix {
-			lines = append(lines, buffer.String())
-			buffer.Reset()
-		}
-	}
-	if err == io.EOF {
-		err = nil
-	}
-	return
-}
-
-// Exists reports whether the named file or directory exists.
-func Exists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
-}
-
-// SliceContainsStringReverse returns if slice contains substring
-func SliceContainsStringReverse(a string, list []string) bool {
-	for _, b := range list {
-		b = " " + b
-		if strings.Contains(a, b) {
-			return true
-		}
-	}
-	return false
-}
-
 func getDLLName(file, apiname, sdkpath string) (string, error) {
 	cat := strings.TrimSuffix(filepath.Base(file), ".h")
 	functionName := "nf-" + cat + "-" + strings.ToLower(apiname) + ".md"
@@ -172,32 +58,13 @@ func getDLLName(file, apiname, sdkpath string) (string, error) {
 	return strings.ToLower(m["DLL"]), nil
 }
 
-func unique(slice []string) []string {
-	encountered := map[string]int{}
-	diff := []string{}
-
-	for _, v := range slice {
-		encountered[v] = encountered[v] + 1
-	}
-
-	for _, v := range slice {
-		if encountered[v] == 1 {
-			diff = append(diff, v)
-		}
-	}
-	return diff
-}
-
 func main() {
 
 	// Parse arguments.
-	// C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\
-	sdkumPath := flag.String("sdk", "", "The path to the windows sdk directory")
-	// https://github.com/MicrosoftDocs/sdk-api
-	sdkapiPath := flag.String("sdk-api", "sdk-api", "The path to the sdk-api docs directory")
-	hookapisPath := flag.String("hookapis", "hookapis.txt", "The path to a a text file which define which APIs to trace, new line separated.")
+	sdkumPath := flag.String("sdk", "", "The path to the windows sdk directory i.e C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\")
+	sdkapiPath := flag.String("sdk-api", "sdk-api", "The path to the sdk-api docs directory (https://github.com/MicrosoftDocs/sdk-api)")
+	hookapisPath := flag.String("hookapis", "hookapis.txt", "The path to a a text file thats defines which APIs to trace, new line separated.")
 	printretval := flag.Bool("printretval", false, "Print return value type for each API")
-
 	printanno := flag.Bool("printanno", false, "Print list of annotation values")
 	minify := flag.Bool("minify", false, "Mininify json")
 
@@ -209,7 +76,7 @@ func main() {
 	}
 
 	if !Exists(*sdkumPath) {
-		log.Fatal("sdk directory does not exist")
+		log.Fatal("Windows sdk directory does not exist")
 	}
 
 	if !Exists(*sdkapiPath) {
@@ -219,15 +86,16 @@ func main() {
 		log.Fatal("hookapis.txt does not exists")
 	}
 
-	// Read the list of APIs we are interested to keep.
+	// Read the list of APIs we are interested to hook.
 	wantedAPIs, err := readLines(*hookapisPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	if len(wantedAPIs) == 0 {
-		log.Fatal("hookapis.txt is empty")
+		log.Fatalln("hookapis.txt is empty")
 	}
 
+	// Get the list of files in the Windows SDK.
 	files, err := utils.WalkAllFilesInDir(*sdkumPath)
 	if err != nil {
 		log.Fatalln(err)
@@ -238,12 +106,10 @@ func main() {
 	var winStructs []Struct
 
 	parsedAPI := 0
+	var foundAPIs []string
 	for _, file := range files {
-
 		var prototypes []string
-
 		file = strings.ToLower(file)
-
 		if !strings.HasSuffix(file, "\\fileapi.h") &&
 			!strings.HasSuffix(file, "\\processthreadsapi.h") &&
 			!strings.HasSuffix(file, "\\winreg.h") &&
@@ -254,9 +120,11 @@ func main() {
 			!strings.HasSuffix(file, "\\tlhelp32.h") &&
 			!strings.HasSuffix(file, "\\debugapi.h") &&
 			!strings.HasSuffix(file, "\\handleapi.h") &&
+			!strings.HasSuffix(file, "\\heapapi.h") &&
 			!strings.HasSuffix(file, "\\winsvc.h") &&
 			!strings.HasSuffix(file, "\\libloaderapi.h") &&
 			!strings.HasSuffix(file, "\\sysinfoapi.h") &&
+			!strings.HasSuffix(file, "\\synchapi.h") &&
 			!strings.HasSuffix(file, "\\winuser.h") &&
 			!strings.HasSuffix(file, "\\winhttp.h") &&
 			!strings.HasSuffix(file, "\\wininet.h") {
@@ -274,11 +142,15 @@ func main() {
 		winStructsRaw = append(winStructsRaw, a...)
 		winStructs = append(winStructs, b...)
 
-		// Grab all API prototypes
+		// Write struct results.
+		WriteStrSliceToFile("dump/winstructs.h", winStructsRaw)
+		d, _ := json.MarshalIndent(winStructs, "", " ")
+		utils.WriteBytesFile("json/structs.json", bytes.NewReader(d))
+
+		// Grab all API prototypes.
 		// 1. Ignore: FORCEINLINE
 		r := regexp.MustCompile(RegAPIs)
 		matches := r.FindAllString(string(data), -1)
-
 		for _, v := range matches {
 			prototype := removeAnnotations(v)
 			prototype = standardizeSpaces(prototype)
@@ -296,9 +168,10 @@ func main() {
 			// Find which DLL this API belongs to. Unfortunately, the sdk does
 			// not give you this information, we look into the sdk-api markdown
 			// docs instead. (Normally, we could have parsed everything from
-			// the md files, but they are missing the parameters type!)
+			// the md files, but they are missing the parameters type!).
 			dllname, err := getDLLName(file, papi.Name, *sdkapiPath)
 			if err != nil {
+				log.Printf("Failed to get the DLL name for: %s", papi.Name)
 				continue
 			}
 			if _, ok := m[dllname]; !ok {
@@ -306,21 +179,21 @@ func main() {
 			}
 			m[dllname][papi.Name] = papi
 			parsedAPI++
+			foundAPIs = append(foundAPIs, papi.Name)
 		}
 
+		// Write raw prototypes to a text file.
 		if len(prototypes) > 0 {
-			// Write raw prototypes to a text file.
-			WriteStrSliceToFile("prototypes-"+filepath.Base(file)+".inc", prototypes)
+			WriteStrSliceToFile("dump/prototypes-"+filepath.Base(file)+".inc", prototypes)
 		}
 	}
 
+	// Marshall and write to json file.
 	if len(m) > 0 {
-		// Marshall and write to json file.
 		data, _ := json.MarshalIndent(m, "", " ")
-		utils.WriteBytesFile("apis.json", bytes.NewReader(data))
+		utils.WriteBytesFile("json/apis.json", bytes.NewReader(data))
 	}
 
-	var foundAPIs []string
 	if *printretval {
 		for dll, v := range m {
 			log.Printf("DLL: %s\n", dll)
@@ -330,22 +203,15 @@ func main() {
 				if !utils.StringInSlice(api, wantedAPIs) {
 					log.Printf("Not found")
 				}
-				foundAPIs = append(foundAPIs, api)
 			}
 		}
 	}
 
 	log.Printf("Parsed API count: %d, Hooked API Count: %d", parsedAPI, len(wantedAPIs))
-	log.Print(unique(append(wantedAPIs, foundAPIs...)))
-
-	// Write struct results
-	WriteStrSliceToFile("winstructs.h", winStructsRaw)
-
-	b, _ := json.MarshalIndent(winStructs, "", " ")
-	utils.WriteBytesFile("structs.json", bytes.NewReader(b))
+	log.Print(difference(wantedAPIs, foundAPIs))
 
 	if *printanno || *minify {
-		data, err := utils.ReadAll("apis.json")
+		data, err := utils.ReadAll("json/apis.json")
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -375,10 +241,9 @@ func main() {
 			}
 		}
 
-
 		if *minify {
 			data, _ := json.Marshal(minifyAPIs(apis))
-			utils.WriteBytesFile("mini-apis.json", bytes.NewReader(data))
+			utils.WriteBytesFile("json/mini-apis.json", bytes.NewReader(data))
 		}
 		os.Exit(0)
 	}

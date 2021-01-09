@@ -80,6 +80,8 @@ OpenServiceW
 StartServiceA
 StartServiceW
 ControlService
+ControlServiceExW
+ControlServiceExA
 LookupPrivilegeValueA
 LookupPrivilegeValueW
 OpenProcessToken
@@ -90,3 +92,10 @@ WinHttpQueryDataAvailable
 WinHttpOpenRequest
 WinHttpSendRequest
 WinHttpReceiveResponse
+HeapAlloc
+HeapFree
+TerminateProcess
+CreateMutexA
+CreateMutexW
+CreateMutexExW
+CreateMutexExA
