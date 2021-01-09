@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"strings"
-
 
 	"github.com/dlclark/regexp2"
 )
@@ -16,11 +14,13 @@ var (
 	RegStructMember = `(?P<Type>[A-Z]+)[\s]+(?P<Name>[a-zA-Z]+); `
 )
 
+// StructMember represents a member of a structure.
 type StructMember struct {
 	Name string
 	Type string
 }
 
+// Struct represents a C data type structure.
 type Struct struct {
 	Name         string
 	Members      []StructMember
@@ -34,7 +34,7 @@ func parseStruct(def string) Struct {
 	r := regexp2.MustCompile(RegParseStruct, 0)
 	if m, _ := r.FindStringMatch(def); m != nil {
 
-		fmt.Printf("Struct definition: %v\n", m.String())
+		//log.Printf("Struct definition: %v\n", m.String())
 		gps := m.Groups()
 		winStruct.Name = gps[1].Capture.String()
 
@@ -43,7 +43,7 @@ func parseStruct(def string) Struct {
 		for _, member := range members {
 			member = standardizeSpaces(member)
 			if member != "" && !strings.HasPrefix(member, "//") {
-				fmt.Println(member)
+				//log.Println(member)
 				m := regSubMatchToMapString(RegStructMember, member)
 				sm := StructMember{
 					Type: m["Type"],

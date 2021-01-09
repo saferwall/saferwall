@@ -16,6 +16,9 @@ const (
 
 	// RegAPIParams parses params.
 	RegAPIParams = `(?P<Anno>_In_|IN|OUT|_In_opt_|_Inout_opt_|_Out_|_Inout_|_Out_opt_|_Outptr_opt_|_Reserved_|_(O|o)ut[\w(),+ *]+|_In[\w()]+|_When[\w() =,!*]+) (?P<Type>[\w *]+) (?P<Name>[*a-zA-Z0-9]+)`
+
+	// RegParam extacts API parameters.
+	RegParam = `, `
 )
 
 // APIParam represents a paramter of a Win32 API.
@@ -72,7 +75,9 @@ func parseAPI(apiPrototype string) API {
 
 	if api.Name == "" || api.CallingConvention == "" {
 		log.Printf("Failed to parse: %s", apiPrototype)
+		return api
 	}
+	
 	re := regexp.MustCompile(RegParam)
 	split := re.Split(m["Params"], -1)
 	for i, v := range split {
