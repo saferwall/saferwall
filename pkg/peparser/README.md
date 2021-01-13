@@ -6,9 +6,10 @@
 
 - Works with PE32/PE32+ file fomat.
 - Supports Intel x86/AMD64/ARM7ARM7 Thumb/ARM8-64/IA64/CHPE architectures.
-- MS DOS header
-- Rich Header (calculate checksum)
-- NT Header (file header + optional header)
+- MS DOS header.
+- Rich Header (calculate checksum).
+- NT Header (file header + optional header).
+- COFF symbol table and string table.
 - Sections headers + entropy calculation. 
 - Data directories
     - Import Table + ImpHash calculation.
