@@ -33,13 +33,13 @@ type APIParamMini struct {
 
 // APIMini represents information about a Win32 API.
 type APIMini struct {
-	ReturnValueType bool         `json:"retType"` // Return value type.
-	Params          []APIParamMini `json:"params"` // API Arguments.
+	ReturnValueType bool           `json:"retType"` // Return value type.
+	Params          []APIParamMini `json:"params"`  // API Arguments.
 }
 
 var (
 	reAnnotationIn       = regexp.MustCompile(`_In_|IN|_In_opt[\w]+|In_reads[\w()]+`)
-	reAnnotationOut      = regexp.MustCompile(`_Out_|OUT|_Out_opt_[\w]+|_Out_writes[\w()]+|_Outptr_`)
+	reAnnotationOut      = regexp.MustCompile(`_Out_|OUT|_Out_opt[\w]+|_Out_writes[\w()]+|_Outptr_`)
 	reAnnotationIntOut   = regexp.MustCompile(`_Inout[\w]+`)
 	reAnnotationReserved = regexp.MustCompile(`Reserved`)
 )
@@ -72,9 +72,9 @@ var (
 
 	// Pointer to a struct.
 	ptrStructTypes = []string{"LPURL_COMPONENTSA", "LPINTERNET_BUFFERSW", "LPSERVICE_STATUS", "PFILETIME", "LPSTARTUPINFOW", "LPPROCESS_INFORMATION",
-	"LPSECURITY_ATTRIBUTES", "LPPROCESSENTRY32W", "PLUID", "LPINTERNET_BUFFERSW", "LPENUM_SERVICE_STATUSW", "LPSTARTUPINFOA", "SERVICE_TABLE_ENTRYW", "LPURL_COMPONENTSW",
-	"CONST LPSECURITY_ATTRIBUTES", "CONST SERVICE_TABLE_ENTRYW*",
-	"LPENUM_SERVICE_STATUSA", "LPINTERNET_BUFFERSA", "PMEMORY_BASIC_INFORMATION"}
+		"LPSECURITY_ATTRIBUTES", "LPPROCESSENTRY32W", "PLUID", "LPINTERNET_BUFFERSW", "LPENUM_SERVICE_STATUSW", "LPSTARTUPINFOA", "SERVICE_TABLE_ENTRYW", "LPURL_COMPONENTSW",
+		"CONST LPSECURITY_ATTRIBUTES", "CONST SERVICE_TABLE_ENTRYW*",
+		"LPENUM_SERVICE_STATUSA", "LPINTERNET_BUFFERSA", "PMEMORY_BASIC_INFORMATION"}
 )
 
 func convertStrType(t string) uint8 {
@@ -109,7 +109,7 @@ func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 		for apiname, vv := range v {
 
 			returnType := false
-			if (vv.ReturnValueType == "VOID") {
+			if vv.ReturnValueType == "VOID" {
 				returnType = true
 			}
 

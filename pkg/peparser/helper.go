@@ -288,6 +288,19 @@ func (pe *File) readUnicodeStringAtRVA(rva uint32, maxLength uint32) string {
 	return unicodeString
 }
 
+func (pe *File) readASCIIStringAtOffset(offset, maxLength uint32) (uint32, string) {
+	var i uint32
+	str := ""
+	buff := pe.data[offset : offset+maxLength]
+	for i = 0; i < maxLength; i++ {
+		if buff[i] == 0 {
+			break
+		}
+		str += string(buff[i])
+	}
+	return i, str
+}
+
 // getStringFromData returns ASCII string from within the data.
 func (pe *File) getStringFromData(offset uint32, data []byte) []byte {
 
