@@ -71,7 +71,7 @@ type result struct {
 	Strings     []stringStruct         `json:"strings,omitempty"`
 	MultiAV     map[string]interface{} `json:"multiav,omitempty"`
 	Status      int                    `json:"status,omitempty"`
-	PE          *peparser.File          `json:"pe,omitempty"`
+	PE          *peparser.File         `json:"pe,omitempty"`
 	Histogram   []int                  `json:"histogram,omitempty"`
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Type        string                 `json:"type,omitempty"`
@@ -82,14 +82,28 @@ func (res *result) parseFile(b []byte, filePath string) {
 	magic := res.Magic
 	if strings.HasPrefix(magic, "PE32") {
 		res.Type = "pe"
+	} else if strings.HasPrefix(magic, "MS-DOS") {
+		res.Type = "msdos"
 	} else if strings.HasPrefix(magic, "XML") {
 		res.Type = "xml"
 	} else if strings.HasPrefix(magic, "HTML") {
 		res.Type = "html"
 	} else if strings.HasPrefix(magic, "ELF") {
 		res.Type = "elf"
+	} else if strings.HasPrefix(magic, "PDF") {
+		res.Type = "pdf"
 	} else if strings.HasPrefix(magic, "Macromedia Flash") {
 		res.Type = "swf"
+	} else if strings.HasPrefix(magic, "Zip archive data") {
+		res.Type = "zip"
+	} else if strings.HasPrefix(magic, "Java archive data (JAR)") {
+		res.Type = "jar"
+	} else if strings.HasPrefix(magic, "JPEG image data") {
+		res.Type = "jpeg"
+	} else if strings.HasPrefix(magic, "PNG image data") {
+		res.Type = "png"
+	} else if strings.HasPrefix(magic, "SVG Scalable Vector") {
+		res.Type = "svg"
 	}
 
 	// Parse it accrording to its type.
@@ -205,7 +219,7 @@ func parsePE(filePath string) (*peparser.File, error) {
 	// Parse the PE.
 	err = pe.Parse()
 
-	contextLogger.Info("pe pkg success")
+	contextLogger.Debug("pe pkg success")
 	return pe, err
 }
 

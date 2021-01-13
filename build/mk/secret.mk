@@ -11,7 +11,6 @@ gpg-build-secrets:		## Encrypt secrets which contains license files with gpg.
 						ESET_File_Security_for_Linux.lic \
 						hbedv.key \
 						hbedv.key.expired \
-						install.conf \
 						kaspersky.license.key \
 						kaspersky.license.key-expired \
 						license.avastlic \
