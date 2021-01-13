@@ -307,7 +307,7 @@ couchbase-operator:
       # Name for the server configuration. It must be unique.
       default:
         # Size of the couchbase cluster.
-        size: 3
+        size: 1
         # The services to run on nodes
         services:
           - data
@@ -481,7 +481,7 @@ nsq:
   enabled: true
   nsqd:
     name: nsqd
-    replicaCount: 2
+    replicaCount: 1
     persistence:
       storageClass: "standard"
       resources:
@@ -489,7 +489,7 @@ nsq:
           storage: 1Gi
   nsqlookupd:
     name: nsqlookupd
-    replicaCount: 2
+    replicaCount: 1
 
 ########### EFS-PROVISONNER ###########
 efs-provisioner:
@@ -776,8 +776,8 @@ multiav:
         targetPort: 50051
   resources:
     requests:
-      memory: 50Mi
-      cpu: 50m
-    limits:
       memory: 100Mi
       cpu: 100m
+    limits:
+      memory: 3Gi
+      cpu: 1200m
