@@ -3,20 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/saferwall/saferwall/pkg/crypto"
-)
-
-const (
-	bucket = "saferwall-samples"
-	region = "us-east-1"
 )
 
 func uploadObject(bucket, region, key, filename string) error {
@@ -99,86 +92,65 @@ func listObject(bucket, region string, verbose bool) []string {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	)
+	check(err)
 
 	// Create S3 service client
 	svc := s3.New(sess)
 
 	// Get the list of items
-	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket)})
-	if err != nil {
-		exitErrorf("Unable to list items in bucket %q, %v", bucket, err)
+	var objKeys []string
+	query := &s3.ListObjectsV2Input{
+		Bucket: &bucket,
 	}
 
-	var objKeys []string
-	for _, item := range resp.Contents {
-		if verbose {
-			fmt.Println("Name:         ", *item.Key)
-			fmt.Println("Last modified:", *item.LastModified)
-			fmt.Println("Size:         ", *item.Size)
-			fmt.Println("Storage class:", *item.StorageClass)
-			fmt.Println("")
+	for {
+		resp, err := svc.ListObjectsV2(query)
+		if err != nil {
+			exitErrorf("Unable to list items in bucket %q, %v", bucket, err)
 		}
 
-		objKeys = append(objKeys, *item.Key)
+		for _, item := range resp.Contents {
+			if verbose {
+				fmt.Println("Name:         ", *item.Key)
+				fmt.Println("Last modified:", *item.LastModified)
+				fmt.Println("Size:         ", *item.Size)
+				fmt.Println("Storage class:", *item.StorageClass)
+				fmt.Println("")
+			}
+
+			objKeys = append(objKeys, *item.Key)
+		}
+
+		// Fetch the next chunk.
+		query.ContinuationToken = resp.NextContinuationToken
+
+		if *resp.IsTruncated == false {
+			break
+		}
 	}
 
-	fmt.Println("Found", len(resp.Contents), "items in bucket", bucket)
+	fmt.Println("Found", len(objKeys), "items in bucket", bucket)
 	fmt.Println("")
 	return objKeys
 }
 
-func main() {
+func isFileFoundInObjStorage(sha256 string) bool {
 
-	if len(os.Args) != 2 {
-		exitErrorf("Usage: s3upload <filepath>")
+	// Initialize a session in us-west-2 that the SDK will use to load
+	// credentials from the shared credentials file ~/.aws/credentials.
+	sess, _ := session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
+
+	// Create S3 service client
+	svc := s3.New(sess)
+	_, err := svc.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(sha256)})
+	if err != nil {
+		log.Printf("svc.HeadObject failed with: %v", err)
+		return false
 	}
 
-	filePath := os.Args[1]
-	_, err := os.Stat(filePath)
-	if os.IsNotExist(err) {
-		exitErrorf("%s does not exist", filePath)
-	}
-
-	objKeys := listObject(bucket, region, false)
-
-	// Walk over directory.
-	fileList := []string{}
-	filepath.Walk(filePath, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() {
-			fileList = append(fileList, path)
-		}
-		return nil
-	})
-
-	// Upload files
-	for _, filename := range fileList {
-		// Check if we have the file already in our database.
-		dat, err := ioutil.ReadFile(filename)
-		if err != nil {
-            fmt.Printf("failed to read file %s", filename)
-            continue
-		}
-		key := crypto.GetSha256(dat)
-		found := stringInSlice(key, objKeys)
-		if !found {
-			uploadObject(bucket, region, key, filename)
-		} else {
-			fmt.Printf("file name %s already in s3 bucket", filename)
-		}
-	}
-
-}
-
-func exitErrorf(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, msg+"\n", args...)
-	os.Exit(1)
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
+	return true
 }
