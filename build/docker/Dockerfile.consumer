@@ -37,7 +37,7 @@ RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags
 ############################
 FROM ubuntu:bionic
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL description="NSQ consumer in a docker container"
 
 ##### Install Prerequisites #####

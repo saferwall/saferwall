@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL description="Kaspersky Endpoint Security for Linux in a docker container"
 # https://help.kaspersky.com/KES4Linux/10.1.1/en-us/177085.htm
 

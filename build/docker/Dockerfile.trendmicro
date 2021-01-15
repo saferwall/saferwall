@@ -1,6 +1,6 @@
 FROM centos:centos8
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL description="TrendMicro ServerProtect for Linux in a docker container"
 
 # Installation guide: https://docs.trendmicro.com/all/ent/splx/v3.0/en-us/splx_3.0_gsg.pdf

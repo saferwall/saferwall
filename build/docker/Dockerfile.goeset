@@ -32,7 +32,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM saferwall/eset:0.0.3
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL description="ESET File Server Security for Linux in a docker container"
 
 # Environment variables.

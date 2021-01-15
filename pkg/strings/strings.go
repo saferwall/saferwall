@@ -91,7 +91,7 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("Asm string extraction failed: %v\n", err)
+			log.Printf("Asm string extraction failed: %v", err)
 		}
 	}()
 

@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 
 FROM debian:stretch-slim as final
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.0.4"
 LABEL description="Saferwall backend"
 
 WORKDIR /backend

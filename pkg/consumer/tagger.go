@@ -57,7 +57,7 @@ var sigMap = map[string]string{
 	"Dotfuscator":                        "dotfuscator",
 }
 
-func (f *result) getTags() error {
+func (f *result) getTags() {
 
 	var tags []string
 	f.Tags = map[string]interface{}{}
@@ -129,6 +129,4 @@ func (f *result) getTags() error {
 			}
 		}
 	}
-
-	return nil
 }

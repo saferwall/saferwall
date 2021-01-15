@@ -143,29 +143,33 @@ func staticScan(sha256, filePath string, b []byte) result {
 	res.Exif, err = exiftool.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("exiftool pkg failed with: %v", err)
+	} else {
+		contextLogger.Debug("exiftool pkg success")
 	}
-	contextLogger.Debug("exiftool pkg success")
 
 	// Get TriD.
 	res.TriD, err = trid.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("trid pkg failed with: %v", err)
+	} else {
+		contextLogger.Debug("trid pkg success")
 	}
-	contextLogger.Debug("trid pkg success")
 
 	// Get magic.
 	res.Magic, err = magic.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("magic pkg failed with: %v", err)
+	} else {
+		contextLogger.Debug("magic pkg success")
 	}
-	contextLogger.Debug("magic pkg success")
 
 	// Get DiE
 	res.Packer, err = packer.Scan(filePath)
 	if err != nil {
 		contextLogger.Errorf("die pkg failed with: %v", err)
+	} else {
+		contextLogger.Debug("die pkg success")
 	}
-	contextLogger.Debug("die pkg success")
 
 	// Extract strings.
 	n := 10

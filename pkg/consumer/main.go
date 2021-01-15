@@ -67,7 +67,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	// Always include sha256 in our context logger.
 	contextLogger = log.WithFields(log.Fields{"sha256": sha256})
-	contextLogger.Debug("Start processing ...")
+	contextLogger.Info("Start scanning ...")
 
 	// Set the file status to `processing`.
 	var err error
@@ -77,15 +77,15 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Marshell results.
 	var buff []byte
 	if buff, err = json.Marshal(res); err != nil {
-		contextLogger.Error("Failed to json marshall object: ", err)
+		contextLogger.Errorf("Failed to json marshal object: %v", err)
 		return err
 	}
 
 	// Update document.
 	err = updateDocument(sha256, buff)
 	if err != nil {
-		contextLogger.Errorf("Failed to update document for file %s, reason: %s",
-			sha256, err.Error())
+		contextLogger.Errorf("Failed to update document for file %s, reason: %v",
+			sha256, err)
 		return err
 	}
 
@@ -114,24 +114,24 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	now := time.Now().UTC()
 	res.LastScanned = &now
 
-	// Marshell results
+	// Marshell results.
 	buff, err = json.Marshal(res)
 	if err != nil {
-		contextLogger.Error("Failed to get object, err: ", err)
+		contextLogger.Errorf("Failed to json marshal object: %v", err)
 		return err
 	}
 
 	// Update document.
 	err = updateDocument(sha256, buff)
 	if err != nil {
-		contextLogger.Errorf("Failed to update document, reason: %s", err.Error())
+		contextLogger.Errorf("Failed to update document: %v", err)
 		return err
 	}
 
 	// Delete the file from the network share.
 	if utils.Exists(filePath) {
 		if err = utils.DeleteFile(filePath); err != nil {
-			log.Errorf("Failed to delete file path %s.", filePath)
+			log.Errorf("Failed to delete file path %s", filePath)
 		}
 	}
 
@@ -142,8 +142,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 func main() {
 
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
 	// Load consumer config.
-	var err error
 	loadConfig()
 
 	// Setup logging.
@@ -153,15 +155,20 @@ func main() {
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
 
 	// Login to backend.
-	backendToken = login()
+	var err error
+	backendToken, err = login()
+	if err != nil {
+		log.Fatalf("Failed to get auth token: %v", err)
+	}
 
 	// Get an minio client instance.
 	accessKey := viper.GetString("minio.accesskey")
 	secKey := viper.GetString("minio.seckey")
 	endpoint := viper.GetString("minio.endpoint")
 	ssl := viper.GetBool("minio.ssl")
-	if minioClient, err = minio.New(endpoint, accessKey, secKey, ssl); err != nil {
-		log.Fatalf("Failed to connect to get minio client instance: %v", err)
+	minioClient, err = minio.New(endpoint, accessKey, secKey, ssl)
+	if err != nil {
+		log.Fatalf("Failed to connect to object storage: %v", err)
 	}
 
 	// The default config settings provide a pretty good starting point for

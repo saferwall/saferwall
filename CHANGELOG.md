@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gib`: a package to detect gibberish strings.
 - `bytestats`: a package that implements byte and entropy statistics for binary files.
 
-## [0.0.3] - 2020-11-01
+## [0.0.3] - 2021-15-01
 ### Added
 - A new antivirus engine (DrWeb).
 - A new antivirus engine (TrendMicro).

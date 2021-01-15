@@ -19,7 +19,7 @@ import (
 
 func loadConfig() {
 
-	// Add condig path directories
+	// Add config path directories.
 	viper.AddConfigPath("configs")
 	viper.AddConfigPath("../../configs")
 
@@ -72,11 +72,9 @@ func setupLogging() {
 		log.SetLevel(log.WarnLevel)
 	}
 
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
 }
 
-func login() string {
+func login() (string, error) {
 	username := viper.GetString("backend.admin_user")
 	password := viper.GetString("backend.admin_pwd")
 	requestBody, err := json.Marshal(map[string]string{
@@ -84,7 +82,7 @@ func login() string {
 		"password": password,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	timeout := time.Duration(5 * time.Second)
@@ -95,28 +93,32 @@ func login() string {
 	body := bytes.NewBuffer(requestBody)
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
-		log.Fatalf("http.NewRequest() failed with '%s'\n", err)
+		log.Errorf("http.NewRequest() failed with: %v", err)
+		return "", err
 	}
 
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatalf("client.Do() failed with '%s'\n", err)
+		log.Errorf("client.Do() failed with: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return ""
+		return "", errors.New("login() http response status code not 200")
 	}
 
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("ioutil.ReadAll() failed with '%s'\n", err)
+		log.Fatalf("ioutil.ReadAll() failed with: %v", err)
 	}
 
 	var res map[string]string
-	json.Unmarshal(d, &res)
-	return res["token"]
+	err = json.Unmarshal(d, &res)
+	if err != nil {
+		log.Fatalf("json unmarshall failed with: %v", err)
+	}
+	return res["token"], nil
 }
 
 func updateDocument(sha256 string, buff []byte) error {
@@ -128,6 +130,7 @@ func updateDocument(sha256 string, buff []byte) error {
 	req, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
 		contextLogger.Errorf("http.NewRequest() failed with: %v", err)
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
@@ -135,11 +138,16 @@ func updateDocument(sha256 string, buff []byte) error {
 	resp, err := client.Do(req)
 	if err != nil {
 		contextLogger.Errorf("client.Do() failed with: %v", err)
+		return err
 	}
 
-	// check if token is not expired
+	// Check if token is not expired.
 	if resp.StatusCode == http.StatusUnauthorized {
-		backendToken = login()
+		backendToken, err = login()
+		if err != nil {
+			contextLogger.Errorf("Failed to get new auth token: %v", err)
+			return err
+		}
 		req.Header.Set("Cookie", "JWTCookie="+backendToken)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -156,9 +164,10 @@ func updateDocument(sha256 string, buff []byte) error {
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		contextLogger.Errorf("ioutil.ReadAll() failed with: %v", err)
+		return err
 	}
 
-	contextLogger.Debugf("Response status code: %d, text: %s", resp.StatusCode,
-		string(d))
+	contextLogger.Infof("Scanning finished: status code: %d, resp: %s",
+		resp.StatusCode, string(d))
 	return nil
 }
