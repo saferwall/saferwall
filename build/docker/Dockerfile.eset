@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.4"
+LABEL version="0.1.0"
 LABEL description="ESET File Server Security for Linux in a docker container"
 
 # Arguments and environment variable.

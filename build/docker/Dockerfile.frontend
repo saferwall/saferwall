@@ -32,7 +32,7 @@ RUN yarn build
 
 FROM nginx:stable-alpine as production-stage
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.4"
+LABEL version="0.1.0"
 LABEL description="Saferwall UI Dashboard"
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html

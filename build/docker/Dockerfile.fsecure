@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.4"
+LABEL version="0.1.0"
 LABEL description="FSecure Linux Security in a docker container"
 
 # Arguments and environment variable.

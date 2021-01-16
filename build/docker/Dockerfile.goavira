@@ -30,9 +30,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/avira:0.0.3
+FROM saferwall/avira:0.1.0
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.4"
+LABEL version="0.1.0"
 LABEL description="gRPC server over linux version of Avira"
 
 # Arguments and environment variable.
