@@ -115,7 +115,7 @@ kops-tips:		## Some kops commands
 	kops update cluster --name saferwall.k8s.local --yes
 
 kops-export-yaml:  ### Export Kops cLuster config
-	kops get --name ${KOPS_CLUSTER_NAME} -o yaml > cluster-desired-config.yaml
+	kops get --name ${KOPS_CLUSTER_NAME} -o yaml > ${KOPS_CLUSTER_NAME}.yaml
 
 saferwall: ## Deploy the cluster
 	make awscli-install

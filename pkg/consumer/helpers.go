@@ -101,6 +101,7 @@ func login() (string, error) {
 	resp, err := client.Do(request)
 	if err != nil {
 		log.Errorf("client.Do() failed with: %v", err)
+		return "", err
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -110,13 +111,15 @@ func login() (string, error) {
 	defer resp.Body.Close()
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("ioutil.ReadAll() failed with: %v", err)
+		log.Errorf("ioutil.ReadAll() failed with: %v", err)
+		return "", err
 	}
 
 	var res map[string]string
 	err = json.Unmarshal(d, &res)
 	if err != nil {
-		log.Fatalf("json unmarshall failed with: %v", err)
+		log.Errorf("json unmarshall failed with: %v", err)
+		return "", err
 	}
 	return res["token"], nil
 }

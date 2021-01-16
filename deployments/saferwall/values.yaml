@@ -529,11 +529,13 @@ cert-manager:
     # defaultIssuerName: letsencrypt-prod
     # defaultIssuerName: letsencrypt-staging
     defaultIssuerKind: ClusterIssuer
+
 ########## CLUSTER-AUTOSCALER ############
 cluster-autoscaler:
   enabled: false
+  cloudProvider: aws
+  awsRegion: us-east-1
   autoDiscovery:
-  # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
     clusterName: kops.saferwall.com
 ########### BACKEND ###########
 backend:

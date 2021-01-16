@@ -1,0 +1,22 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2021-01-16T08:26:05Z"
+  labels:
+    kops.k8s.io/cluster: kops.saferwall.com
+  name: spot-ig
+spec:
+  cloudLabels:
+    k8s.io/cluster-autoscaler/enabled: ""
+    k8s.io/cluster-autoscaler/kops.saferwall.com: ""
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  machineType: c5.9xlarge
+  maxPrice: "0.583"
+  maxSize: 10
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: spot-ig
+    on-demand: "false"
+  role: Node
+  subnets:
+  - us-east-1a
