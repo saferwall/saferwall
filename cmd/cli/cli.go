@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -22,6 +23,8 @@ const (
 
 var (
 	forceRescan bool
+	outputDir   string
+	pathToScan  string
 	username    string
 	password    string
 )
@@ -29,17 +32,14 @@ var (
 // scanFile scans an individual file or a directory.
 func scanFile(cmd *cobra.Command, args []string) {
 
-	forceRescan, _ := cmd.Flags().GetBool("forcerescan")
-	name, _ := cmd.Flags().GetString("path")
-
-	_, err := os.Stat(name)
+	_, err := os.Stat(pathToScan)
 	if os.IsNotExist(err) {
-		log.Fatalf("%s does not exist", name)
+		log.Fatalf("%s does not exist", pathToScan)
 	}
 
 	// Walk over directory.
 	fileList := []string{}
-	filepath.Walk(name, func(path string, f os.FileInfo, err error) error {
+	filepath.Walk(pathToScan, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
 			fileList = append(fileList, path)
 		}
@@ -56,7 +56,7 @@ func scanFile(cmd *cobra.Command, args []string) {
 		// Get sha256
 		dat, err := ioutil.ReadFile(filename)
 		if err != nil {
-			log.Printf("Failed to read %s, reason: %v", name, err)
+			log.Printf("Failed to read %s, reason: %v", pathToScan, err)
 		}
 		sha256 := getSha256(dat)
 
@@ -141,6 +141,30 @@ func rescanFile(cmd *cobra.Command, args []string) {
 
 }
 
+// downloadFile a list of sha256 from the clipboard and download them.
+func downloadFile(cmd *cobra.Command, args []string) {
+
+	clipContent, err := clipboard.ReadAll()
+	check(err)
+
+	shaList := strings.Split(clipContent, "\r\n")
+	for _, sha256 := range shaList {
+		// Create a new file.
+		filePath := path.Join(outputDir, sha256)
+		f, err := os.Create(filePath)
+		defer f.Close()
+		if err != nil {
+			continue
+		}
+		err = downloadObject(bucket, region, sha256, f)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+	}
+}
+
 func main() {
 
 	var rootCmd = &cobra.Command{
@@ -183,14 +207,26 @@ func main() {
 		Run:   s3upload,
 	}
 
+	var downloadCmd = &cobra.Command{
+		Use:   "download",
+		Short: "Download file",
+		Long:  "Download a file or directory",
+		Run:   downloadFile,
+	}
+
 	// Init root command.
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(rescanCmd)
 	rootCmd.AddCommand(s3UploadCmd)
+	rootCmd.AddCommand(downloadCmd)
 
 	// Init flags
 	scanCmd.Flags().BoolVarP(&forceRescan, "forcerescan", "f", false, "Force rescan the file.")
+	scanCmd.Flags().StringVarP(&pathToScan, "path", "p", "", "Force rescan the file.")
+	scanCmd.MarkFlagRequired("path")
+	downloadCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory to download the files (required")
+	downloadCmd.MarkFlagRequired("output")
 
 	// Get credentials.
 	username = os.Getenv("SAFERWALL_AUTH_USERNAME")

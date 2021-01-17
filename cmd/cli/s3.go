@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -69,6 +70,7 @@ func listBucket(region string) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	)
+	check(err)
 
 	// Create S3 service client
 	svc := s3.New(sess)
@@ -153,4 +155,24 @@ func isFileFoundInObjStorage(sha256 string) bool {
 	}
 
 	return true
+}
+
+func downloadObject(bucket, region, key string, w io.WriterAt) error {
+	// Initialize a session in us-west-2 that the SDK will use to load
+	// credentials from the shared credentials file ~/.aws/credentials.
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
+	if err != nil {
+		return err
+	}
+
+	downloader := s3manager.NewDownloader(sess)
+
+	_, err = downloader.Download(w,
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+		})
+	return err
 }
