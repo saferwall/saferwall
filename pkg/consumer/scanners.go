@@ -299,7 +299,8 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 	if err != nil {
 		contextLogger.Errorf("Failed to scan file [%s]: %v", engine, err)
 	}
-	c <- multiav.ScanResult{Enabled: enabled, Output: res.Output, Infected: res.Infected, Update: res.Update}
+	c <- multiav.ScanResult{Enabled: enabled, Output: res.Output,
+		 Infected: res.Infected, Update: res.Update}
 
 	if utils.Exists(filecopyPath) {
 		if err = utils.DeleteFile(filecopyPath); err != nil {

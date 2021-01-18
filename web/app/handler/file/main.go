@@ -137,6 +137,10 @@ func GetFileBySHA256(sha256 string) (File, error) {
 // GetAllFiles return all files (optional: selecting fields)
 func GetAllFiles(fields []string) ([]File, error) {
 
+	// Interfaces for handling streaming return values
+	var row File
+	var retValues []File
+
 	// Select only demanded fields
 	var query string
 	if len(fields) > 0 {
@@ -158,12 +162,9 @@ func GetAllFiles(fields []string) ([]File, error) {
 	// Execute our query
 	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
-		fmt.Println("Error executing n1ql query:", err)
+		log.Errorf("Error executing n1ql query: %v", err)
+		return retValues, nil
 	}
-
-	// Interfaces for handling streaming return values
-	var row File
-	var retValues []File
 
 	// Stream the values returned from the query into a typed array of structs
 	for rows.Next() {
@@ -229,7 +230,7 @@ func GetFileByFields(fields []string, sha256 string) (File, error) {
 	rows, err := db.Cluster.Query(query,
 		&gocb.QueryOptions{NamedParameters: params, Adhoc: true})
 	if err != nil {
-		fmt.Println("Error executing n1ql query:", err)
+		log.Printf("Error executing n1ql query: %v", err)
 		return row, err
 	}
 

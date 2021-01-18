@@ -180,17 +180,9 @@ func main() {
 	config.MaxAttempts = 2
 
 	// Maximum number of messages to allow in flight (concurrency knob).
-	config.MaxInFlight = 10
+	config.MaxInFlight = 1
 
-	// We had messages still in flight when the RDY count was getting redistributed,
-	// which caused the connection with the in-flight messages to close prematurely.
-	// We fixed this by upping low_rdy_idle_timeout to 2 minutes in our NSQ client
-	// configuration: https://github.com/nsqio/go-nsq/issues/199.
-	config.LowRdyIdleTimeout = time.Duration(2 * time.Minute)
-
-	// Fix: What's causing this are those "timed out" messages - NSQ isn't hearing
-	// back from your consumer and it's delivering the message to another consumer.
-	// failed ID not in flight (https://github.com/nsqio/nsq/issues/729).
+	// The server-side message timeout for messages delivered to this client.
 	config.MsgTimeout = time.Duration(2 * time.Minute)
 
 	// Create a NewConsumer with the name of our topic, the channel, and our config.

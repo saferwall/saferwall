@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -25,11 +26,15 @@ const (
 	// grpc library default is 4MB
 	maxMsgSize = 1024 * 1024 * 20
 
-	// Path to the file which holds the last time we updated the AV engine database.
+	// Path to the file which holds the last time we updated the AV engine
+	// database.
 	dbUpdateDateFilePath = "/av_db_update_date.txt"
 
 	// port is the gRPC port the server listens on.
 	port = ":50051"
+
+	// ScanTimeout is the timeout used before the scanFile API will give up.
+	ScanTimeout = 20 * time.Second
 )
 
 // ScanResult av result
@@ -40,7 +45,8 @@ type ScanResult struct {
 	Update   int64  `json:"update"`
 }
 
-// DefaultServerOpts returns the set of default grpc ServerOption's that Tiller requires.
+// DefaultServerOpts returns the set of default grpc ServerOption's that Tiller
+// requires.
 func DefaultServerOpts() []grpc.ServerOption {
 	return []grpc.ServerOption{grpc.MaxRecvMsgSize(maxMsgSize),
 		grpc.MaxSendMsgSize(maxMsgSize),
