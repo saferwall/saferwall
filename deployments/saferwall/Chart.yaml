@@ -2,8 +2,8 @@ apiVersion: v2
 name: saferwall
 description: A hackable malware sandbox for the 21st Century
 type: application
-version: 0.0.3
-appVersion: 0.0.3
+version: 0.1.0
+appVersion: 0.1.0
 home: https://saferwall.com
 icon: https://saferwall.com/favicon.png
 sources:
@@ -13,7 +13,7 @@ maintainers:
       email: admin@saferwall.com
 dependencies:
     - name: minio
-      version: 8.0.8
+      version: 8.0.9
       repository: https://helm.min.io/
       condition: minio.enabled
     - name: couchbase-operator
@@ -21,19 +21,19 @@ dependencies:
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: efs-provisioner
-      version: 0.13.1
-      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 0.13.2
+      repository: https://isotoma.github.io/charts
       condition: efs-provisioner.enabled
     - name: nfs-server-provisioner
-      version: 1.1.1
-      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 1.2.1
+      repository: https://kvaps.github.io/charts
       condition: nfs-server-provisioner.enabled
     - name: cert-manager
-      version: 1.0.3
+      version: 1.1.0
       repository: https://charts.jetstack.io
       condition: cert-manager.enabled
     - name: ingress-nginx
-      version: 3.7.1
+      version: 3.20.1
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: filebeat

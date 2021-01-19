@@ -1,22 +1,22 @@
 dependencies:
 - name: minio
   repository: https://helm.min.io/
-  version: 8.0.8
+  version: 8.0.9
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
   version: 2.0.2
 - name: efs-provisioner
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.13.1
+  repository: https://isotoma.github.io/charts
+  version: 0.13.2
 - name: nfs-server-provisioner
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 1.1.1
+  repository: https://kvaps.github.io/charts
+  version: 1.2.1
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v1.0.3
+  version: v1.1.0
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 3.7.1
+  version: 3.20.1
 - name: filebeat
   repository: https://helm.elastic.co
   version: 7.9.3
@@ -32,5 +32,5 @@ dependencies:
 - name: cluster-autoscaler
   repository: https://kubernetes.github.io/autoscaler
   version: 9.2.0
-digest: sha256:5c66060bdaca6d9462115ab5b23655ea6a22fcd6e0b48b045c4d92c4d762fe75
-generated: "2020-12-21T08:58:57.676651167+11:00"
+digest: sha256:7ee917102a0741ff1dda530d0e04cc0850ac3669abfd13303f52f6642a4420b0
+generated: "2021-01-19T11:10:09.265161235+11:00"

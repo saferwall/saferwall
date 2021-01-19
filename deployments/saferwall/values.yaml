@@ -35,6 +35,11 @@ minio:
 
     # Size of persistent volume claim
     size: 5Gi
+  
+  ## Configure resource requests and limits
+  resources:
+    requests:
+      memory: 2Gi
 
   accessKey: "<accessKey>"
   secretKey: "<secretKey>"

@@ -10,14 +10,15 @@ helm-install:		## Install Helm.
 	helm version
 
 helm-add-repos:	## Add the required Helm Charts repositories.
-	helm repo add stable https://charts.helm.sh/stable
+	helm repo add isotoma https://isotoma.github.io/charts
+	helm repo add minio https://helm.min.io/
+	helm repo add kvaps https://kvaps.github.io/charts
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
 	helm repo add elastic https://helm.elastic.co
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler
-	helm repo add minio https://helm.min.io/
 	# Update your local Helm chart repository cache.
 	helm repo update
 
