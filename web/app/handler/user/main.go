@@ -114,8 +114,7 @@ func (u *User) GenerateEmailConfirmationToken() (string, error) {
 
 	// Generate encoded token and send it as response.
 	key := viper.GetString("auth.signkey")
-	t, err := token.SignedString([]byte(key))
-	return t, err
+	return token.SignedString([]byte(key))
 }
 
 // GenerateResetPasswordToken creates a JWT token for password change.
@@ -135,8 +134,7 @@ func (u *User) GenerateResetPasswordToken() (string, error) {
 
 	// Generate encoded token and send it as response.
 	key := viper.GetString("auth.signkey")
-	t, err := token.SignedString([]byte(key))
-	return t, err
+	return token.SignedString([]byte(key))
 }
 
 // hashAndSalt hash with a salt a password.
@@ -149,8 +147,9 @@ func hashAndSalt(pwd []byte) string {
 	// than the MinCost (4)
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
 	if err != nil {
-		log.Println(err)
+		log.Errorf("bcrypt.GenerateFromPassword() failed with: %v", err)
 	}
+
 	// GenerateFromPassword returns a byte slice so we need to
 	// convert the bytes to a string and return it
 	return string(hash)
@@ -158,7 +157,12 @@ func hashAndSalt(pwd []byte) string {
 
 // Save adds user to a database.
 func (u *User) Save() {
-	db.UsersCollection.Upsert(strings.ToLower(u.Username), u, &gocb.UpsertOptions{})
+	_, err := db.UsersCollection.Upsert(strings.ToLower(u.Username), u,
+		&gocb.UpsertOptions{})
+	if err != nil {
+		log.Errorf("UsersCollection.Upsert() failed with: %v", err)
+		return
+	}
 	log.Infof("User %s was saved successefuly", u.Username)
 }
 
@@ -200,15 +204,23 @@ func CheckEmailExist(email string) (bool, error) {
 	query := "SELECT COUNT(*) as count FROM `users` WHERE `email`=$email;"
 	params := make(map[string]interface{}, 1)
 	params["email"] = email
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+
+	// Execute Query
+	results, err := db.Cluster.Query(query,
+		&gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
+		log.Errorf("Cluster.Query() failed with: %v", err)
 		return false, err
 	}
-	defer rows.Close()
+	defer results.Close()
 
+	// Interfaces for handling streaming return values.
 	var row interface{}
-	err = rows.One(&row)
+
+	// Stream the first result only into the interface
+	err = results.One(&row)
 	if err != nil {
+		log.Errorf("results.One() failed with: %v", err)
 		return false, err
 	}
 
@@ -238,23 +250,23 @@ func GetUserByUsernameFields(fields []string, username string) (User, error) {
 		query = "SELECT users.* FROM `users` WHERE `username`=$username"
 	}
 
-	// Interfaces for handling streaming return values
-	var row User
-
 	// Execute Query
 	params := make(map[string]interface{}, 1)
 	params["username"] = username
-	rows, err := db.Cluster.Query(query,
+	results, err := db.Cluster.Query(query,
 		&gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
-		fmt.Println("Error executing n1ql query:", err)
-		return row, err
+		log.Errorf("Cluster.Query() failed with: %v", err)
+		return User{}, err
 	}
 
+	// Interfaces for handling streaming return values.
+	var row User
+
 	// Stream the first result only into the interface
-	err = rows.One(&row)
+	err = results.One(&row)
 	if err != nil {
-		fmt.Println("Error iterating query result, reason: ", err)
+		log.Errorf("results.One() failed with: %v", err)
 		return row, err
 	}
 
@@ -273,6 +285,10 @@ func DeleteAllUsers() {
 
 // GetAllUsers return all users (optional: selecting fields)
 func GetAllUsers(fields []string) ([]User, error) {
+
+	// Interfaces for handling streaming return values
+	var row User
+	var retValues []User
 
 	// Select only demanded fields
 	var query string
@@ -293,20 +309,17 @@ func GetAllUsers(fields []string) ([]User, error) {
 	}
 
 	// Execute Query
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
+	results, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
-		log.Println("Error executing n1ql query:", err)
+		log.Errorf("Error executing n1ql query: %v", err)
+		return retValues, nil
 	}
 
-	// Interfaces for handling streaming return values
-	var row User
-	var retValues []User
-
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next() {
-		err := rows.Row(&row)
+	for results.Next() {
+		err := results.Row(&row)
 		if err != nil {
-			log.Println(err)
+			log.Errorf("results.Row() failed with: %v", err)
 		}
 		row.Password = ""
 		retValues = append(retValues, row)
@@ -323,15 +336,15 @@ func GetByUsername(username string) (User, error) {
 	user := User{}
 
 	username = strings.ToLower(username)
-
 	getResult, err := db.UsersCollection.Get(username, &gocb.GetOptions{})
 	if err != nil {
-		return user, err
+		log.Errorf("UsersCollection.Get() failed with: %v", err)
+		return User{}, err
 	}
 
 	err = getResult.Content(&user)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("getResult.Content() failed with: %v", err)
 		return user, err
 	}
 
@@ -348,20 +361,21 @@ func GetUserByEmail(email string) (User, error) {
 	params := make(map[string]interface{}, 1)
 	params["email"] = email
 
+	// Execute Query
+	results, err := db.Cluster.Query(query,
+		&gocb.QueryOptions{NamedParameters: params})
+	if err != nil {
+		log.Errorf("Cluster.Query() failed with: %v", err)
+		return User{}, err
+	}
+	defer results.Close()
+
 	// Interfaces for handling streaming return values
 	var row User
 
-	// Execute Query
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	err = results.One(&row)
 	if err != nil {
-		fmt.Println("Error executing n1ql query:", err)
-		return row, err
-	}
-
-	defer rows.Close()
-
-	err = rows.One(&row)
-	if err != nil {
+		log.Errorf("results.One() failed with: %v", err)
 		return row, err
 	}
 
@@ -376,7 +390,7 @@ func CreateAdminUser() {
 
 	u, _ := GetByUsername(username)
 	if u.Username != "" {
-		log.Printf("Admin user %s already exists, do not created it", username)
+		log.Warnf("Admin user %s already exists, skipping", username)
 		return
 	}
 
@@ -396,8 +410,9 @@ func CreateAdminUser() {
 	f := app.SfwAvatarFileDesc
 	fi, err := f.Stat()
 	if err != nil {
-		log.Fatal("Could not obtain stat, err: ", err)
+		log.Fatalf("Could not obtain stat, err: %v", err)
 	}
+
 	// Upload the sample to the object storage.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -408,7 +423,7 @@ func CreateAdminUser() {
 		log.Fatal("Failed to upload object, err: ", err)
 	}
 
-	log.Println("Successfully created admin user")
+	log.Info("Successfully created admin user")
 }
 
 // deleteUser will delete a user
@@ -635,7 +650,8 @@ func PostUsers(c echo.Context) error {
 
 // PutUsers bulk updates Users
 func PutUsers(c echo.Context) error {
-	return c.String(http.StatusOK, "PutUsers")
+	return c.JSON(http.StatusOK, map[string]string{
+		"verbose_msg": "ok"})
 }
 
 // DeleteUsers handlers /DELETE
@@ -779,7 +795,7 @@ func UpdateAvatar(c echo.Context) error {
 		})
 	}
 
-	log.Println("Successfully uploaded bytes: ", n)
+	log.Infof("Successfully uploaded bytes: %d", n)
 
 	// Update user
 	usr.HasAvatar = true
@@ -904,44 +920,44 @@ func GetActivitiy(c echo.Context) error {
 	// Get all activities from all users whom I am following.
 	params := make(map[string]interface{}, 1)
 	params["user"] = username
-	query := 
+	query :=
 		"SELECT t1.*, f.tags, array_count(array_flatten(array i.infected " +
-		"for i in OBJECT_VALUES(f.multiav.last_scan) when i.infected=true end, 1)) as av_count " +
-		"FROM ( " +
-		"SELECT u.`username`, `activity`.* " +
-		"FROM `users` u " +
-		"UNNEST `activities` AS activity " +
-		"WHERE u.`username` IN " +
-		"(SELECT RAW u1.`following` FROM users u1 " +
-		"WHERE u1.username= $user)[0] " +
-		") t1  " +
-		"LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
-		"WHERE f.status == 2 " +
-		"UNION " +
-		"SELECT u.`username`,  `activity`.* " +
-		"FROM `users` u " +
-		"UNNEST `activities` AS activity " +
-		"WHERE activity.`type` == 'follow' AND activity.`content`.`user` == $user"
+			"for i in OBJECT_VALUES(f.multiav.last_scan) when i.infected=true end, 1)) as av_count " +
+			"FROM ( " +
+			"SELECT u.`username`, `activity`.* " +
+			"FROM `users` u " +
+			"UNNEST `activities` AS activity " +
+			"WHERE u.`username` IN " +
+			"(SELECT RAW u1.`following` FROM users u1 " +
+			"WHERE u1.username= $user)[0] " +
+			") t1  " +
+			"LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
+			"WHERE f.status == 2 " +
+			"UNION " +
+			"SELECT u.`username`,  `activity`.* " +
+			"FROM `users` u " +
+			"UNNEST `activities` AS activity " +
+			"WHERE activity.`type` == 'follow' AND activity.`content`.`user` == $user"
 
 	// Execute Query
-	rows, err := db.Cluster.Query(query, 
-		&gocb.QueryOptions{NamedParameters: params, Adhoc:true,})
+	results, err := db.Cluster.Query(query,
+		&gocb.QueryOptions{NamedParameters: params, Adhoc: true})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": err.Error(),
 		})
 	}
-	defer rows.Close()
+	defer results.Close()
 
 	// Interfaces for handling streaming return values
 	var activities []interface{}
 	var row interface{}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next() {
-		err := rows.Row(&row)
+	for results.Next() {
+		err := results.Row(&row)
 		if err != nil {
-			log.Println(err)
+			log.Errorf("results.Row() failed with: %v", err)
 		}
 		activities = append(activities, row)
 	}
@@ -958,35 +974,35 @@ func GetActivities(c echo.Context) error {
 	params := make(map[string]interface{}, 1)
 	params["user"] = viper.GetString("app.admin_user")
 	query := "SELECT t1.*, f.tags, " +
-			"array_count(array_flatten(array i.infected for i " + 
-			"in OBJECT_VALUES(f.multiav.last_scan) when " +
-			"i.infected=true end, 1)) as av_count " +
-			"FROM (SELECT u.`username`, `activity`.* " +
-			"FROM `users` u " +
-			"UNNEST `activities` AS activity " +
-			"WHERE u.`username` != $user AND u.`activities` IS NOT NULL " +
-			"ORDER BY activity.timestamp DESC LIMIT 30 " +
-			") t1 LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
-			"WHERE f.status == 2"
+		"array_count(array_flatten(array i.infected for i " +
+		"in OBJECT_VALUES(f.multiav.last_scan) when " +
+		"i.infected=true end, 1)) as av_count " +
+		"FROM (SELECT u.`username`, `activity`.* " +
+		"FROM `users` u " +
+		"UNNEST `activities` AS activity " +
+		"WHERE u.`username` != $user AND u.`activities` IS NOT NULL " +
+		"ORDER BY activity.timestamp DESC LIMIT 30 " +
+		") t1 LEFT JOIN `files` f ON KEYS t1.content.sha256 " +
+		"WHERE f.status == 2"
 
 	// Execute Query
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
+	results, err := db.Cluster.Query(query, &gocb.QueryOptions{NamedParameters: params})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"verbose_msg": err.Error(),
 		})
 	}
-	defer rows.Close()
+	defer results.Close()
 
 	// Interfaces for handling streaming return values
 	var activities []interface{}
 	var row interface{}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next() {
-		err := rows.Row(&row)
+	for results.Next() {
+		err := results.Row(&row)
 		if err != nil {
-			log.Println(err)
+			log.Errorf("results.Row() failed with: %v", err)
 		}
 		activities = append(activities, row)
 	}

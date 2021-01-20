@@ -106,11 +106,12 @@ const (
 
 // Save creates a new file
 func (file *File) Save() error {
-	_, error := db.FilesCollection.Upsert(file.Sha256, file, &gocb.UpsertOptions{})
-	if error != nil {
-		log.Fatal(error)
-		return error
+	_, err := db.FilesCollection.Upsert(file.Sha256, file, &gocb.UpsertOptions{})
+	if err != nil {
+		log.Errorf("FilesCollection.Upsert() failed with: %v", err)
+		return err
 	}
+
 	log.Infof("File %s added to database.", file.Sha256)
 	return nil
 }
@@ -118,20 +119,19 @@ func (file *File) Save() error {
 // GetFileBySHA256 return user document
 func GetFileBySHA256(sha256 string) (File, error) {
 
-	// get our file
 	file := File{}
 	getResult, err := db.FilesCollection.Get(sha256, &gocb.GetOptions{})
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("FilesCollection.Get() failed with: %v", err)
 		return file, err
 	}
 
 	err = getResult.Content(&file)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("getResult.Content() failed with: %v", err)
 		return file, err
 	}
-	return file, err
+	return file, nil
 }
 
 // GetAllFiles return all files (optional: selecting fields)
@@ -160,17 +160,17 @@ func GetAllFiles(fields []string) ([]File, error) {
 	}
 
 	// Execute our query
-	rows, err := db.Cluster.Query(query, &gocb.QueryOptions{})
+	results, err := db.Cluster.Query(query, &gocb.QueryOptions{})
 	if err != nil {
 		log.Errorf("Error executing n1ql query: %v", err)
 		return retValues, nil
 	}
 
 	// Stream the values returned from the query into a typed array of structs
-	for rows.Next() {
-		err := rows.Row(&row)
+	for results.Next() {
+		err := results.Row(&row)
 		if err != nil {
-			log.Println(err)
+			log.Errorf("results.Row() failed with: %v", err)
 		}
 		retValues = append(retValues, row)
 		row = File{}
@@ -193,9 +193,9 @@ func (file *File) getByCommentID(commentID string) Comment {
 func DumpRequest(req *http.Request) {
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-		fmt.Print(err.Error())
+		log.Info(err.Error())
 	} else {
-		fmt.Print(string(requestDump))
+		log.Info(string(requestDump))
 	}
 
 }
@@ -221,23 +221,23 @@ func GetFileByFields(fields []string, sha256 string) (File, error) {
 		query = "SELECT files.* FROM `files` WHERE `sha256`=$sha256"
 	}
 
-	// Interfaces for handling streaming return values
-	var row File
-
 	// Execute Query
 	params := make(map[string]interface{}, 1)
 	params["sha256"] = sha256
-	rows, err := db.Cluster.Query(query,
+	results, err := db.Cluster.Query(query,
 		&gocb.QueryOptions{NamedParameters: params, Adhoc: true})
 	if err != nil {
-		log.Printf("Error executing n1ql query: %v", err)
-		return row, err
+		log.Errorf("Cluster.Query() failed with: %v", err)
+		return File{}, err
 	}
 
-	// Stream the first result only into the interface
-	err = rows.One(&row)
+	// Interfaces for handling streaming return values.
+	var row File
+
+	// Stream the first result only into the interface.
+	err = results.One(&row)
 	if err != nil {
-		fmt.Println("Error iterating query result, reason: ", err)
+		log.Errorf("results.One() failed with: %v", err)
 		return row, err
 	}
 
@@ -251,7 +251,6 @@ func GetFile(c echo.Context) error {
 
 	// get path param
 	sha256 := strings.ToLower(c.Param("sha256"))
-
 	matched, _ := regexp.MatchString(sha256regex, sha256)
 	if !matched {
 		return c.JSON(http.StatusBadRequest, Response{
@@ -275,24 +274,26 @@ func GetFile(c echo.Context) error {
 				"verbose_msg": "File not found"})
 		}
 		return c.JSON(http.StatusOK, file)
-	} else {
-		file, err := GetFileBySHA256(sha256)
-		if err != nil {
-			if errors.Is(err, gocb.ErrDocumentNotFound) {
-				return c.JSON(http.StatusNotFound, Response{
-					Message:     err.Error(),
-					Description: "File was not found in our database",
-					Sha256:      sha256,
-				})
-			} else {
-				return c.JSON(http.StatusInternalServerError, Response{
-					Message: err.Error(),
-					Sha256:  sha256,
-				})
-			}
-		}
-		return c.JSON(http.StatusOK, file)
 	}
+
+	// no field filters.
+	file, err := GetFileBySHA256(sha256)
+	if err != nil {
+		if errors.Is(err, gocb.ErrDocumentNotFound) {
+			return c.JSON(http.StatusNotFound, Response{
+				Message:     err.Error(),
+				Description: "File was not found in our database",
+				Sha256:      sha256,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message: err.Error(),
+			Sha256:  sha256,
+		})
+	}
+
+	return c.JSON(http.StatusOK, file)
 }
 
 // PutFile updates a specific file
@@ -429,9 +430,9 @@ func PostFiles(c echo.Context) error {
 	// Open the file
 	file, err := fileHeader.Open()
 	if err != nil {
-		log.Error("Opening a file handle failed, err: ", err)
+		log.Errorf("fileHeader.Open() failed with: %v", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Internal error",
+			Message:     "Failed to open the file",
 			Description: "Internal error",
 			Filename:    fileHeader.Filename,
 		})
@@ -444,10 +445,10 @@ func PostFiles(c echo.Context) error {
 	// Read the content
 	fileContents, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Error("Opening a reading the file content, err: ", err)
+		log.Errorf("ioutil.ReadAll() failed with: %v", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "ReadAll failed",
-			Description: "Internal error",
+			Message:     "Failed to read the file content",
+			Description: err.Error(),
 			Filename:    fileHeader.Filename,
 		})
 	}
@@ -472,7 +473,7 @@ func PostFiles(c echo.Context) error {
 			sha256, bytes.NewReader(fileContents), size,
 			minio.PutObjectOptions{ContentType: "application/octet-stream"})
 		if err != nil {
-			log.Error("Failed to upload object, err: ", err)
+			log.Errorf("PutObjectOptions() failed with: %v", err)
 			return c.JSON(http.StatusInternalServerError, Response{
 				Message:     "PutObject failed",
 				Description: err.Error(),
@@ -480,7 +481,7 @@ func PostFiles(c echo.Context) error {
 				Sha256:      sha256,
 			})
 		}
-		log.Println("Successfully uploaded bytes: ", n)
+		log.Debugf("Successfully uploaded bytes: %d", n)
 
 		// Save to DB
 		now := time.Now().UTC()
@@ -509,10 +510,10 @@ func PostFiles(c echo.Context) error {
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
 		if err != nil {
-			log.Error("Failed to publish to NSQ, err: ", err)
+			log.Errorf("NsqProducer.Publish() failed with: %v", err)
 			return c.JSON(http.StatusInternalServerError, Response{
 				Message:     "Publish failed",
-				Description: "Internal error",
+				Description: err.Error(),
 				Filename:    fileHeader.Filename,
 				Sha256:      sha256,
 			})
@@ -533,8 +534,7 @@ func PostFiles(c echo.Context) error {
 		})
 	}
 
-	// We have already seen this file
-	// Create new submission
+	// We have already seen this file, create new submission
 	now := time.Now().UTC()
 	s := submission{
 		Date:     &now,
@@ -589,10 +589,26 @@ func Download(c echo.Context) error {
 // Actions over a file. Rescan or Download.
 func Actions(c echo.Context) error {
 
-	// Read the json body
+	// get sha256 param.
+	sha256 := strings.ToLower(c.Param("sha256"))
+	matched, _ := regexp.MatchString(sha256regex, sha256)
+	if !matched {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha256",
+			Description: "File hash is not a sha256 hash",
+			Sha256:      sha256,
+		})
+	}
+
+	// Read the json body.
 	b, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		log.Errorf("ioutil.ReadAll() failed with: %v", err)
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Failed to read the file",
+			Description: err.Error(),
+			Sha256:      sha256,
+		})
 	}
 
 	// Verify length
@@ -605,16 +621,26 @@ func Actions(c echo.Context) error {
 	l := gojsonschema.NewBytesLoader(b)
 	result, err := app.FileActionSchema.Validate(l)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		log.Errorf("FileActionSchema.Validate() failed with: %v", err)
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Failed to validate file schema",
+			Description: err.Error(),
+			Sha256:      sha256,
+		})
 	}
+
 	if !result.Valid() {
 		msg := ""
 		for _, desc := range result.Errors() {
 			msg += fmt.Sprintf("%s, ", desc.Description())
 		}
 		msg = strings.TrimSuffix(msg, ", ")
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": msg})
+		log.Debugf("result.Valid() failed with: %s", msg)
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Failed to validate file schema",
+			Description: msg,
+			Sha256:      sha256,
+		})
 	}
 
 	// get the type of action
@@ -625,18 +651,6 @@ func Actions(c echo.Context) error {
 	}
 
 	actionType := actions["type"].(string)
-
-	// get path param
-	sha256 := strings.ToLower(c.Param("sha256"))
-	matched, _ := regexp.MatchString(sha256regex, sha256)
-	if !matched {
-		return c.JSON(http.StatusBadRequest, Response{
-			Message:     "Invalid sha265",
-			Description: "File hash is not a sha256 hash" + sha256,
-			Sha256:      sha256,
-		})
-	}
-
 	_, err = GetFileBySHA256(sha256)
 	if err != nil {
 		if errors.Is(err, gocb.ErrDocumentNotFound) {
@@ -645,13 +659,13 @@ func Actions(c echo.Context) error {
 				Description: "File was not found in our database",
 				Sha256:      sha256,
 			})
-		} else {
-			return c.JSON(http.StatusInternalServerError, Response{
-				Message:     err.Error(),
-				Description: "Internal server error",
-				Sha256:      sha256,
-			})
 		}
+		log.Errorf("GetFileBySHA256() failed with: %v", err)
+		return c.JSON(http.StatusInternalServerError, Response{
+			Message:     "Something unexpected happened",
+			Description: err.Error(),
+			Sha256:      sha256,
+		})
 	}
 
 	switch actionType {
@@ -659,7 +673,7 @@ func Actions(c echo.Context) error {
 		// Push it to NSQ
 		err = app.NsqProducer.Publish("scan", []byte(sha256))
 		if err != nil {
-			log.Error("Failed to publish to NSQ, err: ", err)
+			log.Errorf("NsqProducer.Publish() failed with: %v", err)
 			return c.JSON(http.StatusInternalServerError, Response{
 				Message:     "Publish failed",
 				Description: "Internal error",
@@ -878,50 +892,14 @@ func DeleteComment(c echo.Context) error {
 // ScanFileFromObjectStorage scans which was pushed to object
 // storage directly.
 func ScanFileFromObjectStorage(c echo.Context) error {
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	username := claims["name"].(string)
-
-	// Get user infos.
-	_, err := user.GetByUsername(username)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"verbose_msg": "Username does not exists"})
-	}
 
 	sha256 := strings.ToLower(c.Param("sha256"))
-
-	// Fetch the object
-	reader, err := app.MinioClient.GetObject(
-		app.SamplesSpaceBucket, sha256, minio.GetObjectOptions{})
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	defer reader.Close()
-
-	objInfo, err := reader.Stat()
-	if err != nil {
-		return c.JSON(http.StatusNotFound, err.Error())
-	}
-
-	// Check file size
-	if objInfo.Size > app.MaxFileSize {
-		return c.JSON(http.StatusRequestEntityTooLarge, Response{
-			Message:     "File too large",
-			Description: "The maximum allowed is 64MB",
-			Filename:    sha256,
-		})
-	}
-
-	b := make([]byte, objInfo.Size)
-	reader.Read(b)
-	calculatedSha256 := crypto.GetSha256(b)
-	if sha256 != calculatedSha256 {
-		log.Errorf("Given sha256 %s <> from object sha256: %s", sha256, calculatedSha256)
-		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "given sha diferent from object sha",
-			Description: "Internal error",
-			Filename:    sha256,
+	matched, err := regexp.MatchString(sha256regex, sha256)
+	if !matched {
+		return c.JSON(http.StatusBadRequest, Response{
+			Message:     "Invalid sha256",
+			Description: err.Error(),
+			Sha256:      sha256,
 		})
 	}
 
@@ -931,7 +909,6 @@ func ScanFileFromObjectStorage(c echo.Context) error {
 		Sha256:          sha256,
 		FirstSubmission: &now,
 		LastSubmission:  &now,
-		Size:            objInfo.Size,
 		Status:          queued,
 	}
 
@@ -948,18 +925,17 @@ func ScanFileFromObjectStorage(c echo.Context) error {
 	// Push it to NSQ
 	err = app.NsqProducer.Publish("scan", []byte(sha256))
 	if err != nil {
-		log.Error("Failed to publish to NSQ, err: ", err)
+		log.Errorf("NsqProducer.Publish() failed with: %v", err)
 		return c.JSON(http.StatusInternalServerError, Response{
-			Message:     "Publish failed",
-			Description: "Internal error",
+			Message:     "Failed to publish to NSQ",
+			Description: err.Error(),
 			Sha256:      sha256,
 		})
 	}
 
-	// All went fine
 	return c.JSON(http.StatusCreated, Response{
-		Sha256:      sha256,
 		Message:     "ok",
 		Description: "File queued successfully for analysis",
+		Sha256:      sha256,
 	})
 }
