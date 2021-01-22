@@ -9,6 +9,7 @@ require (
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/golang/protobuf v1.4.1
 	github.com/hillu/go-yara v1.2.2
+	github.com/joho/godotenv v1.3.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/minio/minio-go/v6 v6.0.57
 	github.com/nsqio/go-nsq v1.0.8
