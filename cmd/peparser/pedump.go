@@ -48,7 +48,7 @@ func isDirectory(path string) bool {
 func parsePE(filename string, cmd *cobra.Command) {
 	log.Printf("Processing filename %s", filename)
 
-	pe, err := peparser.Open(filename)
+	pe, err := peparser.New(filename, &peparser.Options{})
 	if err != nil {
 		log.Printf("Error while opening file: %s, reason: %s", filename, err)
 		return

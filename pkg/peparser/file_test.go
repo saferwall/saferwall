@@ -4,13 +4,11 @@
 
 package pe
 
-
 import (
-	"testing"
-	"runtime"
-	"path/filepath"
 	"path"
-
+	"path/filepath"
+	"runtime"
+	"testing"
 )
 
 func getAbsoluteFilePath(testfile string) string {

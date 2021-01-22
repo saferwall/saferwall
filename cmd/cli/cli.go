@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
+	"github.com/joho/godotenv"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/spf13/cobra"
 )
@@ -137,12 +138,15 @@ func rescanFile(cmd *cobra.Command, args []string) {
 }
 
 // processAuthTokens processes a given username and password as env variables.
-func processAuthTokens(cmd *cobra.Command, args []string) {
-	username := args[0]
-	password := args[1]
-	fmt.Println(username)
-	fmt.Println(password)
-	err := SetAuthentificationData(username, password)
+func processAuthTokens() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	username := os.Getenv(DefaultAuthUsername)
+	password := os.Getenv(DefaultAuthPassword)
+	err = SetAuthentificationData(username, password)
 	if err != nil {
 		check(err)
 	}
@@ -180,14 +184,6 @@ func main() {
 		Long:  "A cli tool to interfact with saferwall APIs (scan, rescan, upload, ...)",
 		Run: func(cmd *cobra.Command, args []string) {
 		},
-	}
-
-	var authCmd = &cobra.Command{
-		Use:   "auth",
-		Short: "Read authentification data",
-		Long:  "Read authentification data and set it as environment variable",
-		Args:  cobra.MinimumNArgs(2),
-		Run:   processAuthTokens,
 	}
 
 	var versionCmd = &cobra.Command{
@@ -231,7 +227,6 @@ func main() {
 
 	// Init root command.
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(rescanCmd)
 	rootCmd.AddCommand(s3UploadCmd)
@@ -242,14 +237,17 @@ func main() {
 	downloadCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory to download the files (required")
 	downloadCmd.MarkFlagRequired("output")
 
+	// load config
+	processAuthTokens()
+	// Get credentials.
+	username = os.Getenv(DefaultAuthUsername)
+	password = os.Getenv(DefaultAuthPassword)
+	if username == "" || password == "" {
+		log.Fatal("SAFERWALL_AUTH_USERNAME or SAFERWALL_AUTH_PASSWORD env variable are not set.")
+	}
+
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
-	// Get credentials.
-	username = os.Getenv("SAFERWALL_AUTH_USERNAME")
-	password = os.Getenv("SAFERWALL_AUTH_PASSWORD")
-	if username == "" || password == "" {
-		log.Fatal("SAFERWALL_AUTH_USERNAME or SAFERWALL_AUTH_USERNAME env variable are not set.")
-	}
+
 }
