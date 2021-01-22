@@ -249,16 +249,14 @@ func main() {
 	downloadCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory to download the files (required")
 	downloadCmd.MarkFlagRequired("output")
 
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	// Get credentials.
 	username = os.Getenv("SAFERWALL_AUTH_USERNAME")
 	password = os.Getenv("SAFERWALL_AUTH_PASSWORD")
 	if username == "" || password == "" {
 		log.Fatal("SAFERWALL_AUTH_USERNAME or SAFERWALL_AUTH_USERNAME env variable are not set.")
 	}
-
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 }
