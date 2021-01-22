@@ -18,13 +18,12 @@ import (
 const (
 	bucket  = "saferwall-samples"
 	region  = "us-east-1"
-	timeout = 7
+	timeout = 0
 )
 
 var (
 	forceRescan bool
 	outputDir   string
-	pathToScan  string
 	username    string
 	password    string
 )
@@ -32,6 +31,7 @@ var (
 // scanFile scans an individual file or a directory.
 func scanFile(cmd *cobra.Command, args []string) {
 
+	pathToScan := args[0]
 	_, err := os.Stat(pathToScan)
 	if os.IsNotExist(err) {
 		log.Fatalf("%s does not exist", pathToScan)
@@ -54,32 +54,27 @@ func scanFile(cmd *cobra.Command, args []string) {
 	for _, filename := range fileList {
 
 		// Get sha256
-		dat, err := ioutil.ReadFile(filename)
-		if err != nil {
-			log.Printf("Failed to read %s, reason: %v", pathToScan, err)
+		data, err := ioutil.ReadFile(filename)
+		check(err)
+		sha256 := getSha256(data)
+
+		// Do we have the file in S3.
+		if !isFileFoundInObjStorage(sha256) {
+			uploadObject(bucket, region, sha256, filename)
 		}
-		sha256 := getSha256(dat)
 
 		// Check if we the file exists in the DB.
-		found := isFileFoundInDB(sha256, token)
-		if !found {
-			// File is in S3 but no in DB.
-			if isFileFoundInObjStorage(sha256) {
-				scan(sha256, token)
-			}
-
-			// File is new.
-			upload(filename, token)
-
-		} else {
-			// The file is already in the DB.
-			if forceRescan {
-				rescan(sha256, token)
-			}
+		if !isFileFoundInDB(sha256, token) {
+			scan(sha256, token)
+			time.Sleep(timeout * time.Second)
+			continue
 		}
 
-		// Wait for file to be scanned.
-		time.Sleep(timeout * time.Second)
+		// Force rescan the file?.
+		if forceRescan {
+			rescan(sha256, token)
+			time.Sleep(timeout * time.Second)
+		}
 	}
 }
 
@@ -244,8 +239,6 @@ func main() {
 
 	// Init flags
 	scanCmd.Flags().BoolVarP(&forceRescan, "forcerescan", "f", false, "Force rescan the file.")
-	scanCmd.Flags().StringVarP(&pathToScan, "path", "p", "", "Force rescan the file.")
-	scanCmd.MarkFlagRequired("path")
 	downloadCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory to download the files (required")
 	downloadCmd.MarkFlagRequired("output")
 
