@@ -8,11 +8,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	peparser "github.com/saferwall/saferwall/pkg/peparser"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"path/filepath"
+
+	peparser "github.com/saferwall/saferwall/pkg/peparser"
+	"github.com/spf13/cobra"
 )
 
 var (

@@ -47,3 +47,31 @@ func stringInSlice(a string, list []string) bool {
 	}
 	return false
 }
+
+const (
+	// DefaultAuthUsername represents the key for reading the username
+	// from env variables.
+	DefaultAuthUsername = "SAFERWALL_AUTH_USERNAME"
+	// DefaultAuthPassword represents the key for reading password
+	// from env variables.
+	DefaultAuthPassword = "SAFERWALL_AUTH_PASSWORD"
+)
+
+// SetAuthUsername writes username as an env variable.
+func SetAuthUsername(key, value string) error {
+	return os.Setenv(key, value)
+}
+
+// SetAuthPassword writes password as an env variable.
+func SetAuthPassword(key, value string) error {
+	return os.Setenv(key, value)
+}
+
+// SetAuthentificationData creates new env variables for authenticating users.
+func SetAuthentificationData(username, password string) error {
+	err := SetAuthUsername(DefaultAuthUsername, username)
+	if err != nil {
+		return err
+	}
+	return SetAuthPassword(DefaultAuthPassword, password)
+}
