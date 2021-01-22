@@ -112,7 +112,7 @@ func upload(filepath string, authToken string) {
 	fmt.Println(body)
 }
 
-func rescan(sha256,  authToken string) error {
+func rescan(sha256, authToken string) error {
 
 	log.Printf("rescanning %s\n", sha256)
 
