@@ -149,7 +149,7 @@ func rescan(sha256,  authToken string) error {
 
 func scan(sha256 string, authToken string) error {
 
-	log.Printf("Scanning %s\n", sha256)
+	log.Printf("Scanning %s", sha256)
 
 	url := fileURL + sha256 + "/scan"
 	request, err := http.NewRequest("POST", url, nil)
@@ -166,17 +166,17 @@ func scan(sha256 string, authToken string) error {
 	body := &bytes.Buffer{}
 	_, err = body.ReadFrom(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	resp.Body.Close()
-	fmt.Println(body)
+	log.Print(body)
 	return nil
 }
 
 func isFileFoundInDB(sha256, token string) bool {
 
-	url := fileURL + sha256 + "/?fields=status"
+	url := fileURL + sha256 + "?fields=status"
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("http.Get() failed with %v", err)
