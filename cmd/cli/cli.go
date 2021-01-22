@@ -151,7 +151,6 @@ func processAuthTokens() {
 	}
 	username := os.Getenv(DefaultAuthUsername)
 	password := os.Getenv(DefaultAuthPassword)
-	fmt.Println(username, password)
 	err = SetAuthentificationData(username, password)
 	if err != nil {
 		check(err)
@@ -255,7 +254,6 @@ func main() {
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 
