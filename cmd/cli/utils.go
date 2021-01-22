@@ -8,6 +8,15 @@ import (
 	"os"
 )
 
+const (
+	// DefaultAuthUsername represents the key for reading the username
+	// from env variables.
+	DefaultAuthUsername = "SAFERWALL_AUTH_USERNAME"
+	// DefaultAuthPassword represents the key for reading password
+	// from env variables.
+	DefaultAuthPassword = "SAFERWALL_AUTH_PASSWORD"
+)
+
 func check(e error) {
 	if e != nil {
 		log.Fatal(e)
@@ -47,15 +56,6 @@ func stringInSlice(a string, list []string) bool {
 	}
 	return false
 }
-
-const (
-	// DefaultAuthUsername represents the key for reading the username
-	// from env variables.
-	DefaultAuthUsername = "SAFERWALL_AUTH_USERNAME"
-	// DefaultAuthPassword represents the key for reading password
-	// from env variables.
-	DefaultAuthPassword = "SAFERWALL_AUTH_PASSWORD"
-)
 
 // SetAuthUsername writes username as an env variable.
 func SetAuthUsername(key, value string) error {

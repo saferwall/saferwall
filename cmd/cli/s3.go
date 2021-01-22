@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -59,7 +60,7 @@ func uploadObject(bucket, region, key, filename string) error {
 		return errors.New(errMsg)
 	}
 
-	fmt.Printf("Successfully uploaded [%q] %q to %q\n", key, filename, bucket)
+	log.Printf("Successfully uploaded [%q] %q to %q", key, filename, bucket)
 
 	return nil
 }
@@ -148,9 +149,14 @@ func isFileFoundInObjStorage(sha256 string) bool {
 	svc := s3.New(sess)
 	_, err := svc.HeadObject(&s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(sha256)})
+		Key:    aws.String(sha256),
+	})
 	if err != nil {
-		log.Printf("svc.HeadObject failed with: %v", err)
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() != "NotFound" {
+				log.Printf("svc.HeadObject failed with: %v", err)
+			}
+		}
 		return false
 	}
 
