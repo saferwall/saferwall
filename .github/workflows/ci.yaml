@@ -72,18 +72,16 @@ jobs:
       - name: Create Kind cluster and install dependencies
         run: sudo make kind-up
 
-      - name: Install Helm, add repos, and build dependencies
+      - name: Install Helm and cert-manager
         run: |
             make helm-install \
             && sudo make k8s-init-cert-manager
         
       - name: Helm Release
-        run: |
-            cd ./deployments \
-            && sudo helm install saferwall --generate-name
+        run: make helm-release
 
       - name: Wait for pods to be ready
-        run: sudo kubectl wait --for=condition=Ready pods --all --timeout=360s
+        run: sudo kubectl wait --for=condition=Ready pods --all --timeout=600s
 
       - name: Add DNS entry
         run: echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts

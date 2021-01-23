@@ -535,7 +535,6 @@ ingress-nginx:
 ########## CERT-MANAGER ############
 cert-manager:
   enabled: true
-  installCRDs: true
   ingressShim:
     defaultIssuerName: selfsigned-issuer
     # defaultIssuerName: letsencrypt-prod

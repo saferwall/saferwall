@@ -11,9 +11,6 @@ dependencies:
 - name: nfs-server-provisioner
   repository: https://kvaps.github.io/charts
   version: 1.2.1
-- name: cert-manager
-  repository: https://charts.jetstack.io
-  version: v1.1.0
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 3.20.1
@@ -32,5 +29,5 @@ dependencies:
 - name: cluster-autoscaler
   repository: https://kubernetes.github.io/autoscaler
   version: 9.2.0
-digest: sha256:7ee917102a0741ff1dda530d0e04cc0850ac3669abfd13303f52f6642a4420b0
-generated: "2021-01-19T11:10:09.265161235+11:00"
+digest: sha256:b23cbc6b136be378521b3354e30726e8586786b9def278aa5488518422cbcaf9
+generated: "2021-01-23T18:11:06.168059701+11:00"

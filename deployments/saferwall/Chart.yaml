@@ -28,10 +28,6 @@ dependencies:
       version: 1.2.1
       repository: https://kvaps.github.io/charts
       condition: nfs-server-provisioner.enabled
-    - name: cert-manager
-      version: 1.1.0
-      repository: https://charts.jetstack.io
-      condition: cert-manager.enabled
     - name: ingress-nginx
       version: 3.20.1
       repository: https://kubernetes.github.io/ingress-nginx/
