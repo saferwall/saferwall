@@ -41,7 +41,9 @@ kops-create-cluster:			## Create k8s cluster
 		--node-size $(AWS_NODE_SIZE) \
 		--zones $(AWS_NODE_ZONES) \
 		--cloud aws \
-		--name ${KOPS_CLUSTER_NAME} 
+		--topology private \
+		--networking calico \
+		--name ${KOPS_CLUSTER_NAME}
 	kops edit cluster --name $(KOPS_CLUSTER_NAME)
 	kops update cluster --name $(KOPS_CLUSTER_NAME) --yes
 	sleep 10m

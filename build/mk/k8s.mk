@@ -1,21 +1,27 @@
-KUBECTL_VERSION = 1.19.2
+KUBECTL_VER = 1.19.7
 kubectl-install:		## Install kubectl.
-	curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VERSION)/bin/linux/amd64/kubectl
+	curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl
 	chmod +x kubectl
 	sudo mv kubectl /usr/local/bin
 	kubectl version --client
 
-KUBECTX_URL=https://github.com/ahmetb/kubectx/releases/download/v0.9.0/kubectx_v0.9.0_linux_x86_64.tar.gz
-KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v0.9.0/kubens_v0.9.0_linux_x86_64.tar.gz
-k8s-kubectx-install:		## Install kubectx/kubens
+KUBECTX_VER = 0.9.1
+KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
+k8s-kubectx-install:		## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
 	tar zxvf /tmp/kubectx.tar.gz -C /tmp
 	sudo mv /tmp/kubectx /usr/local/bin/
 	chmod +x /usr/local/bin/kubectx
+	kubectx
+
+KUBENS_VER = 0.9.1
+KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
+k8s-kubens-install:			## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
 	tar zxvf /tmp/kubens.tar.gz -C /tmp
 	sudo mv /tmp/kubens /usr/local/bin/
 	chmod +x /usr/local/bin/kubens
+	kubens
 
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
@@ -141,7 +147,7 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 k8s-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager
-	# Install the CustomResourceDefinition
+	# Install cert-manager.
 	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.2/cert-manager.yaml
 	# Verify the installation.
 	kubectl wait --namespace cert-manager \
