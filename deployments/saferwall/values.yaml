@@ -84,10 +84,16 @@ elasticsearch:
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
+  resources:
+    requests:
+      cpu: "500m"
 
 ####### KIBANA #########
 kibana:
   enabled: false
+  resources:
+    requests:
+      cpu: "500m"
 
 ####### PROMETHEUS #########
 prometheus-operator:
@@ -529,6 +535,7 @@ ingress-nginx:
 ########## CERT-MANAGER ############
 cert-manager:
   enabled: true
+  installCRDs: true
   ingressShim:
     defaultIssuerName: selfsigned-issuer
     # defaultIssuerName: letsencrypt-prod
