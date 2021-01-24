@@ -122,8 +122,21 @@ k8s-delete:			## delete all
 	kubectl delete cbc cb-saferwall ; kubectl create -f couchbase-cluster.yaml
 	kubectl delete deployments backend ; kubectl apply -f backend.yaml
 
-k8s-pf:				## Port fordward
-	kubectl port-forward --namespace default $(POD) $(PORT):$(PORT)
+k8s-pf-kibana:			## Port fordward Kibana
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 &
+	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
+
+k8s-pf-nsq:				## Port fordward NSQ admin service.
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsq-admin 4171:4171 &
+	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
+
+k8s-pf-grafana:			## Port fordward grafana dashboard service.
+	kubectl port-forward deployment/$(SAFERWALL_RELEASE_NAME)-grafana 3000:3000 &
+	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
+
+k8s-pf-couchbase:		## Port fordward couchbase ui service.
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 &
+	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
 k8s-kube-capacity: 	## Install kube-capacity
 	wget https://github.com/robscott/kube-capacity/releases/download/0.4.0/kube-capacity_0.4.0_Linux_x86_64.tar.gz -P /tmp
