@@ -24,8 +24,8 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         ```mk
         # supported values ['virtualbox', 'kvm2']
         export MINIKUBE_DRIVER=virtualbox
-        export MINIKUBE_CPU=2
-        export MINIKUBE_MEMORY=6144
+        export MINIKUBE_CPU=4
+        export MINIKUBE_MEMORY=8192
         export MINIKUBE_DISK_SIZE=40GB
         ```
 5. _Optional_ step: building the containers if you do not wish to use the public ones or you want to build your own.
