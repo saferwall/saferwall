@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,11 +6,13 @@ package avast
 
 import (
 	"errors"
-	"github.com/saferwall/saferwall/pkg/utils"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
@@ -51,9 +53,8 @@ func GetProgramVersion() (string, error) {
 // ScanFilePath scans from a filepath.
 func ScanFilePath(filepath string) (Result, error) {
 
-	res := Result{}
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return res, err
+		return Result{}, err
 	}
 
 	// Execute the scanner with the given file path
@@ -68,17 +69,22 @@ func ScanFilePath(filepath string) (Result, error) {
 	//  1 - some infected file was found
 	//  2 - an error occurred
 	if err != nil && err.Error() != "exit status 1" {
-		return res, err
+		return Result{}, err
 	}
 
-	// Check if the file is clean
+	// Check if the file is clean.
 	if strings.Contains(out, "[OK]") {
-		res.Infected = false
-		return res, nil
+		return Result{}, nil
 	}
 
 	// Sanitize the detection output
 	det := strings.Split(out, "\t")
+	if len(det) < 1 {
+		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", out)
+		return Result{}, errUnexpectedOutput
+	}
+
+	res := Result{}
 	res.Output = strings.TrimSpace(det[1])
 	res.Infected = true
 	return res, nil

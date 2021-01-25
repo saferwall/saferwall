@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -11,13 +11,12 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
-
 const (
 	cmd      = "/opt/drweb.com/bin/drweb-ctl"
 	regexStr = "infected with (.*)"
 
 	// ConfigD represents the configuration daemon
-	ConfigD  = "/opt/drweb.com/bin/drweb-configd"
+	ConfigD = "/opt/drweb.com/bin/drweb-configd"
 )
 
 // Result represents detection results
@@ -28,7 +27,7 @@ type Result struct {
 
 // Version represents all DrWeb components' versions
 type Version struct {
-	CoreEngineVersion   string `json:"core_engine_version"`
+	CoreEngineVersion string `json:"core_engine_version"`
 }
 
 // GetVersion returns ScanCL, Core and VDF versions
@@ -123,14 +122,14 @@ func ScanFile(filepath string) (Result, error) {
 	// 	   30: Not a drive
 	// 	   31: Unexpected EOF
 
-	res := Result{}
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// Grab the detection result
 	re := regexp.MustCompile(regexStr)
 	l := re.FindStringSubmatch(out)
+	res := Result{}
 	if len(l) > 0 {
 		res.Output = l[1]
 		res.Infected = true

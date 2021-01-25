@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -41,19 +41,17 @@ func ScanFile(filePath string) (Result, error) {
 	//  10   some files could not be scanned (may be threats)
 	//  50   threat found
 	//  100  error
-
-	res := Result{}
-	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 50" {
-		return res, err
+	if err != nil && err.Error() != "exit status 1" &&
+		err.Error() != "exit status 50" {
+		return Result{}, err
 	}
 
 	// Scan started at:   Tue Jan  1 01:32:57 2019
 	// name="/samples/Wauchos.exe", result="Win32/TrojanDownloader.Wauchos.A trojan", action="retained", info=""
-
 	re := regexp.MustCompile(`result="([\s\w/.]+)"`)
 	l := re.FindStringSubmatch(out)
 	if len(l) < 1 {
-		return res, nil
+		return Result{}, nil
 	}
 
 	// Clean up detection name
@@ -65,6 +63,8 @@ func ScanFile(filePath string) (Result, error) {
 	det = strings.TrimSuffix(det, " Constructor")
 	det = strings.TrimSuffix(det, " worm")
 	det = strings.TrimSpace(det)
+
+	res := Result{}
 	res.Infected = true
 	res.Output = det
 	return res, nil

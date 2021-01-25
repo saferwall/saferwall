@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -28,7 +28,8 @@ type Result struct {
 // GetVersion returns update version.
 func GetVersion() (string, error) {
 	mpenginedll := path.Join(loadlibraryPath, mpenginedll)
-	versionOut, err := utils.ExecCommand("exiftool", "-ProductVersion", mpenginedll)
+	versionOut, err := utils.ExecCommand("exiftool", "-ProductVersion",
+		mpenginedll)
 	if err != nil {
 		return "", err
 	}
@@ -38,17 +39,15 @@ func GetVersion() (string, error) {
 // ScanFile a file with Windows Defender scanner.
 func ScanFile(filePath string) (Result, error) {
 
-	res := Result{}
-
 	// get current working directory
 	dir, err := utils.Getwd()
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// mpclient requires us to run from loadlibrary folder or it fails
 	if err := os.Chdir(loadlibraryPath); err != nil {
-		return res, err
+		return Result{}, err
 	}
 	defer os.Chdir(dir)
 
@@ -56,12 +55,13 @@ func ScanFile(filePath string) (Result, error) {
 	// main(): usage: ./mpclient [filenames...]
 	mpclientOut, err := utils.ExecCommand(mpclient, filePath)
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// main(): Scanning /samples/locky...
 	// EngineScanCallback(): Scanning input
 	// EngineScanCallback(): Threat Ransom:Win32/Locky.A identified.
+	res := Result{}
 	lines := strings.Split(mpclientOut, "\n")
 	for _, line := range lines {
 		if !strings.Contains(line, "EngineScanCallback(): Threat ") {

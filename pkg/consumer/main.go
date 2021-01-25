@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -92,8 +92,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Download the sample.
 	bucketName := viper.GetString("minio.spacename")
 	filePath := path.Join("/samples", sha256)
-	var b []byte
-	if b, err = utils.Download(minioClient, bucketName, filePath, sha256); err != nil {
+	b, err := utils.Download(minioClient, bucketName, filePath, sha256)
+	if err != nil {
 		contextLogger.Errorf("Failed to download file %s", sha256)
 		return err
 	}

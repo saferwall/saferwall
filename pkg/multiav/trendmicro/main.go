@@ -1,22 +1,22 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package trendmicro
 
 import (
-	"time"
-	"regexp"
-	"path"
 	"io/ioutil"
+	"path"
+	"regexp"
+	"time"
 
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
 	splxmain = "/opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain"
-	logDir = "/var/log/TrendMicro/SProtectLinux/"
-	tmsplx = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
+	logDir   = "/var/log/TrendMicro/SProtectLinux/"
+	tmsplx   = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
 )
 
 // Result represents detection results
@@ -27,9 +27,9 @@ type Result struct {
 
 // Version represents all avira components' versions
 type Version struct {
-	EngineVersion string `json:"engine_version"`
-	PatternVersion   string `json:"pattern_version"`
-	SpywarePatternVersion    string `json:"spyware_pattern_version"`
+	EngineVersion         string `json:"engine_version"`
+	PatternVersion        string `json:"pattern_version"`
+	SpywarePatternVersion string `json:"spyware_pattern_version"`
 }
 
 // GetVersion returns Engine, Virus and Patterns versions
@@ -47,7 +47,7 @@ func GetVersion() (Version, error) {
 
 	// Interesting keys:
 	// <P Name="EngineVersion" Value="12.000.1008"/>
-    // <P Name="PatternVersion" Value="16.259.00"/>
+	// <P Name="PatternVersion" Value="16.259.00"/>
 	// <P Name="SpywarePatternVersion" Value="2.337.00"/>
 	engineReg := regexp.MustCompile(`<P Name="EngineVersion" Value="(.*)"/>`)
 	l := engineReg.FindStringSubmatch(data)
@@ -73,14 +73,12 @@ func GetVersion() (Version, error) {
 // ScanFile scans a given file.
 func ScanFile(filepath string) (Result, error) {
 
-	res := Result{}
-
 	// TrendMicro does not really provide a simple way to grab the results
 	// We need to read it from a log file. We start by deleting all files
 	// from previous scan results.
 	err := utils.DeleteDirContent(logDir)
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// splxmain does not seem to be able to scan a file directly,
@@ -88,27 +86,27 @@ func ScanFile(filepath string) (Result, error) {
 	// So we create a tmp dir and we make a copy of the file.
 	tempDir, err := ioutil.TempDir("/tmp", "trendmicro")
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	filename := path.Base(filepath)
 	filePathCopy := path.Join(tempDir, filename)
 	err = utils.CopyFile(filepath, filePathCopy)
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// Execute the scanner with the given file path.
 	out, err := utils.ExecCommand(splxmain, "-m", path.Dir(filePathCopy))
-	if err != nil  {
-		return res, err
+	if err != nil {
+		return Result{}, err
 	}
 
 	// The logs are found in files that have the following pattern:
 	// Virus.20201001.0001 or Spyware.20201001.0001.
 	currentTime := time.Now()
 	todayDate := currentTime.Format("20060102")
-	virusLog := path.Join(logDir, "Virus." + todayDate + ".0001")
+	virusLog := path.Join(logDir, "Virus."+todayDate+".0001")
 
 	// The content of the Virus.XYZ and Spyware.XYZ log looks like:
 	// ...
@@ -117,8 +115,9 @@ func ScanFile(filepath string) (Result, error) {
 	// function_code=12
 	// ...
 	re := regexp.MustCompile("virus_name=(.*)")
-	
+
 	// Read the Virus.XYZ log
+	res := Result{}
 	data, virusErr := utils.ReadAll(virusLog)
 	if virusErr == nil && len(data) > 0 {
 		out = string(data)
@@ -131,9 +130,9 @@ func ScanFile(filepath string) (Result, error) {
 	}
 
 	// Might be a spyware.
-	spywareLog := path.Join(logDir, "Spyware." + todayDate + ".0001")
+	spywareLog := path.Join(logDir, "Spyware."+todayDate+".0001")
 	data, spywareErr := utils.ReadAll(spywareLog)
-	if spywareErr == nil && len(data) > 0{
+	if spywareErr == nil && len(data) > 0 {
 		out = string(data)
 		l := re.FindStringSubmatch(out)
 		if len(l) > 0 {
@@ -150,5 +149,5 @@ func ScanFile(filepath string) (Result, error) {
 		return Result{}, spywareErr
 	}
 
-	return res, nil
+	return Result{}, nil
 }

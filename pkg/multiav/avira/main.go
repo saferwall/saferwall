@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -71,11 +71,14 @@ func GetVersion() (Version, error) {
 	lines := strings.Split(out, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "scancl Version:") {
-			ver.ScanCLVersion = strings.TrimSpace(strings.TrimPrefix(line, "scancl Version:"))
+			ver.ScanCLVersion = strings.TrimSpace(
+				strings.TrimPrefix(line, "scancl Version:"))
 		} else if strings.Contains(line, "core Version:") {
-			ver.CoreVersion = strings.TrimSpace(strings.TrimPrefix(line, "core Version:"))
+			ver.CoreVersion = strings.TrimSpace(
+				strings.TrimPrefix(line, "core Version:"))
 		} else if strings.Contains(line, "VDF Version:") {
-			ver.VDFVersion = strings.TrimSpace(strings.TrimPrefix(line, "VDF Version:"))
+			ver.VDFVersion = strings.TrimSpace(
+				strings.TrimPrefix(line, "VDF Version:"))
 		}
 	}
 
@@ -115,8 +118,9 @@ func ScanFile(filepath string) (Result, error) {
 	// 	  217: Directory access denied (no permissions)
 
 	res := Result{}
-	if err != nil && err.Error() != "exit status 1" && err.Error() != "exit status 2" &&
-		err.Error() != "exit status 3" && err.Error() != "exit status 101" {
+	if err != nil && err.Error() != "exit status 1" &&
+		err.Error() != "exit status 2" && err.Error() != "exit status 3" &&
+		err.Error() != "exit status 101" {
 		return res, err
 	}
 

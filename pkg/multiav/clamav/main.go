@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -46,26 +46,26 @@ func ScanFile(filePath string) (Result, error) {
 	//  64: Can't write to temporary directory (please specify another one).
 	//  70: Can't allocate memory (calloc).
 	//  71: Can't allocate memory (malloc).
-	res := Result{}
 	if err != nil && err.Error() != "exit status 1" {
-		return res, err
+		return Result{}, err
 	}
 
 	// samples/locky: Win.Malware.Locky-5540 FOUND
 	// samples/putty: OK
 	if strings.HasSuffix(out, "OK\n") {
-		res.Infected = false
-	} else if strings.HasSuffix(out, "FOUND\n") {
-		res.Infected = true
+		return Result{}, nil
+	}
+	
+	if !strings.HasSuffix(out, "FOUND\n") {
+		return Result{}, nil
 	}
 
 	// Extract detection name if infected
-	if res.Infected {
-		parts := strings.Split(out, ": ")
-		det := parts[len(parts)-1]
-		res.Output = strings.TrimSuffix(det, " FOUND\n")
-	}
-
+	res := Result{}
+	parts := strings.Split(out, ": ")
+	det := parts[len(parts)-1]
+	res.Output = strings.TrimSuffix(det, " FOUND\n")
+	res.Infected = true
 	return res, nil
 }
 
@@ -74,13 +74,12 @@ func GetVersion() (string, error) {
 
 	// Execute the scanner with the given file path
 	out, err := utils.ExecCommand(clamdscan, "--version")
-	// ClamAV 0.100.2/25284/Wed Jan  9 18:42:45 2019
-
 	if err != nil {
 		return "", err
 	}
-
+	
 	// Extract the version
+	// ClamAV 0.100.2/25284/Wed Jan  9 18:42:45 2019
 	ver := strings.Split(out, "/")[0]
 	ver = strings.Split(ver, " ")[1]
 	return ver, nil

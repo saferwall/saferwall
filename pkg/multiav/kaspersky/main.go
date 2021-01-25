@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -64,13 +64,17 @@ func GetDatabaseVersion() (Version, error) {
 	lines := strings.Split(databaseOut, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "Current AV databases date") {
-			ver.CurrentAVDatabasesDate = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases date:"))
+			ver.CurrentAVDatabasesDate = strings.TrimSpace(
+				strings.TrimPrefix(line, "Current AV databases date:"))
 		} else if strings.Contains(line, "Last AV databases update date") {
-			ver.LastAVDatabasesUpdateDate = strings.TrimSpace(strings.TrimPrefix(line, "Last AV databases update date:"))
+			ver.LastAVDatabasesUpdateDate = strings.TrimSpace(
+				strings.TrimPrefix(line, "Last AV databases update date:"))
 		} else if strings.Contains(line, "Current AV databases state") {
-			ver.CurrentAVDatabasesState = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases state:"))
+			ver.CurrentAVDatabasesState = strings.TrimSpace(
+				strings.TrimPrefix(line, "Current AV databases state:"))
 		} else if strings.Contains(line, "Current AV databases records") {
-			ver.CurrentAVDatabasesRecords = strings.TrimSpace(strings.TrimPrefix(line, "Current AV databases records:"))
+			ver.CurrentAVDatabasesRecords = strings.TrimSpace(
+				strings.TrimPrefix(line, "Current AV databases records:"))
 		}
 	}
 	return ver, nil
@@ -78,9 +82,6 @@ func GetDatabaseVersion() (Version, error) {
 
 // ScanFile a file with Kaspersky scanner
 func ScanFile(filePath string) (Result, error) {
-
-	// Clean the states
-	res := Result{}
 
 	// Return codes
 	// 0 – command / task completed successfully.
@@ -95,7 +96,8 @@ func ScanFile(filePath string) (Result, error) {
 	// 65 – all other errors.
 
 	// Run now
-	out, err := utils.ExecCommand("sudo", kesl, "--scan-file", filePath, "--action", "Skip")
+	out, err := utils.ExecCommand("sudo", kesl, "--scan-file",
+		filePath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip
 	// Scanned objects                     : 1
 	// Total detected objects              : 1
@@ -109,16 +111,17 @@ func ScanFile(filePath string) (Result, error) {
 	// Skipped                             : 0
 
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 	// Check if infected
 	if !strings.Contains(out, "Total detected objects              : 1") {
-		return res, nil
+		return Result{}, nil
 	}
 
 	// Grab detection name with a separate cmd
 	// sudo /opt/kaspersky/kesl/bin/kesl-control -E --query "EventType=='ThreatDetected'"
-	out, err = utils.ExecCommand("sudo", kesl, "-E", "--query", "EventType=='ThreatDetected'")
+	out, err = utils.ExecCommand("sudo", kesl, "-E", "--query",
+		"EventType=='ThreatDetected'")
 	// EventType=ThreatDetected
 	// EventId=2544
 	// Date=2019-06-11 22:12:16
@@ -139,12 +142,13 @@ func ScanFile(filePath string) (Result, error) {
 	// AccessUser=root
 	// AccessUserId=0
 	if err != nil {
-		return res, err
+		return Result{}, err
 	}
 
 	// so hackish, there is no easy way to grab detection name
 	// no way to clean all these events as it was in previous version
 	// so pretty hardcoded for now
+	res := Result{}
 	lines := strings.Split(out, "\n\n")
 	if len(lines) > 0 {
 		index := len(lines) - 1

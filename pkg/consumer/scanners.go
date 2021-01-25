@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -267,40 +267,54 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult) {
 
 	switch engine {
 	case "avast":
-		res, err = avastclient.ScanFile(avast_api.NewAvastScannerClient(conn), filePath)
+		res, err = avastclient.ScanFile(
+			avast_api.NewAvastScannerClient(conn), filePath)
 	case "avira":
-		res, err = aviraclient.ScanFile(avira_api.NewAviraScannerClient(conn), filePath)
+		res, err = aviraclient.ScanFile(
+			avira_api.NewAviraScannerClient(conn), filePath)
 	case "bitdefender":
-		res, err = bitdefenderclient.ScanFile(bitdefender_api.NewBitdefenderScannerClient(conn), filePath)
+		res, err = bitdefenderclient.ScanFile(
+			bitdefender_api.NewBitdefenderScannerClient(conn), filePath)
 	case "drweb":
-		res, err = drwebclient.ScanFile(drweb_api.NewDrWebScannerClient(conn), filePath)
+		res, err = drwebclient.ScanFile(
+			drweb_api.NewDrWebScannerClient(conn), filePath)
 	case "clamav":
-		res, err = clamavclient.ScanFile(clamav_api.NewClamAVScannerClient(conn), filePath)
+		res, err = clamavclient.ScanFile(
+			clamav_api.NewClamAVScannerClient(conn), filePath)
 	case "comodo":
-		res, err = comodoclient.ScanFile(comodo_api.NewComodoScannerClient(conn), filePath)
+		res, err = comodoclient.ScanFile(
+			comodo_api.NewComodoScannerClient(conn), filePath)
 	case "eset":
-		res, err = esetclient.ScanFile(eset_api.NewEsetScannerClient(conn), filePath)
+		res, err = esetclient.ScanFile(
+			eset_api.NewEsetScannerClient(conn), filePath)
 	case "fsecure":
-		res, err = fsecureclient.ScanFile(fsecure_api.NewFSecureScannerClient(conn), filePath)
+		res, err = fsecureclient.ScanFile(
+			fsecure_api.NewFSecureScannerClient(conn), filePath)
 	case "kaspersky":
-		res, err = kasperskyclient.ScanFile(kaspersky_api.NewKasperskyScannerClient(conn), filePath)
+		res, err = kasperskyclient.ScanFile(
+			kaspersky_api.NewKasperskyScannerClient(conn), filePath)
 	case "mcafee":
-		res, err = mcafeeclient.ScanFile(mcafee_api.NewMcAfeeScannerClient(conn), filePath)
+		res, err = mcafeeclient.ScanFile(
+			mcafee_api.NewMcAfeeScannerClient(conn), filePath)
 	case "symantec":
-		res, err = symantecclient.ScanFile(symantec_api.NewSymantecScannerClient(conn), filePath)
+		res, err = symantecclient.ScanFile(
+			symantec_api.NewSymantecScannerClient(conn), filePath)
 	case "sophos":
-		res, err = sophosclient.ScanFile(sophos_api.NewSophosScannerClient(conn), filePath)
+		res, err = sophosclient.ScanFile(
+			sophos_api.NewSophosScannerClient(conn), filePath)
 	case "trendmicro":
-		res, err = trendmicroclient.ScanFile(trendmicro_api.NewTrendMicroScannerClient(conn), filePath)
+		res, err = trendmicroclient.ScanFile(
+			trendmicro_api.NewTrendMicroScannerClient(conn), filePath)
 	case "windefender":
-		res, err = windefenderclient.ScanFile(windefender_api.NewWinDefenderScannerClient(conn), filePath)
+		res, err = windefenderclient.ScanFile(
+			windefender_api.NewWinDefenderScannerClient(conn), filePath)
 	}
 
 	if err != nil {
 		contextLogger.Errorf("Failed to scan file [%s]: %v", engine, err)
 	}
 	c <- multiav.ScanResult{Enabled: enabled, Output: res.Output,
-		 Infected: res.Infected, Update: res.Update}
+		Infected: res.Infected, Update: res.Update}
 
 	if utils.Exists(filecopyPath) {
 		if err = utils.DeleteFile(filecopyPath); err != nil {

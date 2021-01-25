@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -16,7 +16,8 @@ type filePathTest struct {
 }
 
 var filepathScanTest = []filePathTest{
-	{"../../../test/multiav/eicar.com", Result{Infected: true, Output: "Eicar-Test-Signature"}},
+	{"../../../test/multiav/eicar.com",
+		Result{Infected: true, Output: "Eicar-Test-Signature"}},
 }
 
 func TestGetVersion(t *testing.T) {
@@ -28,17 +29,20 @@ func TestGetVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
 	l := re.FindStringSubmatch(ver.ScanCLVersion)
 	if len(l) == 0 {
-		t.Errorf("ScanCL version was incorrect, got: %s, want something similar to: 1.9.161.2", ver)
+		t.Errorf("ScanCL version was incorrect, got: %s,\
+		 want something similar to: 1.9.161.2", ver)
 	}
 
 	l = re.FindStringSubmatch(ver.CoreVersion)
 	if len(l) == 0 {
-		t.Errorf("Core version was incorrect, got: %s, want something similar to: 1.9.2.0", ver)
+		t.Errorf("Core version was incorrect, got: %s,\
+		 want something similar to: 1.9.2.0", ver)
 	}
 
 	l = re.FindStringSubmatch(ver.VDFVersion)
 	if len(l) == 0 {
-		t.Errorf("VDF version was incorrect, got: %s, want something similar to: 7.15.16.96", ver)
+		t.Errorf("VDF version was incorrect, got: %s,\
+		 want something similar to: 7.15.16.96", ver)
 	}
 }
 
@@ -47,10 +51,12 @@ func TestScanFile(t *testing.T) {
 		t.Run(tt.filepath, func(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
-				t.Fatalf("TestScanFile(%s) failed, err: %s", tt.filepath, err)
+				t.Fatalf("TestScanFile(%s) failed, err: %s",
+				 tt.filepath, err)
 			}
 			if got != tt.want {
-				t.Errorf("TestScanFile(%s) got %v, want %v", tt.filepath, got, tt.want)
+				t.Errorf("TestScanFile(%s) got %v, want %v",
+				 tt.filepath, got, tt.want)
 			}
 		})
 	}

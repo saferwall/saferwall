@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -15,7 +15,8 @@ type filePathTest struct {
 }
 
 var filepathScanTest = []filePathTest{
-	{"../../../test/multiav/eicar.com", Result{Infected: true, Output: "EICAR-Test-File (not a virus)"}},
+	{"../../../test/multiav/eicar.com",
+		Result{Infected: true, Output: "EICAR-Test-File (not a virus)"}},
 }
 
 func TestGetProgramVersion(t *testing.T) {
@@ -27,7 +28,8 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d\.\d{6}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("Program version was incorrect, got: %s, want something similar to: 7.141118", version)
+		t.Fatalf("Program version was incorrect, got: %s,\
+		 want something similar to: 7.141118", version)
 	}
 }
 
@@ -36,10 +38,12 @@ func TestScanFilePath(t *testing.T) {
 		t.Run(tt.filepath, func(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
-				t.Fatalf("TestScanFilePath(%s) failed, err: %s", tt.filepath, err)
+				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
+				 tt.filepath, err)
 			}
 			if got != tt.want {
-				t.Errorf("TestScanFilePath(%s) got %v, want %v", tt.filepath, got, tt.want)
+				t.Errorf("TestScanFilePath(%s) got %v, want %v",
+				 tt.filepath, got, tt.want)
 			}
 		})
 	}

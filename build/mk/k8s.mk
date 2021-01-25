@@ -23,6 +23,14 @@ k8s-kubens-install:			## Install Kubens
 	chmod +x /usr/local/bin/kubens
 	kubens
 
+KUBE_CAPACITY_VER = 0.5.0
+k8s-kube-capacity: 	## Install kube-capacity
+	wget https://github.com/robscott/kube-capacity/releases/download/$(KUBE_CAPACITY_VER)/kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz -P /tmp
+	cd /tmp \
+		&& tar zxvf kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz \
+		&& sudo mv kube-capacity /usr/local/bin \
+		&& kube-capacity
+
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
 k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-deploy-nsq k8s-deploy-backend k8s-deploy-consumer k8s-deploy-multiav ## Deploy all stack in k8s
@@ -137,13 +145,6 @@ k8s-pf-grafana:			## Port fordward grafana dashboard service.
 k8s-pf-couchbase:		## Port fordward couchbase ui service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
-
-k8s-kube-capacity: 	## Install kube-capacity
-	wget https://github.com/robscott/kube-capacity/releases/download/0.4.0/kube-capacity_0.4.0_Linux_x86_64.tar.gz -P /tmp
-	cd /tmp \
-		&& tar zxvf kube-capacity_0.4.0_Linux_x86_64.tar.gz \
-		&& sudo mv kube-capacity /usr/local/bin \
-		&& kube-capacity
 
 k8s-delete-all-objects: ## Delete all objects
 	kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all

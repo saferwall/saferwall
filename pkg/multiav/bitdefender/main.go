@@ -1,11 +1,11 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package bitdefender
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -52,11 +52,10 @@ func ScanFile(filePath string) (Result, error) {
 	out, err := utils.ExecCommand(bdscan, "--action=ignore", filePath)
 	// --action=[disinfect|quarantine|delete|ignore]
 
-	res := Result{}
 	// Exit status codes:
 	// 254: Your license has expired.
 	if err != nil && err.Error() != "exit status 1" {
-		return res, err
+		return Result{}, err
 	}
 
 	// BitDefender Antivirus Scanner for Unices v7.141118 Linux-amd64
@@ -71,10 +70,12 @@ func ScanFile(filePath string) (Result, error) {
 
 	lines := strings.Split(out, "\n")
 	if len(lines) == 0 {
-		return res, errors.New("we got an empty output")
+		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", out)
+		return Result{}, errUnexpectedOutput
 	}
 
 	//  Grab detection name
+	res := Result{}
 	for _, line := range lines {
 		if strings.Contains(line, "infected: ") {
 			parts := strings.Split(line, "infected: ")
