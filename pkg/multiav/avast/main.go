@@ -79,7 +79,7 @@ func ScanFilePath(filepath string) (Result, error) {
 
 	// Sanitize the detection output
 	det := strings.Split(out, "\t")
-	if len(det) < 1 {
+	if len(det) < 2 {
 		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", out)
 		return Result{}, errUnexpectedOutput
 	}

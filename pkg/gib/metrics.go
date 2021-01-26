@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -13,7 +13,8 @@ package gib
 // False Negative : A gibberish string labeled by the score function as non-gibberish
 
 // Accuracy is the fraction of predictions gib made correctly.
-func Accuracy(truePositiveCount, falsePositiveCount, trueNegativeCount, falseNegativeCount int) float64 {
+func Accuracy(truePositiveCount, falsePositiveCount, trueNegativeCount,
+	falseNegativeCount int) float64 {
 
 	// just cast to float64
 	tpCount := float64(truePositiveCount)

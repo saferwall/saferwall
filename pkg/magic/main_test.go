@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -22,10 +22,12 @@ func TestMagicScan(t *testing.T) {
 			filePath := tt.in
 			got, err := Scan(filePath)
 			if err != nil {
-				t.Errorf("TestMagicScan(%s) got %v, want %v", tt.in, err, tt.in)
+				t.Errorf("TestMagicScan(%s) got %v, want %v",
+				 tt.in, err, tt.in)
 			}
 			if got != tt.out {
-				t.Errorf("TestMagicScan(%s) got %v, want %v", tt.in, got, tt.out)
+				t.Errorf("TestMagicScan(%s) got %v, want %v",
+				 tt.in, got, tt.out)
 			}
 		})
 	}

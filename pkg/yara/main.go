@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,9 @@ package goyara
 import (
 	"errors"
 	"fmt"
-	"github.com/hillu/go-yara"
 	"os"
+
+	"github.com/hillu/go-yara"
 )
 
 // Rule represents a Yara rule.
@@ -33,13 +34,15 @@ func Load(rules []Rule) (*yara.Rules, error) {
 	for _, rule := range rules {
 		f, err := os.Open(rule.Filename)
 		if err != nil {
-			msg := fmt.Sprintf("could not open rule file %s: %s", rule.Filename, err)
+			msg := fmt.Sprintf("could not open rule file %s: %s",
+				rule.Filename, err)
 			return nil, errors.New(msg)
 		}
 		err = c.AddFile(f, rule.Namespace)
 		f.Close()
 		if err != nil {
-			msg := fmt.Sprintf("could not parse rule file %s: %s", rule.Filename, err)
+			msg := fmt.Sprintf("could not parse rule file %s: %s",
+				rule.Filename, err)
 			return nil, errors.New(msg)
 		}
 	}

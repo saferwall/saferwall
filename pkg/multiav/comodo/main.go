@@ -52,7 +52,7 @@ func ScanFile(filePath string) (Result, error) {
 	// Number of Scanned Files: 1
 	// Number of Found Viruses: 1
 	lines := strings.Split(cmdscanOut, "\n")
-	if len(lines) == 0 {
+	if len(lines) < 2 {
 		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", cmdscanOut)
 		return Result{}, errUnexpectedOutput
 	}

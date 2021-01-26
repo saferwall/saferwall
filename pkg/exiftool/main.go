@@ -1,9 +1,8 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package exiftool
-
 
 import (
 	"strings"
@@ -41,20 +40,19 @@ func ParseOutput(exifout string) map[string]string {
 	}
 
 	lines := strings.Split(exifout, "\n")
-
 	if utils.StringInSlice("File not found", lines) {
 		return nil
 	}
 
 	datas := make(map[string]string, len(lines))
-
 	for _, line := range lines {
 		keyvalue := strings.Split(line, ":")
 		if len(keyvalue) != 2 {
 			continue
 		}
 		if !utils.StringInSlice(strings.TrimSpace(keyvalue[0]), ignoreTags) {
-			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] = strings.TrimSpace(keyvalue[1])
+			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] =
+				strings.TrimSpace(keyvalue[1])
 		}
 	}
 

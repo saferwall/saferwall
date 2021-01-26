@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -27,10 +27,12 @@ func TestPackerScan(t *testing.T) {
 			filePath := tt.in
 			got, err := Scan(filePath)
 			if err != nil {
-				t.Errorf("TestPackerScan(%s) got %v, want %v", tt.in, err, tt.in)
+				t.Errorf("TestPackerScan(%s) got %v, want %v",
+					tt.in, err, tt.in)
 			}
 			if !reflect.DeepEqual(got, tt.out) {
-				t.Errorf("TestPackerScan(%s) got %v, want %v", tt.in, got, tt.out)
+				t.Errorf("TestPackerScan(%s) got %v, want %v",
+					tt.in, got, tt.out)
 			}
 		})
 	}

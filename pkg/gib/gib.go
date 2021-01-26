@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -203,12 +203,14 @@ func NewScorer(opts *Options) (func(string) (bool, error), error) {
 	if opts != nil {
 		ngramFreq, err = loadDataset(opts.dataset)
 		if err != nil {
-			return nil, errors.New("failed to load dataset with error " + err.Error())
+			return nil, errors.New("failed to load dataset with error " +
+				err.Error())
 		}
 	} else {
 		ngramFreq, err = loadDataset(Dataset)
 		if err != nil {
-			return nil, errors.New("failed to load dataset with error " + err.Error())
+			return nil, errors.New("failed to load dataset with error " +
+				err.Error())
 		}
 	}
 
@@ -218,7 +220,8 @@ func NewScorer(opts *Options) (func(string) (bool, error), error) {
 	scorer := func(s string) (bool, error) {
 		s = sanitize(s)
 		if len(s) < MinLength {
-			return false, errors.New("string to score is too short min length is 6")
+			return false,
+				errors.New("string to score is too short min length is 6")
 		}
 		score := tfidfScorer(s)
 		result := score > MinScore

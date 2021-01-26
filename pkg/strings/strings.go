@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -115,7 +115,9 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 	for offset := 0; offset < len(x86Code32); offset++ {
 		var buffer bytes.Buffer
 		var countConcat = 0
-		if x86Code32[offset] == 0xC7 && (x86Code32[offset+1] == 0x45 || x86Code32[offset+1] == 0x84 || x86Code32[offset+1] == 0x85 || x86Code32[offset+1] == 0x44) {
+		if x86Code32[offset] == 0xC7 && (x86Code32[offset+1] == 0x45 ||
+			x86Code32[offset+1] == 0x84 || x86Code32[offset+1] == 0x85 ||
+			x86Code32[offset+1] == 0x44) {
 
 			// log.Printf("Found a 0xC7 at offset: 0x%x", offset)
 
@@ -131,7 +133,8 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 				// log.Printf("0x%x:\t%s\t\t%s\n", insn.Address, insn.Mnemonic, insn.OpStr)
 
 				// let's see if the disassembled instructions looks similar
-				if insns[i].Bytes[0] == insns[0].Bytes[0] && insns[i].Bytes[1] == insns[0].Bytes[1] {
+				if insns[i].Bytes[0] == insns[0].Bytes[0] &&
+					insns[i].Bytes[1] == insns[0].Bytes[1] {
 
 					s := decode(uint32(insns[i].X86.Operands[1].Imm))
 					buffer.WriteString(s)

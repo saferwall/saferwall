@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -10,20 +10,20 @@ import (
 
 func getParams(regEx, url string) (paramsMap map[string]string) {
 
-    var compRegEx = regexp.MustCompile(regEx)
-    match := compRegEx.FindStringSubmatch(url)
+	var compRegEx = regexp.MustCompile(regEx)
+	match := compRegEx.FindStringSubmatch(url)
 
-    paramsMap = make(map[string]string)
-    for i, name := range compRegEx.SubexpNames() {
-        if i > 0 && i <= len(match) {
-            paramsMap[name] = match[i]
-        }
-    }
-    return
+	paramsMap = make(map[string]string)
+	for i, name := range compRegEx.SubexpNames() {
+		if i > 0 && i <= len(match) {
+			paramsMap[name] = match[i]
+		}
+	}
+	return
 }
 
 // ParseWindefender parse.
-func ParseWindefender (detection string) map[string]string {
+func ParseWindefender(detection string) map[string]string {
 	// Backdoor:Win32/Beastdoor.DQ
 	// Exploit:O97M/CVE-2017-11882.M
 	params := getParams(`^(?P<Category>[a-zA-Z]{1,20})\:(?P<Platform>[a-zA-Z0-9]{1,20})\/(?P<Family>[a-zA-Z0-9-]{1,20})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
@@ -31,7 +31,7 @@ func ParseWindefender (detection string) map[string]string {
 }
 
 // ParseEset parse.
-func ParseEset (detection string) map[string]string {
+func ParseEset(detection string) map[string]string {
 	// Win32/Yurist, Win32/Agobot, IRC/SdBot
 	params := getParams(`^(?P<Platform>[a-zA-Z0-9]{3,10})\/(?P<Family>[a-zA-Z0-9]{1,20})$`, detection)
 	if len(params) != 0 {
@@ -50,7 +50,7 @@ func ParseEset (detection string) map[string]string {
 }
 
 // ParseAvira parses.
-func ParseAvira (detection string) map[string]string {
+func ParseAvira(detection string) map[string]string {
 	// TR/PSW.Tepfer.ockxa, TR/Patched.Ren.Gen, TR/Crypt.XPACK.Gen
 	// TR/AD.Kreen.blxny
 	params := getParams(`^(?P<Category>[a-zA-Z0-9]{2,10})\/(?P<Type>[a-zA-Z0-9]{1,20})\.(?P<Family>[a-zA-Z0-9]{1,10})\.(?P<Variant>[a-zA-Z0-9]{1,10})$`, detection)
