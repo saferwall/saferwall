@@ -7,38 +7,44 @@ package main
 import (
 	"regexp"
 	"testing"
-	"log"
 
 	"github.com/dlclark/regexp2"
-
 
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
-var (
-	RegStructs2 = `typedef [\w() ]*struct [\w]+[\n\s]+{(.|\n)+?} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)[\w, *]+;`
+const (
+	sdkDir = "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0"
 )
 
 var rePrototypetests = []struct {
 	in  string
 	out int
 }{
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\fileapi.h", 94},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\processthreadsapi.h", 85},
+	{sdkDir + "\\um\\fileapi.h", 96},
+	{sdkDir + "\\um\\processthreadsapi.h", 93},
 }
 
 var reStructtests = []struct {
 	in  string
 	out int
 }{
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared\\bcrypt.h", 27},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\debugapi.h", 0},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\fileapi.h", 5},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\libloaderapi.h", 3},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\memoryapi.h", 2},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\processthreadsapi.h", 10},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\sysinfoapi.h", 2},
-	{"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um\\tlhelp32.h", 7},
+	{sdkDir + "\\shared\\bcrypt.h", 27},
+	{sdkDir + "\\um\\debugapi.h", 0},
+	{sdkDir + "\\um\\fileapi.h", 5},
+	{sdkDir + "\\um\\libloaderapi.h", 3},
+	{sdkDir + "\\um\\memoryapi.h", 2},
+	{sdkDir + "\\um\\processthreadsapi.h", 10},
+	{sdkDir + "\\um\\sysinfoapi.h", 2},
+	{sdkDir + "\\um\\tlhelp32.h", 7},
+}
+
+var parseStructTests = []struct {
+	path string
+	in   string
+	out  int
+}{
+	{sdkDir + "\\um\\processthreadsapi.h", "_PROCESS_INFORMATION", 4},
 }
 
 func TestGetAPIPrototypes(t *testing.T) {
@@ -59,7 +65,6 @@ func TestGetAPIPrototypes(t *testing.T) {
 	}
 }
 
-
 func TestGetStructs(t *testing.T) {
 	for _, tt := range reStructtests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -68,12 +73,42 @@ func TestGetStructs(t *testing.T) {
 				t.Errorf("TestGetStructs(%s) failed, got: %s", tt.in, err)
 			}
 
-			r := regexp2.MustCompile(RegStructs2, 0)
+			r := regexp2.MustCompile(regStructs, 0)
 			matches := regexp2FindAllString(r, string(data))
-			log.Print(matches)
 			got := len(matches)
 			if got != tt.out {
 				t.Errorf("TestGetStructs(%s) got %v, want %v", tt.in, got, tt.out)
+			}
+		})
+	}
+}
+
+func TestParseStruct(t *testing.T) {
+	for _, tt := range parseStructTests {
+		t.Run(tt.in, func(t *testing.T) {
+
+			data, err := utils.ReadAll(tt.path)
+			if err != nil {
+				t.Errorf("ReadAll(%s) failed with : %s", tt.path, err)
+			}
+
+			r := regexp2.MustCompile(regStructs, 0)
+			matches := regexp2FindAllString(r, string(data))
+			for _, m := range matches {
+				structObj := parseStruct(m)
+				if structObj.Name == tt.in {
+					got := len(structObj.Members)
+					if got != tt.out {
+						t.Errorf("TestParseStruct(%s) got %v, want %v", tt.in, got, tt.out)
+					} else {
+						for _, member := range structObj.Members {
+							if member.Name == "" || member.Type == "" {
+								t.Errorf("TestParseStruct(%s) empty members", tt.in)
+							}
+						}
+					}
+
+				}
 			}
 		})
 	}

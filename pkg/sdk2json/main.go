@@ -127,6 +127,7 @@ func main() {
 			!strings.HasSuffix(file, "\\synchapi.h") &&
 			!strings.HasSuffix(file, "\\winuser.h") &&
 			!strings.HasSuffix(file, "\\winhttp.h") &&
+			!strings.HasSuffix(file, "\\minwinbase.h") &&
 			!strings.HasSuffix(file, "\\wininet.h") {
 			continue
 		}
