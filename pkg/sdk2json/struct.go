@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	RegStructs = `typedef [\w() ]*struct [\w]+[\n\s]+{(.|\n)+?} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)[\w, *]+;`
+	regStructs = `typedef [\w() ]*struct [\w]+[\n\s]+{(.|\n)+?} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)[\w, *]+;`
 
-	RegParseStruct = `typedef [\w() ]*struct ([\w]+[\n\s]+){((.|\n)+?)} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)([\w, *]+);`
+	regParseStruct = `typedef [\w() ]*struct ([\w]+)[\n\s]+{((.|\n)+?)} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)([\w, *]+);`
 
-	RegStructMember = `(?P<Type>[A-Z]+)[\s]+(?P<Name>[a-zA-Z]+); `
+	regStructMember = `(?P<Type>[A-Z]+)[\s]+(?P<Name>[\w]+);`
 )
 
 // StructMember represents a member of a structure.
@@ -31,12 +31,16 @@ type Struct struct {
 func parseStruct(def string) Struct {
 
 	winStruct := Struct{}
-	r := regexp2.MustCompile(RegParseStruct, 0)
+	r := regexp2.MustCompile(regParseStruct, 0)
 	if m, _ := r.FindStringMatch(def); m != nil {
 
 		//log.Printf("Struct definition: %v\n", m.String())
 		gps := m.Groups()
 		winStruct.Name = gps[1].Capture.String()
+
+		if winStruct.Name == "_SERVICE_STATUS" {
+			winStruct.Name = "_SERVICE_STATUS"
+		}
 
 		// Parse struct members
 		members := strings.Split(gps[2].Capture.String(), "\n")
@@ -44,7 +48,7 @@ func parseStruct(def string) Struct {
 			member = standardizeSpaces(member)
 			if member != "" && !strings.HasPrefix(member, "//") {
 				//log.Println(member)
-				m := regSubMatchToMapString(RegStructMember, member)
+				m := regSubMatchToMapString(regStructMember, member)
 				sm := StructMember{
 					Type: m["Type"],
 					Name: m["Name"],
@@ -62,7 +66,7 @@ func getAllStructs(data string) ([]string, []Struct) {
 
 	var winstructs []Struct
 
-	r := regexp2.MustCompile(RegStructs, 0)
+	r := regexp2.MustCompile(regStructs, 0)
 	matches := regexp2FindAllString(r, string(data))
 	for _, m := range matches {
 		structObj := parseStruct(m)
