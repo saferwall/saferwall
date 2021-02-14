@@ -1,17 +1,23 @@
 package main
 
 import (
+	"regexp"
 	"strings"
-
-	"github.com/dlclark/regexp2"
 )
 
 var (
-	regStructs = `typedef [\w() ]*struct [\w]+[\n\s]+{(.|\n)+?} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)[\w, *]+;`
+	//regStructs = `typedef[\w() ]*?struct`
+	regStructs = `typedef[\w() ]*?struct[\w\s]*{`
 
-	regParseStruct = `typedef [\w() ]*struct ([\w]+)[\n\s]+{((.|\n)+?)} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)([\w, *]+);`
+	regParseStruct = `typedef ([\w() ]*?)struct( [\w]+)*((.|\n)+?})([\w\n ,*_]+?;)(\n} [\w,* ]+;)*`
 
-	regStructMember = `(?P<Type>[A-Z]+)[\s]+(?P<Name>[\w]+);`
+	// DWORD cbOutQue;
+	// DWORD fCtsHold : 1;
+	// WCHAR wcProvChar[1];
+	// ULONG iHash; // index of hash object
+	// _Field_size_(cbBuffer) PUCHAR pbBuffer;
+	// SIZE_T dwAvailVirtual;
+	regStructMember = `(?P<Type>[A-Za-z_]+)[\s]+(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*;`
 )
 
 // StructMember represents a member of a structure.
@@ -24,54 +30,103 @@ type StructMember struct {
 type Struct struct {
 	Name         string
 	Members      []StructMember
-	Alias        string
 	PointerAlias string
 }
 
-func parseStruct(def string) Struct {
+func findClosingBracket(text []byte, openPos int) int {
+	closePos := openPos
+	counter := 1
+	for counter > 0 {
+		closePos++
+		c := text[closePos]
+		if c == '{' {
+			counter++
+		} else if c == '}' {
+			counter--
+		}
+	}
+	return closePos
+}
+
+func findClosingSemicolon(text []byte, pos int) int {
+	for text[pos] != ';' {
+		pos++
+	}
+	return pos
+}
+
+func parseStruct(structBeg, structBody, structEnd string) Struct {
 
 	winStruct := Struct{}
-	r := regexp2.MustCompile(regParseStruct, 0)
-	if m, _ := r.FindStringMatch(def); m != nil {
 
-		//log.Printf("Struct definition: %v\n", m.String())
-		gps := m.Groups()
-		winStruct.Name = gps[1].Capture.String()
-
-		if winStruct.Name == "_SERVICE_STATUS" {
-			winStruct.Name = "_SERVICE_STATUS"
-		}
-
-		// Parse struct members
-		members := strings.Split(gps[2].Capture.String(), "\n")
-		for _, member := range members {
-			member = standardizeSpaces(member)
-			if member != "" && !strings.HasPrefix(member, "//") {
-				//log.Println(member)
-				m := regSubMatchToMapString(regStructMember, member)
-				sm := StructMember{
-					Type: m["Type"],
-					Name: m["Name"],
-				}
-				winStruct.Members = append(winStruct.Members, sm)
+	// Get struct members
+	r := regexp.MustCompile(regStructMember)
+	matches := r.FindAllStringSubmatch(structBody, -1)
+	paramsMap := make(map[string]string)
+	for _, match := range matches {
+		for i, name := range r.SubexpNames() {
+			if i > 0 && i <= len(match) {
+				paramsMap[name] = match[i]
 			}
+
 		}
-		winStruct.Alias = gps[4].Capture.String()
+		sm := StructMember{
+			Type: paramsMap["Type"],
+			Name: paramsMap["Name"],
+		}
+		winStruct.Members = append(winStruct.Members, sm)
 	}
+
+	// Get struct name
+	structEnd = spaceFieldsJoin(structEnd)
+	n := strings.Split(structEnd, ",")
+	if len(n) > 0 {
+		winStruct.Name = n[0]
+	}
+
+	if len(n) == 2 && strings.HasPrefix(n[1], "*") {
+		winStruct.PointerAlias = n[1][1:]
+	}
+
+	// Case 1:
+	// typedef struct _INTERNET_BUFFERSA {
+	// 	DWORD dwStructSize;
+	// 	DWORD dwOffsetLow;
+	// } INTERNET_BUFFERSA, * LPINTERNET_BUFFERSA;
+
+	// Case2 :
+	// typedef struct {
+	// 	BOOL    fAccepted;
+	// 	BOOL    fLeashed;
+	// }
+	// InternetCookieHistory;
 
 	return winStruct
 }
 
-func getAllStructs(data string) ([]string, []Struct) {
+func getAllStructs(data []byte) ([]string, []Struct) {
 
 	var winstructs []Struct
+	var strStructs []string
 
-	r := regexp2.MustCompile(regStructs, 0)
-	matches := regexp2FindAllString(r, string(data))
+	re := regexp.MustCompile(regStructs)
+	matches := re.FindAllStringIndex(string(data), -1)
 	for _, m := range matches {
-		structObj := parseStruct(m)
-		winstructs = append(winstructs, structObj)
-	}
 
-	return matches, winstructs
+		endPos := findClosingBracket(data, m[1])
+		endStruct := findClosingSemicolon(data, endPos+1)
+
+		structBeg := string(data[m[0]:m[1]])
+		structBody := string(data[m[1]:endPos])
+		structEnd := string(data[endPos+1 : endStruct])
+		strStruct := string(data[m[0] : endStruct+1])
+		// log.Println(structBeg)
+		// log.Println(structBody)
+		// log.Println(structEnd)
+		// log.Println(strStruct)
+		structObj := parseStruct(structBeg, structBody, structEnd)
+		winstructs = append(winstructs, structObj)
+		strStructs = append(strStructs, strStruct)
+	}
+	return strStructs, winstructs
 }

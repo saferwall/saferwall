@@ -139,7 +139,7 @@ func main() {
 		}
 
 		// Start parsing all struct in header file.
-		a, b := getAllStructs(string(data))
+		a, b := getAllStructs(data)
 		winStructsRaw = append(winStructsRaw, a...)
 		winStructs = append(winStructs, b...)
 

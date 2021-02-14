@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/dlclark/regexp2"
-
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
@@ -29,13 +27,14 @@ var reStructtests = []struct {
 	in  string
 	out int
 }{
-	{sdkDir + "\\shared\\bcrypt.h", 27},
+	{sdkDir + "\\shared\\bcrypt.h", 40},
 	{sdkDir + "\\um\\debugapi.h", 0},
 	{sdkDir + "\\um\\fileapi.h", 5},
 	{sdkDir + "\\um\\libloaderapi.h", 3},
 	{sdkDir + "\\um\\memoryapi.h", 2},
 	{sdkDir + "\\um\\processthreadsapi.h", 10},
 	{sdkDir + "\\um\\sysinfoapi.h", 2},
+	{sdkDir + "\\um\\wininet.h", 49},
 	{sdkDir + "\\um\\tlhelp32.h", 7},
 }
 
@@ -44,7 +43,7 @@ var parseStructTests = []struct {
 	in   string
 	out  int
 }{
-	{sdkDir + "\\um\\processthreadsapi.h", "_PROCESS_INFORMATION", 4},
+	{sdkDir + "\\um\\processthreadsapi.h", "PROCESS_INFORMATION", 4},
 }
 
 func TestGetAPIPrototypes(t *testing.T) {
@@ -73,8 +72,7 @@ func TestGetStructs(t *testing.T) {
 				t.Errorf("TestGetStructs(%s) failed, got: %s", tt.in, err)
 			}
 
-			r := regexp2.MustCompile(regStructs, 0)
-			matches := regexp2FindAllString(r, string(data))
+			matches, _ := getAllStructs(data)
 			got := len(matches)
 			if got != tt.out {
 				t.Errorf("TestGetStructs(%s) got %v, want %v", tt.in, got, tt.out)
@@ -92,10 +90,8 @@ func TestParseStruct(t *testing.T) {
 				t.Errorf("ReadAll(%s) failed with : %s", tt.path, err)
 			}
 
-			r := regexp2.MustCompile(regStructs, 0)
-			matches := regexp2FindAllString(r, string(data))
-			for _, m := range matches {
-				structObj := parseStruct(m)
+			_, matches := getAllStructs(data)
+			for _, structObj := range matches {
 				if structObj.Name == tt.in {
 					got := len(structObj.Members)
 					if got != tt.out {

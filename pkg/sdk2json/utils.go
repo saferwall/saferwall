@@ -116,19 +116,23 @@ func regSubMatchToMapString(regEx, s string) (paramsMap map[string]string) {
 
 // difference returns the elements in `a` that aren't in `b`.
 func difference(a, b []string) []string {
-    mb := make(map[string]struct{}, len(b))
-    for _, x := range b {
-        mb[x] = struct{}{}
-    }
-    var diff []string
-    for _, x := range a {
-        if _, found := mb[x]; !found {
-            diff = append(diff, x)
-        }
-    }
-    return diff
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
 }
 
 func standardizeSpaces(s string) string {
 	return strings.Join(strings.Fields(s), " ")
+}
+
+func spaceFieldsJoin(s string) string {
+    return strings.Join(strings.Fields(s), "")
 }
