@@ -1,13 +1,30 @@
 package main
 
 import (
+	"log"
 	"regexp"
 	"strings"
 )
 
 var (
-	//regStructs = `typedef[\w() ]*?struct`
 	regStructs = `typedef[\w() ]*?struct[\w\s]*{`
+
+	//
+	// Case 1:
+	// typedef struct _INTERNET_BUFFERSA {
+	// 	DWORD dwStructSize;
+	// 	DWORD dwOffsetLow;
+	// } INTERNET_BUFFERSA, * LPINTERNET_BUFFERSA;
+	//
+
+	//
+	// Case2 :
+	// typedef struct {
+	// 	BOOL    fAccepted;
+	// 	BOOL    fLeashed;
+	// }
+	// InternetCookieHistory;
+	//
 
 	regParseStruct = `typedef ([\w() ]*?)struct( [\w]+)*((.|\n)+?})([\w\n ,*_]+?;)(\n} [\w,* ]+;)*`
 
@@ -17,7 +34,8 @@ var (
 	// ULONG iHash; // index of hash object
 	// _Field_size_(cbBuffer) PUCHAR pbBuffer;
 	// SIZE_T dwAvailVirtual;
-	regStructMember = `(?P<Type>[A-Za-z_]+)[\s]+(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*;`
+	// PWSTR *rgpszFunctions;
+	regStructMember = `(?P<Type>[A-Za-z_]+[\s*]+)(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*;`
 )
 
 // StructMember represents a member of a structure.
@@ -71,7 +89,7 @@ func parseStruct(structBeg, structBody, structEnd string) Struct {
 
 		}
 		sm := StructMember{
-			Type: paramsMap["Type"],
+			Type: spaceFieldsJoin(paramsMap["Type"]),
 			Name: paramsMap["Name"],
 		}
 		winStruct.Members = append(winStruct.Members, sm)
@@ -87,19 +105,6 @@ func parseStruct(structBeg, structBody, structEnd string) Struct {
 	if len(n) == 2 && strings.HasPrefix(n[1], "*") {
 		winStruct.PointerAlias = n[1][1:]
 	}
-
-	// Case 1:
-	// typedef struct _INTERNET_BUFFERSA {
-	// 	DWORD dwStructSize;
-	// 	DWORD dwOffsetLow;
-	// } INTERNET_BUFFERSA, * LPINTERNET_BUFFERSA;
-
-	// Case2 :
-	// typedef struct {
-	// 	BOOL    fAccepted;
-	// 	BOOL    fLeashed;
-	// }
-	// InternetCookieHistory;
 
 	return winStruct
 }
@@ -123,7 +128,7 @@ func getAllStructs(data []byte) ([]string, []Struct) {
 		// log.Println(structBeg)
 		// log.Println(structBody)
 		// log.Println(structEnd)
-		// log.Println(strStruct)
+		log.Println(strStruct)
 		structObj := parseStruct(structBeg, structBody, structEnd)
 		winstructs = append(winstructs, structObj)
 		strStructs = append(strStructs, strStruct)
