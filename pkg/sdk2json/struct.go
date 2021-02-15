@@ -35,65 +35,101 @@ var (
 	// _Field_size_(cbBuffer) PUCHAR pbBuffer;
 	// SIZE_T dwAvailVirtual;
 	// PWSTR *rgpszFunctions;
-	regStructMember = `(?P<Type>[A-Za-z_]+[\s*]+)(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*;`
+	regStructMember = `(?P<Type>[\w]+[\s*]+)(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*`
 )
 
 // StructMember represents a member of a structure.
 type StructMember struct {
-	Name string
-	Type string
+	// The name of the structure member.
+	// When the member itself represents a structure/union, we use the name of the structure/union otherwise `anonymous`.
+	Name string `json:"name"`
+	// The type of the member: DWORD, int, char*, ...
+	// Or `_structure` / `_union` for complexe types.
+	Type string `json:"type"`
+	// For complex types, `Body`describes the struct/union members.
+	Body []StructMember `json:"body,omitempty"`
 }
 
 // Struct represents a C data type structure.
 type Struct struct {
-	Name         string
+	Name         string `json:"name"`
 	Members      []StructMember
-	PointerAlias string
+	PointerAlias string `json:"pointer_alias"`
 }
 
-func findClosingBracket(text []byte, openPos int) int {
-	closePos := openPos
-	counter := 1
-	for counter > 0 {
-		closePos++
-		c := text[closePos]
-		if c == '{' {
-			counter++
-		} else if c == '}' {
-			counter--
+// Delete all white spaces from a C structure.
+func stripStruct(s string) string {
+	s = stripComments(s)
+	s = standardizeSpaces(s)
+	s = strings.ReplaceAll(s, "; ", ";")
+	s = strings.ReplaceAll(s, " { ", "{")
+	s = strings.ReplaceAll(s, " } ", "}")
+	s = strings.ReplaceAll(s, " : ", ":")
+	s = strings.ReplaceAll(s, ": ", ":")
+	return s
+}
+
+func parseStructBody(body string) []StructMember {
+
+	var structMembers []StructMember
+
+	pos := 0
+	log.Println(body)
+	endPos := len(body) - 1
+	for pos < endPos {
+		sm := StructMember{}
+		semiColPos := strings.Index(body[pos:], ";")
+		if semiColPos < 0 {
+			break
 		}
-	}
-	return closePos
-}
+		memberStr := body[pos : pos+semiColPos]
+		mu := strings.Index(memberStr, "union{")
+		ms := strings.Index(memberStr, "struct{")
+		if mu < 0 && ms < 0 {
+			mMap := regSubMatchToMapString(regStructMember, memberStr)
+			sm.Type = spaceFieldsJoin(mMap["Type"])
+			sm.Name = mMap["Name"]
+			pos += semiColPos + 1 // for the ;
+		} else {
+			l := 0
+			// Union inside the struct OR Union comes first then struct.
+			if (mu >= 0 && ms < 0) || (mu >= 0 && ms >= 0 && mu < ms) {
+				sm.Type = "_union"
+				l = len("union{") + mu
 
-func findClosingSemicolon(text []byte, pos int) int {
-	for text[pos] != ';' {
-		pos++
+			} else if (ms >= 0 && mu < 0) || (mu >= 0 && ms >= 0 && mu < ms) {
+				// Struct inside the struc OR Struct comes first then union.
+				sm.Type = "_struct"
+				l = len("struct{") + ms
+			}
+
+			endStructPos := findClosingBracket([]byte(body), pos+l+1)+1
+			semiColPos = findClosingSemicolon([]byte(body), endStructPos)
+			structBody := body[pos+l : endStructPos-1]
+			sm.Name = spaceFieldsJoin(body[endStructPos:semiColPos])
+			sm.Body = parseStructBody(structBody)
+			pos = semiColPos + 1 // for the ;
+		}
+
+		structMembers = append(structMembers, sm)
 	}
-	return pos
+
+	return structMembers
 }
 
 func parseStruct(structBeg, structBody, structEnd string) Struct {
 
 	winStruct := Struct{}
 
-	// Get struct members
-	r := regexp.MustCompile(regStructMember)
-	matches := r.FindAllStringSubmatch(structBody, -1)
-	paramsMap := make(map[string]string)
-	for _, match := range matches {
-		for i, name := range r.SubexpNames() {
-			if i > 0 && i <= len(match) {
-				paramsMap[name] = match[i]
-			}
+	// Start by deleteing unecessery characters like comments and whitespaces.
+	structBody = stripStruct(structBody)
 
-		}
-		sm := StructMember{
-			Type: spaceFieldsJoin(paramsMap["Type"]),
-			Name: paramsMap["Name"],
-		}
-		winStruct.Members = append(winStruct.Members, sm)
+	if strings.Contains(structBody, "CachingFlags") {
+		log.Println("w9raf 3and 7addak")
 	}
+
+	// Get struct members
+	winStruct.Members = parseStructBody(structBody)
 
 	// Get struct name
 	structEnd = spaceFieldsJoin(structEnd)
@@ -125,10 +161,6 @@ func getAllStructs(data []byte) ([]string, []Struct) {
 		structBody := string(data[m[1]:endPos])
 		structEnd := string(data[endPos+1 : endStruct])
 		strStruct := string(data[m[0] : endStruct+1])
-		// log.Println(structBeg)
-		// log.Println(structBody)
-		// log.Println(structEnd)
-		log.Println(strStruct)
 		structObj := parseStruct(structBeg, structBody, structEnd)
 		winstructs = append(winstructs, structObj)
 		strStructs = append(strStructs, strStruct)
