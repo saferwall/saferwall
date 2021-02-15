@@ -1,3 +1,7 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -52,9 +56,11 @@ type StructMember struct {
 
 // Struct represents a C data type structure.
 type Struct struct {
-	Name         string `json:"name"`
-	Members      []StructMember
-	PointerAlias string `json:"pointer_alias"`
+	Name             string `json:"name"`
+	TypedefName      string `json:"typedef_name,omitempty"`
+	PointerAlias     string `json:"pointer_alias,omitempty"`
+	LongPointerAlias string `json:"_pointer_alias,omitempty"`
+	Members          []StructMember
 }
 
 // Delete all white spaces from a C structure.
@@ -74,7 +80,6 @@ func parseStructBody(body string) []StructMember {
 	var structMembers []StructMember
 
 	pos := 0
-	log.Println(body)
 	endPos := len(body) - 1
 	for pos < endPos {
 		sm := StructMember{}
@@ -103,7 +108,7 @@ func parseStructBody(body string) []StructMember {
 				l = len("struct{") + ms
 			}
 
-			endStructPos := findClosingBracket([]byte(body), pos+l+1)+1
+			endStructPos := findClosingBracket([]byte(body), pos+l+1) + 1
 			semiColPos = findClosingSemicolon([]byte(body), endStructPos)
 			structBody := body[pos+l : endStructPos-1]
 			sm.Name = spaceFieldsJoin(body[endStructPos:semiColPos])
@@ -131,15 +136,24 @@ func parseStruct(structBeg, structBody, structEnd string) Struct {
 	// Get struct members
 	winStruct.Members = parseStructBody(structBody)
 
-	// Get struct name
+	// Get Struct typedefed name if exists.
+	regTypeDefName := regexp.MustCompile(`typedef struct ([\w]+)`)
+	m := regTypeDefName.FindStringSubmatch(structBeg)
+	if len(m) > 0 {
+		winStruct.TypedefName = m[1]
+	}
+
+	// Get struct name and potential aliases.
 	structEnd = spaceFieldsJoin(structEnd)
 	n := strings.Split(structEnd, ",")
 	if len(n) > 0 {
 		winStruct.Name = n[0]
 	}
-
-	if len(n) == 2 && strings.HasPrefix(n[1], "*") {
+	if len(n) > 1 {
 		winStruct.PointerAlias = n[1][1:]
+	}
+	if len(n) > 2 {
+		winStruct.LongPointerAlias = n[2][1:]
 	}
 
 	return winStruct

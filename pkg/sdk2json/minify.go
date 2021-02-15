@@ -1,6 +1,11 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
+	"log"
 	"regexp"
 
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -96,6 +101,7 @@ func convertStrType(t string) uint8 {
 	} else if utils.StringInSlice(t, ptrStructTypes) {
 		return typePtrStruct
 	} else {
+		log.Println(t)
 		return 0
 	}
 }

@@ -1,3 +1,7 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -128,6 +132,8 @@ func main() {
 			!strings.HasSuffix(file, "\\winuser.h") &&
 			!strings.HasSuffix(file, "\\winhttp.h") &&
 			!strings.HasSuffix(file, "\\minwinbase.h") &&
+			!strings.HasSuffix(file, "\\minwindef.h") &&
+			!strings.HasSuffix(file, "\\winnt.h") &&
 			!strings.HasSuffix(file, "\\wininet.h") {
 			continue
 		}
