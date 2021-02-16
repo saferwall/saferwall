@@ -5,10 +5,7 @@
 package main
 
 import (
-	"log"
 	"regexp"
-
-	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 const (
@@ -18,22 +15,31 @@ const (
 	paramReserved
 )
 
-const (
-	typeImm uint8 = iota
-	typePtrImm
-	typePtrASCIIStr
-	typePtrWideStr
-	typeArrASCIIStr
-	typeArrWideStr
-	typePtrStruct
-	typeBytePtr
-)
+// StructUnionMemberMini represents a struct or a union member.
+type StructUnionMemberMini struct {
+	Name       string          `json:"name"`
+	X86Offset  int             `json:"x86off"`
+	X86Size    int             `json:"x86size"`
+	X64Offset  int             `json:"x64off"`
+	X64Size    int             `json:"x64size"`
+	Type       uint8           `json:"type"` // Help interpret the value.
+	Definition StructUnionMini `json:"def,omitempty"`
+}
+
+// StructUnionMini represents a complex type like a Union or a Struct.
+type StructUnionMini struct {
+	Name    string                  `json:"name"`
+	Members []StructUnionMemberMini `json:"members"`
+	X86Size int                     `json:"x86size"`
+	X64Size int                     `json:"x64size"`
+}
 
 // APIParamMini represents a paramter of a Win32 API.
 type APIParamMini struct {
-	Annotation uint8  `json:"anno"`
-	Type       uint8  `json:"type"`
-	Name       string `json:"name"`
+	Annotation        uint8  `json:"anno"`
+	Type              uint8  `json:"type"`
+	Name              string `json:"name"`
+	BufferSizeOrIndex int8   `json:"buffsize_or_idx,omitempty"`
 }
 
 // APIMini represents information about a Win32 API.
@@ -50,14 +56,13 @@ var (
 )
 
 var (
-	// Because widening conversions are always safe, we will treat paramteres
+	// Because widening conversions are always safe, we will treat parameters
 	// either 4 or 8 bytes long depending on what the process is running on.
 	immTypes = []string{"int", "DWORD", "WORD", "UINT", "ULONG_PTR", "DWORD_PTR", "HOOKPROC", "HRESULT", "HINSTANCE", "DWORD_PTR",
 		"INTERNET_PORT", "BOOL", "ULONG", "SIZE_T", "HKEY", "HINTERNET", "HANDLE", "HMODULE", "SC_HANDLE", "REGSAM", "HHOOK",
 		"BCRYPT_KEY_HANDLE", "BCRYPT_HASH_HANDLE",
 		"PVOID", "VOID*", "CONST BYTE*", "LPVOID", "PVOID", "LPBYTE", "LPCVOID"}
 
-	//  Pointers to immediate values.
 	immPtrTypes = []string{"PBYTE", "LPDWORD", "SIZE_T*", "PHKEY", "PUCHAR", "PHANDLE", "ULONG*"}
 
 	// Void pointers, required further parsing from SAL to read the size from the parameter.
@@ -81,30 +86,6 @@ var (
 		"CONST LPSECURITY_ATTRIBUTES", "CONST SERVICE_TABLE_ENTRYW*",
 		"LPENUM_SERVICE_STATUSA", "LPINTERNET_BUFFERSA", "PMEMORY_BASIC_INFORMATION"}
 )
-
-func convertStrType(t string) uint8 {
-
-	if utils.StringInSlice(t, immTypes) {
-		return typeImm
-	} else if utils.StringInSlice(t, immPtrTypes) {
-		return typePtrImm
-	} else if utils.StringInSlice(t, bytePtrTypes) {
-		return typeBytePtr
-	} else if utils.StringInSlice(t, asciiStrTypes) {
-		return typePtrASCIIStr
-	} else if utils.StringInSlice(t, wideStrTypes) {
-		return typePtrWideStr
-	} else if utils.StringInSlice(t, arrOfASCIIStrTypes) {
-		return typeArrASCIIStr
-	} else if utils.StringInSlice(t, arrOfWideStrTypes) {
-		return typeArrWideStr
-	} else if utils.StringInSlice(t, ptrStructTypes) {
-		return typePtrStruct
-	} else {
-		log.Println(t)
-		return 0
-	}
-}
 
 func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 	mapis := make(map[string]map[string]APIMini)
@@ -137,8 +118,12 @@ func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 					// If we don't know, take it as in:
 					parammini.Annotation = paramIn
 				}
+
+				// Get the param type.
+				dataType := typefromString(param.Type)
+				parammini.Type = dataType.Kind
+				parammini.BufferSizeOrIndex = dataType.Size
 				parammini.Name = param.Name
-				parammini.Type = convertStrType(param.Type)
 				paramsMini = append(paramsMini, parammini)
 			}
 			copy.Params = paramsMini

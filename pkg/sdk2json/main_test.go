@@ -5,6 +5,7 @@
 package main
 
 import (
+	"reflect"
 	"regexp"
 	"testing"
 
@@ -15,7 +16,7 @@ const (
 	sdkDir = "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0"
 )
 
-var rePrototypetests = []struct {
+var rePrototypeTests = []struct {
 	in  string
 	out int
 }{
@@ -23,7 +24,18 @@ var rePrototypetests = []struct {
 	{sdkDir + "\\um\\processthreadsapi.h", 93},
 }
 
-var reStructtests = []struct {
+var reTypedefsTests = []struct {
+	in  string
+	out int
+}{
+	
+	{sdkDir + "\\shared\\ntdef.h", 186},
+	{sdkDir + "\\shared\\minwindef.h", 42},
+	{sdkDir + "\\um\\winnt.h", 270},
+	{sdkDir + "\\um\\minwinbase.h", 12},
+}
+
+var reStructTests = []struct {
 	in  string
 	out int
 }{
@@ -41,17 +53,40 @@ var reStructtests = []struct {
 var parseStructTests = []struct {
 	path string
 	in   string
-	out  int
+	out  Struct
 }{
-	{sdkDir + "\\um\\processthreadsapi.h", "PROCESS_INFORMATION", 4},
+	{sdkDir + "\\um\\processthreadsapi.h", "PROCESS_INFORMATION", Struct{
+		Name:             "PROCESS_INFORMATION",
+		TypedefName:      "_PROCESS_INFORMATION",
+		PointerAlias:     "PPROCESS_INFORMATION",
+		LongPointerAlias: "LPPROCESS_INFORMATION",
+		Members: []StructMember{
+			{
+				Name: "hProcess",
+				Type: "HANDLE",
+			},
+			{
+				Name: "hThread",
+				Type: "HANDLE",
+			},
+			{
+				Name: "dwProcessId",
+				Type: "DWORD",
+			},
+			{
+				Name: "dwThreadId",
+				Type: "DWORD",
+			},
+		}},
+	},
 }
 
 func TestGetAPIPrototypes(t *testing.T) {
-	for _, tt := range rePrototypetests {
+	for _, tt := range rePrototypeTests {
 		t.Run(tt.in, func(t *testing.T) {
 			data, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetAPIPrototypes(%s) failed, got: %s", tt.in, err)
+				t.Errorf("ReadAll(%s) failed, got: %s", tt.in, err)
 			}
 
 			r := regexp.MustCompile(RegAPIs)
@@ -64,8 +99,29 @@ func TestGetAPIPrototypes(t *testing.T) {
 	}
 }
 
+
+func TestParseTypedefs(t *testing.T) {
+	for _, tt := range reTypedefsTests {
+		t.Run(tt.in, func(t *testing.T) {
+			data, err := utils.ReadAll(tt.in)
+			if err != nil {
+				t.Errorf("ReadAll(%s) failed, got: %s", tt.in, err)
+			}
+			parseTypedefs(data)
+			got := len(typedefs)
+			if got != tt.out {
+				t.Errorf("TestParseTypedefs(%s) got %v, want %v", tt.in, got, tt.out)
+			}
+			for k := range typedefs {
+				delete(typedefs, k)
+			}
+
+		})
+	}
+}
+
 func TestGetStructs(t *testing.T) {
-	for _, tt := range reStructtests {
+	for _, tt := range reStructTests {
 		t.Run(tt.in, func(t *testing.T) {
 			data, err := utils.ReadAll(tt.in)
 			if err != nil {
@@ -91,17 +147,10 @@ func TestParseStruct(t *testing.T) {
 			}
 
 			_, matches := getAllStructs(data)
-			for _, structObj := range matches {
-				if structObj.Name == tt.in {
-					got := len(structObj.Members)
-					if got != tt.out {
+			for _, got := range matches {
+				if got.Name == tt.in {
+					if !reflect.DeepEqual(got, tt.out) {
 						t.Errorf("TestParseStruct(%s) got %v, want %v", tt.in, got, tt.out)
-					} else {
-						for _, member := range structObj.Members {
-							if member.Name == "" || member.Type == "" {
-								t.Errorf("TestParseStruct(%s) empty members", tt.in)
-							}
-						}
 					}
 
 				}
