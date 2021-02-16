@@ -1,77 +1,183 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
+	"log"
+	"regexp"
 	"strings"
-
-	"github.com/dlclark/regexp2"
 )
 
 var (
-	regStructs = `typedef [\w() ]*struct [\w]+[\n\s]+{(.|\n)+?} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)[\w, *]+;`
+	regStructs = `typedef[\w() ]*?struct[\w\s]*{`
 
-	regParseStruct = `typedef [\w() ]*struct ([\w]+)[\n\s]+{((.|\n)+?)} (?!DUMMYSTRUCTNAME|DUMMYUNIONNAME)([\w, *]+);`
+	//
+	// Case 1:
+	// typedef struct _INTERNET_BUFFERSA {
+	// 	DWORD dwStructSize;
+	// 	DWORD dwOffsetLow;
+	// } INTERNET_BUFFERSA, * LPINTERNET_BUFFERSA;
+	//
 
-	regStructMember = `(?P<Type>[A-Z]+)[\s]+(?P<Name>[\w]+);`
+	//
+	// Case2 :
+	// typedef struct {
+	// 	BOOL    fAccepted;
+	// 	BOOL    fLeashed;
+	// }
+	// InternetCookieHistory;
+	//
+
+	regParseStruct = `typedef ([\w() ]*?)struct( [\w]+)*((.|\n)+?})([\w\n ,*_]+?;)(\n} [\w,* ]+;)*`
+
+	// DWORD cbOutQue;
+	// DWORD fCtsHold : 1;
+	// WCHAR wcProvChar[1];
+	// ULONG iHash; // index of hash object
+	// _Field_size_(cbBuffer) PUCHAR pbBuffer;
+	// SIZE_T dwAvailVirtual;
+	// PWSTR *rgpszFunctions;
+	regStructMember = `(?P<Type>[\w]+[\s*]+)(?P<Name>[\w]+)(?P<ArraySize>\[\w+\])*(?P<BitPack>[ :\d]+)*`
 )
 
 // StructMember represents a member of a structure.
 type StructMember struct {
-	Name string
-	Type string
+	// The name of the structure member.
+	// When the member itself represents a structure/union, we use the name of the structure/union otherwise `anonymous`.
+	Name string `json:"name"`
+	// The type of the member: DWORD, int, char*, ...
+	// Or `_structure` / `_union` for complexe types.
+	Type string `json:"type"`
+	// For complex types, `Body`describes the struct/union members.
+	Body []StructMember `json:"body,omitempty"`
 }
 
 // Struct represents a C data type structure.
 type Struct struct {
-	Name         string
-	Members      []StructMember
-	Alias        string
-	PointerAlias string
+	Name             string `json:"name"`
+	TypedefName      string `json:"typedef_name,omitempty"`
+	PointerAlias     string `json:"pointer_alias,omitempty"`
+	LongPointerAlias string `json:"_pointer_alias,omitempty"`
+	Members          []StructMember
 }
 
-func parseStruct(def string) Struct {
+// Delete all white spaces from a C structure.
+func stripStruct(s string) string {
+	s = stripComments(s)
+	s = standardizeSpaces(s)
+	s = strings.ReplaceAll(s, "; ", ";")
+	s = strings.ReplaceAll(s, " { ", "{")
+	s = strings.ReplaceAll(s, " } ", "}")
+	s = strings.ReplaceAll(s, " : ", ":")
+	s = strings.ReplaceAll(s, ": ", ":")
+	return s
+}
+
+func parseStructBody(body string) []StructMember {
+
+	var structMembers []StructMember
+
+	pos := 0
+	endPos := len(body) - 1
+	for pos < endPos {
+		sm := StructMember{}
+		semiColPos := strings.Index(body[pos:], ";")
+		if semiColPos < 0 {
+			break
+		}
+		memberStr := body[pos : pos+semiColPos]
+		mu := strings.Index(memberStr, "union{")
+		ms := strings.Index(memberStr, "struct{")
+		if mu < 0 && ms < 0 {
+			mMap := regSubMatchToMapString(regStructMember, memberStr)
+			sm.Type = spaceFieldsJoin(mMap["Type"])
+			sm.Name = mMap["Name"]
+			pos += semiColPos + 1 // for the ;
+		} else {
+			l := 0
+			// Union inside the struct OR Union comes first then struct.
+			if (mu >= 0 && ms < 0) || (mu >= 0 && ms >= 0 && mu < ms) {
+				sm.Type = "_union"
+				l = len("union{") + mu
+
+			} else if (ms >= 0 && mu < 0) || (mu >= 0 && ms >= 0 && mu < ms) {
+				// Struct inside the struc OR Struct comes first then union.
+				sm.Type = "_struct"
+				l = len("struct{") + ms
+			}
+
+			endStructPos := findClosingBracket([]byte(body), pos+l+1) + 1
+			semiColPos = findClosingSemicolon([]byte(body), endStructPos)
+			structBody := body[pos+l : endStructPos-1]
+			sm.Name = spaceFieldsJoin(body[endStructPos:semiColPos])
+			sm.Body = parseStructBody(structBody)
+			pos = semiColPos + 1 // for the ;
+		}
+
+		structMembers = append(structMembers, sm)
+	}
+
+	return structMembers
+}
+
+func parseStruct(structBeg, structBody, structEnd string) Struct {
 
 	winStruct := Struct{}
-	r := regexp2.MustCompile(regParseStruct, 0)
-	if m, _ := r.FindStringMatch(def); m != nil {
 
-		//log.Printf("Struct definition: %v\n", m.String())
-		gps := m.Groups()
-		winStruct.Name = gps[1].Capture.String()
+	// Start by deleteing unecessery characters like comments and whitespaces.
+	structBody = stripStruct(structBody)
 
-		if winStruct.Name == "_SERVICE_STATUS" {
-			winStruct.Name = "_SERVICE_STATUS"
-		}
+	if strings.Contains(structBody, "CachingFlags") {
+		log.Println("w9raf 3and 7addak")
+	}
 
-		// Parse struct members
-		members := strings.Split(gps[2].Capture.String(), "\n")
-		for _, member := range members {
-			member = standardizeSpaces(member)
-			if member != "" && !strings.HasPrefix(member, "//") {
-				//log.Println(member)
-				m := regSubMatchToMapString(regStructMember, member)
-				sm := StructMember{
-					Type: m["Type"],
-					Name: m["Name"],
-				}
-				winStruct.Members = append(winStruct.Members, sm)
-			}
-		}
-		winStruct.Alias = gps[4].Capture.String()
+	// Get struct members
+	winStruct.Members = parseStructBody(structBody)
+
+	// Get Struct typedefed name if exists.
+	regTypeDefName := regexp.MustCompile(`typedef struct ([\w]+)`)
+	m := regTypeDefName.FindStringSubmatch(structBeg)
+	if len(m) > 0 {
+		winStruct.TypedefName = m[1]
+	}
+
+	// Get struct name and potential aliases.
+	structEnd = spaceFieldsJoin(structEnd)
+	n := strings.Split(structEnd, ",")
+	if len(n) > 0 {
+		winStruct.Name = n[0]
+	}
+	if len(n) > 1 {
+		winStruct.PointerAlias = n[1][1:]
+	}
+	if len(n) > 2 {
+		winStruct.LongPointerAlias = n[2][1:]
 	}
 
 	return winStruct
 }
 
-func getAllStructs(data string) ([]string, []Struct) {
+func getAllStructs(data []byte) ([]string, []Struct) {
 
 	var winstructs []Struct
+	var strStructs []string
 
-	r := regexp2.MustCompile(regStructs, 0)
-	matches := regexp2FindAllString(r, string(data))
+	re := regexp.MustCompile(regStructs)
+	matches := re.FindAllStringIndex(string(data), -1)
 	for _, m := range matches {
-		structObj := parseStruct(m)
-		winstructs = append(winstructs, structObj)
-	}
 
-	return matches, winstructs
+		endPos := findClosingBracket(data, m[1])
+		endStruct := findClosingSemicolon(data, endPos+1)
+
+		structBeg := string(data[m[0]:m[1]])
+		structBody := string(data[m[1]:endPos])
+		structEnd := string(data[endPos+1 : endStruct])
+		strStruct := string(data[m[0] : endStruct+1])
+		structObj := parseStruct(structBeg, structBody, structEnd)
+		winstructs = append(winstructs, structObj)
+		strStructs = append(strStructs, strStruct)
+	}
+	return strStructs, winstructs
 }

@@ -1,3 +1,7 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -116,19 +120,61 @@ func regSubMatchToMapString(regEx, s string) (paramsMap map[string]string) {
 
 // difference returns the elements in `a` that aren't in `b`.
 func difference(a, b []string) []string {
-    mb := make(map[string]struct{}, len(b))
-    for _, x := range b {
-        mb[x] = struct{}{}
-    }
-    var diff []string
-    for _, x := range a {
-        if _, found := mb[x]; !found {
-            diff = append(diff, x)
-        }
-    }
-    return diff
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
 }
 
+// Group multi-whitespaces to one whitespace.
 func standardizeSpaces(s string) string {
 	return strings.Join(strings.Fields(s), " ")
+}
+
+// Strip all whitespaces.
+func spaceFieldsJoin(s string) string {
+	return strings.Join(strings.Fields(s), "")
+}
+
+// Remove C language comments.
+// Removes both single line and multi-line comments.
+func stripComments(s string) string {
+
+	// Remove first the single line ones.
+	regSingleLine := regexp.MustCompile(`//.*`)
+	s = regSingleLine.ReplaceAllString(s, "")
+
+	// Then the multi-lines ones.
+	regMultiLine := regexp.MustCompile(`/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/`)
+	s = regMultiLine.ReplaceAllString(s, "")
+	return s
+}
+
+func findClosingBracket(text []byte, openPos int) int {
+	closePos := openPos
+	counter := 1
+	for counter > 0 {
+		closePos++
+		c := text[closePos]
+		if c == '{' {
+			counter++
+		} else if c == '}' {
+			counter--
+		}
+	}
+	return closePos
+}
+
+func findClosingSemicolon(text []byte, pos int) int {
+	for text[pos] != ';' {
+		pos++
+	}
+	return pos
 }

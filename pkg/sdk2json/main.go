@@ -1,3 +1,7 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -95,6 +99,9 @@ func main() {
 		log.Fatalln("hookapis.txt is empty")
 	}
 
+	// Initialize built in compiler data types.
+	initBuiltInTypes()
+
 	// Get the list of files in the Windows SDK.
 	files, err := utils.WalkAllFilesInDir(*sdkumPath)
 	if err != nil {
@@ -128,6 +135,9 @@ func main() {
 			!strings.HasSuffix(file, "\\winuser.h") &&
 			!strings.HasSuffix(file, "\\winhttp.h") &&
 			!strings.HasSuffix(file, "\\minwinbase.h") &&
+			!strings.HasSuffix(file, "\\minwindef.h") &&
+			!strings.HasSuffix(file, "\\winnt.h") &&
+			!strings.HasSuffix(file, "\\ntdef.h") &&
 			!strings.HasSuffix(file, "\\wininet.h") {
 			continue
 		}
@@ -138,8 +148,11 @@ func main() {
 			log.Fatalln(err)
 		}
 
+		// Parse typedefs.
+		parseTypedefs(data)
+
 		// Start parsing all struct in header file.
-		a, b := getAllStructs(string(data))
+		a, b := getAllStructs(data)
 		winStructsRaw = append(winStructsRaw, a...)
 		winStructs = append(winStructs, b...)
 
@@ -210,6 +223,9 @@ func main() {
 
 	log.Printf("Parsed API count: %d, Hooked API Count: %d", parsedAPI, len(wantedAPIs))
 	log.Print(difference(wantedAPIs, foundAPIs))
+
+	// Init custom types.
+	initCustomTypes()
 
 	if *printanno || *minify {
 		data, err := utils.ReadAll("json/apis.json")
