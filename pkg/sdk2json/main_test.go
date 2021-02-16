@@ -31,6 +31,7 @@ var reTypedefsTests = []struct {
 	
 	{sdkDir + "\\shared\\ntdef.h", 186},
 	{sdkDir + "\\shared\\minwindef.h", 42},
+	{sdkDir + "\\shared\\basetsd.h", 42},
 	{sdkDir + "\\um\\winnt.h", 270},
 	{sdkDir + "\\um\\minwinbase.h", 12},
 }

@@ -55,37 +55,6 @@ var (
 	reAnnotationReserved = regexp.MustCompile(`Reserved`)
 )
 
-var (
-	// Because widening conversions are always safe, we will treat parameters
-	// either 4 or 8 bytes long depending on what the process is running on.
-	immTypes = []string{"int", "DWORD", "WORD", "UINT", "ULONG_PTR", "DWORD_PTR", "HOOKPROC", "HRESULT", "HINSTANCE", "DWORD_PTR",
-		"INTERNET_PORT", "BOOL", "ULONG", "SIZE_T", "HKEY", "HINTERNET", "HANDLE", "HMODULE", "SC_HANDLE", "REGSAM", "HHOOK",
-		"BCRYPT_KEY_HANDLE", "BCRYPT_HASH_HANDLE",
-		"PVOID", "VOID*", "CONST BYTE*", "LPVOID", "PVOID", "LPBYTE", "LPCVOID"}
-
-	immPtrTypes = []string{"PBYTE", "LPDWORD", "SIZE_T*", "PHKEY", "PUCHAR", "PHANDLE", "ULONG*"}
-
-	// Void pointers, required further parsing from SAL to read the size from the parameter.
-	bytePtrTypes = []string{}
-
-	// Pointer to ascii strings.
-	asciiStrTypes = []string{"LPCSTR", "LPSTR"}
-
-	// Pointer to wide stings.
-	wideStrTypes = []string{"LPCWSTR", "LPWSTR"}
-
-	// Array of ascii strings.
-	arrOfASCIIStrTypes = []string{"LPCSTR FAR *", "LPCSTR*"}
-
-	// Aarray of wide strings.
-	arrOfWideStrTypes = []string{"LPCWSTR FAR *", "LPCWSTR*"}
-
-	// Pointer to a struct.
-	ptrStructTypes = []string{"LPURL_COMPONENTSA", "LPINTERNET_BUFFERSW", "LPSERVICE_STATUS", "PFILETIME", "LPSTARTUPINFOW", "LPPROCESS_INFORMATION",
-		"LPSECURITY_ATTRIBUTES", "LPPROCESSENTRY32W", "PLUID", "LPINTERNET_BUFFERSW", "LPENUM_SERVICE_STATUSW", "LPSTARTUPINFOA", "SERVICE_TABLE_ENTRYW", "LPURL_COMPONENTSW",
-		"CONST LPSECURITY_ATTRIBUTES", "CONST SERVICE_TABLE_ENTRYW*",
-		"LPENUM_SERVICE_STATUSA", "LPINTERNET_BUFFERSA", "PMEMORY_BASIC_INFORMATION"}
-)
 
 func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 	mapis := make(map[string]map[string]APIMini)
