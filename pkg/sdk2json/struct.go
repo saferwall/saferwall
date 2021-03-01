@@ -5,7 +5,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -138,9 +137,6 @@ func parseStruct(structBeg, structBody, structEnd string) Struct {
 	structBody = stripStruct(structBody)
 
 	// Remove "FAR *" like expressions.
-	if strings.Contains(structEnd, "FAR") {
-		log.Println("w9af 3and 7addak")
-	}
 	structEnd = stripStructEnd(structEnd)
 
 	// Get struct members

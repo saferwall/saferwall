@@ -39,22 +39,23 @@ type APIParamMini struct {
 	Annotation        uint8  `json:"anno"`
 	Type              uint8  `json:"type"`
 	Name              string `json:"name"`
-	BufferSizeOrIndex int8   `json:"buffsize_or_idx,omitempty"`
+	BufferSizeOrIndex int8   `json:"buffsize_or_idx"`
 }
 
 // APIMini represents information about a Win32 API.
 type APIMini struct {
 	ReturnValueType bool           `json:"retType"` // Return value type.
+	PropertyCount   int            `json:"p_count"`
 	Params          []APIParamMini `json:"params"`  // API Arguments.
 }
 
 var (
-	reAnnotationIn       = regexp.MustCompile(`_In_|IN|_In_opt[\w]+|In_reads[\w()]+`)
-	reAnnotationOut      = regexp.MustCompile(`_Out_|OUT|_Out_opt[\w]+|_Out_writes[\w()]+|_Outptr_`)
-	reAnnotationIntOut   = regexp.MustCompile(`_Inout[\w]+`)
-	reAnnotationReserved = regexp.MustCompile(`Reserved`)
+	reAnnotationIn       = regexp.MustCompile(`(?i)_In_|IN|_In_opt[\w]+|In_reads[\w()]+`)
+	// __out_data_source
+	reAnnotationOut      = regexp.MustCompile(`(?i)_Out_|OUT|_Out_opt[\w]+|_Out_writes[\w()]+|_Outptr_`)
+	reAnnotationIntOut   = regexp.MustCompile(`(?i)_Inout[\w]+`)
+	reAnnotationReserved = regexp.MustCompile(`(?i)Reserved`)
 )
-
 
 func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 	mapis := make(map[string]map[string]APIMini)
@@ -64,25 +65,28 @@ func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 		}
 		for apiname, vv := range v {
 
+			// Return type.
 			returnType := false
 			if vv.ReturnValueType == "VOID" {
 				returnType = true
 			}
 
-			copy := APIMini{
-				ReturnValueType: returnType}
-
+			propertiesCount := 0
 			var paramsMini []APIParamMini
 			for _, param := range vv.Params {
 				parammini := APIParamMini{}
 				if reAnnotationIn.MatchString(param.Annotation) {
 					parammini.Annotation = paramIn
+					propertiesCount++
 				} else if reAnnotationOut.MatchString(param.Annotation) {
 					parammini.Annotation = paramOut
+					propertiesCount++
 				} else if reAnnotationIntOut.MatchString(param.Annotation) {
 					parammini.Annotation = paramInOut
+					propertiesCount += 2
 				} else if reAnnotationReserved.MatchString(param.Annotation) {
 					parammini.Annotation = paramReserved
+					propertiesCount++
 				} else {
 					// If we don't know, take it as in:
 					parammini.Annotation = paramIn
@@ -95,8 +99,11 @@ func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 				parammini.Name = param.Name
 				paramsMini = append(paramsMini, parammini)
 			}
-			copy.Params = paramsMini
-			mapis[dllname][apiname] = copy
+			apiMini := APIMini{}
+			apiMini.Params = paramsMini
+			apiMini.ReturnValueType = returnType
+			apiMini.PropertyCount = propertiesCount
+			mapis[dllname][apiname] = apiMini
 		}
 	}
 

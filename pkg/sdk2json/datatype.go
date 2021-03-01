@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	typeScalar      uint8 = iota // Scalar types: int, char, ...
+	typeScalar      uint8 = iota // Scalar types: int, long, DWORD, ...
 	typePtrScalar                // Pointers to scalar types: int*, ...
 	typeASCIIStr                 // NULL terminated ascii string.
 	typeWideStr                  // NULL terminated wide string.
@@ -38,7 +38,7 @@ type dataType struct {
 	Name string
 	// Kind of data type: typeScalar, ...
 	Kind uint8
-	// Size in bytes, for pointers it holds the size of the type it points to, not the size of the pointer itself. For void*, we set it to -1.
+	// Size in bytes, for pointers it holds the size of the type it points to, not the size of the pointer itself.
 	Size int8
 }
 
@@ -73,8 +73,7 @@ var (
 	// The `Handle` types was declated with `DECLARE_HANDLE` macro
 	// instead of a direct typedef. We hardcode them here for now.
 	voidPtrTypes = []string{
-		"void*", "VOID*", "HKEY", "HMETAFILE", "HINSTANCE", "HRGN", "HRSRC",
-		"HSPRITE", "HLSURF", "HSTR", "HTASK", "SC_HANDLE", "ULONG_PTR", "LONG_PTR",
+		"void*", "VOID*", "HANDLE", "HKEY", "HMETAFILE", "HINSTANCE", "HRGN", "HRSRC", "HSPRITE", "HLSURF", "HSTR", "HTASK", "SC_HANDLE", "ULONG_PTR", "LONG_PTR",
 	}
 
 	// ASCIIStrTypes represents the null terminated string types.
@@ -88,13 +87,18 @@ var (
 	}
 
 	// Array of null terminated ascii string types.
-	arrSCIIStrTypes = []string{
+	arrASCIIStrTypes = []string{
 		"_Null_terminated_ PSTR*",
 	}
 
 	// Array of null terminated wide string types.
-	wideSCIIStrTypes = []string{
+	arrWideStrTypes = []string{
 		"_Null_terminated_ PWSTR*",
+	}
+
+	// Byte pointer types.
+	bytePtrType = []string{
+		"BYTE*",
 	}
 
 	// Maps a type to its typedef alias.
@@ -108,26 +112,27 @@ var (
 func initBuiltInTypes() {
 	for _, t := range oneByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 1, Kind: typeScalar}
-		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 1, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 1, Kind: typePtrScalar}
 	}
 
 	for _, t := range twoByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 2, Kind: typeScalar}
-		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 2, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 2, Kind: typePtrScalar}
 	}
 
 	for _, t := range fourByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 4, Kind: typeScalar}
-		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 4, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 4, Kind: typePtrScalar}
 	}
 
 	for _, t := range eightByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 8, Kind: typeScalar}
-		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 8, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 8, Kind: typePtrScalar}
 	}
 
 	for _, t := range voidPtrTypes {
 		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 0, Kind: typePtrScalar}
 	}
 
 	for _, t := range ASCIIStrTypes {
@@ -136,6 +141,18 @@ func initBuiltInTypes() {
 
 	for _, t := range wideStrTypes {
 		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeWideStr}
+	}
+
+	for _, t := range arrASCIIStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeArrASCIIStr}
+	}
+
+	for _, t := range arrWideStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeArrWideStr}
+	}
+
+	for _, t := range bytePtrType {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeBytePtr}
 	}
 }
 
@@ -151,16 +168,17 @@ func initCustomTypes() {
 			if _, ok := dataTypes[k]; ok {
 				continue
 			}
-
+			
 			// Search in our typedef map
 			val, ok := dataTypes[v]
 			if !ok {
 				// Take out the `*` and look up again.
 				val, ok := dataTypes[v[:len(v)-1]]
 				if ok {
-					dt := dataType{Name: k, Size: val.Size, Kind: typePtrScalar}
-					dataTypes[k] = dt
-					continue
+					if val.Kind == typeScalar {
+						dt := dataType{Name: k, Size: val.Size, Kind: typePtrScalar}
+						dataTypes[k] = dt
+					}
 				}
 			} else {
 				dt := dataType{Name: k, Size: val.Size, Kind: val.Kind}
@@ -169,19 +187,19 @@ func initCustomTypes() {
 				// We found a new type, if it is a scalar, let's add its
 				// pointer version as well.
 				if val.Kind == typeScalar {
-					if val, ok := dataTypes[k+"*"]; !ok {
+					if _, ok := dataTypes[k+"*"]; !ok {
 						dt := dataType{
 							Name: k + "*", Size: val.Size, Kind: typePtrScalar}
 						dataTypes[k+"*"] = dt
 					}
 				} else if val.Kind == typeASCIIStr {
-					if val, ok := dataTypes[k+"*"]; !ok {
+					if _, ok := dataTypes[k+"*"]; !ok {
 						dt := dataType{
 							Name: k + "*", Size: val.Size, Kind: typeArrASCIIStr}
 						dataTypes[k+"*"] = dt
 					}
 				} else if val.Kind == typeWideStr {
-					if val, ok := dataTypes[k+"*"]; !ok {
+					if _, ok := dataTypes[k+"*"]; !ok {
 						dt := dataType{
 							Name: k + "*", Size: val.Size, Kind: typeArrWideStr}
 						dataTypes[k+"*"] = dt
@@ -206,7 +224,7 @@ func typefromString(t string) dataType {
 
 	log.Println(t)
 
-	return dataType{}
+	return dataType{Name: t, Kind: typeStruct, }
 }
 
 func parseTypedefs(data []byte) {
@@ -218,10 +236,6 @@ func parseTypedefs(data []byte) {
 		// Strip extra white spaces from typedef statement.
 		srcName := standardizeSpaces(match[2])
 		newName := standardizeSpaces(match[4])
-
-		if strings.Contains(newName, "DWORD_PTR") {
-			log.Println("a")
-		}
 
 		// the newName in typedef could include multiple names:
 		// i.e:typedef _Null_terminated_ CHAR *NPSTR, *LPSTR, *PSTR;
