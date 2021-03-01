@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	typeScalar      uint8 = iota // Scalar types: int, char, ...
+	typeScalar      uint8 = iota // Scalar types: int, long, DWORD, ...
 	typePtrScalar                // Pointers to scalar types: int*, ...
 	typeASCIIStr                 // NULL terminated ascii string.
 	typeWideStr                  // NULL terminated wide string.
@@ -38,12 +38,11 @@ type dataType struct {
 	Name string
 	// Kind of data type: typeScalar, ...
 	Kind uint8
-	// Size in bytes, for pointers it holds the size of the type it points to, not the size of the pointer itself. For void*, we set it to -1.
+	// Size in bytes, for pointers it holds the size of the type it points to, not the size of the pointer itself.
 	Size int8
 }
 
 var (
-	// regAllTypedef = `(?m)^typedef(\s)+(?P<Source>[\w\s]+)+(\s)+(?P<Target>[*\w]+);`
 	regAllTypedef = `(?m)^typedef(\s)+(?P<Source>[\w\s]+)+(\s)+(?P<Target>[*\w\s,]+);`
 
 	// 1 byte types,
@@ -70,11 +69,36 @@ var (
 		"signed long long int",
 	}
 
-	// Void* types. The `Handle` types was declated with `DECLARE_HANDLE` macro
-	// instead of a direct typedef. We hardcode here for now.
+	// Void* types + HANDLE-types + XYZ_PTR like types.
+	// The `Handle` types was declated with `DECLARE_HANDLE` macro
+	// instead of a direct typedef. We hardcode them here for now.
 	voidPtrTypes = []string{
-		"void*", "VOID*", "HKEY", "HMETAFILE", "HINSTANCE", "HRGN", "HRSRC",
-		"HSPRITE", "HLSURF", "HSTR", "HTASK",
+		"void*", "VOID*", "HANDLE", "HKEY", "HMETAFILE", "HINSTANCE", "HRGN", "HRSRC", "HSPRITE", "HLSURF", "HSTR", "HTASK", "SC_HANDLE", "ULONG_PTR", "LONG_PTR",
+	}
+
+	// ASCIIStrTypes represents the null terminated string types.
+	ASCIIStrTypes = []string{
+		"_Null_terminated_ CHAR*", "_Null_terminated_ char*",
+	}
+
+	// wide null terminated string types.
+	wideStrTypes = []string{
+		"_Null_terminated_ WCHAR*", "_Null_terminated_ wchar_t*",
+	}
+
+	// Array of null terminated ascii string types.
+	arrASCIIStrTypes = []string{
+		"_Null_terminated_ PSTR*",
+	}
+
+	// Array of null terminated wide string types.
+	arrWideStrTypes = []string{
+		"_Null_terminated_ PWSTR*",
+	}
+
+	// Byte pointer types.
+	bytePtrType = []string{
+		"BYTE*",
 	}
 
 	// Maps a type to its typedef alias.
@@ -88,22 +112,47 @@ var (
 func initBuiltInTypes() {
 	for _, t := range oneByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 1, Kind: typeScalar}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 1, Kind: typePtrScalar}
 	}
 
 	for _, t := range twoByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 2, Kind: typeScalar}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 2, Kind: typePtrScalar}
 	}
 
 	for _, t := range fourByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 4, Kind: typeScalar}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 4, Kind: typePtrScalar}
 	}
 
 	for _, t := range eightByteTypes {
 		dataTypes[t] = dataType{Name: t, Size: 8, Kind: typeScalar}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 8, Kind: typePtrScalar}
 	}
 
 	for _, t := range voidPtrTypes {
-		dataTypes[t] = dataType{Name: t, Size: -1, Kind: typeVoidPtr}
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeVoidPtr}
+		dataTypes[t+"*"] = dataType{Name: t + "*", Size: 0, Kind: typePtrScalar}
+	}
+
+	for _, t := range ASCIIStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeASCIIStr}
+	}
+
+	for _, t := range wideStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeWideStr}
+	}
+
+	for _, t := range arrASCIIStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeArrASCIIStr}
+	}
+
+	for _, t := range arrWideStrTypes {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeArrWideStr}
+	}
+
+	for _, t := range bytePtrType {
+		dataTypes[t] = dataType{Name: t, Size: 0, Kind: typeBytePtr}
 	}
 }
 
@@ -113,38 +162,61 @@ func initCustomTypes() {
 	// We repeat this process 2 times as some types won't be know only after
 	// first iteration.
 	for i := 0; i < 3; i++ {
-		log.Println(len(dataTypes))
 
 		for k, v := range typedefs {
 			// No need to go further if the type is already known.
 			if _, ok := dataTypes[k]; ok {
 				continue
 			}
-
+			
 			// Search in our typedef map
 			val, ok := dataTypes[v]
 			if !ok {
-				log.Printf("We dont have %s for now\n", v)
 				// Take out the `*` and look up again.
 				val, ok := dataTypes[v[:len(v)-1]]
 				if ok {
-					dt := dataType{Name: k, Size: val.Size, Kind: typePtrScalar}
-					dataTypes[k] = dt
-					continue
+					if val.Kind == typeScalar {
+						dt := dataType{Name: k, Size: val.Size, Kind: typePtrScalar}
+						dataTypes[k] = dt
+					}
 				}
-				//
 			} else {
-				log.Printf("%s is found on our map\n", v)
 				dt := dataType{Name: k, Size: val.Size, Kind: val.Kind}
 				dataTypes[k] = dt
+
+				// We found a new type, if it is a scalar, let's add its
+				// pointer version as well.
+				if val.Kind == typeScalar {
+					if _, ok := dataTypes[k+"*"]; !ok {
+						dt := dataType{
+							Name: k + "*", Size: val.Size, Kind: typePtrScalar}
+						dataTypes[k+"*"] = dt
+					}
+				} else if val.Kind == typeASCIIStr {
+					if _, ok := dataTypes[k+"*"]; !ok {
+						dt := dataType{
+							Name: k + "*", Size: val.Size, Kind: typeArrASCIIStr}
+						dataTypes[k+"*"] = dt
+					}
+				} else if val.Kind == typeWideStr {
+					if _, ok := dataTypes[k+"*"]; !ok {
+						dt := dataType{
+							Name: k + "*", Size: val.Size, Kind: typeArrWideStr}
+						dataTypes[k+"*"] = dt
+					}
+				}
 			}
 		}
 	}
-	log.Println("Done")
-
 }
 
 func typefromString(t string) dataType {
+
+	// Remove non-important C language modifiers like CONST ...
+	t = strings.ReplaceAll(t, "CONST ", "")
+	t = strings.ReplaceAll(t, " FAR", "")
+	t = strings.ReplaceAll(t, " NEAR", "")
+	t = spaceFieldsJoin(t)
 
 	if dt, ok := dataTypes[t]; ok {
 		return dt
@@ -152,7 +224,7 @@ func typefromString(t string) dataType {
 
 	log.Println(t)
 
-	return dataType{}
+	return dataType{Name: t, Kind: typeStruct, }
 }
 
 func parseTypedefs(data []byte) {
@@ -171,11 +243,19 @@ func parseTypedefs(data []byte) {
 		for _, val := range elements {
 			src := srcName
 			dest := spaceFieldsJoin(val)
+
+			// Take out some modifiers like `CONST`, `near`, `far`,
+			// as they don't affect the type, but more a hint for the compiler.
+			src = strings.ReplaceAll(src, "CONST ", "")
+			src = strings.ReplaceAll(src, " far", "")
+			src = strings.ReplaceAll(src, " near", "")
+
 			// When the data type is a pointer.
 			if strings.HasPrefix(dest, "*") {
 				src += "*"
 				dest = dest[1:]
 			}
+
 			typedefs[dest] = src
 
 		}

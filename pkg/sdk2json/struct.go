@@ -5,7 +5,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -75,6 +74,14 @@ func stripStruct(s string) string {
 	return s
 }
 
+func stripStructEnd(s string) string {
+	s = strings.ReplaceAll(s, "FAR* ", "*")
+	s = strings.ReplaceAll(s, "NEAR*", "*")
+	s = strings.ReplaceAll(s, "FAR *", "*")
+	s = strings.ReplaceAll(s, "NEAR *", "*")
+	return s
+}
+
 func parseStructBody(body string) []StructMember {
 
 	var structMembers []StructMember
@@ -129,9 +136,8 @@ func parseStruct(structBeg, structBody, structEnd string) Struct {
 	// Start by deleteing unecessery characters like comments and whitespaces.
 	structBody = stripStruct(structBody)
 
-	if strings.Contains(structBody, "CachingFlags") {
-		log.Println("w9raf 3and 7addak")
-	}
+	// Remove "FAR *" like expressions.
+	structEnd = stripStructEnd(structEnd)
 
 	// Get struct members
 	winStruct.Members = parseStructBody(structBody)

@@ -25,11 +25,13 @@ const (
 
 func removeAnnotations(apiPrototype string) string {
 	apiPrototype = strings.Replace(apiPrototype, "_Must_inspect_result_", "", -1)
+	apiPrototype = strings.Replace(apiPrototype, "__drv_aliasesMem", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "_Success_(return != 0 && return < nBufferLength)", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "_Success_(return != 0 && return < cchBuffer)", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "_Success_(return != FALSE)", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "_Ret_maybenull_", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "_Post_writable_byte_size_(dwSize)", "", -1)
+	apiPrototype = strings.Replace(apiPrototype, "_Post_ptr_invalid_", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, "__out_data_source(FILE)", "", -1)
 	apiPrototype = strings.Replace(apiPrototype, " OPTIONAL", "", -1)
 
@@ -138,6 +140,7 @@ func main() {
 			!strings.HasSuffix(file, "\\minwindef.h") &&
 			!strings.HasSuffix(file, "\\winnt.h") &&
 			!strings.HasSuffix(file, "\\ntdef.h") &&
+			!strings.HasSuffix(file, "\\basetsd.h") &&
 			!strings.HasSuffix(file, "\\wininet.h") {
 			continue
 		}
