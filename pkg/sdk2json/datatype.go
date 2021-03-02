@@ -8,7 +8,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -222,7 +221,7 @@ func typefromString(t string) dataType {
 		return dt
 	}
 
-	log.Println(t)
+	//log.Println(t)
 
 	return dataType{Name: t, Kind: typeStruct, }
 }
