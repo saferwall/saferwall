@@ -8,7 +8,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -39,7 +38,7 @@ type dataType struct {
 	// Kind of data type: typeScalar, ...
 	Kind uint8
 	// Size in bytes, for pointers it holds the size of the type it points to, not the size of the pointer itself.
-	Size int8
+	Size uint8
 }
 
 var (
@@ -158,7 +157,7 @@ func initBuiltInTypes() {
 
 // Create custom data types: CHAR, DWORD ..
 // usually typedefs to built in types.
-func initCustomTypes() {
+func initCustomTypes(winStructs []Struct) {
 	// We repeat this process 2 times as some types won't be know only after
 	// first iteration.
 	for i := 0; i < 3; i++ {
@@ -168,7 +167,7 @@ func initCustomTypes() {
 			if _, ok := dataTypes[k]; ok {
 				continue
 			}
-			
+
 			// Search in our typedef map
 			val, ok := dataTypes[v]
 			if !ok {
@@ -208,6 +207,25 @@ func initCustomTypes() {
 			}
 		}
 	}
+
+	// Init struct types.
+	for _, winStruct := range winStructs {
+		if len(winStruct.Name) > 0 {
+			dt := dataType{Name: winStruct.Name, Size: 0, Kind: typeStruct}
+			dataTypes[winStruct.Name] = dt
+			dt = dataType{Name: winStruct.Name + "*", Size: 0, Kind: typeStruct}
+			dataTypes[winStruct.Name+"*"] = dt
+		}
+		if len(winStruct.PointerAlias) > 0 {
+			dt := dataType{Name: winStruct.PointerAlias, Size: 0, Kind: typeStruct}
+			dataTypes[winStruct.PointerAlias] = dt
+		}
+		if len(winStruct.LongPointerAlias) > 0 {
+			dt := dataType{Name: winStruct.LongPointerAlias, Size: 0, Kind: typeStruct}
+			dataTypes[winStruct.LongPointerAlias] = dt
+		}
+
+	}
 }
 
 func typefromString(t string) dataType {
@@ -222,9 +240,9 @@ func typefromString(t string) dataType {
 		return dt
 	}
 
-	log.Println(t)
+	//log.Println(t)
 
-	return dataType{Name: t, Kind: typeStruct, }
+	return dataType{Name: t, Kind: typeStruct}
 }
 
 func parseTypedefs(data []byte) {
