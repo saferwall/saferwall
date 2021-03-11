@@ -159,11 +159,6 @@ func main() {
 		winStructsRaw = append(winStructsRaw, a...)
 		winStructs = append(winStructs, b...)
 
-		// Write struct results.
-		WriteStrSliceToFile("dump/winstructs.h", winStructsRaw)
-		d, _ := json.MarshalIndent(winStructs, "", " ")
-		utils.WriteBytesFile("json/structs.json", bytes.NewReader(d))
-
 		// Grab all API prototypes.
 		// 1. Ignore: FORCEINLINE
 		r := regexp.MustCompile(RegAPIs)
@@ -211,6 +206,11 @@ func main() {
 		utils.WriteBytesFile("json/apis.json", bytes.NewReader(data))
 	}
 
+	// Write struct results.
+	WriteStrSliceToFile("dump/winstructs.h", winStructsRaw)
+	d, _ := json.MarshalIndent(winStructs, "", " ")
+	utils.WriteBytesFile("json/structs.json", bytes.NewReader(d))
+
 	if *printretval {
 		for dll, v := range m {
 			log.Printf("DLL: %s\n", dll)
@@ -228,7 +228,7 @@ func main() {
 	log.Print(difference(wantedAPIs, foundAPIs))
 
 	// Init custom types.
-	initCustomTypes()
+	initCustomTypes(winStructs)
 
 	if *printanno || *minify {
 		data, err := utils.ReadAll("json/apis.json")
@@ -262,8 +262,13 @@ func main() {
 		}
 
 		if *minify {
+			// Minifi APIs.
 			data, _ := json.Marshal(minifyAPIs(apis))
 			utils.WriteBytesFile("json/mini-apis.json", bytes.NewReader(data))
+
+			// Minify Structs/Unions.
+			data, _ = json.Marshal(minifyStructAndUnions(winStructs))
+			utils.WriteBytesFile("json/mini-structs.json", bytes.NewReader(data))
 		}
 		os.Exit(0)
 	}
