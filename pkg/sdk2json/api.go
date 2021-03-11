@@ -60,7 +60,7 @@ func parseAPIParameter(params string) APIParam {
 }
 
 func parseAPI(apiPrototype string) API {
-	if strings.Contains(apiPrototype, "WinHttpQueryDataAvailable") {
+	if strings.Contains(apiPrototype, "RegEnumValueW") {
 		log.Print()
 	}
 	m := regSubMatchToMapString(RegProto, apiPrototype)
@@ -102,7 +102,7 @@ func parseAPI(apiPrototype string) API {
 					!strings.HasPrefix(vv, "_When") &&
 					!strings.HasPrefix(vv, "__out") &&
 					!strings.HasPrefix(vv, "_Out") {
-					v += " " + split[i+1]
+					v += ", " + split[i+1]
 					split[i+1] = v
 					continue
 				}
