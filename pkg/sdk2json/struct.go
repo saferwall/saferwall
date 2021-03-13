@@ -187,3 +187,119 @@ func getAllStructs(data []byte) ([]string, []Struct) {
 	}
 	return strStructs, winstructs
 }
+
+// x86Size returns the size of a member of a structure in 32-bits architecture.
+func (sm *StructMember) x86Size() uint8 {
+
+	dt := dataTypes[sm.Type]
+	var memberSize uint8
+	if dt.Kind != typeScalar && dt.Kind != typeVoidPtr {
+		memberSize = 4
+	} else {
+		memberSize = dt.Size
+	}
+
+	return memberSize
+}
+
+// x64Size returns the size of a member of a structure in 64-bits architecture.
+func (sm *StructMember) x64Size() uint8 {
+
+	dt := dataTypes[sm.Type]
+	var memberSize uint8
+	if dt.Kind != typeScalar && dt.Kind != typeVoidPtr {
+		memberSize = 8
+	} else {
+		memberSize = dt.Size
+	}
+
+	return memberSize
+}
+
+// x86Max returns the size in term of bytes of the largest member of the
+// structure in 32-bits architecture.
+func (s *Struct) x86Max() uint8 {
+	max := uint8(0)
+	memberSize := uint8(0)
+	for _, sm := range s.Members {
+		memberSize = sm.x86Size()
+		if memberSize > max {
+			max = memberSize
+		}
+	}
+	return max
+}
+
+// x64Max returns the size in term of bytes of the largest member of the
+// structure in 64-bits architecture.
+func (s *Struct) x64Max() uint8 {
+	max := uint8(0)
+	memberSize := uint8(0)
+	for _, sm := range s.Members {
+		memberSize = sm.x64Size()
+		if memberSize > max {
+			max = memberSize
+		}
+	}
+	return max
+}
+
+// x86Padding calculates the number of bytes required to properly align the
+// member of the structure.
+func (s *Struct) x86Padding(memberIdx int, largestMemberSize uint8) uint8 {
+
+	total := uint8(0)
+	nextMemberSize := uint8(0)
+	memberSize := uint8(0)
+	padding := uint8(0)
+	for i := 0; i <= memberIdx; i++ {
+		memberSize = s.Members[i].x86Size()
+		if i+1 < len(s.Members) {
+			nextMemberSize = s.Members[i+1].x86Size()
+		}
+
+		if memberSize == largestMemberSize {
+			padding = 0
+			total = 0
+		} else if memberSize < largestMemberSize {
+			total += memberSize + nextMemberSize
+		} else {
+			padding = total - largestMemberSize
+		}
+	}
+
+	return padding
+}
+
+// x64Padding calculates the number of bytes required to properly align the
+// member of the structure.
+func (s *Struct) x64Padding(memberIdx int, largestMemberSize uint8) uint8 {
+
+	total := uint8(0)
+	nextMemberSize := uint8(0)
+	memberSize := uint8(0)
+	padding := uint8(0)
+	for i := 0; i <= memberIdx; i++ {
+		memberSize = s.Members[i].x64Size()
+		if i+1 < len(s.Members) {
+			nextMemberSize = s.Members[i+1].x64Size()
+		}
+
+		if memberSize == largestMemberSize {
+			padding = 0
+			total = 0
+		} else if memberSize < largestMemberSize {
+			total += memberSize + nextMemberSize
+			if total == largestMemberSize {
+				padding = 0
+				total = 0
+			} else if total > largestMemberSize {
+				padding = total - largestMemberSize
+			}
+		} else {
+			padding = total - largestMemberSize
+		}
+	}
+
+	return padding
+}

@@ -5,6 +5,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -40,7 +42,7 @@ type APIParamMini struct {
 	Annotation        uint8  `json:"anno"`
 	Type              uint8  `json:"type"`
 	Name              string `json:"name"`
-	BufferSizeOrIndex uint8   `json:"buffsize_or_idx"`
+	BufferSizeOrIndex uint8  `json:"buffsize_or_idx"`
 }
 
 // APIMini represents information about a Win32 API.
@@ -203,22 +205,39 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
 		x64Size := uint8(0)
 		x86Offset := uint8(0)
 		x64Offset := uint8(0)
-		largestMemSizex86, largestMemSizex64 := winStruct.Max()
+		largestMemSizex86 := winStruct.x86Max()
+		largestMemSizex64 := winStruct.x64Max()
+
+		if winStruct.Name == "BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO" {
+			log.Println(winStruct.Name)
+		}
 		for i, winStructMember := range winStruct.Members {
 			miniMember := StructUnionMemberMini{}
 			miniMember.Name = winStructMember.Name
+
 			miniMember.X86Offset = x86Offset
 			miniMember.X64Offset = x64Offset
-			miniMember.X86Size, miniMember.X64Size = winStructMember.Size()
-			countBytesPaddingx86, countBytesPaddingx64 := winStruct.structMemberPadding(i, largestMemSizex86, largestMemSizex64)
-			x86Offset += countBytesPaddingx86 + miniMember.X86Size
-			x64Offset += countBytesPaddingx64 + miniMember.X64Size
-			x86Size += miniMember.X86Size + countBytesPaddingx86
-			x64Size += miniMember.X64Size + countBytesPaddingx64
+
+			miniMember.X86Size = winStructMember.x86Size()
+			miniMember.X64Size = winStructMember.x64Size()
+
+			x86Padding := winStruct.x86Padding(i, largestMemSizex86)
+			x64Padding := winStruct.x64Padding(i, largestMemSizex64)
+
+			x86Offset += x86Padding + miniMember.X86Size
+			x64Offset += x64Padding + miniMember.X64Size
+
+			x86Size += miniMember.X86Size + x86Padding
+			x64Size += miniMember.X64Size + x64Padding
+
+			structUnionMini.Members = append(structUnionMini.Members, miniMember)
 
 		}
 		structUnionMini.X86Size = x86Size
 		structUnionMini.X64Size = x64Size
+
+		data, _ := json.Marshal(structUnionMini)
+		log.Println(string(data))
 	}
 
 	return structsAndUnionsMini
