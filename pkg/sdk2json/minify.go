@@ -5,7 +5,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"regexp"
 	"strings"
@@ -181,63 +180,105 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
 		structUnionMini := StructUnionMini{}
 		structUnionMini.Name = winStruct.Name
 
-		//
-		// Because of structure padding, the code below calculates the index of
-		// where each individual member is located as well as the size of the
-		// structure in both x86 and x64.
-		// Here are a few rules the Microsoft C compiler arranges structures in
-		// memory:
-		//
-		// 1. each individual member, there will be padding so that to make it
-		// start at an address that is divisible by its size.
-		// e.g on 64 bit system,int should start at address divisible by 4, and
-		// long by 8, short by 2.
-		// 2. char and char[] are special, could be any memory address, so they
-		// don't need padding before them.
-		// 3. For struct, other than the alignment need for each individual
-		// member, the size of whole struct itself will be aligned to a size
-		// divisible by size of largest individual member, by padding at end.
-		// e.g if struct's largest member is long then divisible by 8, int then
-		// by 4, short then by 2.
-		//
-
-		x86Size := uint8(0)
-		x64Size := uint8(0)
 		x86Offset := uint8(0)
 		x64Offset := uint8(0)
-		largestMemSizex86 := winStruct.x86Max()
-		largestMemSizex64 := winStruct.x64Max()
-
-		if winStruct.Name == "BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO" {
+		x86Padding := uint8(0)
+		x64Padding := uint8(0)
+		totalx86 := uint8(0)
+		totalx64 := uint8(0)
+		
+		if winStruct.Name == "LIST_ENTRY" {
 			log.Println(winStruct.Name)
 		}
-		for i, winStructMember := range winStruct.Members {
+
+		largestMemSizex86 := winStruct.Max(false)
+		largestMemSizex64 := winStruct.Max(true)
+
+		if largestMemSizex64 == 0 || largestMemSizex64 == 0 {
+			log.Println(winStruct.Name)
+		}
+
+		for _, winStructMember := range winStruct.Members {
 			miniMember := StructUnionMemberMini{}
 			miniMember.Name = winStructMember.Name
-
+			miniMember.X86Size = winStructMember.Size(false)
+			miniMember.X64Size = winStructMember.Size(true)
 			miniMember.X86Offset = x86Offset
 			miniMember.X64Offset = x64Offset
 
-			miniMember.X86Size = winStructMember.x86Size()
-			miniMember.X64Size = winStructMember.x64Size()
+			
+			//
+			// Because of structure padding, the code below calculates the 
+			// index of where each individual member is located as well as the 
+			// size of the structure in both x86 and x64.
+			// Here are a few rules the Microsoft C compiler arranges structures
+			// in memory:
+			//
+			// 1. each individual member, there will be padding so that to make 
+			// it start at an address that is divisible by its size.
+			// e.g on 64 bit system,int should start at address divisible by 4, 
+			// and long by 8, short by 2.
+			// 2. char and char[] are special, could be any memory address, so 
+			// they don't need padding before them.
+			// 3. For struct, other than the alignment need for each individual
+			// member, the size of whole struct itself will be aligned to a size
+			// divisible by size of largest individual member, by padding at 
+			// end.
+			// e.g if struct's largest member is long then divisible by 8, int 
+			// then by 4, short then by 2.
+			//
+			if totalx86 == 0 {
+				if miniMember.X86Size == largestMemSizex86 {
+					x86Padding = 0
+					totalx86 = 0
+				} else if miniMember.X86Size < largestMemSizex86 {
+					x86Padding = 0
+					totalx86 += miniMember.X86Size
+				}
+			} else {
+				if totalx86+miniMember.X86Size == largestMemSizex86 {
+					x86Padding = 0
+					totalx86 = 0
+				} else if miniMember.X86Size < largestMemSizex86 {
+					x86Padding = 0
+					totalx86 += miniMember.X86Size
+				} else {
+					x86Padding = largestMemSizex86 - totalx86
+					totalx86 = 0
+				}
+			}
 
-			x86Padding := winStruct.x86Padding(i, largestMemSizex86)
-			x64Padding := winStruct.x64Padding(i, largestMemSizex64)
+			if totalx64 == 0 {
+				if miniMember.X64Size == largestMemSizex64 {
+					x64Padding = 0
+					totalx64 = 0
+				} else if miniMember.X64Size < largestMemSizex64 {
+					x64Padding = 0
+					totalx64 += miniMember.X64Size
+				}
+			} else {
+				if totalx64+miniMember.X64Size == largestMemSizex64 {
+					x64Padding = 0
+					totalx64 = 0
+				} else if miniMember.X64Size < largestMemSizex64 {
+					x64Padding = 0
+					totalx64 += miniMember.X64Size
+				} else {
+					x64Padding = largestMemSizex64 - totalx64
+					totalx64 = 0
+				}
+			}
 
+			// Calculate next member's offset
 			x86Offset += x86Padding + miniMember.X86Size
 			x64Offset += x64Padding + miniMember.X64Size
 
-			x86Size += miniMember.X86Size + x86Padding
-			x64Size += miniMember.X64Size + x64Padding
-
 			structUnionMini.Members = append(structUnionMini.Members, miniMember)
-
 		}
-		structUnionMini.X86Size = x86Size
-		structUnionMini.X64Size = x64Size
 
-		data, _ := json.Marshal(structUnionMini)
-		log.Println(string(data))
+		structUnionMini.X86Size = x86Offset + (x86Offset % largestMemSizex86)
+		structUnionMini.X64Size = x64Offset + (x64Offset % largestMemSizex64)
+
 	}
 
 	return structsAndUnionsMini
