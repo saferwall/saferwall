@@ -187,3 +187,56 @@ func getAllStructs(data []byte) ([]string, []Struct) {
 	}
 	return strStructs, winstructs
 }
+
+// Size returns the size of a member of a structure.
+func (sm *StructMember) Size(is64 bool) uint8 {
+
+	var memberSize uint8
+
+	dt, ok := dataTypes[sm.Type]
+	if ok {
+		if dt.Kind != typeScalar && dt.Kind != typeVoidPtr {
+			if is64 {
+				memberSize = 8
+			} else {
+				memberSize = 4
+			}
+		} else {
+			memberSize = dt.Size
+		}
+	} else {
+		// Custom type, i.e a struct.
+		if sm.Type == "_union" {
+			memberSize = UnionSize(sm.Body, is64)
+		}
+	}
+
+	return memberSize
+}
+
+// Max returns the size in term of bytes of the largest member of the
+// structure.
+func (s *Struct) Max(is64 bool) uint8 {
+	max := uint8(0)
+	memberSize := uint8(0)
+	for _, sm := range s.Members {
+		memberSize = sm.Size(is64)
+		if memberSize > max {
+			max = memberSize
+		}
+	}
+	return max
+}
+
+// UnionSize returns the size of the Union.
+func UnionSize(members []StructMember, is64 bool) uint8 {
+	max := uint8(0)
+	memberSize := uint8(0)
+	for _, m := range members {
+		memberSize = m.Size(is64)
+		if memberSize > max {
+			max = memberSize
+		}
+	}
+	return max
+}
