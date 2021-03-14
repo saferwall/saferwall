@@ -101,7 +101,7 @@ func main() {
 		log.Fatalln("hookapis.txt is empty")
 	}
 
-	// Initialize built in compiler data types.
+	// Initialize built-in compiler data types.
 	initBuiltInTypes()
 
 	// Get the list of files in the Windows SDK.
@@ -110,42 +110,38 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Defines some vars.
 	m := make(map[string]map[string]API)
 	var winStructsRaw []string
 	var winStructs []Struct
+	funcPtrs := make([]string, 0)
+	var interestingHeaders = []string{
+		"\\fileapi.h", "\\processthreadsapi.h", "\\winreg.h", "\\bcrypt.h",
+		"\\winbase.h", "\\urlmon.h", "\\memoryapi.h", "\\tlhelp32.h", "\\debugapi.h", "\\handleapi.h", "\\heapapi.h", "\\winsvc.h",
+		"\\libloaderapi.h", "\\sysinfoapi.h", "\\synchapi.h", "\\winuser.h",
+		"\\winhttp.h", "\\minwinbase.h", "\\minwindef.h", "\\winnt.h",
+		"\\ntdef.h", "\\basetsd.h", "\\wininet.h",
+	}
 
 	parsedAPI := 0
 	var foundAPIs []string
 	for _, file := range files {
+		foundHdr := false
 		var prototypes []string
 		file = strings.ToLower(file)
-		if !strings.HasSuffix(file, "\\fileapi.h") &&
-			!strings.HasSuffix(file, "\\processthreadsapi.h") &&
-			!strings.HasSuffix(file, "\\winreg.h") &&
-			!strings.HasSuffix(file, "\\bcrypt.h") &&
-			!strings.HasSuffix(file, "\\winbase.h") &&
-			!strings.HasSuffix(file, "\\urlmon.h") &&
-			!strings.HasSuffix(file, "\\memoryapi.h") &&
-			!strings.HasSuffix(file, "\\tlhelp32.h") &&
-			!strings.HasSuffix(file, "\\debugapi.h") &&
-			!strings.HasSuffix(file, "\\handleapi.h") &&
-			!strings.HasSuffix(file, "\\heapapi.h") &&
-			!strings.HasSuffix(file, "\\winsvc.h") &&
-			!strings.HasSuffix(file, "\\libloaderapi.h") &&
-			!strings.HasSuffix(file, "\\sysinfoapi.h") &&
-			!strings.HasSuffix(file, "\\synchapi.h") &&
-			!strings.HasSuffix(file, "\\winuser.h") &&
-			!strings.HasSuffix(file, "\\winhttp.h") &&
-			!strings.HasSuffix(file, "\\minwinbase.h") &&
-			!strings.HasSuffix(file, "\\minwindef.h") &&
-			!strings.HasSuffix(file, "\\winnt.h") &&
-			!strings.HasSuffix(file, "\\ntdef.h") &&
-			!strings.HasSuffix(file, "\\basetsd.h") &&
-			!strings.HasSuffix(file, "\\wininet.h") {
+		for _, headerName := range interestingHeaders {
+			if strings.HasSuffix(file, headerName) {
+				foundHdr = true
+				break
+			}
+		}
+
+		if !foundHdr {
 			continue
 		}
 
 		// Read Win32 include API headers.
+		log.Printf("Processing %s ...\n", file)
 		data, err := utils.ReadAll(file)
 		if err != nil {
 			log.Fatalln(err)
@@ -159,6 +155,10 @@ func main() {
 		winStructsRaw = append(winStructsRaw, a...)
 		winStructs = append(winStructs, b...)
 
+		// Extract all function pointers.
+		functionPointers := parseFunctionPointers(string(data))
+		funcPtrs = append(funcPtrs, functionPointers...)
+
 		// Grab all API prototypes.
 		// 1. Ignore: FORCEINLINE
 		r := regexp.MustCompile(RegAPIs)
@@ -170,7 +170,8 @@ func main() {
 			prototypes = append(prototypes, prototype)
 
 			// Only parse APIs we want to hook.
-			if !SliceContainsStringReverse(prototype, wantedAPIs) {
+			mProto := regSubMatchToMapString(RegProto, prototype)
+			if !StringInSlice(mProto["ApiName"], wantedAPIs) {
 				continue
 			}
 
@@ -224,8 +225,7 @@ func main() {
 		}
 	}
 
-	log.Printf("Parsed API count: %d, Hooked API Count: %d", parsedAPI, len(wantedAPIs))
-	log.Print(difference(wantedAPIs, foundAPIs))
+	log.Printf("Parsed API count: %d, Wanted API Count: %d", parsedAPI, len(wantedAPIs))
 
 	// Init custom types.
 	initCustomTypes(winStructs)
