@@ -8,6 +8,7 @@
 package main
 
 import (
+	"log"
 	"regexp"
 	"strings"
 )
@@ -240,7 +241,7 @@ func typefromString(t string) dataType {
 		return dt
 	}
 
-	//log.Println(t)
+	log.Printf("Type %s is not a known type\n", t)
 
 	return dataType{Name: t, Kind: typeStruct}
 }

@@ -19,13 +19,13 @@ const (
 
 // StructUnionMemberMini represents a struct or a union member.
 type StructUnionMemberMini struct {
-	Name       string          `json:"name"`
-	X86Offset  uint8           `json:"x86off"`
-	X86Size    uint8           `json:"x86size"`
-	X64Offset  uint8           `json:"x64off"`
-	X64Size    uint8           `json:"x64size"`
-	Type       uint8           `json:"type"` // Help interpret the value.
-	Definition StructUnionMini `json:"def,omitempty"`
+	Name       string           `json:"name"`
+	X86Offset  uint8            `json:"x86off"`
+	X86Size    uint8            `json:"x86size"`
+	X64Offset  uint8            `json:"x64off"`
+	X64Size    uint8            `json:"x64size"`
+	Type       uint8            `json:"type"` // Help interpret the value.
+	Definition *StructUnionMini `json:"def,omitempty"`
 }
 
 // StructUnionMini represents a complex type like a Union or a Struct.
@@ -174,8 +174,8 @@ func minifyAPIs(apis map[string]map[string]API) map[string]map[string]APIMini {
 	return mapis
 }
 
-func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
-	structsAndUnionsMini := []StructUnionMemberMini{}
+func minifyStructAndUnions(winStructs []Struct) []StructUnionMini {
+	var structsAndUnionsMini []StructUnionMini
 	for _, winStruct := range winStructs {
 		structUnionMini := StructUnionMini{}
 		structUnionMini.Name = winStruct.Name
@@ -186,15 +186,12 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
 		x64Padding := uint8(0)
 		totalx86 := uint8(0)
 		totalx64 := uint8(0)
-		
-		if winStruct.Name == "LIST_ENTRY" {
-			log.Println(winStruct.Name)
-		}
 
 		largestMemSizex86 := winStruct.Max(false)
 		largestMemSizex64 := winStruct.Max(true)
 
-		if largestMemSizex64 == 0 || largestMemSizex64 == 0 {
+		if largestMemSizex86 == 0 || largestMemSizex64 == 0 {
+			continue
 			log.Println(winStruct.Name)
 		}
 
@@ -206,25 +203,24 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
 			miniMember.X86Offset = x86Offset
 			miniMember.X64Offset = x64Offset
 
-			
 			//
-			// Because of structure padding, the code below calculates the 
-			// index of where each individual member is located as well as the 
+			// Because of structure padding, the code below calculates the
+			// index of where each individual member is located as well as the
 			// size of the structure in both x86 and x64.
 			// Here are a few rules the Microsoft C compiler arranges structures
 			// in memory:
 			//
-			// 1. each individual member, there will be padding so that to make 
+			// 1. each individual member, there will be padding so that to make
 			// it start at an address that is divisible by its size.
-			// e.g on 64 bit system,int should start at address divisible by 4, 
+			// e.g on 64 bit system,int should start at address divisible by 4,
 			// and long by 8, short by 2.
-			// 2. char and char[] are special, could be any memory address, so 
+			// 2. char and char[] are special, could be any memory address, so
 			// they don't need padding before them.
 			// 3. For struct, other than the alignment need for each individual
 			// member, the size of whole struct itself will be aligned to a size
-			// divisible by size of largest individual member, by padding at 
+			// divisible by size of largest individual member, by padding at
 			// end.
-			// e.g if struct's largest member is long then divisible by 8, int 
+			// e.g if struct's largest member is long then divisible by 8, int
 			// then by 4, short then by 2.
 			//
 			if totalx86 == 0 {
@@ -278,6 +274,7 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMemberMini {
 
 		structUnionMini.X86Size = x86Offset + (x86Offset % largestMemSizex86)
 		structUnionMini.X64Size = x64Offset + (x64Offset % largestMemSizex64)
+		structsAndUnionsMini = append(structsAndUnionsMini, structUnionMini)
 
 	}
 

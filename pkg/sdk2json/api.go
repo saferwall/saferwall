@@ -60,9 +60,6 @@ func parseAPIParameter(params string) APIParam {
 }
 
 func parseAPI(apiPrototype string) API {
-	if strings.Contains(apiPrototype, "RegEnumValueW") {
-		log.Print()
-	}
 	m := regSubMatchToMapString(RegProto, apiPrototype)
 	api := API{
 		Attribute:         m["Attr"],
@@ -81,7 +78,7 @@ func parseAPI(apiPrototype string) API {
 		log.Printf("Failed to parse: %s", apiPrototype)
 		return api
 	}
-	
+
 	re := regexp.MustCompile(RegParam)
 	split := re.Split(m["Params"], -1)
 	for i, v := range split {

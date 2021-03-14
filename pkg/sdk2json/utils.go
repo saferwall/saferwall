@@ -83,17 +83,15 @@ func Exists(name string) bool {
 	return true
 }
 
-// SliceContainsStringReverse returns if slice contains substring
-func SliceContainsStringReverse(a string, list []string) bool {
+// StringInSlice returns whether or not a string exists in a slice
+func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
-		b = " " + b
-		if strings.Contains(a, b) {
+		if b == a {
 			return true
 		}
 	}
 	return false
 }
-
 func regexp2FindAllString(re *regexp2.Regexp, s string) []string {
 	var matches []string
 	m, _ := re.FindStringMatch(s)
