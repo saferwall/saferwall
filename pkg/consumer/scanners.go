@@ -172,7 +172,7 @@ func staticScan(sha256, filePath string, b []byte) result {
 	}
 
 	// Extract strings.
-	n := 10
+	n := 5
 	asciiStrings := s.GetASCIIStrings(b, n)
 	wideStrings := s.GetUnicodeStrings(b, n)
 	asmStrings := s.GetAsmStrings(b)

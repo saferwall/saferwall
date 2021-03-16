@@ -64,7 +64,7 @@ func check(e error) {
 // GetASCIIStrings returns list of ASCII strings
 // n: defines minimum length of string
 func GetASCIIStrings(data []byte, n int) []string {
-	StringRegex := fmt.Sprintf("[ -~]{%d,}", n)
+	StringRegex := fmt.Sprintf("[\x20-\x7f]{%d,}", n) 
 	re := regexp.MustCompile(StringRegex)
 	asciiStrings := re.FindAllString(string(data), -1)
 	return asciiStrings

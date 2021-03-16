@@ -4,18 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] [Release date: 15/02/2021]
+## [0.1.0] [Release date: 31/03/2021]
 ### Added
 - A portable executable (PE) file parser.
 - A UI for displaying PE parsing results.
 - `gib`: a package to detect gibberish strings.
 - `bytestats`: a package that implements byte and entropy statistics for binary files.
-- [pkg/cli] add download command.
+- `cli` utility to interact with saferwall web apis.
 
 ### Changed
 - [Helm] reduce minio MEM request, ES and Kibana CPU request to half a core.
 - [Helm] bump chart dependency modules.
 - [pkg/consumer] add context timeout to multiav scan gRPC API.
+- Move the website, the dashboard and the web apis projects to a separate git repos.
 
 ## [0.0.3] - 2021-15-01
 ### Added

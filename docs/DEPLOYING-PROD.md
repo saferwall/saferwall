@@ -100,8 +100,23 @@ export AWS_EFS_TOKEN = example-efs
 | AV McAfee      |  1 core  |  400MB   |   Medium    |
 | AV Sophos      |  1 core  |  300MB   |   Medium    |
 | AV Symantec    | 0.4 core |  300MB   |   Medium    |
-| AV TrendMicro  |   core   |    MB    |             |
-| AV Windefender |   core   |    MB    |             |
+| AV TrendMicro  |   core   |    MB    |   Medium    |
+| AV Windefender |   core   |    MB    |   Medium    |
+
+## Tune Kops max pods
+
+- Kops set the max pods to 150 which is the default value recommanded by Kubernetes.
+- However if you're spinning large computer instances, you might hit the max value while you still have enough computer power, if can edit this value by: `kops edit cluster` :
+
+```yaml
+spec:
+    kubelet:
+        maxPods: 200
+```
+- For more information, check out: 
+  - https://kubernetes.io/docs/concepts/cluster-administration/networking/#aws-vpc-cni-for-kubernetes
+  - https://github.com/awslabs/amazon-eks-ami/blob/master/files/eni-max-pods.txt
+  - https://kubernetes.io/docs/setup/best-practices/cluster-large/
 
 ## Autoscaling
 

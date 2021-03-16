@@ -146,6 +146,13 @@ k8s-pf-couchbase:		## Port fordward couchbase ui service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
+
+k8s-pf:					## Port forward all services.
+	make k8s-pf-nsq &
+	make k8s-pf-couchbase &
+	make k8s-pf-grafana &
+	make k8s-pf-kibana &
+
 k8s-delete-all-objects: ## Delete all objects
 	kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 
@@ -179,3 +186,10 @@ k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 
 k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'
+
+
+k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
+	for p in $(kubectl get pods | grep Terminating | awk '{print $1}'); \
+	 do kubectl delete pod $p --grace-period=0 --force;done
+
+	

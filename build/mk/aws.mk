@@ -1,10 +1,12 @@
+AWS_CLI_DOWNLOAD_URL=https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+
 awscli-install:		## Install aws cli tool and configure it
-	sudo apt install curl python -y
-	curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-	unzip -o awscli-bundle.zip
-	sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+	sudo apt install curl python3 -y
+	curl "${AWS_CLI_DOWNLOAD_URL}" -o "awscliv2.zip"
+	unzip awscliv2.zip
+	sudo ./aws/install
+	rm awscliv2.zip
 	aws --version
-	rm awscli-bundle.zip
 	@echo "========================================================================================="
 	@echo "log in to aws console and get your access and secret key, for more information, consult:"
 	@echo "https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/"
