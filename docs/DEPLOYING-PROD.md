@@ -39,8 +39,8 @@ export AWS_EFS_TOKEN = example-efs
   export DOCKER_HUB_PWD = your_docker_hub_password
   ```
   - Build and release:
-    - `make backend-release`
-    - `make frontend-release`
+    - `backend`: !todo!
+    - `frontend`: !todo!
     - `make consumer-release`
     - `make multiav-release`
     - `make multiav-release-go`

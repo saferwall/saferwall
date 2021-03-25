@@ -170,7 +170,7 @@ func updateDocument(sha256 string, buff []byte) error {
 		return err
 	}
 
-	contextLogger.Infof("Scanning finished: status code: %d, resp: %s",
+	contextLogger.Infof("Update success: status code: %d, resp: %s",
 		resp.StatusCode, string(d))
 	return nil
 }

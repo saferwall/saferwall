@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gib`: a package to detect gibberish strings.
 - `bytestats`: a package that implements byte and entropy statistics for binary files.
 - `cli` utility to interact with saferwall web apis.
+- `sdk2json`: a package to convert Win32 API definitions to JSON format.
 
 ### Changed
 - [Helm] reduce minio MEM request, ES and Kibana CPU request to half a core.

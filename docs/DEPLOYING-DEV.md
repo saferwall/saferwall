@@ -29,9 +29,9 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         export MINIKUBE_DISK_SIZE=40GB
         ```
 5. _Optional_ step: building the containers if you do not wish to use the public ones or you want to build your own.
-    - Build the __frontend__: `make ui-build`.
+    - Build the __frontend__: !todo!
+    - Build the __backend__ : !todo!
     - Build the __consumer__: `make consumer-build`.
-    - Build the __backend__ : `make backend-build`.
     - Build the __multiav__:
         - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
         - By default, saferwall will use only the free ones.
