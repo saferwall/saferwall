@@ -192,4 +192,7 @@ k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 	for p in $(kubectl get pods | grep Terminating | awk '{print $1}'); \
 	 do kubectl delete pod $p --grace-period=0 --force;done
 
+k8s-delete-evicted-pods:	## Clean up all evicted pods
+	kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
+
 	

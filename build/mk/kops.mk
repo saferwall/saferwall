@@ -1,4 +1,4 @@
-KOPS_VERSION=1.19.0
+KOPS_VERSION=1.19.1
 kops-install:		## Install Kubernetes Kops
 	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops
