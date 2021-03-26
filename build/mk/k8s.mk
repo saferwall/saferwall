@@ -173,7 +173,7 @@ k8s-init-cert-manager: ## Init cert-manager
 	# Install the chart
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \
-		--version v1.1.0
+		--version v1.2.0
 	# Verify the installation.
 	kubectl wait --namespace cert-manager \
 	--for=condition=ready pod \
@@ -194,5 +194,3 @@ k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 
 k8s-delete-evicted-pods:	## Clean up all evicted pods
 	kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
-
-	

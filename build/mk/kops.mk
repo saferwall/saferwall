@@ -1,10 +1,3 @@
-KOPS_VERSION=1.19.1
-kops-install:		## Install Kubernetes Kops
-	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
-	chmod +x ./kops
-	sudo mv ./kops /usr/local/bin/
-	kops version
-
 kops-create-user:	## Create the kops IAM user to provision the cluster
 	# create kops group 
 	aws iam create-group --group-name kops
@@ -21,6 +14,13 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	aws iam create-access-key --user-name kops
 	echo "Copy the SecretAccessKey and AccessKeyID from the output."
 	aws configure
+
+KOPS_VERSION=1.19.1
+kops-install:		## Install Kubernetes Kops
+	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
+	chmod +x ./kops
+	sudo mv ./kops /usr/local/bin/
+	kops version
 
 kops-create-kops-bucket:		## Create s3 bucket for kops
 	@echo "Creating S3 Bucket to store kops state"
@@ -43,7 +43,7 @@ kops-create-cluster:			## Create k8s cluster
 		--cloud aws \
 		--topology private \
 		--networking calico \
-		--name ${KOPS_CLUSTER_NAME}
+		--name ${KOPS_CLUSTER_NAME} 
 	kops edit cluster --name $(KOPS_CLUSTER_NAME)
 	kops update cluster --name $(KOPS_CLUSTER_NAME) --yes
 	sleep 10m
@@ -58,18 +58,10 @@ kops-create-efs:				## Create AWS EFS file system
 		--region $(AWS_REGION)
 
 kops-create-mount-targers:		## Create mount targets
+	sudo apt update -qq && sudo apt install -qq jq
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]' --output text | grep True | cut -f 2 ))
-	aws efs create-mount-target \
-		--file-system-id $(FS_ID) \
-		--subnet-id $(SUBNET) \
-		--security-group $(SEC_GROUP) \
-		--region $(AWS_REGION)
-	aws efs describe-mount-targets --file-system-id $(FS_ID)
-
-	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`masters.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`masters.${KOPS_CLUSTER_NAME}`, SubnetId]' --output text | grep True | cut -f 2 ))
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]'  | jq '.[0][0][1]'  | tr -d '"'))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
 		--subnet-id $(SUBNET) \
@@ -88,7 +80,7 @@ kops-delete-file-system:		## Delete file system
 
 kops-delete-cluster:	## Delete k8s cluster
 	make kops-delete-mount-targets
-	sleep 1m
+	sleep 30s
 	make kops-delete-file-system 
 	kops delete cluster --name ${KOPS_CLUSTER_NAME} --yes
 
@@ -116,8 +108,8 @@ kops-tips:		## Some kops commands
 	# Finally configure your cluster with:
 	kops update cluster --name saferwall.k8s.local --yes
 
-kops-export-yaml:  ### Export Kops cLuster config
-	kops get --name ${KOPS_CLUSTER_NAME} -o yaml > ${KOPS_CLUSTER_NAME}.yaml
+kops-export-yaml:  ### Export Kops cluster config
+	kops get --name ${KOPS_CLUSTER_NAME} -o yaml > cluster-desired-config.yaml
 
 saferwall: ## Deploy the cluster
 	make awscli-install

@@ -95,9 +95,13 @@ kibana:
     requests:
       cpu: "500m"
 
-####### PROMETHEUS #########
-prometheus-operator:
-  enabled: false
+###### KUBE PROMETHEUS STACK #########
+kube-prometheus-stack:
+  enabled: true
+  grafana:
+    serviceMonitor:
+      # Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "5s"
 
 ####### COUCHBASE #########
 couchbase-operator:
