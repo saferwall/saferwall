@@ -35,7 +35,7 @@ minio:
 
     # Size of persistent volume claim
     size: 5Gi
-  
+
   ## Configure resource requests and limits
   resources:
     requests:
@@ -97,7 +97,7 @@ kibana:
 
 ###### KUBE PROMETHEUS STACK #########
 kube-prometheus-stack:
-  enabled: true
+  enabled: false
   grafana:
     serviceMonitor:
       # Scrape interval. If not set, the Prometheus default scrape interval is used.
@@ -125,22 +125,7 @@ couchbase-operator:
     # image config
     image:
       repository: couchbase/operator
-      tag: 2.0.2
-    imagePullPolicy: IfNotPresent
-    # imagePullSecrets is an optional list of references to secrets  to use for pulling images
-    imagePullSecrets: []
-    # additional command arguments will be translated to `--key=value`
-    commandArgs:
-      # pod creation timeout
-      pod-create-timeout: 10m
-    # resources of couchbase-operator
-    resources: {}
-    # nodeSelector for couchbase-operator pod assignment
-    # Ref: https://kubernetes.io/docs/user-guide/node-selection/
-    nodeSelector: {}
-    # tolerations of pod match nodes with corresponding taints
-    tolerations: []
-
+      tag: 2.1.0
 
   # admissionController is the controller for couchbase admission controller
   # name is derived from chart
@@ -148,51 +133,14 @@ couchbase-operator:
     name: "couchbase-admission-controller"
     image:
       repository: couchbase/admission-controller
-      tag: 2.0.2
-    imagePullPolicy: IfNotPresent
-    # imagePullSecrets is an optional list of references to secrets  to use for pulling images
-    imagePullSecrets: []
-    verboseLogging: false
-
-  # admissionService exposes validation to cluster. This service
-  # is over https and certs are auto-generated based on serviceName.
-  admissionService:
-    # name of the service (auto-generated)
-    name:
-    # port service exposes
-    port: 443
-    targetPort: 8443
-
-  # admissionCA can be used to override the Certs that will be used
-  # to sign the keys used by the admsission operator.
-  admissionCA:
-    # A base64 encoded PEM format certificate
-    cert:
-    # A base64 encoded PEM format private key
-    key:
-    # Expiry time of CA in days for generated certs
-    expiration: 365
-
-  # secret with client certs mounted within the admission controller.
-  admissionSecret:
-    # name of the secret (auto-generated)
-    name:
-    # PEM format certificate (auto-generated)
-    # override via --set-file
-    cert:
-    # PEM format certificate (auto-generated)
-    # override via --set-file
-    key:
-
+      tag: 2.1.0
 
   # Default values for couchbase-cluster
   cluster:
     # name of the cluster. defaults to name of chart release
     name:
     # image is the base couchbase image and version of the couchbase cluster
-    image: "couchbase/server:6.5.1"
-    # guarantees that the pods in the same cluster are unable to be scheduled on the same node
-    antiAffinity: false
+    image: "couchbase/server:6.6.0"
     security:
       ## username of the cluster admin.
       # username: Administrator
@@ -202,65 +150,13 @@ couchbase-operator:
       # adminSecret is name of secret to use instead of using
       # the default secret with username and password specified above
       adminSecret: "cb-admin-secret"
-      rbac:
-        managed: true
-      ldap: {}
-    # networking options
-    networking:
-      # Option to expose admin console
-      exposeAdminConsole: true
-      # Option to expose admin console
-      adminConsoleServices:
-        - data
-      # Specific services to use when exposing ui
-      exposedFeatures:
-        - client
-        - xdcr
-      # Defines how the admin console service is exposed.
-      # Allowed values are NodePort and LoadBalancer.
-      # If this field is LoadBalancer then you must also define a spec.dns.domain.
-      adminConsoleServiceType: NodePort
-      # Defines how the per Couchbase node ports are exposed.
-      # Allowed values are NodePort and LoadBalancer.
-      # If this field is LoadBalancer then you must also define a spec.dns.domain.
-      exposedFeatureServiceType: NodePort
-      # This controls routing to external services.
-      exposedFeatureTrafficPolicy: Local
-      # The dynamic DNS configuration to use when exposing services
-      dns:
-      # Custom map of annotations to be added to console and per-pod (exposed feature) services
-      serviceAnnotations: {}
-      # The Couchbase cluster tls configuration (auto-generated)
-      tls:
-    # The retention period that log volumes are kept for after their associated pods have been deleted.
-    logRetentionTime: 604800s
-    # The maximum number of log volumes that can be kept after their associated pods have been deleted.
-    logRetentionCount: 20
-    # xdcr defines remote clusters and replications to them.
-    xdcr:
-      # managed defines whether the Operator should manage XDCR remote clusters
-      managed: false
-      # remoteClusters contains references to any remote clusters to replicate to
-      remoteClusters:
-    # backup defines values for automated backup.
     backup:
       # managed determines whether Automated Backup is enabled
       managed: true
       # image used by the Operator to perform backup or restore
-      image: couchbase/operator-backup:6.5.1-104
-      # optional service account to use when performing backups
-      # service account will be created if it does not exist
-      serviceAccountName:
-    # defines integration with third party monitoring sofware
-    monitoring:
-      prometheus:
-        # defines whether Prometheus metric collection is enabled
-        enabled: false
-        # image used by the Operator to perform metric collection
-        # (injected as a "sidecar" in each Couchbase Server Pod)
-        image: couchbase/exporter:1.0.2
-        # Optional Kubernetes secret that clients use to access Prometheus metrics
-        authorizationSecret:
+      image: couchbase/operator-backup:6.6.0-100
+      # secret that holds the AWS region name, access key ID, and secret access key
+      s3Secret:
     # Cluster wide settings for nodes and services
     cluster:
       # The amount of memory that should be allocated to the data service
@@ -302,18 +198,6 @@ couchbase-operator:
         # start: 02:00
         # end: 06:00
         # abortCompactionOutsideWindow: true
-
-    # configuration of logging functionality
-    # for use in conjuction with logs persistent volume mount
-    logging:
-      # retention period that log volumes are kept after pods have been deleted
-      logRetentionTime: 604800s
-      # the maximum number of log volumes that can be kept after pods have been deleted
-      logRetentionCount: 20
-    # kubernetes security context applied to pods
-    securityContext:
-      # fsGroup of persistent volume mount
-      fsGroup: 1000
     # cluster buckets
     buckets:
       # Managed defines whether buckets are managed by us or the clients.
@@ -336,22 +220,16 @@ couchbase-operator:
           default: couchbase
           data: couchbase
           index: couchbase
-        # ServerGroups define the set of availability zones we want to distribute pods over.
-        serverGroups: []
-        # Pod defines the policy to create pod for the couchbase pod.
-        pod:
-          spec:
-            containers:
     # VolumeClaimTemplates define the desired characteristics of a volume
     # that can be requested and claimed by a pod.
     volumeClaimTemplates:
-    - metadata:
-        name: couchbase
-      spec:
-        storageClassName: standard
-        resources:
-          requests:
-            storage: 2Gi
+      - metadata:
+          name: couchbase
+        spec:
+          storageClassName: standard
+          resources:
+            requests:
+              storage: 10Gi
 
   # couchbase buckets to create
   # disable default bucket creation by setting
@@ -403,6 +281,43 @@ couchbase-operator:
       # data compression mode for the bucket to run in [off, passive, active]
       compressionMode: "passive"
 
+  # CouchbaseBackups runs a job which preserves data into backups
+  backups: {}
+  #
+  # Uncomment to create a backup named 'my-backup'
+  #
+  #   default-backup:
+  #     name: my-backup
+  #     strategy: full_incremental
+  #     full:
+  #       schedule: "0 3 * * 0"
+  #     incremental:
+  #       schedule: "0 3 * * 1-6"
+  #     successfulJobsHistoryLimit: 1
+  #     failedJobsHistoryLimit: 3
+  #     backOffLimit: 2
+  #     backupRetention: 24h
+  #     logRetention: 24h
+  #     size: 5Gi
+
+  # CouchbaseBackupRestore restores data from backups
+  backuprestores: {}
+  #
+  # Uncomment to create a restore named 'my-restore'
+  #
+  # default-restore:
+  #   name: my-restore
+  #   backup: my-backup
+  #   repo: cb-example-2020-11-12T19_00_03
+  #   start:
+  #     int: 1
+  #     str: oldest
+  #   end:
+  #     int: 1
+  #     str: latest
+  #   backOffLimit: 2
+  #   logRetention: 24h
+
   # RBAC users to create
   # (requires couchbase server 6.5.0 and higher)
   users: {}
@@ -428,12 +343,58 @@ couchbase-operator:
     generate: false
     # Expiry time of CA in days for generated certs
     expiration: 365
+    # This field defines whether node-to-node encryption is enabled.
+    # Must be either 'All' or 'ControlPlaneOnly'.
+    # If not specified, data between Couchbase Server nodes is not encrypted.
+    nodeToNodeEncryption:
 
   # syncGateway configuration
   syncGateway:
     # name of the sync gatway pod.
     # defaults to name of chart
     name:
+    # how many sync gateway pods to create
+    # horizontally scale the deployment
+    replicas: 1
+    # optional set to change cleanup policy
+    revisionHistoryLimit:
+    # labels to apply to the deployment resource
+    labels: {}
+    # labels to apply to the pods
+    podLabels: {}
+    # resources to apply to the pods
+    resources: {}
+    # affinity to apply to the pods
+    affinity: {}
+    # which nodes to run the pods on
+    nodeSelector: {}
+    # tolerations to apply to the pods
+    tolerations: []
+    admin:
+      # defines if the admin api will be exposed by sync gateway
+      enabled: false
+    service:
+      # additional annotations to add to the Sync Gateway service. useful for setting cloud provider specific annotations controlling the services deployed.
+      annotations: {}
+      # optionally configure traffic policy for LoadBalancer and NodePort
+      externalTrafficPolicy:
+    # defines integration with third party monitoring sofware
+    monitoring:
+      prometheus:
+        # defines whether Prometheus metric collection is enabled
+        enabled: false
+        # image used by the Sync Gateway to perform metric collection
+        # (injected as a "sidecar" in each Sync Gateway Pod)
+        image:
+          repository: couchbasesamples/sync-gateway-prometheus-exporter
+          tag: latest
+        # pod
+        resources:
+          {}
+          # requests:
+          #   cpu: 100m
+          # limits:
+          #   cpu: 100m
     # database config
     config:
       logging:
@@ -441,7 +402,7 @@ couchbase-operator:
           enabled: true
           log_level: "debug"
           log_keys:
-          - "*"
+            - "*"
       # databases is a list containing
       # bucket replication configs
       databases:
@@ -465,20 +426,19 @@ couchbase-operator:
           allow_conflicts: false
           revs_limit: 20
           enable_shared_bucket_access: true
+          # optional ca.cert for tls connection
+          # (auto-generated when tls.generate true)
+          cacert:
     # Type of service to use for exposing Sync Gateway
     # Set as empty string to prevent service creation
     exposeServiceType: ClusterIP
     # image of the sync gateway container
     image:
       repository: couchbase/sync-gateway
-      tag: 2.7.3-enterprise
+      tag: 2.8.0-enterprise
     imagePullPolicy: IfNotPresent
     # Optional secret to use with prepoulated database config
     configSecret:
-    # optional ca.cert for tls connection
-    # of all databases
-    cacert:
-
 
   # coredns service config to be applied to
   # pods for cross-cluster deployments
@@ -487,9 +447,9 @@ couchbase-operator:
     service:
     # search list for host-name lookup
     searches:
-    - default.svc.cluster.local
-    - svc.cluster.local
-    - cluster.local
+      - default.svc.cluster.local
+      - svc.cluster.local
+      - cluster.local
 
 ########### NSQ ###########
 nsq:
@@ -534,7 +494,7 @@ ingress-nginx:
     service:
       externalTrafficPolicy: "Local"
       annotations:
-        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
 
 ########## CERT-MANAGER ############
 cert-manager:
@@ -798,3 +758,23 @@ multiav:
     limits:
       memory: 3Gi
       cpu: 1200m
+######### ML PIPILINE #########
+ml:
+  enabled: false
+  name: ml-pipeline
+  replicaCount: 1
+  containerPort: 8000
+  image:
+    repository: saferwall/ml-pipeline
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 8000
+    targetPort: 8000
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+    limits:
+      memory: 500Mi
+      cpu: 500m
