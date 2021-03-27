@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// Command to invoke exiftool scanner
-	Command = "/opt/die/diec.sh"
+	// cmd to invoke exiftool scanner
+	cmd = "/opt/die/diec.sh"
 )
 
 // Scan a file using Detect It Easy.
@@ -20,7 +20,7 @@ const (
 func Scan(FilePath string) ([]string, error) {
 
 	args := []string{FilePath}
-	output, err := utils.ExecCommand(Command, args...)
+	output, err := utils.ExecCommand(cmd, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/saferwall/saferwall/pkg/gib"
 )
@@ -15,7 +16,10 @@ func main() {
 	// Create a new gibberish detector.
 	// You can always provide your own
 	// dataset by passing a &gib.Options{Dataset: /path/to/dataset.json}
-	isGibberish := gib.NewScorer(nil)
+	isGibberish, err := gib.NewScorer(nil)
+	if err != nil {
+		log.Fatalf("NewScorer() failed with: %v", err)
+	}
 
 	// Will return `True`.
 	fmt.Println(isGibberish(randomString))

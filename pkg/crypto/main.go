@@ -71,7 +71,7 @@ func GetSsdeep(b []byte) (string, error) {
 func HashBytes(data []byte) Result {
 	FuzzyHash, err := GetSsdeep(data)
 	if err != nil && err != ssdeep.ErrFileTooSmall {
-		log.Printf("GetSsdeep() failed, got %s", err)
+		log.Printf("GetSsdeep() failed, got %v", err)
 	}
 	r := Result{
 		Crc32:  GetCrc32(data),

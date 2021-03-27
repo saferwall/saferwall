@@ -13,7 +13,7 @@ import (
 
 const (
 	// Command to invoke exiftool scanner
-	Command = "exiftool"
+	cmd = "exiftool"
 )
 
 // Scan a file using exiftool
@@ -21,7 +21,7 @@ const (
 func Scan(FilePath string) (map[string]string, error) {
 
 	args := []string{FilePath}
-	output, err := utils.ExecCommand(Command, args...)
+	output, err := utils.ExecCommand(cmd, args...)
 	// exiftool returns exit status 1 for unknown files.
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func Scan(FilePath string) (map[string]string, error) {
 	return ParseOutput(output), nil
 }
 
-// ParseOutput convert exiftool output into map of string|string
+// ParseOutput convert exiftool output into map of string|string.
 func ParseOutput(exifout string) map[string]string {
 
 	var ignoreTags = []string{
@@ -51,7 +51,7 @@ func ParseOutput(exifout string) map[string]string {
 			continue
 		}
 		if !utils.StringInSlice(strings.TrimSpace(keyvalue[0]), ignoreTags) {
-			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] =
+			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] = 
 				strings.TrimSpace(keyvalue[1])
 		}
 	}

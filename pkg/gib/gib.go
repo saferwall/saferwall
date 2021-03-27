@@ -27,8 +27,8 @@ type Options struct {
 
 var (
 	lowerCaseLetters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i",
-		"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
-		"y", "z"}
+		"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
+		"x", "y", "z"}
 	scoreLenThreshold float64 = 25.
 	scoreLenPenalty   float64 = 0.9233
 	scoreRepPenalty   float64 = 0.9674

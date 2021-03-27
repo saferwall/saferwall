@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -15,8 +15,8 @@ const (
 	Command = "file"
 )
 
-// Scan a file using file tool
-// This will execute file command line tool and read the stdout
+// Scan a file using linux `file` tool.
+// This will execute file command line tool and read the stdout.
 func Scan(FilePath string) (string, error) {
 
 	args := []string{FilePath}
@@ -28,7 +28,7 @@ func Scan(FilePath string) (string, error) {
 	return ParseOutput(output), nil
 }
 
-// ParseOutput convert exiftool output into map of string|string
+// ParseOutput convert exiftool output into map of string|string.
 func ParseOutput(fileout string) string {
 	lines := strings.Split(fileout, ": ")
 	if len(lines) > 0 {
