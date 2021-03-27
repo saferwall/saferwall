@@ -27,12 +27,10 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	# Update your local Helm chart repository cache.
 	helm repo update
 
-
 helm-release:		## Install Helm release.
 	cd $(ROOT_DIR)/deployments \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default saferwall
-
 
 helm-debug:		## Dry run install chart.
 	helm install -name $(SAFERWALL_RELEASE_NAME) chart/ \

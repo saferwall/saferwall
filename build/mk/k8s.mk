@@ -173,8 +173,10 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 k8s-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager
+	# Add the Jetstack Helm repository. 
+	helm repo add jetstack https://charts.jetstack.io && helm repo update
 	# Install CRDs.
-	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.crds.yaml
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.crds.yaml
 	# Install the chart
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \

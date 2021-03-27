@@ -10,8 +10,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
       - name: Install Minikube
         run: make minikube-install
@@ -41,8 +43,8 @@ jobs:
 
       - name: Check success
         run: |
-            curl -k -I https://mysaferwall.com \
-            && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+            curl -k -I https://mysaferwall.com
+            curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
 
   deploy-on-kind:
     runs-on: ${{ matrix.os }}
@@ -81,5 +83,5 @@ jobs:
 
       - name: Check success
         run: |
-          curl -k -I https://mysaferwall.com \
-          && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+          curl -k -I https://mysaferwall.com
+          curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
