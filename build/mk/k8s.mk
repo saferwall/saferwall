@@ -1,4 +1,4 @@
-KUBECTL_VER = 1.19.7
+KUBECTL_VER = 1.19.9
 kubectl-install:		## Install kubectl.
 	curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl
 	chmod +x kubectl

@@ -43,7 +43,7 @@ import (
 	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
-	peparser "github.com/saferwall/saferwall/pkg/peparser"
+	peparser "github.com/saferwall/pe"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"

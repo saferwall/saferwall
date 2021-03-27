@@ -1,8 +1,7 @@
-name: Update AV Programs
+name: Update AntiVirus Engines.
 on: workflow_dispatch
 
 jobs:
-  
   avast:
     runs-on: ubuntu-18.04
     steps:

@@ -1,4 +1,4 @@
-KIND_VERSION = 0.9.0
+KIND_VERSION = 0.10.0
 
 kind-install: ## Install Kind for local kubernetes cluster deployements.
 	curl -o kind -sS -L https://kind.sigs.k8s.io/dl/v$(KIND_VERSION)/kind-linux-amd64

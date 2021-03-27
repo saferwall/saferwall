@@ -17,7 +17,7 @@ import (
 	"github.com/glaslos/ssdeep"
 )
 
-// Result contains result for all hashes
+// Result aggregates all hashes.
 type Result struct {
 	Crc32  string
 	Md5    string
@@ -27,47 +27,47 @@ type Result struct {
 	Ssdeep string
 }
 
-// GetCrc32 returns CRC32 checksum in hex format
+// GetCrc32 returns CRC32 checksum in hex format.
 func GetCrc32(b []byte) string {
 	checksum := crc32.ChecksumIEEE(b)
 	h := fmt.Sprintf("0x%x", checksum)
 	return h
 }
 
-// GetMd5 returns MD5 hash
+// GetMd5 returns MD5 hash.
 func GetMd5(b []byte) string {
 	h := md5.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha1 returns SHA1 hash
+// GetSha1 returns SHA1 hash.
 func GetSha1(b []byte) string {
 	h := sha1.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha256 returns SHA256 hash
+// GetSha256 returns SHA256 hash.
 func GetSha256(b []byte) string {
 	h := sha256.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha512 returns SHA512 hash
+// GetSha512 returns SHA512 hash.
 func GetSha512(b []byte) string {
 	h := sha512.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSsdeep returns ssdeep fuzzy hash
+// GetSsdeep returns ssdeep fuzzy hash.
 func GetSsdeep(b []byte) (string, error) {
 	return ssdeep.FuzzyBytes(b)
 }
 
-// HashBytes run all crypto modules and return results
+// HashBytes run all crypto modules and return results.
 func HashBytes(data []byte) Result {
 	FuzzyHash, err := GetSsdeep(data)
 	if err != nil && err != ssdeep.ErrFileTooSmall {

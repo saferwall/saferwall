@@ -2,10 +2,10 @@ name: Generate Vagrant Box
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-## Disabled for now as Github action does not yet support nested virtualization.
+  ## Disabled for now as Github action does not yet support nested virtualization.
   build-vagrant-box:
     runs-on: ubuntu-20.04
     steps:
@@ -18,14 +18,14 @@ jobs:
       - name: Install Vagrant
         run: make vagrant-install
 
-      - name: Install VBox
+      - name: Install VirtualBox
         run: make vbox-install
 
       - name: Create Vagrant box
         run: |
-            cd ./build/vagrant \
-            && vagrant up
-        
+          cd ./build/vagrant \
+          && vagrant up
+
       - name: Create box package
         run: make vagrant-package
 

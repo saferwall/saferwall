@@ -2,15 +2,15 @@ name: Test Helm Charts
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [$default-branch]
 
 jobs:
-## Disabled for now as Github action does not yet support nested virtualization.
+  ## Disabled for now as Github action does not yet support nested virtualization.
   # deploy-on-minikube:
   #   runs-on: ${{ matrix.os }}
   #   strategy:
   #     matrix:
-  #       os: [ubuntu-18.04, ubuntu-20.04]
+  #       os: [ubuntu-20.04]
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
 
   #     - name: Create Minikube cluster
   #       run: make minikube-up
-        
+
   #     - name: Install Helm, add repos, and build dependencies
   #       run: |
   #           make helm-install \
@@ -55,7 +55,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -74,9 +74,9 @@ jobs:
 
       - name: Install Helm and cert-manager
         run: |
-            make helm-install \
-            && sudo make k8s-init-cert-manager
-        
+          make helm-install \
+          && sudo make k8s-init-cert-manager
+
       - name: Helm Release
         run: make helm-release
 
@@ -88,5 +88,5 @@ jobs:
 
       - name: Check success
         run: |
-            curl -k -I https://mysaferwall.com \
-            && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+          curl -k -I https://mysaferwall.com \
+          && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator

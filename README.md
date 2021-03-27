@@ -3,7 +3,15 @@
 
 <p align="center"> 
   <a href="https://gitter.im/saferwall/community"><img src="https://img.shields.io/gitter/room/saferwall/community?style=flat-square"></a>
-</p>
+
+  <img alt="Discord" src="https://img.shields.io/discord/803411418854064148?label=Discord&style=flat-square"> 
+  
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/saferwall/saferwall/Test%20Helm%20Charts?style=flat-square">
+
+  <img alt="Report Card" src="https://goreportcard.com/badge/github.com/saferwall/saferwall">
+
+  <img alt="GitHub" src="https://img.shields.io/github/license/saferwall/saferwall?style=flat-square">
+  </p>
 
 It aims for the following goals:
 - Provide a collaborative platform to share samples among malware researchers.
@@ -18,7 +26,7 @@ It aims for the following goals:
 - Static analysis:
     - Crypto hashes, packer identification,
     - Strings extraction
-    - Portable Executable file parser
+    - [PE (Portable Executable) file parser](https://github.com/saferwall/pe)
 - Multiple AV scanner which includes major antivirus vendors:
 
     Vendors | status | Vendors | status

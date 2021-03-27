@@ -1,11 +1,10 @@
-name: Update Multi-AV Sigs (go)
+name: Update AntiVirus Signatures
 
 on:
   schedule:
-  - cron: "0 0 * * *"
+    - cron: "0 0 * * *"
 
 jobs:
-
   update-goclamav:
     runs-on: ubuntu-18.04
     steps:
@@ -61,7 +60,7 @@ jobs:
 
       - name: Build and Release (go) DrWeb docker image
         run: make multiav-release-av-go AV_VENDOR=drweb
-    
+
   update-gofsecure:
     runs-on: ubuntu-18.04
     steps:
