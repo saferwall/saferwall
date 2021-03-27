@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -133,7 +133,8 @@ func TestHeuristic(t *testing.T) {
 	for _, tt := range testCases {
 		isNonsense := simpleNonSense(tt.text)
 		if isNonsense != tt.expected {
-			t.Fatalf("expected nonsense(%s) to be %t got %t", tt.text, tt.expected, isNonsense)
+			t.Fatalf("expected nonsense(%s) to be %t got %t",
+			 tt.text, tt.expected, isNonsense)
 		}
 	}
 }
@@ -385,10 +386,12 @@ func TestOnMacroDocs(t *testing.T) {
 	for _, tt := range testCases {
 		israndom, err := isGibberish(tt.input)
 		if err != nil {
-			t.Fatalf("failed to test on string %s with error %v", tt.input, err)
+			t.Fatalf("failed to test on string %s with error %v",
+			 tt.input, err)
 		}
 		if israndom != tt.expected {
-			t.Logf("failed on test case %s expected %t got %t", tt.input, tt.expected, israndom)
+			t.Logf("failed on test case %s expected %t got %t",
+			 tt.input, tt.expected, israndom)
 		}
 	}
 

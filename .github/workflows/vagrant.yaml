@@ -23,8 +23,10 @@ jobs:
 
       - name: Create Vagrant box
         run: |
-          cd ./build/vagrant \
-          && vagrant up
+          sudo apt-get update -qq
+          sudo apt-get install -qq libarchive-tools
+          cd build/vagrant
+          vagrant up
 
       - name: Create box package
         run: make vagrant-package

@@ -2,17 +2,17 @@ name: Exiftool Go Module
 on:
   push:
     paths:
-      - "pkg/exiftool"
+      - 'pkg/exiftool/**'
   pull_request:
     paths:
-      - "pkg/exiftool"
+      - 'pkg/exiftool/**'
 jobs:
   test:
     name: Build & Test
     strategy:
       matrix:
-        go-version: [1.15.x, 1.16.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.15.x]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -27,21 +27,24 @@ jobs:
         run: |
           go version
           go get -u golang.org/x/lint/golint
-          sudo apt-get -qq update \
-            && sudo apt install -qq libimage-exiftool-perl
+          sudo apt-get -qq update
+          sudo apt install -qq libimage-exiftool-perl
 
       - name: Build
-        run: cd pkg/exiftool && go build -v ./...
+        run: |
+          cd pkg/exiftool
+          go build -v ./...
 
       - name: Test With Coverage
         run: |
-          cd pkg/exiftool \
-          && go test -race -coverprofile=coverage.out -covermode=atomic
+          cd pkg/exiftool
+          go test -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
 
       - name: Run Vet & Lint
         run: |
+          cd pkg/exiftool
           go vet .
           golint -set_exit_status=1 .

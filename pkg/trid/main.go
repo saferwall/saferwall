@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// Command to invoke TriD scanner
-	Command = "trid"
+	// Command to invoke TriD scanner.
+	tridCmd = "trid"
 )
 
 // Scan a file using TRiD Scanner
@@ -20,7 +20,7 @@ const (
 func Scan(FilePath string) ([]string, error) {
 
 	args := []string{FilePath}
-	output, err := utils.ExecCommand(Command, args...)
+	output, err := utils.ExecCommand(tridCmd, args...)
 	if err != nil {
 		return []string{}, err
 	}
