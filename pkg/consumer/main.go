@@ -109,6 +109,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Extract tags.
 	res.getTags()
 
+	//
+
 	// Analysis finished
 	res.Status = finished
 	now := time.Now().UTC()
@@ -120,6 +122,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		contextLogger.Errorf("Failed to json marshal object: %v", err)
 		return err
 	}
+
+	// Get ML classification results.
+	// http web api call as input (json)
+
+	// Get ranked strings results.
+	// http web api call as input (json)
 
 	// Update document.
 	err = updateDocument(sha256, buff)

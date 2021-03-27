@@ -75,6 +75,7 @@ type result struct {
 	Histogram   []int                  `json:"histogram,omitempty"`
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Type        string                 `json:"type,omitempty"`
+	//ml        	map[string]interface{} `json:"ml,omitempty"`		
 }
 
 func (res *result) parseFile(b []byte, filePath string) {
