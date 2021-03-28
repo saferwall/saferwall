@@ -10,6 +10,7 @@ import (
 
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
 
+	peparser "github.com/saferwall/pe"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
@@ -43,7 +44,6 @@ import (
 	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
-	peparser "github.com/saferwall/pe"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
@@ -75,7 +75,7 @@ type result struct {
 	Histogram   []int                  `json:"histogram,omitempty"`
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Type        string                 `json:"type,omitempty"`
-	//ml        	map[string]interface{} `json:"ml,omitempty"`		
+	Ml          map[string]interface{} `json:"ml,omitempty"`
 }
 
 func (res *result) parseFile(b []byte, filePath string) {

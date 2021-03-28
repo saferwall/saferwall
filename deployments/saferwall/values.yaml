@@ -97,7 +97,7 @@ kibana:
 
 ###### KUBE PROMETHEUS STACK #########
 kube-prometheus-stack:
-  enabled: true
+  enabled: false
   grafana:
     serviceMonitor:
       # Scrape interval. If not set, the Prometheus default scrape interval is used.
@@ -760,7 +760,7 @@ multiav:
       cpu: 1200m
 ######### ML PIPILINE #########
 ml:
-  enabled: true
+  enabled: false
   name: ml-pipeline
   replicaCount: 1
   containerPort: 8000

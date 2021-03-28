@@ -24,6 +24,7 @@ var (
 	minioClient     *minio.Client
 	backendEndpoint string
 	backendToken    string
+	mlEndpoint      string
 	contextLogger   *log.Entry
 )
 
@@ -109,8 +110,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	// Extract tags.
 	res.getTags()
 
-	//
-
 	// Analysis finished
 	res.Status = finished
 	now := time.Now().UTC()
@@ -124,10 +123,26 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Get ML classification results.
-	// http web api call as input (json)
+	if res.Type == "pe" {
+		mlPredictionResults, err := mlPEClassPredResult(buff)
+		if err != nil {
+			contextLogger.Errorf(
+				"Failed to get ml pe classifier prediction results: %v", err)
+		} else {
+			res.Ml = map[string]interface{}{}
+			res.Ml["pe"] = mlPredictionResults
+		}
+	}
 
 	// Get ranked strings results.
-	// http web api call as input (json)
+	mlStrRankerResults, err := mlStringRanker(buff)
+	if err != nil {
+		contextLogger.Errorf(
+			"Failed to get ml string ranker prediction results: %v", err)
+	} else {
+		res.Ml = map[string]interface{}{}
+		res.Ml["strings"] = mlStrRankerResults
+	}
 
 	// Update document.
 	err = updateDocument(sha256, buff)
@@ -159,8 +174,9 @@ func main() {
 	// Setup logging.
 	setupLogging()
 
-	// Set backend API address.
+	// Set endpoints API address.
 	backendEndpoint = viper.GetString("backend.address") + "/v1/files/"
+	mlEndpoint = viper.GetString("ml.address")
 
 	// Login to backend.
 	var err error

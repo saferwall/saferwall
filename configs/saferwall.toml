@@ -5,7 +5,10 @@ admin_pwd = "<password>"
 
 [consumer]
 # Possible values "panic", "fatal", "error", "warn", "info", "debug", "trace"
-log_level = "warn" 
+log_level = "warn"
+
+[ml]
+address = 'http://localhost:8000'
 
 [nsq]
 lookupd = ["localhost:4161",]
