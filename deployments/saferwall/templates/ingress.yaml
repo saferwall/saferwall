@@ -42,3 +42,4 @@ spec:
           serviceName: {{ include "saferwall.fullname" . }}-website
           servicePort: {{ .Values.website.service.port }}
 {{- end }}
+

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Helm] bump chart dependency modules.
 - [pkg/consumer] add context timeout to multiav scan gRPC API.
 - Move the website, the dashboard and the web apis projects to a separate git repos.
+- Improvement in CI/CD pipeline: include code coverage, test only changed modules & running custom github action runners.
 
 ## [0.0.3] - 2021-15-01
 ### Added
