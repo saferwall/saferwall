@@ -763,6 +763,7 @@ ml:
   enabled: true
   name: ml-pipeline
   replicaCount: 1
+  containerPort: 8000
   image:
     repository: saferwall/ml-pipeline
     tag: latest

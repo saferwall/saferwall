@@ -25,9 +25,11 @@ jobs:
         run: make vbox-install
 
       - name: Create Minikube cluster
-        run: make minikube-up
+        run: |
+            make minikube-down || true
+            make minikube-up
 
-      - name: Install Helm, add repos, and build dependencies
+      - name: Install Helm, add repos, and init cert-manager
         run: |
             make helm-install
             make k8s-init-cert-manager
@@ -67,13 +69,13 @@ jobs:
       - name: Create Kind cluster and install dependencies
         run: sudo make kind-up
 
-      - name: Install Helm and cert-manager
+      - name: Install Helm, add repos, and init cert-manager
         run: |
           make helm-install
           sudo make k8s-init-cert-manager
 
       - name: Helm Release
-        run: make helm-release
+        run: sudo make helm-release
 
       - name: Wait for pods to be ready
         run: sudo kubectl wait --for=condition=Ready pods --all --timeout=600s
