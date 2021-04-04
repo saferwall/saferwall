@@ -39,7 +39,7 @@ spec:
               value: "prod"
           volumeMounts:
             - name:  {{ $.Release.Name }}-configmap-volume
-              mountPath: /backend/config/
+              mountPath: /backend/configs/
       volumes:
       - name: {{ $.Release.Name }}-configmap-volume
         configMap:
