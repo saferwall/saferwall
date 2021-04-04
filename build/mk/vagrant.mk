@@ -4,10 +4,15 @@ VAGRANT_ZIP_FILE = vagrant_$(VAGRANT_VERSION)_linux_amd64.zip
 VAGRANT_DOWNLOAD_URL = https://releases.hashicorp.com/vagrant/$(VAGRANT_VERSION)/$(VAGRANT_ZIP_FILE)
 
 vagrant-install: ## Download and install HashiCorp Vagrant.
-	wget $(VAGRANT_DOWNLOAD_URL)
-	sudo unzip -o $(VAGRANT_ZIP_FILE) -d /usr/bin
-	rm -f $(VAGRANT_ZIP_FILE)
-	vagrant version
+	@vagrant version | grep "Installed Version: $(VAGRANT_VERSION)"; \
+		if [ $$? -eq 1 ]; then \
+			wget $(VAGRANT_DOWNLOAD_URL); \
+			sudo unzip -o $(VAGRANT_ZIP_FILE) -d /usr/bin; \
+			rm -f $(VAGRANT_ZIP_FILE); \
+			vagrant version; \
+		else \
+            echo "${GREEN} [*] Vagrant already installed ${RESET}"; \
+		fi
 
 vagrant-package: ## Package Vagrant box.
 	$(eval VAGRANT_VM_NAME := $(shell VBoxManage list vms | cut -f 1 -d ' ' | tr -d '"'))

@@ -1,9 +1,14 @@
 KUBECTL_VER = 1.19.9
 kubectl-install:		## Install kubectl.
-	curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl
-	chmod +x kubectl
-	sudo mv kubectl /usr/local/bin
-	kubectl version --client
+	@kubectl version --client | grep $(KUBECTL_VER); \
+		if [ $$? -eq 1 ]; then \
+			curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl; \
+			chmod +x kubectl; \
+			sudo mv kubectl /usr/local/bin; \
+			kubectl version --client; \
+		else \
+            echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
+		fi
 
 KUBECTX_VER = 0.9.1
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
@@ -168,8 +173,10 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 k8s-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager
+	# Add the Jetstack Helm repository. 
+	helm repo add jetstack https://charts.jetstack.io && helm repo update
 	# Install CRDs.
-	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.crds.yaml
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.crds.yaml
 	# Install the chart
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \

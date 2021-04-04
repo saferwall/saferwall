@@ -20,7 +20,8 @@ type server struct {
 }
 
 // ScanFile implements avira.AviraScanner.
-func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest)(
+	*pb.ScanResponse, error) {
 	res, err := avira.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -29,7 +30,8 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 }
 
 // ActivateLicense implements avira.AviraScanner.
-func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (*pb.LicenseResponse, error) {
+func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (
+	*pb.LicenseResponse, error) {
 	r := bytes.NewReader(in.License)
 	_, err := avira.ActivateLicense(r)
 	return &pb.LicenseResponse{}, err

@@ -1,55 +1,50 @@
 name: Test Helm Charts
-
 on:
   pull_request:
-    branches: [$default-branch]
+    branches: [master]
 
 jobs:
-  ## Disabled for now as Github action does not yet support nested virtualization.
-  # deploy-on-minikube:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-20.04]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  deploy-on-minikube:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Setup config
-  #       run: cp example.env .env
+      - name: Setup config
+        run: cp example.env .env
 
-  #     - name: Install Minikube
-  #       run: make minikube-install
+      - name: Install Minikube
+        run: make minikube-install
 
-  #     - name: Install Kubectl
-  #       run: make kubectl-install
+      - name: Install Kubectl
+        run: make kubectl-install
 
-  #     - name: Install VBox
-  #       run: make vbox-install
+      - name: Install VBox
+        run: make vbox-install
 
-  #     - name: Create Minikube cluster
-  #       run: make minikube-up
+      - name: Create Minikube cluster
+        run: |
+            make minikube-down || true
+            make minikube-up
 
-  #     - name: Install Helm, add repos, and build dependencies
-  #       run: |
-  #           make helm-install \
-  #           && make helm-add-repos \
-  #           && make helm-update-dep\
-  #           && make k8s-init-cert-manager
+      - name: Install Helm, add repos, and init cert-manager
+        run: |
+            make helm-install
+            make k8s-init-cert-manager
 
-  #     - name: Helm Release
-  #       run: make helm-release
+      - name: Helm Release
+        run: make helm-release
 
-  #     - name: Wait for pods to be ready
-  #       run: kubectl wait --for=condition=Ready pods --all --timeout=360s
+      - name: Wait for pods to be ready
+        run: kubectl wait --for=condition=Ready pods --all --timeout=360s
 
-  #     - name: Add DNS entry
-  #       run: echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
+      - name: Add DNS entry
+        run: echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
 
-  #     - name: Check success
-  #       run: |
-  #           curl -k -I https://mysaferwall.com \
-  #           && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+      - name: Check success
+        run: |
+            curl -k -I https://mysaferwall.com
+            curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
 
   deploy-on-kind:
     runs-on: ${{ matrix.os }}
@@ -72,13 +67,13 @@ jobs:
       - name: Create Kind cluster and install dependencies
         run: sudo make kind-up
 
-      - name: Install Helm and cert-manager
+      - name: Install Helm, add repos, and init cert-manager
         run: |
-          make helm-install \
-          && sudo make k8s-init-cert-manager
+          make helm-install
+          sudo make k8s-init-cert-manager
 
       - name: Helm Release
-        run: make helm-release
+        run: sudo make helm-release
 
       - name: Wait for pods to be ready
         run: sudo kubectl wait --for=condition=Ready pods --all --timeout=600s
@@ -88,5 +83,5 @@ jobs:
 
       - name: Check success
         run: |
-          curl -k -I https://mysaferwall.com \
-          && curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+          curl -k -I https://mysaferwall.com
+          curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator

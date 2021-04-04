@@ -9,6 +9,9 @@ admin_pwd = "password"
 # Possible values "panic", "fatal", "error", "warn", "info", "debug", "trace"
 log_level = "warn"
 
+[ml]
+address = 'http://{{ include "saferwall.fullname" . }}-ml'
+
 [nsq]
 lookupd = [
 {{ $lookupdFullName := printf "%s-nsq-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}

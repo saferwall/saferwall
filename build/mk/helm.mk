@@ -3,11 +3,16 @@ HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
 helm-install:		## Install Helm.
-	wget -q $(HELM_URL)
-	tar zxvf $(HELM_ZIP)
-	sudo mv linux-amd64/helm /usr/local/bin/helm
-	rm -f $(HELM_ZIP)
-	helm version
+	@helm version | grep $(HELM_VERSION); \
+		if [ $$? -eq 1 ]; then \
+			wget -q $(HELM_URL); \
+			tar zxvf $(HELM_ZIP); \
+			sudo mv linux-amd64/helm /usr/local/bin/helm; \
+			rm -f $(HELM_ZIP); \
+			helm version; \
+		else \
+            echo "${GREEN} [*] Helm already installed ${RESET}"; \
+		fi
 
 helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add isotoma https://isotoma.github.io/charts
@@ -22,12 +27,10 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	# Update your local Helm chart repository cache.
 	helm repo update
 
-
 helm-release:		## Install Helm release.
 	cd $(ROOT_DIR)/deployments \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default saferwall
-
 
 helm-debug:		## Dry run install chart.
 	helm install -name $(SAFERWALL_RELEASE_NAME) chart/ \

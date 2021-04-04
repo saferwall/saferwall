@@ -12,6 +12,6 @@ spec:
     app.kubernetes.io/name: {{ template "saferwall.name" . }}-ml
   ports:
     - port: {{ .Values.ml.service.port }}
-      targetPort: {{ .Values.ml.service.port }}
+      targetPort: {{ .Values.ml.service.targetPort }}
       protocol: TCP
 {{- end }}
