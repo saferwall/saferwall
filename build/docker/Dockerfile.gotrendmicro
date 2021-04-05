@@ -15,7 +15,8 @@ WORKDIR $GOPATH/src/saferwall/trendmicro/
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download all dependencies.
+# Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
 # Copy our go files
@@ -37,6 +38,7 @@ LABEL description="gRPC server over linux version of TrendMicro"
 
 # Environment variables.
 ENV TREND_MICRO_DB_UPDATE_DATE    /av_db_update_date.txt
+ENV TREND_MICRO_MANUAL_SCAN /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splx_manual_scan
 
 # Update virus definition file.
 RUN /etc/init.d/splx start \
@@ -47,19 +49,27 @@ RUN /etc/init.d/splx start \
 # Copy our static executable.
 COPY --from=builder /go/bin/trendmicroscanner /bin/trendmicroscanner
 
+# Install requirements.
+RUN yum install -y sudo psmisc
+
+# Defunct docker process makes TrendMicro fails to performs manual scan.
+# Below a workaround:
+RUN old='ps -ef | grep splx_ | grep -v grep | grep -v gdb' \
+	&& new='ps -ef | grep splx_ | grep -v grep | grep -v def' \
+    && sed -i "s|$old|$new|g" $TREND_MICRO_MANUAL_SCAN
+
 # Performs a simple detection test.
 # ServerProtect does not seem to be able to scan a file directly,
 # it only take a directory as argument. So we create a tmp dir
 # and we place a copy of the file inside.
-RUN mkdir -p /tmp/sample/  \
+RUN /etc/init.d/splx start\
+    && mkdir -p /tmp/sample/  \
     && cp /eicar /tmp/sample/ \
     && rm -f /var/log/TrendMicro/SProtectLinux/* \
     && $TREND_MICRO_SLPXMAIN -m /tmp/sample/ \
-    && sleep 15s \
-    && cat /var/log/TrendMicro/SProtectLinux/Virus* | grep -q 'virus_name=Eicar_test_file'
-
-# Install requirements.
-RUN yum install -y sudo
+    && sleep 5s \
+    && cat /var/log/TrendMicro/SProtectLinux/Virus* \
+        | grep -q 'virus_name=Eicar_test_file'
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \

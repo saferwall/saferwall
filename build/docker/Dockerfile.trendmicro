@@ -58,7 +58,7 @@ RUN mkdir /tmp/sample  \
     && cp /eicar /tmp/sample/ \
     && rm -f /var/log/TrendMicro/SProtectLinux/* \
     && $TREND_MICRO_SLPXMAIN -m /tmp/sample/ \
-    && sleep 15s \
+    && sleep 5s \
     && cat /var/log/TrendMicro/SProtectLinux/Virus* | grep -q 'virus_name=Eicar_test_file'
 
 # Clean up
