@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -19,13 +19,15 @@ type server struct {
 }
 
 // GetVersion implements clamav.ClamAVScanner.
-func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.VersionResponse, error) {
+func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (
+	*pb.VersionResponse, error) {
 	version, err := clamav.GetVersion()
 	return &pb.VersionResponse{Version: version}, err
 }
 
 // ScanFile implements clamav.ClamAVScanner.
-func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (
+	*pb.ScanResponse, error) {
 	res, err := clamav.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,

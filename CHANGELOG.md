@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Fixed:
 - Force lower case a sha256 hash before search in Backend thanks to [@hotail](https://github.com/hotail)
 - `AV_LIST` variable in multiav mk was override somewhere thanks to  [@najashark](https://github.com/najashark)
+- Remove `add_kubernetes_metadata` from filebeat config which was causing duplicated data to be sent to kibana and ddosing the kube api server.
 
 ## [0.0.2] - 2020-08-12
 ### Added

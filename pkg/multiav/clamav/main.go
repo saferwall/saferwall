@@ -55,7 +55,7 @@ func ScanFile(filePath string) (Result, error) {
 	if strings.HasSuffix(out, "OK\n") {
 		return Result{}, nil
 	}
-	
+
 	if !strings.HasSuffix(out, "FOUND\n") {
 		return Result{}, nil
 	}
@@ -77,7 +77,7 @@ func GetVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	// Extract the version
 	// ClamAV 0.100.2/25284/Wed Jan  9 18:42:45 2019
 	ver := strings.Split(out, "/")[0]

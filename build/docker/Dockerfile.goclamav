@@ -43,6 +43,12 @@ ENV CLAMAV_DB_UPDATE_DATE	/av_db_update_date.txt
 RUN clamd && freshclam ; clamscan -V \
        && echo -n "$(date +%s)" >> $CLAMAV_DB_UPDATE_DATE
 
+# Performs a simple detection test.
+RUN clamd \
+    && /var/log/clamav/clamd.log \
+    && clamdscan eicar \
+    ; cat /var/log/clamav/clamd.log | grep -q 'Win.Test.EICAR_HDB'
+
 # Create an app user so our program doesn't run as root.
 RUN addgroup -S saferwall \
 	&& adduser -S -G saferwall saferwall  --shell /bin/sh

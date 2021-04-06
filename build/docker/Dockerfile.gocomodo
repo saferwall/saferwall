@@ -41,7 +41,6 @@ ENV COMODO_DB_UPDATE_DATE	/av_db_update_date.txt
 ENV COMODO_UPDATE http://download.comodo.com/av/updates58/sigs/bases/bases.cav
 ENV COMODO_BASES_CAV_PATH   $COMODO_INSTALL_DIR/scanners/bases.cav
 
-
 # Update virus definition file.
 RUN wget -q $COMODO_UPDATE -O $COMODO_BASES_CAV_PATH \
     && echo -n "$(date +%s)" >> $COMODO_DB_UPDATE_DATE
