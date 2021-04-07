@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/minio/minio-go/v6"
-	"github.com/yeka/zip"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,9 +18,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/yeka/zip"
 )
 
-// GetFileSize returns file size in bytes
+// GetFileSize returns file size in bytes.
 func GetFileSize(FilePath string) int64 {
 	f, err := os.Stat(FilePath)
 	if err != nil {
@@ -32,12 +33,12 @@ func GetFileSize(FilePath string) int64 {
 	return size
 }
 
-// GetCurrentTime as Time object in UTC
+// GetCurrentTime as Time object in UTC.
 func GetCurrentTime() time.Time {
 	return time.Now().UTC()
 }
 
-// SliceContainsString returns if slice contains substring
+// SliceContainsString returns if slice contains substring.
 func SliceContainsString(a string, list []string) bool {
 	for _, b := range list {
 		if strings.Contains(b, a) {
@@ -47,7 +48,7 @@ func SliceContainsString(a string, list []string) bool {
 	return false
 }
 
-// StringInSlice returns whether or not a string exists in a slice
+// StringInSlice returns whether or not a string exists in a slice.
 func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -57,7 +58,7 @@ func StringInSlice(a string, list []string) bool {
 	return false
 }
 
-// UniqueSlice delete duplicate strings from an array of strings
+// UniqueSlice delete duplicate strings from an array of strings.
 func UniqueSlice(slice []string) []string {
 	cleaned := []string{}
 
@@ -69,7 +70,7 @@ func UniqueSlice(slice []string) []string {
 	return cleaned
 }
 
-// ExecCommand runs cmd on file
+// ExecCommand runs cmd on file.
 func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create a new context and add a timeout to it
@@ -95,7 +96,7 @@ func ExecCommand(name string, args ...string) (string, error) {
 	return string(out), err
 }
 
-// StartCommand will execute a command in background
+// StartCommand will execute a command in background.
 func StartCommand(name string, args ...string) error {
 
 	cmd := exec.Command(name, args...)
@@ -105,12 +106,12 @@ func StartCommand(name string, args ...string) error {
 	return nil
 }
 
-// Getwd returns the directory where the process is running from
+// Getwd returns the directory where the process is running from.
 func Getwd() (string, error) {
 	return filepath.Abs(filepath.Dir(os.Args[0]))
 }
 
-// ReadAll reads the entire file into memory
+// ReadAll reads the entire file into memory.
 func ReadAll(filePath string) ([]byte, error) {
 	// Start by getting a file descriptor over the file
 	file, err := os.Open(filePath)
@@ -136,11 +137,10 @@ func ReadAll(filePath string) ([]byte, error) {
 
 }
 
-// WalkAllFilesInDir returns list of files in directory
+// WalkAllFilesInDir returns list of files in directory.
 func WalkAllFilesInDir(dir string) ([]string, error) {
 
 	fileList := []string{}
-
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, e error) error {
 		if e != nil {
 			return e
@@ -185,7 +185,7 @@ func WriteBytesFile(filename string, r io.Reader) (int, error) {
 	return bytesWritten, nil
 }
 
-// ChownFileUsername executes chown username:username filename
+// ChownFileUsername executes chown username:username filename.
 func ChownFileUsername(filename, username string) error {
 	group, err := user.Lookup(username)
 	if err != nil {
@@ -198,7 +198,7 @@ func ChownFileUsername(filename, username string) error {
 	return err
 }
 
-// IsDirectory returns true if path is a directory
+// IsDirectory returns true if path is a directory.
 func IsDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
@@ -218,7 +218,8 @@ func CopyFile(src, dst string) (err error) {
 	if !sfi.Mode().IsRegular() {
 		// cannot copy non-regular files (e.g., directories,
 		// symlinks, devices, etc.)
-		return fmt.Errorf("CopyFile: non-regular source file %s (%q)", sfi.Name(), sfi.Mode().String())
+		return fmt.Errorf("CopyFile: non-regular source file %s (%q)",
+			sfi.Name(), sfi.Mode().String())
 	}
 	dfi, err := os.Stat(dst)
 	if err != nil {
@@ -227,7 +228,8 @@ func CopyFile(src, dst string) (err error) {
 		}
 	} else {
 		if !(dfi.Mode().IsRegular()) {
-			return fmt.Errorf("CopyFile: non-regular destination file %s (%q)", dfi.Name(), dfi.Mode().String())
+			return fmt.Errorf("CopyFile: non-regular destination file %s (%q)",
+				dfi.Name(), dfi.Mode().String())
 		}
 		if os.SameFile(sfi, dfi) {
 			return
@@ -270,11 +272,12 @@ func copyFileContents(src, dst string) (err error) {
 // GetRootProjectDir retrieves `saferwall` root src project directory.
 func GetRootProjectDir() string {
 	gopath := os.Getenv("GOPATH")
-	sfwRootDir := path.Join(gopath, "src", "github.com", "saferwall", "saferwall")
+	sfwRootDir := path.Join(gopath,
+		"src", "github.com", "saferwall", "saferwall")
 	return sfwRootDir
 }
 
-// CreateFile will create an empty file if file
+// CreateFile will create an empty file.
 func CreateFile(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// path does not exist
@@ -296,25 +299,25 @@ func DeleteFile(path string) error {
 	return nil
 }
 
-// DeleteDirContent delete all files from a folder without 
+// DeleteDirContent delete all files from a folder without
 // deleting the parent directory.
 func DeleteDirContent(dir string) error {
-    d, err := os.Open(dir)
-    if err != nil {
-        return err
-    }
-    defer d.Close()
-    names, err := d.Readdirnames(-1)
-    if err != nil {
-        return err
-    }
-    for _, name := range names {
-        err = os.RemoveAll(filepath.Join(dir, name))
-        if err != nil {
-            return err
-        }
-    }
-    return nil
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Exists reports whether the named file or directory exists.
@@ -328,8 +331,12 @@ func Exists(name string) bool {
 }
 
 // Download downloads an object from a bucket.
-func Download(client *minio.Client, bucketName, filePath, objectName string) ([]byte, error) {
-	err := client.FGetObject(bucketName, objectName, filePath, minio.GetObjectOptions{})
+func Download(client *minio.Client, bucketName, filePath, objectName string) (
+	[]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	err := client.FGetObject(ctx, bucketName, objectName, filePath,
+		minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +346,8 @@ func Download(client *minio.Client, bucketName, filePath, objectName string) ([]
 }
 
 // ZipEncrypt compresses binary data to zip using a password.
-func ZipEncrypt(filename string, password string, contents io.Reader) (string, error) {
+func ZipEncrypt(filename string, password string, contents io.Reader) (
+	string, error) {
 	zipFilepath := filename + ".zip"
 	fzip, err := os.Create(zipFilepath)
 	if err != nil {
