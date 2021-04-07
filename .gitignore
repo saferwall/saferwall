@@ -56,6 +56,16 @@ build/packer/packer_cache/
 # IDEs
 **/*.vscode/
 tags
+tags.lock
 
 # Vagrant
 .vagrant/
+
+# Github agent.
+_diag/
+_work/
+.credentials
+.credentials_rsaparams
+externals/
+.path
+.runner

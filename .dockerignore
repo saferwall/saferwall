@@ -1,5 +1,4 @@
 ## Saferwall project specific files
-.circleci
 .vault
 api
 cmd
@@ -9,8 +8,6 @@ minio
 private
 scripts
 test
-website
-sandbox
 .env
 example.env
 
@@ -32,6 +29,7 @@ example.env
 **/.idea
 **/.vscode
 tags
+tags.lock
 
 # Node
 **/logs
@@ -39,3 +37,12 @@ tags
 **/yarn-debug.log*
 **/yarn-error.log*
 **/node_modules
+
+# Github agent
+_diag/
+_work/
+.credentials
+.credentials_rsaparams
+externals/
+.path
+.runner
