@@ -1,0 +1,159 @@
+version: "3.9"
+
+# Use this docker-compose file to setup the test environment before running the
+# tests.
+
+services:
+  couchbase:
+    image: couchbase/server:6.6.1
+    ports:
+      - "8091:8091"
+      - "8092:8092"
+      - "8093:8093"
+      - "8094:8094"
+      - "11210:11210"
+    volumes:
+      - couchbase_data:/opt/couchbase/var
+
+  minio:
+    image: minio/minio:RELEASE.2021-03-17T02-33-02Z
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data
+
+  nsqlookupd-1:
+    image: nsqio/nsq:v1.2.0
+    command: >
+      /nsqlookupd
+      -broadcast-address localhost:4160
+      -log-level error
+    ports:
+      - 4160:4160
+      - 4161:4161
+
+  nsqlookupd-2:
+    image: nsqio/nsq:v1.2.0
+    command: >
+      /nsqlookupd
+      -broadcast-address localhost:4162
+      -log-level error
+    ports:
+      - 4162:4160
+      - 4163:4161
+
+  nsqd-1:
+    image: nsqio/nsq:v1.2.0
+    command: >
+      /nsqd
+      -broadcast-address localhost:4150
+      -lookupd-tcp-address nsqlookupd-1:4160
+      -lookupd-tcp-address nsqlookupd-2:4160
+      -log-level error
+    ports:
+      - 4150:4150
+      - 4151:4151
+    depends_on:
+      - nsqlookupd-1
+      - nsqlookupd-2
+
+  nsqd-2:
+    image: nsqio/nsq:v1.2.0
+    command: >
+      /nsqd
+      -broadcast-address localhost:4152
+      -lookupd-tcp-address nsqlookupd-1:4160
+      -lookupd-tcp-address nsqlookupd-2:4160
+      -log-level error
+    ports:
+      - 4152:4150
+      - 4153:4151
+    depends_on:
+      - nsqlookupd-1
+      - nsqlookupd-2
+
+  nsqd-3:
+    image: nsqio/nsq:v1.2.0
+    command: >
+      /nsqd
+      -broadcast-address localhost:4154
+      -lookupd-tcp-address nsqlookupd-1:4160
+      -lookupd-tcp-address nsqlookupd-2:4160
+      -log-level error
+    ports:
+      - 4154:4150
+      - 4155:4151
+    depends_on:
+      - nsqlookupd-1
+      - nsqlookupd-2
+
+  web:
+    image: saferwall/backend:latest
+    ports:
+      - "8080:8080"
+    environment:
+      ENVIRONMENT: dev
+    volumes:
+      - ./configs:/backend/configs/
+    depends_on:
+      - minio
+      - nsqd-1
+      - nsqd-2
+      - nsqd-3
+      - couchbase
+      - nsqlookupd-1
+      - nsqlookupd-2
+
+  ui:
+    image: saferwall/ui:latest
+    ports:
+      - "8000:80"
+    environment:
+      VUE_APP_BACKEND_HOST: http://localhost:8080/
+    depends_on:
+      - web
+
+  avira:
+    image: saferwall/goavira:latest
+    ports:
+      - "50051:50051"
+    volumes:
+      - samples:/samples
+    depends_on:
+      - web
+
+  clamav:
+    image: saferwall/goclamav:latest
+    ports:
+      - "50052:50051"
+    volumes:
+      - samples:/samples
+    depends_on:
+      - web
+
+  comodo:
+    image: saferwall/gocomodo:latest
+    ports:
+      - "50053:50051"
+    volumes:
+      - samples:/samples
+    depends_on:
+      - web
+
+  windefender:
+    image: saferwall/gowindefender:latest
+    ports:
+      - "50054:50051"
+    volumes:
+      - samples:/samples
+    depends_on:
+      - web
+
+volumes:
+  minio_data:
+  couchbase_data:
+  samples:
