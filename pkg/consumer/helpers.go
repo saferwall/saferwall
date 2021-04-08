@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package main
+package consumer
 
 import (
 	"bytes"
@@ -21,7 +21,6 @@ func loadConfig() {
 
 	// Add config path directories.
 	viper.AddConfigPath("configs")
-	viper.AddConfigPath("../../configs")
 
 	// Load the config type depending on env variable.
 	var name string
@@ -159,7 +158,7 @@ func updateDocument(sha256 string, buff []byte) error {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return errors.New("Failed to get a new login token")
+			return errors.New("failed to get a new login token")
 		}
 	}
 
