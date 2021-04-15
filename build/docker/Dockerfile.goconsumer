@@ -1,0 +1,74 @@
+################################
+# STEP 1 build executable binary
+################################
+
+FROM golang:1.16-alpine AS builder
+
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk \
+    && update-ca-certificates 2>/dev/null || true
+
+WORKDIR /saferwall
+
+####### Installing Capstone #######
+RUN echo "Installing Capstone..." \
+    && git clone https://github.com/aquynh/capstone.git \
+    && cd capstone \
+    && ./make.sh \
+    && ./make.sh install
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies.
+# Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source from the current directory to the Working Directory inside the container
+COPY . .
+
+# Build the binary.
+RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
+	cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer \
+	pkg/consumer/main.go pkg/consumer/helpers.go pkg/consumer/scanners.go \
+	pkg/consumer/tagger.go pkg/consumer/ml.go
+
+############################
+# STEP 2 build a small image
+############################
+FROM saferwall/consumer:latest
+LABEL maintainer="https://github.com/saferwall"
+LABEL version="0.1.0"
+LABEL description="NSQ consumer in a docker container"
+
+WORKDIR /consumer
+
+# Copy our static executable.
+COPY --from=builder /go/bin/consumer .
+COPY configs configs
+
+# Create an app user so our program doesn't run as root.
+RUN groupadd -r saferwall \
+	&& useradd --no-log-init -r -g saferwall saferwall
+
+# Update permissions
+RUN chown -R saferwall:saferwall . \
+	&& chmod +x consumer \
+	&& usermod -u 101 saferwall \
+	&& groupmod -g 102 saferwall \
+	&& mkdir /samples \
+	&& chown -R saferwall:saferwall /samples \
+	&& chown -R saferwall:saferwall configs \
+	&& chown -R saferwall:saferwall $DIE_DIR \
+	&& chown -R saferwall:saferwall $YARA_RULES_DIR
+
+# Cleanup.
+RUN rm -rf /tmp/* \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Switch to our user
+USER saferwall
+
+ENTRYPOINT ["./consumer"]

@@ -1,41 +1,4 @@
-################################
-# STEP 1 build executable binary
-################################
-
-FROM golang:1.15-alpine AS builder
-
-# Install git + SSL ca certificates.
-# Git is required for fetching the dependencies.
-# Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk \
-    && update-ca-certificates 2>/dev/null || true
-
-WORKDIR /saferwall
-
-####### Installing Capstone #######
-RUN echo "Installing Capstone..." \
-    && git clone https://github.com/aquynh/capstone.git \
-    && cd capstone \
-    && ./make.sh \
-    && ./make.sh install
-
-# Copy go mod and sum files
-COPY go.mod go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
-
-# Copy the source from the current directory to the Working Directory inside the container
-COPY . .
-
-# Build the binary.
-RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \ 
-    -o /go/bin/consumer pkg/consumer/main.go pkg/consumer/helpers.go pkg/consumer/scanners.go pkg/consumer/tagger.go
-
-############################
-# STEP 2 build a small image
-############################
-FROM ubuntu:bionic
+FROM debian:buster
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.1.0"
 LABEL description="NSQ consumer in a docker container"
@@ -66,7 +29,7 @@ RUN echo "Installing File..." \
     && apt-get install -qq file
 
 ####### Installing DiE #######
-ENV DIE_VERSION     2.03
+ENV DIE_VERSION     3.01
 ENV DIE_URL         https://github.com/horsicq/DIE-engine/releases/download/$DIE_VERSION/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_ZIP         /tmp/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_DIR         /opt/die/
@@ -78,7 +41,7 @@ RUN echo "Installing DiE..." \
 	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
 ####### Installing Yara #######
-ENV YARA_VERSION        3.11.0
+ENV YARA_VERSION        4.0.5
 ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL   https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 ENV YARA_RULES_DIR      /yararules
@@ -99,28 +62,6 @@ RUN echo "Installing Yara..." \
 # Copy yara rules
 COPY ./build/data/rules $YARA_RULES_DIR
 
-WORKDIR /consumer
-
-# Copy our static executable.
-COPY --from=builder /go/bin/consumer .
-
-# Create an app user so our program doesn't run as root.
-RUN groupadd -r saferwall \
-	&& useradd --no-log-init -r -g saferwall saferwall
-
-# Update permissions
-RUN chown -R saferwall:saferwall . \
-	&& chmod +x consumer \
-	&& usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall \
-	&& chown -R saferwall:saferwall $DIE_DIR \
-	&& chown -R saferwall:saferwall $YARA_RULES_DIR
-
 # Cleanup.
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
-
-# Switch to our user
-USER saferwall
-
-ENTRYPOINT ["./consumer"]

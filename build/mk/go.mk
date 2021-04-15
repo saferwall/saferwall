@@ -17,7 +17,7 @@ go-build:	## Compile packages and dependencies
 go-test:	## Test packages
 	go test -v $(GOPKG)
 
-GO_VERSION = 1.15
+GO_VERSION = 1.16
 go-setup:	## Download and install go
 	curl -O https://dl.google.com/go/go$(GO_VERSION).linux-amd64.tar.gz
 	tar -xvf go$(GO_VERSION).linux-amd64.tar.gz

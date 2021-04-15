@@ -26,70 +26,64 @@ services:
       MINIO_ROOT_PASSWORD: minio123
     command: server /data
 
-  nsqlookupd-1:
+  nsqlookupd:
     image: nsqio/nsq:v1.2.0
+    container_name: nsqlookupd
     command: >
       /nsqlookupd
-      -broadcast-address localhost:4160
-      -log-level error
+      --log-level error
+    hostname: nsqlookupd
     ports:
       - 4160:4160
       - 4161:4161
 
-  nsqlookupd-2:
+  nsqd01:
     image: nsqio/nsq:v1.2.0
-    command: >
-      /nsqlookupd
-      -broadcast-address localhost:4162
-      -log-level error
-    ports:
-      - 4162:4160
-      - 4163:4161
-
-  nsqd-1:
-    image: nsqio/nsq:v1.2.0
+    container_name: nsqd01
     command: >
       /nsqd
-      -broadcast-address localhost:4150
-      -lookupd-tcp-address nsqlookupd-1:4160
-      -lookupd-tcp-address nsqlookupd-2:4160
-      -log-level error
+      --lookupd-tcp-address=nsqlookupd:4160
+      --log-level error
+    hostname: nsqd01
+    depends_on:
+      - nsqlookupd
     ports:
       - 4150:4150
       - 4151:4151
-    depends_on:
-      - nsqlookupd-1
-      - nsqlookupd-2
 
-  nsqd-2:
+  nsqd02:
     image: nsqio/nsq:v1.2.0
+    container_name: nsqd02
     command: >
       /nsqd
-      -broadcast-address localhost:4152
-      -lookupd-tcp-address nsqlookupd-1:4160
-      -lookupd-tcp-address nsqlookupd-2:4160
-      -log-level error
-    ports:
-      - 4152:4150
-      - 4153:4151
+      --lookupd-tcp-address=nsqlookupd:4160
+      --tcp-address=0.0.0.0:4140
+      --http-address=0.0.0.0:4141
+      --log-level error
+    hostname: nsqd02
     depends_on:
-      - nsqlookupd-1
-      - nsqlookupd-2
+      - nsqlookupd
+    ports:
+      - 4140:4140
+      - 4141:4141
 
-  nsqd-3:
+  nsqadmin:
     image: nsqio/nsq:v1.2.0
+    container_name: nsqadmin
     command: >
-      /nsqd
-      -broadcast-address localhost:4154
-      -lookupd-tcp-address nsqlookupd-1:4160
-      -lookupd-tcp-address nsqlookupd-2:4160
-      -log-level error
-    ports:
-      - 4154:4150
-      - 4155:4151
+      /nsqadmin
+      --lookupd-http-address=nsqlookupd:4161
+      --log-level error
+    hostname: nsqadmin
     depends_on:
-      - nsqlookupd-1
-      - nsqlookupd-2
+      - nsqlookupd
+    ports:
+      - 4171:4171
+
+  ml-pipeline:
+    image: saferwall/ml-pipeline:latest
+    ports:
+      - "8001:8000"
 
   web:
     image: saferwall/backend:latest
@@ -101,12 +95,15 @@ services:
       - ./configs:/backend/configs/
     depends_on:
       - minio
-      - nsqd-1
-      - nsqd-2
-      - nsqd-3
+      - nsqd01
       - couchbase
-      - nsqlookupd-1
-      - nsqlookupd-2
+      - nsqlookupd
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://web:8080/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: on-failure
 
   ui:
     image: saferwall/ui:latest
@@ -117,14 +114,24 @@ services:
     depends_on:
       - web
 
+  consumer:
+    build:
+      context: .
+      dockerfile: build/docker/Dockerfile.consumer
+    environment:
+      ENVIRONMENT: dev
+    depends_on:
+      - web
+    restart: on-failure
+    volumes:
+      - samples:/samples
+
   avira:
     image: saferwall/goavira:latest
     ports:
       - "50051:50051"
     volumes:
       - samples:/samples
-    depends_on:
-      - web
 
   clamav:
     image: saferwall/goclamav:latest
@@ -132,8 +139,6 @@ services:
       - "50052:50051"
     volumes:
       - samples:/samples
-    depends_on:
-      - web
 
   comodo:
     image: saferwall/gocomodo:latest
@@ -141,8 +146,6 @@ services:
       - "50053:50051"
     volumes:
       - samples:/samples
-    depends_on:
-      - web
 
   windefender:
     image: saferwall/gowindefender:latest
@@ -150,8 +153,6 @@ services:
       - "50054:50051"
     volumes:
       - samples:/samples
-    depends_on:
-      - web
 
 volumes:
   minio_data:

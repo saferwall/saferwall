@@ -57,12 +57,12 @@ var sigMap = map[string]string{
 	"Dotfuscator":                        "dotfuscator",
 }
 
-func (f *result) getTags() {
+func (f *File) getTags() {
 
 	var tags []string
 	f.Tags = map[string]interface{}{}
 
-	// File format tags
+	// File format tags.
 	switch f.Type {
 	case "pe":
 		if f.PE.IsEXE() {
