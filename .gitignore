@@ -53,8 +53,7 @@ minio/
 build/packer/iso/
 build/packer/packer_cache/
 
-# IDEs
-**/*.vscode/
+# Tags
 tags
 tags.lock
 

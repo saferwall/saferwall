@@ -47,7 +47,6 @@ WORKDIR /consumer
 
 # Copy our static executable.
 COPY --from=builder /go/bin/consumer .
-COPY configs configs
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
@@ -60,7 +59,6 @@ RUN chown -R saferwall:saferwall . \
 	&& groupmod -g 102 saferwall \
 	&& mkdir /samples \
 	&& chown -R saferwall:saferwall /samples \
-	&& chown -R saferwall:saferwall configs \
 	&& chown -R saferwall:saferwall $DIE_DIR \
 	&& chown -R saferwall:saferwall $YARA_RULES_DIR
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
+// Package consumer implements the NSQ worker logic.
 package consumer
 
 import (
@@ -24,7 +25,7 @@ type ConsumerCfg struct {
 
 // MlCfg represents the consumer config.
 type MlCfg struct {
-	Address string `mapstructure:"ml"`
+	Address string `mapstructure:"address"`
 }
 
 // NSQCfg represents NSQ config.

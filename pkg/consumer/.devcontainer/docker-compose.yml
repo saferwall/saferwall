@@ -1,9 +1,37 @@
-version: "3.9"
-
-# Use this docker-compose file to setup the test environment before running the
-# tests.
+version: "3.7"
 
 services:
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - web
+    depends_on:
+      - web
+    volumes:
+      - ../:/workspace
+      # Docker socket to access Docker server
+      - /var/run/docker.sock:/var/run/docker.sock
+      # SSH directory
+      - ~/.ssh:/home/vscode/.ssh
+      - ~/.ssh:/root/.ssh
+      # Git config
+      - ~/.gitconfig:/home/districter/.gitconfig
+      - ~/.gitconfig:/root/.gitconfig
+      # Kubernetes
+      # - ~/.kube:/home/districter/.kube
+      # - ~/.kube:/root/.kube
+    environment:
+      - TZ=
+    cap_add:
+      # For debugging with dlv
+      - SYS_PTRACE
+    security_opt:
+      # For debugging with dlv
+      - seccomp:unconfined
+    entrypoint: zsh -c "while sleep 1000; do :; done"
+
   couchbase:
     image: couchbase/server:6.6.1
     ports:
@@ -91,19 +119,12 @@ services:
       - "8080:8080"
     environment:
       ENVIRONMENT: dev
-    volumes:
-      - ./configs:/backend/configs/
     depends_on:
       - minio
       - nsqd01
       - nsqd02
       - couchbase
       - nsqlookupd
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://web:8080/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     restart: on-failure
 
   ui:
@@ -114,17 +135,6 @@ services:
       VUE_APP_BACKEND_HOST: http://localhost:8080/
     depends_on:
       - web
-
-  consumer:
-    image: saferwall/consumer:latest
-    environment:
-      ENVIRONMENT: dev
-    depends_on:
-      - web
-      - minio
-    restart: on-failure
-    volumes:
-      - samples:/samples
 
   avira:
     image: saferwall/goavira:latest

@@ -119,7 +119,7 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 
 	// Update document.
 	err = updateDocument(f.Sha256, h.authToken, h.cfg, buff)
-	if err == errHttpStatusUnauthorized {
+	if err == errHTTPStatusUnauthorized {
 
 		// Get a new fresh jwt token.
 		h.authToken, err = getAuthToken(h.cfg)

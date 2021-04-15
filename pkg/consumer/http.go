@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	errHttpStatusCodeNotOK    = errors.New("http response status code != 200")
-	errHttpStatusUnauthorized = errors.New("jwt token expired")
+	errHTTPStatusCodeNotOK    = errors.New("http response status code != 200")
+	errHTTPStatusUnauthorized = errors.New("jwt token expired")
 )
 
 // getAuthToken() retrieves a JWT auth token from the web apis.
@@ -35,7 +35,7 @@ func getAuthToken(cfg *Config) (string, error) {
 	client := http.Client{
 		Timeout: timeout,
 	}
-	url := cfg.Backend.Address + "/v1/auth/login"
+	url := cfg.Backend.Address + "/v1/auth/login/"
 	body := bytes.NewBuffer(requestBody)
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
@@ -49,7 +49,7 @@ func getAuthToken(cfg *Config) (string, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return authToken, errHttpStatusCodeNotOK
+		return authToken, errHTTPStatusCodeNotOK
 	}
 
 	defer resp.Body.Close()
@@ -89,7 +89,7 @@ func updateDocument(sha256, token string, cfg *Config, buff []byte) error {
 
 	// Check if token is not expired.
 	if resp.StatusCode == http.StatusUnauthorized {
-		return errHttpStatusUnauthorized
+		return errHTTPStatusUnauthorized
 	}
 
 	defer resp.Body.Close()
