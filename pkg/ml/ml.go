@@ -42,7 +42,7 @@ func PEClassPrediction(server string, buff []byte) (
 	client := &http.Client{}
 	client.Timeout = clientTimeout
 
-	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer(buff))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(buff))
 	if err != nil {
 		return res, err
 	}
@@ -72,7 +72,7 @@ func RankStrings(server string, buff []byte) (StringsRanker, error) {
 	res := StringsRanker{}
 	url := server + staticStringsEndpoint
 
-	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer(buff))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(buff))
 	if err != nil {
 		return res, err
 	}
