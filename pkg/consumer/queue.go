@@ -75,7 +75,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// Download the sample.
-	filePath := path.Join("/samples", f.Sha256)
+	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.Sha256)
 	b, err := h.downloadSample(filePath, &f)
 	if err != nil {
 		ctxLogger.Errorf("failed to download sample from s3: %v", err)

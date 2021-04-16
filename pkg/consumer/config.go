@@ -21,6 +21,7 @@ type BackendCfg struct {
 // ConsumerCfg represents the consumer config.
 type ConsumerCfg struct {
 	LogLevel string `mapstructure:"log_level"`
+	DownloadDir string `mapstructure:"download_dir"`
 }
 
 // MlCfg represents the consumer config.

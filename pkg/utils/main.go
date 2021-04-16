@@ -134,7 +134,6 @@ func ReadAll(filePath string) ([]byte, error) {
 		return nil, err
 	}
 	return buffer, nil
-
 }
 
 // WalkAllFilesInDir returns list of files in directory.

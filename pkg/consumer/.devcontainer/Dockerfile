@@ -1,6 +1,14 @@
-FROM qmcgaw/godevcontainer:debian
+# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.166.1/containers/go/.devcontainer/base.Dockerfile
 
-USER root
+# [Choice] Go version: 1, 1.16, 1.15
+ARG VARIANT="1.16"
+FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
+
+# [Option] Install Node.js
+ARG INSTALL_NODE="true"
+ARG NODE_VERSION="lts/*"
+RUN if [ "${INSTALL_NODE}" = "true" ]; then \
+    su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
 ##### Install Prerequisites #####
 RUN echo "Updating packages ..." \
@@ -28,7 +36,7 @@ RUN echo "Installing File..." \
     && apt-get install -qq file
 
 ####### Installing DiE #######
-ENV DIE_VERSION     3.01
+ENV DIE_VERSION     2.05
 ENV DIE_URL         https://github.com/horsicq/DIE-engine/releases/download/$DIE_VERSION/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_ZIP         /tmp/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_DIR         /opt/die/
@@ -66,7 +74,4 @@ RUN echo "Installing Capstone..." \
     && ./make.sh install
 
 ###### Copy config file #######
-COPY configs configs
-
-USER vscode
-
+COPY ./configs configs

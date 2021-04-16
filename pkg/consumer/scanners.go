@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	s "github.com/saferwall/saferwall/pkg/strings"
+	"github.com/saferwall/saferwall/pkg/utils"
+
 	peparser "github.com/saferwall/pe"
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/crypto"
@@ -16,9 +19,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/ml"
 	"github.com/saferwall/saferwall/pkg/packer"
-	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
-	"github.com/saferwall/saferwall/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -185,7 +186,8 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 	// Get ML classification results.
 	if f.Type == "pe" {
-		if mlPredictionResults, err := ml.PEClassPrediction(buff); err != nil {
+		if mlPredictionResults, err :=
+			ml.PEClassPrediction(cfg.Ml.Address, buff); err != nil {
 			ctxLogger.Errorf(
 				"failed to get ml pe classifier prediction results: %v", err)
 		} else {
@@ -195,7 +197,8 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	}
 
 	// Get ranked strings results.
-	if mlStrRankerResults, err := ml.RankStrings(buff); err != nil {
+	if mlStrRankerResults, err :=
+		ml.RankStrings(cfg.Ml.Address, buff); err != nil {
 		ctxLogger.Errorf(
 			"failed to get ml string ranker prediction results: %v", err)
 	} else {

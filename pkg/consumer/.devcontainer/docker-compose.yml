@@ -22,6 +22,8 @@ services:
       # Kubernetes
       # - ~/.kube:/home/districter/.kube
       # - ~/.kube:/root/.kube
+      # Samples downloaded from s3.
+      - samples:/samples
     environment:
       - TZ=
     cap_add:
@@ -111,7 +113,8 @@ services:
   ml-pipeline:
     image: saferwall/ml-pipeline:latest
     ports:
-      - "8001:8000"
+      - "8001:8001"
+    command: "gunicorn -b 0.0.0.0:8001 --chdir api/ app:app"
 
   web:
     image: saferwall/backend:latest
