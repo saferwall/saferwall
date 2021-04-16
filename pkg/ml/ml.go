@@ -33,10 +33,11 @@ type StringsRanker struct {
 }
 
 // PEClassPrediction returns the ML PE classifier results.
-func PEClassPrediction(buff []byte) (ClassifierPrediction, error) {
+func PEClassPrediction(server string, buff []byte) (
+	ClassifierPrediction, error) {
 
 	res := ClassifierPrediction{}
-	url := staticPeEndpoint + staticPeEndpoint
+	url := server + staticPeEndpoint
 
 	client := &http.Client{}
 	client.Timeout = clientTimeout
@@ -63,13 +64,13 @@ func PEClassPrediction(buff []byte) (ClassifierPrediction, error) {
 }
 
 // RankStrings applies the String ranker model to a list of strings.
-func RankStrings(buff []byte) (StringsRanker, error) {
+func RankStrings(server string, buff []byte) (StringsRanker, error) {
 
 	client := &http.Client{}
 	client.Timeout = clientTimeout
 
 	res := StringsRanker{}
-	url := staticPeEndpoint + staticStringsEndpoint
+	url := server + staticStringsEndpoint
 
 	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer(buff))
 	if err != nil {
