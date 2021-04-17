@@ -58,7 +58,6 @@ services:
 
   nsqlookupd:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqlookupd
     command: >
       /nsqlookupd
       --log-level error
@@ -69,7 +68,6 @@ services:
 
   nsqd01:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqd01
     command: >
       /nsqd
       --lookupd-tcp-address=nsqlookupd:4160
@@ -83,7 +81,6 @@ services:
 
   nsqd02:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqd02
     command: >
       /nsqd
       --lookupd-tcp-address=nsqlookupd:4160
@@ -99,7 +96,6 @@ services:
 
   nsqadmin:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqadmin
     command: >
       /nsqadmin
       --lookupd-http-address=nsqlookupd:4161
