@@ -40,7 +40,7 @@ web/config/dev-app.toml
 .vault
 
 # Configs
-saferwall.*.toml
+saferwall.prod.toml
 
 # NSQ
 nsqd.*.dat

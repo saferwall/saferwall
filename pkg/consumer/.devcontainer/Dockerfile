@@ -72,6 +72,3 @@ RUN echo "Installing Capstone..." \
     && cd capstone \
     && ./make.sh \
     && ./make.sh install
-
-###### Copy config file #######
-COPY ./configs configs

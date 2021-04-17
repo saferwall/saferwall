@@ -32,8 +32,7 @@ COPY . .
 # Build the binary.
 RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
 	cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer \
-	pkg/consumer/main.go pkg/consumer/helpers.go pkg/consumer/scanners.go \
-	pkg/consumer/tagger.go pkg/consumer/ml.go
+	cmd/consumer.go
 
 ############################
 # STEP 2 build a small image
@@ -48,17 +47,18 @@ WORKDIR /consumer
 # Copy our static executable.
 COPY --from=builder /go/bin/consumer .
 
+# Copy the dev config to use in docker-compose.
+COPY configs/saferwall.dev.toml configs/saferwall.dev.toml
+
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
 	&& useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions
+# Update permissions.
 RUN chown -R saferwall:saferwall . \
 	&& chmod +x consumer \
 	&& usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
-	&& mkdir /samples \
-	&& chown -R saferwall:saferwall /samples \
 	&& chown -R saferwall:saferwall $DIE_DIR \
 	&& chown -R saferwall:saferwall $YARA_RULES_DIR
 
@@ -66,7 +66,7 @@ RUN chown -R saferwall:saferwall . \
 RUN rm -rf /tmp/* \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
 ENTRYPOINT ["./consumer"]

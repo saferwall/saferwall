@@ -1,12 +1,13 @@
-FROM debian:buster
+FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.1.0"
 LABEL description="NSQ consumer in a docker container"
 
 ##### Install Prerequisites #####
-RUN echo "Updating packages ..." \ 
+RUN echo "Updating packages ..." \
     && apt-get update \
-    && apt-get install -qq --no-install-recommends wget unzip ca-certificates
+    && apt-get install -qq --no-install-recommends \
+		wget unzip ca-certificates git
 
 ######## Installing TRiD ########
 RUN echo "Installing TRiD..." \
@@ -29,7 +30,7 @@ RUN echo "Installing File..." \
     && apt-get install -qq file
 
 ####### Installing DiE #######
-ENV DIE_VERSION     3.01
+ENV DIE_VERSION     2.05
 ENV DIE_URL         https://github.com/horsicq/DIE-engine/releases/download/$DIE_VERSION/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_ZIP         /tmp/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_DIR         /opt/die/
@@ -58,6 +59,13 @@ RUN echo "Installing Yara..." \
 	&& make install \
 	&& rm -rf ./yara-$YARA_VERSION \
 	&& rm -f $YARA_ARCHIVE
+
+####### Installing Capstone #######
+RUN echo "Installing Capstone..." \
+    && git clone https://github.com/aquynh/capstone.git \
+    && cd capstone \
+    && ./make.sh \
+    && ./make.sh install
 
 # Copy yara rules
 COPY ./build/data/rules $YARA_RULES_DIR

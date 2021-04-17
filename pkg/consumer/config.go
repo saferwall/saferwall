@@ -20,7 +20,7 @@ type BackendCfg struct {
 
 // ConsumerCfg represents the consumer config.
 type ConsumerCfg struct {
-	LogLevel string `mapstructure:"log_level"`
+	LogLevel    string `mapstructure:"log_level"`
 	DownloadDir string `mapstructure:"download_dir"`
 }
 
@@ -65,7 +65,9 @@ func loadConfig() (Config, error) {
 	c := Config{}
 
 	// Set the path of your config file.
+	// In prod, we drop the configs in the same dir as the compiled bin.
 	viper.AddConfigPath("configs")
+	// In dev environement, the configs is found insie cmd/ dir.
 	viper.AddConfigPath("../configs")
 
 	// Load the config type depending on env variable.
