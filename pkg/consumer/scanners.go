@@ -185,13 +185,13 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	}
 
 	// Get ML classification results.
+	f.Ml = map[string]interface{}{}
 	if f.Type == "pe" {
 		if mlPredictionResults, err :=
 			ml.PEClassPrediction(cfg.Ml.Address, buff); err != nil {
 			ctxLogger.Errorf(
 				"failed to get ml pe classifier prediction results: %v", err)
 		} else {
-			f.Ml = map[string]interface{}{}
 			f.Ml["pe"] = mlPredictionResults
 		}
 	}
@@ -202,7 +202,6 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		ctxLogger.Errorf(
 			"failed to get ml string ranker prediction results: %v", err)
 	} else {
-		f.Ml = map[string]interface{}{}
 		f.Ml["strings"] = mlStrRankerResults
 	}
 
