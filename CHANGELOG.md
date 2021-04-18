@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] [Release date: 31/03/2021]
+## [Unreleased]
+
+## [0.1.0] - 30/04/2021
 ### Added
+- ML PE classifier and string ranker.
+- docker-compose and .devcontainer to ease development.
 - A portable executable (PE) file parser.
 - A UI for displaying PE parsing results.
 - `gib`: a package to detect gibberish strings.
@@ -14,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `sdk2json`: a package to convert Win32 API definitions to JSON format.
 
 ### Changed
+- Consumer docker image is separated to a base image and an app image.
+- Refactor consumer and make it a go module.
 - [Helm] reduce minio MEM request, ES and Kibana CPU request to half a core.
 - [Helm] bump chart dependency modules.
 - [pkg/consumer] add context timeout to multiav scan gRPC API.

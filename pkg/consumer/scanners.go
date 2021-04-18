@@ -192,6 +192,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 			ctxLogger.Errorf(
 				"failed to get ml pe classifier prediction results: %v", err)
 		} else {
+			mlPredictionResults.Sha256 = ""
 			f.Ml["pe"] = mlPredictionResults
 		}
 	}
@@ -202,6 +203,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		ctxLogger.Errorf(
 			"failed to get ml string ranker prediction results: %v", err)
 	} else {
+		mlStrRankerResults.Sha256 = ""
 		f.Ml["strings"] = mlStrRankerResults
 	}
 

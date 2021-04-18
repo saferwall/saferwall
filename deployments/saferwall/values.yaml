@@ -68,7 +68,7 @@ filebeat:
                     json.add_error_key: true
       processors:
         - add_cloud_metadata: ~
-        - add_docker_metadata: ~ 
+        - add_docker_metadata: ~
       output.elasticsearch:
         host: '${NODE_NAME}'
         hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
@@ -558,7 +558,7 @@ consumer:
   name: consumer
   replicaCount: 1
   image:
-    repository: saferwall/consumer
+    repository: saferwall/goconsumer
     tag: latest
     pullPolicy: Always
   resources:
@@ -766,7 +766,7 @@ ml:
     tag: latest
     pullPolicy: Always
   service:
-    port: 8000
+    port: 80
     targetPort: 8000
   resources:
     requests:

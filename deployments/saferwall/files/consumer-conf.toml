@@ -8,12 +8,13 @@ admin_pwd = "password"
 [consumer]
 # Possible values "panic", "fatal", "error", "warn", "info", "debug", "trace"
 log_level = "warn"
+download_dir = "/samples"
 
 [ml]
 address = 'http://{{ include "saferwall.fullname" . }}-ml'
 
 [nsq]
-lookupd = [
+lookupds = [
 {{ $lookupdFullName := printf "%s-nsq-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}
 {{ range $i, $e := until (atoi (printf "%d" (int64 .Values.nsq.nsqlookupd.replicaCount))) -}}
     "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
