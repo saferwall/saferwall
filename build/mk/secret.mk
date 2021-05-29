@@ -1,5 +1,4 @@
 gpg-encrypt-env:		## Encrypt .env with gpg.
-	rm .env.gpg || true
 	@gpg --cipher-algo AES256 --symmetric --batch --passphrase '$(SECRETS_PASSPHRASE)' .env
 	mv .env.gpg $(ROOT_DIR)/.github/secrets
 
