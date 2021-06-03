@@ -92,9 +92,7 @@ func getBytePtrIndex(api API, param APIParam, dt dataType,
 		// 	param.Name, param.Type, param.Annotation)
 
 		name := getNameFromAnnotation(param)
-		if strings.HasPrefix(name, "*") {
-			name = name[1:]
-		}
+		name = strings.TrimPrefix(name, "*")
 		// log.Println(name)
 		idx := findParamIndexByName(api, name)
 		return uint8(idx)
@@ -107,9 +105,7 @@ func getBytePtrIndex(api API, param APIParam, dt dataType,
 		if len(name) > 0 {
 			// log.Printf("API: %s, Name: %s, Type: %s, Anno: %s\n", api.Name,
 			// 	param.Name, param.Type, param.Annotation)
-			if strings.HasPrefix(name, "*") {
-				name = name[1:]
-			}
+			name = strings.TrimPrefix(name, "*")
 			idx := findParamIndexByName(api, name)
 			parammini.Type = typeBytePtr
 			return uint8(idx)
@@ -191,8 +187,8 @@ func minifyStructAndUnions(winStructs []Struct) []StructUnionMini {
 		largestMemSizex64 := winStruct.Max(true)
 
 		if largestMemSizex86 == 0 || largestMemSizex64 == 0 {
-			continue
 			log.Println(winStruct.Name)
+			continue
 		}
 
 		for _, winStructMember := range winStruct.Members {

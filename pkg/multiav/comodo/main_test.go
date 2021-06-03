@@ -19,7 +19,7 @@ type filePathTest struct {
 
 var filepathScanTest = []filePathTest{
 	{getAbsoluteFilePath("test/multiav/eicar.com"),
-	 Result{Infected: true, Output: "ApplicUnwnt"}},
+		Result{Infected: true, Output: "ApplicUnwnt"}},
 }
 
 func getAbsoluteFilePath(testfile string) string {
@@ -35,8 +35,8 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{6}\.\d{1}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("Program version was incorrect, got: %s,\
-		 want something similar to: 1.1.268025.1", version)
+		t.Fatalf(`Program version was incorrect, got: %s,\
+		 want something similar to: 1.1.268025.1`, version)
 	}
 }
 
@@ -46,11 +46,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}

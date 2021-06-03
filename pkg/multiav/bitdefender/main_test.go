@@ -28,8 +28,8 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d\.\d{6}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("Program version was incorrect, got: %s,\
-		 want something similar to: 7.141118", version)
+		t.Fatalf(`Program version was incorrect, got: %s,\
+		 want something similar to: 7.141118`, version)
 	}
 }
 
@@ -39,11 +39,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}
