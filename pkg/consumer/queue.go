@@ -7,7 +7,6 @@ package consumer
 import (
 	"encoding/json"
 	"errors"
-	"path"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -63,46 +62,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	ctxLogger := log.WithFields(log.Fields{"sha256": sha256})
 	ctxLogger.Info("start scanning ...")
 
-	// Create a new file instance.
-	f := File{Sha256: sha256}
-
-	// Set the file status to `processing`.
-	f.Status = processing
-	err := h.updateMsgProgress(&f)
-	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
-		return err
-	}
-
-	// Download the sample.
-	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.Sha256)
-	b, err := h.downloadSample(filePath, &f)
-	if err != nil {
-		ctxLogger.Errorf("failed to download sample from s3: %v", err)
-		return err
-	}
-
-	// Scan the file.
-	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg)
-	if err != nil {
-		ctxLogger.Errorf("failed to scan the file: %v", err)
-		return err
-	}
-
-	// Set the file status to `finished`.
-	f.Status = finished
-	err = h.updateMsgProgress(&f)
-	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
-		return err
-	}
-
-	// Delete the file from the network share.
-	if utils.Exists(filePath) {
-		if err = utils.DeleteFile(filePath); err != nil {
-			log.Errorf("failed to delete file path %s", filePath)
-		}
-	}
+	ScanFile(sha256, ctxLogger, h)
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

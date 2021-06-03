@@ -6,6 +6,7 @@ package consumer
 
 import (
 	"encoding/json"
+	"path"
 	"strings"
 	"time"
 
@@ -234,4 +235,57 @@ func parsePE(filePath string) (*peparser.File, error) {
 	// Parse the PE.
 	err = pe.Parse()
 	return pe, err
+}
+
+func ScanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
+
+	// Handle unexpected panics.
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("panic occured in file scan: %v", r)
+		}
+	}()
+
+	// Create a new file instance.
+	f := File{Sha256: sha256}
+
+	// Set the file status to `processing`.
+	f.Status = processing
+	err := h.updateMsgProgress(&f)
+	if err != nil {
+		ctxLogger.Errorf("failed to update message status: %v", err)
+		return err
+	}
+
+	// Download the sample.
+	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.Sha256)
+	b, err := h.downloadSample(filePath, &f)
+	if err != nil {
+		ctxLogger.Errorf("failed to download sample from s3: %v", err)
+		return err
+	}
+
+	// Scan the file.
+	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg)
+	if err != nil {
+		ctxLogger.Errorf("failed to scan the file: %v", err)
+		return err
+	}
+
+	// Set the file status to `finished`.
+	f.Status = finished
+	err = h.updateMsgProgress(&f)
+	if err != nil {
+		ctxLogger.Errorf("failed to update message status: %v", err)
+		return err
+	}
+
+	// Delete the file from the network share.
+	if utils.Exists(filePath) {
+		if err = utils.DeleteFile(filePath); err != nil {
+			log.Errorf("failed to delete file path %s", filePath)
+		}
+	}
+
+	return nil
 }
