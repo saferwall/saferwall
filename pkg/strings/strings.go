@@ -64,7 +64,7 @@ func check(e error) {
 // GetASCIIStrings returns list of ASCII strings
 // n: defines minimum length of string
 func GetASCIIStrings(data []byte, n int) []string {
-	StringRegex := fmt.Sprintf("[\x20-\x7f]{%d,}", n) 
+	StringRegex := fmt.Sprintf("[\x20-\x7f]{%d,}", n)
 	re := regexp.MustCompile(StringRegex)
 	asciiStrings := re.FindAllString(string(data), -1)
 	return asciiStrings
@@ -96,7 +96,7 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 	}()
 
 	engine, err := gapstone.New(
-		gapstone.CS_ARCH_X86,
+		gapstone.ARM64_DC_CSW,
 		gapstone.CS_MODE_32,
 	)
 	check(err)
