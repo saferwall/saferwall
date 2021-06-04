@@ -143,7 +143,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to walk dir %s : %v", filePath, err)
 	}
-
+	
 	start := time.Now()
 	for _, file := range files {
 		scan(engine, file, conn)

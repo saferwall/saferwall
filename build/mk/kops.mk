@@ -120,4 +120,5 @@ saferwall: ## Deploy the cluster
 	make helm-update-dep
 	make k8s-init-cert-manager
 	# Install a release
-	make helm-release 
+	make helm-release
+

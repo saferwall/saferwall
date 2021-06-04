@@ -7,6 +7,7 @@ package consumer
 import (
 	"encoding/json"
 	"path"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -237,12 +238,12 @@ func parsePE(filePath string) (*peparser.File, error) {
 	return pe, err
 }
 
-func ScanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
+func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
 
 	// Handle unexpected panics.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("panic occured in file scan: %v", r)
+			ctxLogger.Errorf("panic occured in file scan: %v", debug.Stack())
 		}
 	}()
 

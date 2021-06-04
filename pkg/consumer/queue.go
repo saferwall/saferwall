@@ -62,7 +62,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	ctxLogger := log.WithFields(log.Fields{"sha256": sha256})
 	ctxLogger.Info("start scanning ...")
 
-	ScanFile(sha256, ctxLogger, h)
+	scanFile(sha256, ctxLogger, h)
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

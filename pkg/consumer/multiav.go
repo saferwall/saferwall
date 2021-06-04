@@ -5,6 +5,8 @@
 package consumer
 
 import (
+	"runtime/debug"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	avastclient "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/client"
 	avast_api "github.com/saferwall/saferwall/pkg/grpc/multiav/avast/proto"
@@ -38,8 +40,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func avScan(engine string, filePath string,c chan multiav.ScanResult,
-	 ctxLogger *log.Entry, cfg *Config) {
+func avScan(engine string, filePath string, c chan multiav.ScanResult,
+	ctxLogger *log.Entry, cfg *Config) {
+
+	// Fail safe.
+	defer func() {
+		if r := recover(); r != nil {
+			ctxLogger.Errorf("panic occured in av scan: %v", debug.Stack())
+		}
+	}()
 
 	// Get the address of AV gRPC server.
 	address := cfg.MultiAV[engine].Address

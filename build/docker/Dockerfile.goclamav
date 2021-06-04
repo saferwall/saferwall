@@ -45,7 +45,6 @@ RUN clamd && freshclam ; clamscan -V \
 
 # Performs a simple detection test.
 RUN clamd \
-    && /var/log/clamav/clamd.log \
     && clamdscan eicar \
     ; cat /var/log/clamav/clamd.log | grep -q 'Win.Test.EICAR_HDB'
 
@@ -58,7 +57,7 @@ COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
 
 # Configure permissions.
 RUN chown saferwall:saferwall /bin/clamavscanner \
-    && chmod -R o+rw /var/log/clamav/ \ 
+    && chmod -R o+rw /var/log/clamav/ \
     && chmod -R o+rw /run/clamav/ \
     && chmod -R o+rw /var/lib/clamav/
 

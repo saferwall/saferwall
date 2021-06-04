@@ -10,7 +10,7 @@ kubectl-install:		## Install kubectl.
             echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
 		fi
 
-KUBECTX_VER = 0.9.1
+KUBECTX_VER = 0.9.3
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
 k8s-kubectx-install:		## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
@@ -19,7 +19,7 @@ k8s-kubectx-install:		## Install kubectx
 	chmod +x /usr/local/bin/kubectx
 	kubectx
 
-KUBENS_VER = 0.9.1
+KUBENS_VER = 0.9.3
 KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
 k8s-kubens-install:			## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
