@@ -133,12 +133,10 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	n := 5
 	asciiStrings := s.GetASCIIStrings(b, n)
 	wideStrings := s.GetUnicodeStrings(b, n)
-	asmStrings := s.GetAsmStrings(b)
 
 	// Remove duplicates
 	uniqueASCII := utils.UniqueSlice(asciiStrings)
 	uniqueWide := utils.UniqueSlice(wideStrings)
-	uniqueAsm := utils.UniqueSlice(asmStrings)
 
 	var strResults []stringStruct
 	for _, str := range uniqueASCII {
@@ -146,9 +144,6 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	}
 	for _, str := range uniqueWide {
 		strResults = append(strResults, stringStruct{"wide", str})
-	}
-	for _, str := range uniqueAsm {
-		strResults = append(strResults, stringStruct{"asm", str})
 	}
 	f.Strings = strResults
 	ctxLogger.Debug("strings scan success")

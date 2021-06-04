@@ -49,8 +49,10 @@ docker-install:		## Install docker.
 	sudo apt-get update
 	sudo apt-get install docker-ce -y
 
+DOCKER_COMPOSE_VER=1.29.2
+
 docker-compose-install: 	## Install docker-compose
-	sudo curl -L "https://github.com/docker/compose/releases/download/1.28.6/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VER}/docker-compose-$$(uname -s)-$$(uname -m)" -o /usr/local/bin/docker-compose
 	sudo chmod +x /usr/local/bin/docker-compose
 	docker-compose --version
 
