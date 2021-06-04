@@ -134,7 +134,7 @@ func TestHeuristic(t *testing.T) {
 		isNonsense := simpleNonSense(tt.text)
 		if isNonsense != tt.expected {
 			t.Fatalf("expected nonsense(%s) to be %t got %t",
-			 tt.text, tt.expected, isNonsense)
+				tt.text, tt.expected, isNonsense)
 		}
 	}
 }
@@ -387,11 +387,11 @@ func TestOnMacroDocs(t *testing.T) {
 		israndom, err := isGibberish(tt.input)
 		if err != nil {
 			t.Fatalf("failed to test on string %s with error %v",
-			 tt.input, err)
+				tt.input, err)
 		}
 		if israndom != tt.expected {
 			t.Logf("failed on test case %s expected %t got %t",
-			 tt.input, tt.expected, israndom)
+				tt.input, tt.expected, israndom)
 		}
 	}
 
