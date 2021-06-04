@@ -16,7 +16,7 @@ type filePathTest struct {
 
 var filepathScanTest = []filePathTest{
 	{"../../../test/multiav/eicar.com",
-	 Result{Infected: true, Output: "Eicar-Test-Signature"}},
+		Result{Infected: true, Output: "Eicar-Test-Signature"}},
 }
 
 func TestGetProgramVersion(t *testing.T) {
@@ -28,8 +28,8 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1}\.\d{3}\.\d{1}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("Program version was incorrect, got: %s,\
-		 want something similar to: 0.100.2", version)
+		t.Fatalf(`Program version was incorrect, got: %s,\
+		 want something similar to: 0.100.2`, version)
 	}
 }
 
@@ -39,11 +39,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}

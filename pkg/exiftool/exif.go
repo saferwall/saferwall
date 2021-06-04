@@ -51,7 +51,7 @@ func ParseOutput(exifout string) map[string]string {
 			continue
 		}
 		if !utils.StringInSlice(strings.TrimSpace(keyvalue[0]), ignoreTags) {
-			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] = 
+			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] =
 				strings.TrimSpace(keyvalue[1])
 		}
 	}

@@ -5,8 +5,8 @@
 package drweb
 
 import (
-	"testing"
 	"regexp"
+	"testing"
 )
 
 type filePathTest struct {
@@ -14,10 +14,9 @@ type filePathTest struct {
 	want     Result
 }
 
-
 var filepathScanTest = []filePathTest{
 	{"../../../test/multiav/clean/eicar.com",
-	 Result{Infected: true, Output: "EICAR Test File (NOT a Virus!)"}},
+		Result{Infected: true, Output: "EICAR Test File (NOT a Virus!)"}},
 }
 
 func TestGetVersion(t *testing.T) {
@@ -25,15 +24,14 @@ func TestGetVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("TestGetVersion failed, got: %s", err)
 	}
-	
+
 	re := regexp.MustCompile(`\d{1}\.\d{2}\.\d{2}\.\d{1,5}`)
 	l := re.FindStringSubmatch(ver.CoreEngineVersion)
 	if len(l) == 0 {
-		t.Errorf("Core enfine version was incorrect, got: %s,\
-		 want something similar to: 7.00.47.04280", ver)
+		t.Errorf(`Core engine version was incorrect, got: %s,\
+		 want something similar to: 7.00.47.04280`, ver)
 	}
 }
-
 
 func TestScanFilePath(t *testing.T) {
 	for _, tt := range filepathScanTest {
@@ -41,11 +39,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}

@@ -29,8 +29,8 @@ func TestGetVPSVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{8}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("VPS version was incorrect, got: %s,\
-		 want something similar to: 19010602", version)
+		t.Fatalf(`VPS version was incorrect, got: %s,\
+		 want something similar to: 19010602`, version)
 	}
 }
 
@@ -43,8 +43,8 @@ func TestGetProgramVersion(t *testing.T) {
 	re := regexp.MustCompile(`\d{1}\.\d{1}\.\d{1}`)
 	l := re.FindStringSubmatch(version)
 	if len(l) == 0 {
-		t.Fatalf("Program version was incorrect, got: %s, \
-		want something similar to: 2.2.0", version)
+		t.Fatalf(`Program version was incorrect, got: %s, \
+		want something similar to: 2.2.0`, version)
 	}
 }
 
