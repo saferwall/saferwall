@@ -68,7 +68,4 @@ RUN echo "Installing Yara..." \
 
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
-    && git clone https://github.com/aquynh/capstone.git \
-    && cd capstone \
-    && ./make.sh \
-    && ./make.sh install
+    && apt-get install libcapstone-dev -y
