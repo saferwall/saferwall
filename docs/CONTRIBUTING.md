@@ -18,12 +18,9 @@ Please note we have a code of conduct, please follow it in all your interactions
 * __configs__: Configuration file templates or default configs.
 * __docs__: design and user documents (in addition to your godoc generated documentation).
 * __deployments__: helm chart.
-* __pkg__ : library code to use by external applications.
+* __pkg__ : core package implementations and consumer instance.
 * __scripts__: scripts to perform any build, install, analysis, etc operations.
 * __test__: test data, (the tests are found on the location as the go code).
-* __ui__ : (frontend) vue.js dashboard. (saferwall.com)
-* __web__ : (backend) go web application. (api.saferwall.com)
-* __website__ : saferwall website and documentation (about.saferwall.com)
 
 ## Requirements
 
@@ -47,11 +44,3 @@ elastic-drop-db                Delete all indexes.
 ```
 
 Your commits **should** follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-
-## Developing on the backend
-
-- WIP
-
-## Developing on the frontend
-
-- WIP 

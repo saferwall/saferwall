@@ -44,7 +44,7 @@ type File struct {
 	TriD        []string               `json:"trid,omitempty"`
 	Tags        map[string]interface{} `json:"tags,omitempty"`
 	Packer      []string               `json:"packer,omitempty"`
-	LastScanned *time.Time             `json:"last_scanned,omitempty"`
+	LastScanned time.Time              `json:"last_scanned,omitempty"`
 	Strings     []stringStruct         `json:"strings,omitempty"`
 	MultiAV     map[string]interface{} `json:"multiav,omitempty"`
 	Status      int                    `json:"status,omitempty"`
@@ -205,8 +205,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	}
 
 	// Finished scanning the file.
-	now := time.Now().UTC()
-	f.LastScanned = &now
+	f.LastScanned = time.Now().UTC()
 
 	return nil
 }
