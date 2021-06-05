@@ -390,7 +390,7 @@ func TestOnMacroDocs(t *testing.T) {
 				tt.input, err)
 		}
 		if israndom != tt.expected {
-			t.Logf("failed on test case %s expected %t got %t",
+			t.Logf("ambigious on test case %s expected %t got %t",
 				tt.input, tt.expected, israndom)
 		}
 	}

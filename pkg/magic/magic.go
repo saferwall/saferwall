@@ -31,7 +31,7 @@ func Scan(FilePath string) (string, error) {
 // ParseOutput convert exiftool output into map of string|string.
 func ParseOutput(fileout string) string {
 	lines := strings.Split(fileout, ": ")
-	if len(lines) > 0 {
+	if len(lines) > 1 {
 		return strings.TrimSuffix(lines[1], "\n")
 	}
 	return ""
