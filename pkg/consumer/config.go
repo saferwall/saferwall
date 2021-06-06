@@ -11,17 +11,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Cfg represents the consumer config.
+type Cfg struct {
+	LogLevel    string `mapstructure:"log_level"`
+	DownloadDir string `mapstructure:"download_dir"`
+}
+
 // BackendCfg represents the backend config.
 type BackendCfg struct {
 	Address  string `mapstructure:"address"`
 	Username string `mapstructure:"admin_user"`
 	Password string `mapstructure:"admin_pwd"`
-}
-
-// ConsumerCfg represents the consumer config.
-type ConsumerCfg struct {
-	LogLevel    string `mapstructure:"log_level"`
-	DownloadDir string `mapstructure:"download_dir"`
 }
 
 // MlCfg represents the consumer config.
@@ -52,7 +52,7 @@ type MultiAvCfg struct {
 // Config represents our application config.
 type Config struct {
 	Backend  BackendCfg            `mapstructure:"backend"`
-	Consumer ConsumerCfg           `mapstructure:"consumer"`
+	Consumer Cfg                   `mapstructure:"consumer"`
 	Ml       MlCfg                 `mapstructure:"ml"`
 	Nsq      NSQCfg                `mapstructure:"nsq"`
 	Minio    MinioCfg              `mapstructure:"minio"`

@@ -84,6 +84,7 @@ func determineType(magic string) string {
 	return fileType
 }
 
+// Scan runs all scanners on the queued file.
 func (f *File) Scan(sha256, filePath string, b []byte,
 	ctxLogger *log.Entry, cfg *Config) error {
 
