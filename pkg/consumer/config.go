@@ -59,6 +59,11 @@ type Config struct {
 	MultiAV  map[string]MultiAvCfg `mapstructure:"multiav"`
 }
 
+// Modules represents implemented modules
+type Modules struct {
+	Strings bool `mapstructure:"strings"`
+}
+
 // loadConfig init our configration.
 func loadConfig() (Config, error) {
 

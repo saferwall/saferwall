@@ -1,4 +1,4 @@
-DIE_VERSION = 2.03
+DIE_VERSION = 2.05
 DIE_URL = https://github.com/horsicq/DIE-engine/releases/download/$(DIE_VERSION)/die_lin64_portable_$(DIE_VERSION).tar.gz
 DIE_ZIP = /tmp/die_lin64_portable_$(DIE_VERSION).tar.gz
 
