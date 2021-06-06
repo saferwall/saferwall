@@ -25,7 +25,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get install libcapstone-dev -y
+          sudo apt-get install libcapstone-dev -y
           go version
           go get -u golang.org/x/lint/golint
 

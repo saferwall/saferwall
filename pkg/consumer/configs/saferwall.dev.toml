@@ -77,4 +77,3 @@ ssl = false
 
 [modules]
   strings = false
-  packer = false

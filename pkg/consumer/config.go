@@ -62,7 +62,6 @@ type Config struct {
 // Modules represents implemented modules
 type Modules struct {
 	Strings bool `mapstructure:"strings"`
-	Packer  bool `mapstructure:"packer"`
 }
 
 // loadConfig init our configration.
