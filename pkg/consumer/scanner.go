@@ -25,6 +25,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// defaultStringsMinLength represents the minimum length of extracted strings
+	defaultStringsMinLength = 5
+)
+
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -130,23 +135,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		ctxLogger.Debug("packer scan success")
 	}
 
-	// Extract strings.
-	n := 5
-	asciiStrings := s.GetASCIIStrings(b, n)
-	wideStrings := s.GetUnicodeStrings(b, n)
-
-	// Remove duplicates
-	uniqueASCII := utils.UniqueSlice(asciiStrings)
-	uniqueWide := utils.UniqueSlice(wideStrings)
-
-	var strResults []stringStruct
-	for _, str := range uniqueASCII {
-		strResults = append(strResults, stringStruct{"ascii", str})
-	}
-	for _, str := range uniqueWide {
-		strResults = append(strResults, stringStruct{"wide", str})
-	}
-	f.Strings = strResults
+	f.Strings = extractStrings(b, defaultStringsMinLength)
 	ctxLogger.Debug("strings scan success")
 
 	// Determine the file type.
@@ -162,8 +151,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		}
 
 		// Extract Byte Histogram and byte entropy.
-		f.Histogram = bs.ByteHistogram(b)
-		f.ByteEntropy = bs.ByteEntropyHistogram(b)
+		f.Histogram, f.ByteEntropy = calcHistogramData(b)
 		ctxLogger.Debug("bytestats scan success")
 	}
 
@@ -173,9 +161,9 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	f.MultiAV["last_scan"] = multiavScanRes
 
 	// Extract tags.
-	f.getTags()
+	f.extractTags()
 
-	// Marshell results.
+	// Marshal results.
 	var buff []byte
 	if buff, err = json.Marshal(f); err != nil {
 		ctxLogger.Errorf("failed to json marshal object: %v", err)
@@ -184,7 +172,8 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 	// Get ML classification results.
 	f.Ml = map[string]interface{}{}
-	if f.Type == "pe" {
+	switch f.Type {
+	case "pe":
 		if mlPredictionResults, err :=
 			ml.PEClassPrediction(cfg.Ml.Address, buff); err != nil {
 			ctxLogger.Errorf(
@@ -284,4 +273,29 @@ func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
 	}
 
 	return nil
+}
+
+func calcHistogramData(b []byte) (hist []int, byteentropy []int) {
+	hist = bs.ByteHistogram(b)
+	byteentropy = bs.ByteEntropyHistogram(b)
+	return
+}
+
+func extractStrings(b []byte, minLength int) (strResults []stringStruct) {
+	// Extract strings.
+	n := minLength
+	asciiStrings := s.GetASCIIStrings(b, n)
+	wideStrings := s.GetUnicodeStrings(b, n)
+
+	// Remove duplicates
+	uniqueASCII := utils.UniqueSlice(asciiStrings)
+	uniqueWide := utils.UniqueSlice(wideStrings)
+
+	for _, str := range uniqueASCII {
+		strResults = append(strResults, stringStruct{"ascii", str})
+	}
+	for _, str := range uniqueWide {
+		strResults = append(strResults, stringStruct{"wide", str})
+	}
+	return
 }
