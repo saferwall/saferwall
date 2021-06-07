@@ -12,7 +12,8 @@ var magictests = []struct {
 	in  string
 	out string
 }{
-	{"../../testdata/putty.exe", "PE32"},
+	{"../../testdata/putty.exe", "Win32 EXE"},
+	{"../../testdata/ls", "ELF shared library"},
 }
 
 func TestExiftoolScan(t *testing.T) {
@@ -24,9 +25,9 @@ func TestExiftoolScan(t *testing.T) {
 				t.Errorf("TestMagicScan(%s) got %v, want %v",
 					tt.in, err, tt.in)
 			}
-			if got["PeType"] != tt.out {
+			if got["FileType"] != tt.out {
 				t.Errorf("TestMagicScan(%s) got %v, want %v",
-					tt.in, got, tt.out)
+					tt.in, got["FileType"], tt.out)
 			}
 		})
 	}
