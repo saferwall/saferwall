@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	errIncompatibleShape = errors.New("Operands could not be broadcasted together with incompatible dimensions")
+	errIncompatibleShape = errors.New("operands could not be broadcasted together with incompatible dimensions")
 )
 
 // shiftBytes applies right shift operator to all buffer values.
@@ -53,16 +53,6 @@ func nonZeroEntries(a []int) []int {
 		}
 	}
 	return b
-}
-
-// sum computes sum of a slice elements.
-func sum(s []float32) float32 {
-	var r float32
-
-	for _, v := range s {
-		r += v
-	}
-	return r
 }
 
 // flatten2D flattens a 2D slice to a 1D slice
