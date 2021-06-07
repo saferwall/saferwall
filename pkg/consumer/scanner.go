@@ -107,33 +107,9 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	f.SHA512 = r.SHA512
 	f.SSDeep = r.SSDeep
 
-	// Get exif metadata.
-	if f.Exif, err = exiftool.Scan(filePath); err != nil {
-		ctxLogger.Errorf("exiftool scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("exiftool scan success")
-	}
-
-	// Get TriD file identifier results.
-	if f.TriD, err = trid.Scan(filePath); err != nil {
-		ctxLogger.Errorf("trid scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("trid scan success")
-	}
-
-	// Get lib magic scan results.
-	if f.Magic, err = magic.Scan(filePath); err != nil {
-		ctxLogger.Errorf("magic scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("magic scan success")
-	}
-
-	// Retrieve packer/crypter scan results.
-	if f.Packer, err = packer.Scan(filePath); err != nil {
-		ctxLogger.Errorf("packer scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("packer scan success")
-	}
+	// Extract file metadata using packer/trid/magic and exif.
+	f.extractMetadata(sha256, filePath, ctxLogger, cfg)
+	ctxLogger.Debug("metadata scan success")
 
 	f.Strings = extractStrings(b, defaultStringsMinLength)
 	ctxLogger.Debug("strings scan success")
@@ -151,7 +127,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		}
 
 		// Extract Byte Histogram and byte entropy.
-		f.Histogram, f.ByteEntropy = calcHistogramData(b)
+		f.Histogram, f.ByteEntropy = extractHistogramData(b)
 		ctxLogger.Debug("bytestats scan success")
 	}
 
@@ -275,7 +251,7 @@ func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
 	return nil
 }
 
-func calcHistogramData(b []byte) (hist []int, byteentropy []int) {
+func extractHistogramData(b []byte) (hist []int, byteentropy []int) {
 	hist = bs.ByteHistogram(b)
 	byteentropy = bs.ByteEntropyHistogram(b)
 	return
@@ -298,4 +274,36 @@ func extractStrings(b []byte, minLength int) (strResults []stringStruct) {
 		strResults = append(strResults, stringStruct{"wide", str})
 	}
 	return
+}
+
+func (f *File) extractMetadata(sha256, filePath string, ctxLogger *log.Entry, cfg *Config) {
+	var err error
+	// Get exif metadata.
+	if f.Exif, err = exiftool.Scan(filePath); err != nil {
+		ctxLogger.Errorf("exiftool scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("exiftool scan success")
+	}
+
+	// Get TriD file identifier results.
+	if f.TriD, err = trid.Scan(filePath); err != nil {
+		ctxLogger.Errorf("trid scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("trid scan success")
+	}
+
+	// Get lib magic scan results.
+	if f.Magic, err = magic.Scan(filePath); err != nil {
+		ctxLogger.Errorf("magic scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("magic scan success")
+	}
+
+	// Retrieve packer/crypter scan results.
+	if f.Packer, err = packer.Scan(filePath); err != nil {
+		ctxLogger.Errorf("packer scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("packer scan success")
+	}
+
 }
