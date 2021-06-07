@@ -21,7 +21,7 @@ func getAbsoluteFilePath(testfile string) string {
 }
 
 var filepathScanTest = []filePathTest{
-	{getAbsoluteFilePath("test/multiav/clean/eicar.com"),
+	{getAbsoluteFilePath("testdata/eicar.com"),
 		Result{Infected: true, Output: "Virus:DOS/EICAR_Test_File"}},
 }
 

@@ -14,8 +14,8 @@ type filePathTest struct {
 }
 
 var filepathScanTest = []filePathTest{
-	{"../../../test/multiav/eicar.com",
-	 Result{Infected: true, Output: "EICAR-AV-Test"}},
+	{"../../testdata/eicar.com",
+		Result{Infected: true, Output: "EICAR-AV-Test"}},
 }
 
 func TestScanFilePath(t *testing.T) {
@@ -24,11 +24,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}

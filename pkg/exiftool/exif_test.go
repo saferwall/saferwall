@@ -12,7 +12,7 @@ var magictests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/putty.exe", "PE32"},
+	{"../../testdata/putty.exe", "PE32"},
 }
 
 func TestExiftoolScan(t *testing.T) {

@@ -13,7 +13,7 @@ var magictests = []struct {
 	in  string
 	out []string
 }{
-	{"../../test/multiav/clean/putty.exe",
+	{"../../testdata/putty.exe",
 		[]string{
 			"PE: compiler: Microsoft Visual C/C++(2015 v.14.0)[-]",
 			"PE: linker: unknown(14.0)[EXE32,signed]",

@@ -14,7 +14,7 @@ type filePathTest struct {
 }
 
 var filepathScanTest = []filePathTest{
-	{"../../../test/multiav/eicar.com",
+	{"../../testdata/eicar.com",
 		Result{Infected: true, Output: "EICAR-Test-File"}},
 }
 

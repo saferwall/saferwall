@@ -64,15 +64,15 @@ func TestPEClass(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			buff, err := readAll(tt.in)
 			if err != nil {
-				t.Errorf("failed to read the file (%s): %v", tt.in, err)
+				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
 			}
 			got, err := PEClassPrediction(server, buff)
 			if err != nil {
-				t.Errorf("PEClassPrediction(%s) got %v, want %v",
+				t.Fatalf("PEClassPrediction(%s) got %v, want %v",
 					tt.in, err, tt.in)
 			}
 			if got != tt.out {
-				t.Errorf("PEClassPrediction(%s) got %v, want %v",
+				t.Fatalf("PEClassPrediction(%s) got %v, want %v",
 					tt.in, got, tt.out)
 			}
 		})
@@ -84,15 +84,15 @@ func TestStringRanker(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			buff, err := readAll(tt.in)
 			if err != nil {
-				t.Errorf("failed to read the file (%s): %v", tt.in, err)
+				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
 			}
 			got, err := RankStrings(server, buff)
 			if err != nil {
-				t.Errorf("RankStrings(%s) got %v, want %v",
+				t.Fatalf("RankStrings(%s) got %v, want %v",
 					tt.in, err, tt.in)
 			}
 			if got.Strings[1] != tt.out.Strings[0] {
-				t.Errorf("RankStrings(%s) got %v, want %v",
+				t.Fatalf("RankStrings(%s) got %v, want %v",
 					tt.in, got, tt.out)
 			}
 		})

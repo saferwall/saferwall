@@ -11,7 +11,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
-var eicarFilePath = "../../test/multiav/clean/eicar.com"
+var eicarFilePath = "../../testdata/eicar.com"
 
 var crc32tests = []struct {
 	in  string
@@ -55,7 +55,7 @@ var ssdeeptests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/putty.exe",
+	{"../../testdata/putty.exe",
 		"24576:wpPg/wTlg6Xklt9e/Y/iIpNh6liEmE2CebHNpVffB:XwRg6X+twii8N0oCeLNbfB"},
 }
 

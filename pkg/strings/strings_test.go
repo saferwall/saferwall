@@ -11,7 +11,7 @@ func TestStrings(t *testing.T) {
 		expected []string
 	}{
 		{
-			filename: "../../test/multiav/clean/eicar.com",
+			filename: "../../testdata/eicar.com",
 			expected: []string{`X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*`},
 		},
 	}

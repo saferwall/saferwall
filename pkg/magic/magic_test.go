@@ -14,7 +14,7 @@ func TestMagicScan(t *testing.T) {
 		out string
 	}{
 		{
-			"../../test/multiav/clean/putty.exe",
+			"../../testdata/putty.exe",
 			"PE32 executable (GUI) Intel 80386, for MS Windows",
 		},
 		{
