@@ -28,7 +28,12 @@ RUN echo "Installing TRiD..." \
 
 ####### Installing Exiftool #######
 RUN echo "Installing Exiftool..." \
-    && apt-get install -qq libimage-exiftool-perl
+    && wget https://exiftool.org/Image-ExifTool-12.26.tar.gz \
+    && gzip -dc Image-ExifTool-12.26.tar.gz | tar -xf - \
+    && cd Image-ExifTool-12.26 \
+    && perl Makefile.PL \
+    && make test \
+    && make install
 
 ####### Installing File #######
 RUN echo "Installing File..." \

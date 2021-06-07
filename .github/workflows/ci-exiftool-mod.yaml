@@ -2,10 +2,10 @@ name: Exiftool Go Module
 on:
   push:
     paths:
-      - 'pkg/exiftool/**'
+      - "pkg/exiftool/**"
   pull_request:
     paths:
-      - 'pkg/exiftool/**'
+      - "pkg/exiftool/**"
 jobs:
   test:
     name: Build & Test
@@ -28,7 +28,12 @@ jobs:
           go version
           go get -u golang.org/x/lint/golint
           sudo apt-get -qq update
-          sudo apt install -qq libimage-exiftool-perl
+          wget https://exiftool.org/Image-ExifTool-12.26.tar.gz
+          gzip -dc Image-ExifTool-12.26.tar.gz | tar -xf -
+          cd Image-ExifTool-12.26
+          perl Makefile.PL
+          make test
+          sudo make install
 
       - name: Build
         run: |
