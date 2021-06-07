@@ -78,7 +78,7 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 	}
 
 	// Update document.
-	err = updateDocument(f.Sha256, h.authToken, h.cfg, buff)
+	err = updateDocument(f.SHA256, h.authToken, h.cfg, buff)
 	if err == errHTTPStatusUnauthorized {
 
 		// Get a new fresh jwt token.
@@ -86,7 +86,7 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 		if err != nil {
 			return err
 		}
-		err = updateDocument(f.Sha256, h.authToken, h.cfg, buff)
+		err = updateDocument(f.SHA256, h.authToken, h.cfg, buff)
 	}
 	return err
 }
@@ -94,7 +94,7 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 // Download sample from the object storage.
 func (h *MessageHandler) downloadSample(filePath string, f *File) ([]byte, error) {
 	bucketName := h.cfg.Minio.Spacename
-	return utils.Download(h.minioClient, bucketName, filePath, f.Sha256)
+	return utils.Download(h.minioClient, bucketName, filePath, f.SHA256)
 }
 
 // New creates a new consumer.

@@ -19,67 +19,67 @@ import (
 
 // Result aggregates all hashes.
 type Result struct {
-	Crc32  string
-	Md5    string
-	Sha1   string
-	Sha256 string
-	Sha512 string
-	Ssdeep string
+	CRC32  string
+	MD5    string
+	SHA1   string
+	SHA256 string
+	SHA512 string
+	SSDeep string
 }
 
-// GetCrc32 returns CRC32 checksum in hex format.
-func GetCrc32(b []byte) string {
+// GetCRC32 returns CRC32 checksum in hex format.
+func GetCRC32(b []byte) string {
 	checksum := crc32.ChecksumIEEE(b)
 	h := fmt.Sprintf("0x%x", checksum)
 	return h
 }
 
-// GetMd5 returns MD5 hash.
-func GetMd5(b []byte) string {
+// GetMD5 returns MD5 hash.
+func GetMD5(b []byte) string {
 	h := md5.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha1 returns SHA1 hash.
-func GetSha1(b []byte) string {
+// GetSHA1 returns SHA1 hash.
+func GetSHA1(b []byte) string {
 	h := sha1.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha256 returns SHA256 hash.
-func GetSha256(b []byte) string {
+// GetSHA256 returns SHA256 hash.
+func GetSHA256(b []byte) string {
 	h := sha256.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSha512 returns SHA512 hash.
-func GetSha512(b []byte) string {
+// GetSHA512 returns SHA512 hash.
+func GetSHA512(b []byte) string {
 	h := sha512.New()
 	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// GetSsdeep returns ssdeep fuzzy hash.
-func GetSsdeep(b []byte) (string, error) {
+// GetSSDeep returns ssdeep fuzzy hash.
+func GetSSDeep(b []byte) (string, error) {
 	return ssdeep.FuzzyBytes(b)
 }
 
 // HashBytes run all crypto modules and return results.
 func HashBytes(data []byte) Result {
-	FuzzyHash, err := GetSsdeep(data)
+	FuzzyHash, err := GetSSDeep(data)
 	if err != nil && err != ssdeep.ErrFileTooSmall {
-		log.Printf("GetSsdeep() failed, got %v", err)
+		log.Printf("GetSSDeep() failed, got %v", err)
 	}
 	r := Result{
-		Crc32:  GetCrc32(data),
-		Md5:    GetMd5(data),
-		Sha1:   GetSha1(data),
-		Sha256: GetSha256(data),
-		Sha512: GetSha512(data),
-		Ssdeep: FuzzyHash,
+		CRC32:  GetCRC32(data),
+		MD5:    GetMD5(data),
+		SHA1:   GetSHA1(data),
+		SHA256: GetSHA256(data),
+		SHA512: GetSHA512(data),
+		SSDeep: FuzzyHash,
 	}
 	return r
 }

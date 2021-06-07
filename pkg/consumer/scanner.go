@@ -32,12 +32,12 @@ type stringStruct struct {
 
 // File represents a file object.
 type File struct {
-	Md5         string                 `json:"md5,omitempty"`
-	Sha1        string                 `json:"sha1,omitempty"`
-	Sha256      string                 `json:"sha256,omitempty"`
-	Sha512      string                 `json:"sha512,omitempty"`
-	Ssdeep      string                 `json:"ssdeep,omitempty"`
-	Crc32       string                 `json:"crc32,omitempty"`
+	MD5         string                 `json:"md5,omitempty"`
+	SHA1        string                 `json:"sha1,omitempty"`
+	SHA256      string                 `json:"sha256,omitempty"`
+	SHA512      string                 `json:"sha512,omitempty"`
+	SSDeep      string                 `json:"ssdeep,omitempty"`
+	CRC32       string                 `json:"crc32,omitempty"`
 	Magic       string                 `json:"magic,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
 	Exif        map[string]string      `json:"exif,omitempty"`
@@ -95,12 +95,12 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 	// Calculates hashes.
 	r := crypto.HashBytes(b)
-	f.Crc32 = r.Crc32
-	f.Md5 = r.Md5
-	f.Sha1 = r.Sha1
-	f.Sha256 = r.Sha256
-	f.Sha512 = r.Sha512
-	f.Ssdeep = r.Ssdeep
+	f.CRC32 = r.CRC32
+	f.MD5 = r.MD5
+	f.SHA1 = r.SHA1
+	f.SHA256 = r.SHA256
+	f.SHA512 = r.SHA512
+	f.SSDeep = r.SSDeep
 
 	// Get exif metadata.
 	if f.Exif, err = exiftool.Scan(filePath); err != nil {
@@ -190,7 +190,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 			ctxLogger.Errorf(
 				"failed to get ml pe classifier prediction results: %v", err)
 		} else {
-			mlPredictionResults.Sha256 = ""
+			mlPredictionResults.SHA256 = ""
 			f.Ml["pe"] = mlPredictionResults
 		}
 	}
@@ -201,7 +201,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		ctxLogger.Errorf(
 			"failed to get ml string ranker prediction results: %v", err)
 	} else {
-		mlStrRankerResults.Sha256 = ""
+		mlStrRankerResults.SHA256 = ""
 		f.Ml["strings"] = mlStrRankerResults
 	}
 
@@ -243,7 +243,7 @@ func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
 	}()
 
 	// Create a new file instance.
-	f := File{Sha256: sha256}
+	f := File{SHA256: sha256}
 
 	// Set the file status to `processing`.
 	f.Status = processing
@@ -254,7 +254,7 @@ func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
 	}
 
 	// Download the sample.
-	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.Sha256)
+	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.SHA256)
 	b, err := h.downloadSample(filePath, &f)
 	if err != nil {
 		ctxLogger.Errorf("failed to download sample from s3: %v", err)

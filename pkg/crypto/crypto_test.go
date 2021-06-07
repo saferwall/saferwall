@@ -82,115 +82,115 @@ func TestHashBytes(t *testing.T) {
 		b, _ := utils.ReadAll(tt.in)
 		res := HashBytes(b)
 
-		if res.Crc32 != tt.out[0] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Crc32, tt.out[0])
+		if res.CRC32 != tt.out[0] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.CRC32, tt.out[0])
 		}
-		if res.Md5 != tt.out[1] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Md5, tt.out[1])
+		if res.MD5 != tt.out[1] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.MD5, tt.out[1])
 		}
-		if res.Sha1 != tt.out[2] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Sha1, tt.out[2])
+		if res.SHA1 != tt.out[2] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA1, tt.out[2])
 		}
-		if res.Sha256 != tt.out[3] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Sha256, tt.out[3])
+		if res.SHA256 != tt.out[3] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA256, tt.out[3])
 		}
-		if res.Sha512 != tt.out[4] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Sha512, tt.out[4])
+		if res.SHA512 != tt.out[4] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA512, tt.out[4])
 		}
-		if res.Ssdeep != tt.out[5] {
-			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.Ssdeep, tt.out[5])
+		if res.SSDeep != tt.out[5] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SSDeep, tt.out[5])
 		}
 	}
 }
 
-func TestGetCrc32(t *testing.T) {
+func TestGetCRC32(t *testing.T) {
 	for _, tt := range crc32tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetCrc32 failed, got: %s", err)
+				t.Errorf("TestGetCRC32 failed, got: %s", err)
 			}
-			got := GetCrc32(b)
+			got := GetCRC32(b)
 			if got != tt.out {
-				t.Errorf("TestGetCrc32(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetCRC32(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetMd5(t *testing.T) {
+func TestGetMD5(t *testing.T) {
 	for _, tt := range md5tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetMd5 failed, got: %s", err)
+				t.Errorf("TestGetMD5 failed, got: %s", err)
 			}
-			got := GetMd5(b)
+			got := GetMD5(b)
 			if got != tt.out {
-				t.Errorf("TestGetMd5(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetMD5(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha1(t *testing.T) {
+func TestGetSHA1(t *testing.T) {
 	for _, tt := range sha1tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha1 failed, got: %s", err)
+				t.Errorf("TestGetSHA1 failed, got: %s", err)
 			}
-			got := GetSha1(b)
+			got := GetSHA1(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha1(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA1(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha256(t *testing.T) {
+func TestGetSHA256(t *testing.T) {
 	for _, tt := range sha256tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha256 failed, got: %s", err)
+				t.Errorf("TestGetSHA256 failed, got: %s", err)
 			}
-			got := GetSha256(b)
+			got := GetSHA256(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha256(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA256(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha512(t *testing.T) {
+func TestGetSHA512(t *testing.T) {
 	for _, tt := range sha512tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha512 failed, got: %s", err)
+				t.Errorf("TestGetSHA512 failed, got: %s", err)
 			}
-			got := GetSha512(b)
+			got := GetSHA512(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha512(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA512(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSsdeep(t *testing.T) {
+func TestGetSSDeep(t *testing.T) {
 	for _, tt := range ssdeeptests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSsdeep failed, got: %s", err)
+				t.Errorf("TestGetSSDeep failed, got: %s", err)
 			}
-			got, err := GetSsdeep(b)
+			got, err := GetSSDeep(b)
 			if err != nil && err != ssdeep.ErrFileTooSmall {
-				t.Errorf("TestGetSsdeep failed, got: %s", err)
+				t.Errorf("TestGetSSDeep failed, got: %s", err)
 			}
 			if got != tt.out {
-				t.Errorf("TestGetSsdeep(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSSDeep(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}

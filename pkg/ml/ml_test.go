@@ -21,18 +21,17 @@ var peClassTests = []struct {
 		Class:       "Label.MALICIOUS",
 		Probability: 0.978692142794345,
 		Score:       "Malicious (High Trust)",
-		Sha256:      "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
+		SHA256:      "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
 	},
 }
-
 
 var stringRankerTests = []struct {
 	in  string
 	out StringsRanker
 }{
 	{"string-ranker-test1.json", StringsRanker{
-		Strings: []string{"GetProcAddress", "LoadLibraryA", "GetProcessHeap",},
-		Sha256:  "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
+		Strings: []string{"GetProcAddress", "LoadLibraryA", "GetProcessHeap"},
+		SHA256:  "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
 	},
 }
 
