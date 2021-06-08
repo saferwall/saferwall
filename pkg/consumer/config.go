@@ -57,18 +57,13 @@ type Config struct {
 	Nsq      NSQCfg                `mapstructure:"nsq"`
 	Minio    MinioCfg              `mapstructure:"minio"`
 	MultiAV  map[string]MultiAvCfg `mapstructure:"multiav"`
-}
-
-// Modules represents implemented modules
-type Modules struct {
-	Strings bool `mapstructure:"strings"`
+	Headless bool                  `mapstructure:"headless"`
 }
 
 // loadConfig init our configration.
 func loadConfig() (Config, error) {
 
 	c := Config{}
-
 	// Set the path of your config file.
 	// In prod, we drop the configs in the same dir as the compiled bin.
 	viper.AddConfigPath("configs")

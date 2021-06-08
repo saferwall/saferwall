@@ -108,11 +108,13 @@ func New() (*nsq.Consumer, error) {
 
 	// Setup logging.
 	setupLogging(&cfg)
-
-	// Authenticate to the web apis.
-	authToken, err := getAuthToken(&cfg)
-	if err != nil {
-		log.Fatalf("failed to get auth token: %v", err)
+	// Setup API Authentification
+	var authToken string
+	if !cfg.Headless {
+		authToken, err = getAuthToken(&cfg)
+		if err != nil {
+			log.Fatalf("failed to get auth token: %v", err)
+		}
 	}
 
 	// Get an minio client instance.

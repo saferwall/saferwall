@@ -22,7 +22,6 @@ spacename = "samples"
 ssl = false
 
 [multiav]
-  enabled = false
   [multiav.avast]
   enabled = false
   addr = "avast:50060"
