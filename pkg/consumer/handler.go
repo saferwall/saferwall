@@ -82,7 +82,7 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 	if err == errHTTPStatusUnauthorized {
 
 		// Get a new fresh jwt token.
-		h.authToken, err = getAuthToken(h.cfg)
+		h.authToken, err = fetchAuthToken(h.cfg)
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func New() (*nsq.Consumer, error) {
 	// Setup API Authentification
 	var authToken string
 	if !cfg.Headless {
-		authToken, err = getAuthToken(&cfg)
+		authToken, err = fetchAuthToken(&cfg)
 		if err != nil {
 			log.Fatalf("failed to get auth token: %v", err)
 		}

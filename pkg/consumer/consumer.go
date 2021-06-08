@@ -46,7 +46,7 @@ func (c *Consumer) New() (*Consumer, error) {
 	}
 	// Setup API Authentification
 	if !c.cfg.Headless {
-		c.authToken, err = getAuthToken(&c.cfg)
+		c.authToken, err = fetchAuthToken(&c.cfg)
 		if err != nil {
 			log.Fatalf("failed to get auth token: %v", err)
 		}
@@ -66,7 +66,7 @@ func (c *Consumer) New() (*Consumer, error) {
 		cfg:     consumerConfig,
 		c:       cons,
 		handler: messageHandler,
-		auth:    getAuthToken,
+		auth:    fetchAuthToken,
 	}, nil
 }
 
