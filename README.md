@@ -39,6 +39,8 @@ It aims for the following goals:
   | ESET        | :heavy_check_mark: | Windows Defender | :heavy_check_mark: |
   | TrendMicro  | :heavy_check_mark: | DrWeb            | :heavy_check_mark: |
 
+- Integrations with your own data processing pipeline.
+
 ## Installation
 
 Saferwall takes advantage of [Kubernetes](https://kubernetes.io/) for its high availability, scalability and ecosystem behind it.

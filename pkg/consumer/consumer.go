@@ -73,6 +73,8 @@ func (c *Consumer) Start() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Setup logging.
+	setupLogging(&c.cfg)
 	// Setup API Authentification
 	if !c.cfg.Headless {
 		c.authToken, err = fetchAuthToken(&c.cfg)
