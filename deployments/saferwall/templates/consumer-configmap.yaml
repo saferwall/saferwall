@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template  "saferwall.fullname" . }}-consumer
-  labels:
-    app.kubernetes.io/name: {{ template "saferwall.name" . }}-consumer
-{{ include "saferwall.labels" . | indent 4 }}
-data:
-  consumer_conf: {{ tpl (.Files.Get "files/consumer-conf.toml") . | quote }}
