@@ -34,7 +34,7 @@ type Consumer struct {
 }
 
 // New creates a new consumer instance.
-func (c *Consumer) New() (*Consumer, error) {
+func New() (*Consumer, error) {
 	consumerConfig, err := loadConfig()
 	if err != nil {
 		return nil, err
@@ -44,29 +44,13 @@ func (c *Consumer) New() (*Consumer, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Setup API Authentification
-	if !c.cfg.Headless {
-		c.authToken, err = fetchAuthToken(&c.cfg)
-		if err != nil {
-			log.Fatalf("failed to get auth token: %v", err)
-		}
-	}
 
-	minioClient, err := NewMinioClient(consumerConfig)
-	if err != nil {
-		return nil, err
-	}
-	// Create our message handler structure.
-	messageHandler := MessageHandler{
-		cfg:         &consumerConfig,
-		minioClient: minioClient,
-		authToken:   c.authToken,
-	}
 	return &Consumer{
-		cfg:     consumerConfig,
-		c:       cons,
-		handler: messageHandler,
-		auth:    fetchAuthToken,
+		cfg:       consumerConfig,
+		c:         cons,
+		handler:   MessageHandler{},
+		auth:      fetchAuthToken,
+		authToken: "",
 	}, nil
 }
 
@@ -82,12 +66,57 @@ func (c *Consumer) New() (*Consumer, error) {
 // - S3 connection
 // Otherwise the service simulates the ListenAndServe function
 // and runs in a loop unless a shutdown message is received.
-func (c *Consumer) Start() {
+func (c *Consumer) Start() error {
 	var err error
+
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Setup API Authentification
+	if !c.cfg.Headless {
+		c.authToken, err = fetchAuthToken(&c.cfg)
+		if err != nil {
+			log.Fatalf("failed to get auth token: %v", err)
+			return err
+		}
+	}
+	// Setup MinioClient
+	minioClient, err := NewMinioClient(c.cfg)
+	if err != nil {
+		return err
+	}
+	// Create our message handler structure.
+	messageHandler := MessageHandler{
+		cfg:         &c.cfg,
+		minioClient: minioClient,
+		authToken:   c.authToken,
+	}
+	c.handler = messageHandler
 
+	// Here we set the logger to our NoopNSQLogger to quiet down the default logs.
+	// At Reverb we use a custom structured logging format so we'll take the
+	// logging from here.
+	c.c.SetLogger(
+		&NoopNSQLogger{},
+		nsq.LogLevelError,
+	)
+
+	// Injects our handler into the consumer. You'll define one handler
+	// per consumer, but you can have as many concurrently running handlers
+	// as specified by the second argument. If your MaxInFlight is less
+	// than your number of concurrent handlers you'll starve your workers
+	// as there will never be enough in flight messages for your worker pool
+	c.c.AddConcurrentHandlers(
+		&c.handler,
+		1,
+	)
+
+	// Our consumer will discover where topics are located by our three
+	// nsqlookupd instances The application will periodically poll
+	// these nqslookupd instances to discover new nodes or drop unhealthy
+	// producers.
+	nsqlds := c.cfg.Nsq.Lookupds
+	c.c.ConnectToNSQLookupds(nsqlds)
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal
 	// to our application to gracefully shutdown.
@@ -100,7 +129,7 @@ func (c *Consumer) Start() {
 	for {
 		select {
 		case <-c.c.StopChan:
-			return // uh oh consumer disconnected. Time to quit.
+			return nil // uh oh consumer disconnected. Time to quit.
 		case <-shutdown:
 			// Synchronously drain the queue before falling out of main
 			c.Stop()

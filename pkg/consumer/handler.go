@@ -97,8 +97,8 @@ func (h *MessageHandler) downloadSample(filePath string, f *File) ([]byte, error
 	return utils.Download(h.minioClient, bucketName, filePath, f.SHA256)
 }
 
-// New creates a new consumer.
-func New() (*nsq.Consumer, error) {
+// NewNSQConsumer creates a new consumer.
+func NewNSQConsumer() (*nsq.Consumer, error) {
 
 	// Load the config.
 	cfg, err := loadConfig()
