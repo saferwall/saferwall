@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template  "saferwall.fullname" . }}-backend
-  labels:
-    app.kubernetes.io/name: {{ template "saferwall.name" . }}-backend
-{{ include "saferwall.labels" . | indent 4 }}
-data:
-  backends_conf: {{ tpl (.Files.Get "files/backend-conf.toml") . | quote }}

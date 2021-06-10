@@ -21,7 +21,7 @@ var tridtests = []struct {
 	in  string
 	out []string
 }{
-	{getAbsoluteFilePath("test/multiav/clean/putty.exe"),
+	{getAbsoluteFilePath("testdata/putty.exe"),
 		[]string{
 			"42.7% (.EXE) Win32 Executable (generic) (4505/5/1)",
 			"19.2% (.EXE) OS/2 Executable (generic) (2029/13)",

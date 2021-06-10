@@ -21,8 +21,8 @@ func getAbsoluteFilePath(testfile string) string {
 }
 
 var filepathScanTest = []filePathTest{
-	{getAbsoluteFilePath("test/multiav/clean/eicar.com"),
-	 Result{Infected: true, Output: "Eicar_test_file"}},
+	{getAbsoluteFilePath("testdata/eicar.com"),
+		Result{Infected: true, Output: "Eicar_test_file"}},
 }
 
 func TestScanFilePath(t *testing.T) {
@@ -31,11 +31,11 @@ func TestScanFilePath(t *testing.T) {
 			got, err := ScanFile(tt.filepath)
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
-				 tt.filepath, err)
+					tt.filepath, err)
 			}
 			if got != tt.want {
 				t.Errorf("TestScanFilePath(%s) got %v, want %v",
-				 tt.filepath, got, tt.want)
+					tt.filepath, got, tt.want)
 			}
 		})
 	}

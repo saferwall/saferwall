@@ -15,7 +15,7 @@ type NGramSet struct {
 
 // NewNGramSet creates a new instance of ngram set.
 func NewNGramSet() NGramSet {
-	set := make(map[string][]string, 0)
+	set := make(map[string][]string)
 	return NGramSet{
 		Set: set,
 	}
@@ -30,7 +30,7 @@ func (n *NGramSet) Add(ngram string, s string) {
 func NewNGramDict(keys []string, values []Score) NGramScores {
 
 	// if len(keys) != len(values) throw an error
-	var dict = make(NGramScores, 0)
+	var dict = make(NGramScores)
 	for i, k := range keys {
 		dict[k] = values[i]
 	}

@@ -51,8 +51,8 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult,
 	}()
 
 	// Get the address of AV gRPC server.
-	address := cfg.MultiAV[engine].Address
-	enabled := cfg.MultiAV[engine].Enabled
+	address := cfg.MultiAV.Vendors[engine].Address
+	enabled := cfg.MultiAV.Vendors[engine].Enabled
 
 	// Is this engine enabled.
 	if !enabled {

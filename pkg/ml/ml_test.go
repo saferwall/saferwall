@@ -21,18 +21,17 @@ var peClassTests = []struct {
 		Class:       "Label.MALICIOUS",
 		Probability: 0.978692142794345,
 		Score:       "Malicious (High Trust)",
-		Sha256:      "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
+		SHA256:      "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
 	},
 }
-
 
 var stringRankerTests = []struct {
 	in  string
 	out StringsRanker
 }{
 	{"string-ranker-test1.json", StringsRanker{
-		Strings: []string{"GetProcAddress", "LoadLibraryA", "GetProcessHeap",},
-		Sha256:  "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
+		Strings: []string{"GetProcAddress", "LoadLibraryA", "GetProcessHeap"},
+		SHA256:  "4c728576bd65c8e8348410d1ab3bb5d6cae093985d9e82d3121295b16429b2db"},
 	},
 }
 
@@ -65,15 +64,15 @@ func TestPEClass(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			buff, err := readAll(tt.in)
 			if err != nil {
-				t.Errorf("failed to read the file (%s): %v", tt.in, err)
+				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
 			}
 			got, err := PEClassPrediction(server, buff)
 			if err != nil {
-				t.Errorf("PEClassPrediction(%s) got %v, want %v",
+				t.Fatalf("PEClassPrediction(%s) got %v, want %v",
 					tt.in, err, tt.in)
 			}
 			if got != tt.out {
-				t.Errorf("PEClassPrediction(%s) got %v, want %v",
+				t.Fatalf("PEClassPrediction(%s) got %v, want %v",
 					tt.in, got, tt.out)
 			}
 		})
@@ -85,15 +84,15 @@ func TestStringRanker(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			buff, err := readAll(tt.in)
 			if err != nil {
-				t.Errorf("failed to read the file (%s): %v", tt.in, err)
+				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
 			}
 			got, err := RankStrings(server, buff)
 			if err != nil {
-				t.Errorf("RankStrings(%s) got %v, want %v",
+				t.Fatalf("RankStrings(%s) got %v, want %v",
 					tt.in, err, tt.in)
 			}
 			if got.Strings[1] != tt.out.Strings[0] {
-				t.Errorf("RankStrings(%s) got %v, want %v",
+				t.Fatalf("RankStrings(%s) got %v, want %v",
 					tt.in, got, tt.out)
 			}
 		})

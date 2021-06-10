@@ -14,7 +14,7 @@ func setupLogging(cfg *Config) {
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
 
-	level := cfg.Consumer.LogLevel
+	level := cfg.LogLevel
 	if len(level) > 0 {
 		switch level {
 		case "panic":

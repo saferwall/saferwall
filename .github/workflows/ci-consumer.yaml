@@ -1,14 +1,14 @@
-name: Exiftool Go Module
+name: Consumer Go Module
 on:
   push:
     paths:
-      - "pkg/exiftool/**"
+      - "pkg/consumer/**"
   pull_request:
     paths:
-      - "pkg/exiftool/**"
+      - "pkg/consumer/**"
 jobs:
   test:
-    name: Build & Test
+    name: Build & Test Go package
     strategy:
       matrix:
         go-version: [1.15.x]
@@ -25,24 +25,18 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get install libcapstone-dev -y
           go version
           go get -u golang.org/x/lint/golint
-          sudo apt-get -qq update
-          wget https://exiftool.org/Image-ExifTool-12.26.tar.gz
-          gzip -dc Image-ExifTool-12.26.tar.gz | tar -xf -
-          cd Image-ExifTool-12.26
-          perl Makefile.PL
-          make test
-          sudo make install
 
       - name: Build
         run: |
-          cd pkg/exiftool
+          cd pkg/consumer
           go build -v ./...
 
       - name: Test With Coverage
         run: |
-          cd pkg/exiftool
+          cd pkg/consumer
           go test -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
@@ -50,6 +44,25 @@ jobs:
 
       - name: Run Vet & Lint
         run: |
-          cd pkg/exiftool
+          cd pkg/consumer
           go vet .
           golint -set_exit_status=1 .
+
+  build-container:
+    name: Build Container
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+
+      - name: Build Container
+        run: make consumer-build

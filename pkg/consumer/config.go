@@ -18,14 +18,9 @@ type BackendCfg struct {
 	Password string `mapstructure:"admin_pwd"`
 }
 
-// ConsumerCfg represents the consumer config.
-type ConsumerCfg struct {
-	LogLevel    string `mapstructure:"log_level"`
-	DownloadDir string `mapstructure:"download_dir"`
-}
-
-// MlCfg represents the consumer config.
-type MlCfg struct {
+// MLCfg represents the consumer config.
+type MLCfg struct {
+	Enabled bool   `mapstructure:"enabled"`
 	Address string `mapstructure:"address"`
 }
 
@@ -36,34 +31,42 @@ type NSQCfg struct {
 
 // MinioCfg represents minio config.
 type MinioCfg struct {
+	Enabled   bool   `mapstructure:"enabled"`
+	SSL       bool   `mapstructure:"ssl"`
 	Endpoint  string `mapstructure:"endpoint"`
 	SecKey    string `mapstructure:"seckey"`
 	AccessKey string `mapstructure:"accesskey"`
 	Spacename string `mapstructure:"spacename"`
-	Ssl       bool   `mapstructure:"ssl"`
 }
 
-// MultiAvCfg represents the multi AV config.
-type MultiAvCfg struct {
+// AVVendorCfg represents an AV vendor config.
+type AVVendorCfg struct {
 	Enabled bool   `mapstructure:"enabled"`
-	Address string `mapstructure:"addr"`
+	Address string `mapstructure:"address"`
+}
+
+// MultiAVCfg represents the multi AV config.
+type MultiAVCfg struct {
+	Vendors  map[string]AVVendorCfg `mapstructure:"vendors"`
+	Enabled bool `mapstructure:"enabled"`
 }
 
 // Config represents our application config.
 type Config struct {
-	Backend  BackendCfg            `mapstructure:"backend"`
-	Consumer ConsumerCfg           `mapstructure:"consumer"`
-	Ml       MlCfg                 `mapstructure:"ml"`
-	Nsq      NSQCfg                `mapstructure:"nsq"`
-	Minio    MinioCfg              `mapstructure:"minio"`
-	MultiAV  map[string]MultiAvCfg `mapstructure:"multiav"`
+	LogLevel    string     `mapstructure:"log_level"`
+	DownloadDir string     `mapstructure:"download_dir"`
+	Headless    bool       `mapstructure:"headless"`
+	Backend     BackendCfg `mapstructure:"backend"`
+	ML          MLCfg      `mapstructure:"ml"`
+	NSQ         NSQCfg     `mapstructure:"nsq"`
+	Minio       MinioCfg   `mapstructure:"minio"`
+	MultiAV     MultiAVCfg `mapstructure:"multiav"`
 }
 
 // loadConfig init our configration.
 func loadConfig() (Config, error) {
 
 	c := Config{}
-
 	// Set the path of your config file.
 	// In prod, we drop the configs in the same dir as the compiled bin.
 	viper.AddConfigPath("configs")
@@ -72,16 +75,16 @@ func loadConfig() (Config, error) {
 
 	// Load the config type depending on env variable.
 	var name string
-	env := os.Getenv("ENVIRONMENT")
+	env := os.Getenv("SFW_CONSUMER")
 	switch env {
 	case "dev":
-		name = "saferwall.dev"
+		name = "dev"
 	case "prod":
-		name = "saferwall.prod"
+		name = "prod"
 	case "test":
-		name = "saferwall.test"
+		name = "test"
 	default:
-		name = "saferwall.dev"
+		name = "dev"
 	}
 
 	viper.SetConfigName(name)

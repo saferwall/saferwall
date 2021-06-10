@@ -6,8 +6,6 @@ package consumer
 
 import (
 	"encoding/json"
-	"path"
-	"runtime/debug"
 	"strings"
 	"time"
 
@@ -25,6 +23,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// defaultStringsMinLength represents the minimum length of extracted strings
+	defaultStringsMinLength = 5
+)
+
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -32,12 +35,12 @@ type stringStruct struct {
 
 // File represents a file object.
 type File struct {
-	Md5         string                 `json:"md5,omitempty"`
-	Sha1        string                 `json:"sha1,omitempty"`
-	Sha256      string                 `json:"sha256,omitempty"`
-	Sha512      string                 `json:"sha512,omitempty"`
-	Ssdeep      string                 `json:"ssdeep,omitempty"`
-	Crc32       string                 `json:"crc32,omitempty"`
+	MD5         string                 `json:"md5,omitempty"`
+	SHA1        string                 `json:"sha1,omitempty"`
+	SHA256      string                 `json:"sha256,omitempty"`
+	SHA512      string                 `json:"sha512,omitempty"`
+	SSDeep      string                 `json:"ssdeep,omitempty"`
+	CRC32       string                 `json:"crc32,omitempty"`
 	Magic       string                 `json:"magic,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
 	Exif        map[string]string      `json:"exif,omitempty"`
@@ -55,35 +58,7 @@ type File struct {
 	Type        string                 `json:"type,omitempty"`
 }
 
-func determineType(magic string) string {
-
-	var fileType string
-
-	typeMap := map[string]string{
-		"PE32":                    "pe",
-		"MS-DOS":                  "msdos",
-		"XML":                     "xml",
-		"HTML":                    "html",
-		"ELF":                     "elf",
-		"PDF":                     "pdf",
-		"Macromedia Flash":        "swf",
-		"Zip archive data":        "zip",
-		"Java archive data (JAR)": "jar",
-		"PEG image data":          "jpeg",
-		"PNG image data":          "png",
-		"SVG Scalable Vector":     "svg",
-	}
-
-	for k, v := range typeMap {
-		if strings.HasPrefix(magic, k) {
-			fileType = v
-			break
-		}
-	}
-
-	return fileType
-}
-
+// Scan runs all scanners on the queued file.
 func (f *File) Scan(sha256, filePath string, b []byte,
 	ctxLogger *log.Entry, cfg *Config) error {
 
@@ -94,63 +69,23 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 	// Calculates hashes.
 	r := crypto.HashBytes(b)
-	f.Crc32 = r.Crc32
-	f.Md5 = r.Md5
-	f.Sha1 = r.Sha1
-	f.Sha256 = r.Sha256
-	f.Sha512 = r.Sha512
-	f.Ssdeep = r.Ssdeep
+	f.CRC32 = r.CRC32
+	f.MD5 = r.MD5
+	f.SHA1 = r.SHA1
+	f.SHA256 = r.SHA256
+	f.SHA512 = r.SHA512
+	f.SSDeep = r.SSDeep
 
-	// Get exif metadata.
-	if f.Exif, err = exiftool.Scan(filePath); err != nil {
-		ctxLogger.Errorf("exiftool scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("exiftool scan success")
-	}
+	// Extract file metadata using packer/trid/magic and exif.
+	f.extractMetadata(sha256, filePath, ctxLogger, cfg)
+	ctxLogger.Debug("metadata scan success")
 
-	// Get TriD file identifier results.
-	if f.TriD, err = trid.Scan(filePath); err != nil {
-		ctxLogger.Errorf("trid scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("trid scan success")
-	}
-
-	// Get lib magic scan results.
-	if f.Magic, err = magic.Scan(filePath); err != nil {
-		ctxLogger.Errorf("magic scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("magic scan success")
-	}
-
-	// Retrieve packer/crypter scan results.
-	if f.Packer, err = packer.Scan(filePath); err != nil {
-		ctxLogger.Errorf("packer scan failed with: %v", err)
-	} else {
-		ctxLogger.Debug("packer scan success")
-	}
-
-	// Extract strings.
-	n := 5
-	asciiStrings := s.GetASCIIStrings(b, n)
-	wideStrings := s.GetUnicodeStrings(b, n)
-
-	// Remove duplicates
-	uniqueASCII := utils.UniqueSlice(asciiStrings)
-	uniqueWide := utils.UniqueSlice(wideStrings)
-
-	var strResults []stringStruct
-	for _, str := range uniqueASCII {
-		strResults = append(strResults, stringStruct{"ascii", str})
-	}
-	for _, str := range uniqueWide {
-		strResults = append(strResults, stringStruct{"wide", str})
-	}
-	f.Strings = strResults
+	// Extract ASCII/Unicode strings
+	f.Strings = extractStrings(b, defaultStringsMinLength)
 	ctxLogger.Debug("strings scan success")
 
 	// Determine the file type.
 	f.Type = determineType(f.Magic)
-
 	// Parse the file.
 	switch f.Type {
 	case "pe":
@@ -161,47 +96,51 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		}
 
 		// Extract Byte Histogram and byte entropy.
-		f.Histogram = bs.ByteHistogram(b)
-		f.ByteEntropy = bs.ByteEntropyHistogram(b)
+		f.Histogram, f.ByteEntropy = extractHistogramData(b)
 		ctxLogger.Debug("bytestats scan success")
 	}
 
-	// Run the multi-av scanning.
-	multiavScanRes := f.multiAvScan(filePath, cfg, ctxLogger)
-	f.MultiAV = map[string]interface{}{}
-	f.MultiAV["last_scan"] = multiavScanRes
+	if cfg.MultiAV.Enabled {
+		// Run the multi-av scanning.
+		multiavScanRes := f.multiAvScan(filePath, cfg, ctxLogger)
+		f.MultiAV = map[string]interface{}{}
+		f.MultiAV["last_scan"] = multiavScanRes
+	}
 
 	// Extract tags.
-	f.getTags()
+	f.extractTags()
 
-	// Marshell results.
+	// Marshal results.
 	var buff []byte
 	if buff, err = json.Marshal(f); err != nil {
 		ctxLogger.Errorf("failed to json marshal object: %v", err)
 		return err
 	}
-
-	// Get ML classification results.
-	f.Ml = map[string]interface{}{}
-	if f.Type == "pe" {
-		if mlPredictionResults, err :=
-			ml.PEClassPrediction(cfg.Ml.Address, buff); err != nil {
-			ctxLogger.Errorf(
-				"failed to get ml pe classifier prediction results: %v", err)
-		} else {
-			mlPredictionResults.Sha256 = ""
-			f.Ml["pe"] = mlPredictionResults
+	if cfg.ML.Enabled {
+		// Get ML classification results.
+		f.Ml = map[string]interface{}{}
+		switch f.Type {
+		case "pe":
+			if mlPredictionResults, err :=
+				ml.PEClassPrediction(cfg.ML.Address, buff); err != nil {
+				ctxLogger.Errorf(
+					"failed to get ml pe classifier prediction results: %v", err)
+			} else {
+				mlPredictionResults.SHA256 = ""
+				f.Ml["pe"] = mlPredictionResults
+			}
 		}
-	}
 
-	// Get ranked strings results.
-	if mlStrRankerResults, err :=
-		ml.RankStrings(cfg.Ml.Address, buff); err != nil {
-		ctxLogger.Errorf(
-			"failed to get ml string ranker prediction results: %v", err)
-	} else {
-		mlStrRankerResults.Sha256 = ""
-		f.Ml["strings"] = mlStrRankerResults
+		// Get ranked strings results.
+		if mlStrRankerResults, err :=
+			ml.RankStrings(cfg.ML.Address, buff); err != nil {
+			ctxLogger.Errorf(
+				"failed to get ml string ranker prediction results: %v", err)
+		} else {
+			mlStrRankerResults.SHA256 = ""
+			f.Ml["strings"] = mlStrRankerResults
+		}
+
 	}
 
 	// Finished scanning the file.
@@ -232,55 +171,87 @@ func parsePE(filePath string) (*peparser.File, error) {
 	return pe, err
 }
 
-func scanFile(sha256 string, ctxLogger *log.Entry, h *MessageHandler) error {
+func extractHistogramData(b []byte) (hist []int, byteentropy []int) {
+	hist = bs.ByteHistogram(b)
+	byteentropy = bs.ByteEntropyHistogram(b)
+	return
+}
 
-	// Handle unexpected panics.
-	defer func() {
-		if r := recover(); r != nil {
-			ctxLogger.Errorf("panic occured in file scan: %v", debug.Stack())
+func extractStrings(b []byte, minLength int) (strResults []stringStruct) {
+	// Extract strings.
+	n := minLength
+	asciiStrings := s.GetASCIIStrings(b, n)
+	wideStrings := s.GetUnicodeStrings(b, n)
+
+	// Remove duplicates
+	uniqueASCII := utils.UniqueSlice(asciiStrings)
+	uniqueWide := utils.UniqueSlice(wideStrings)
+
+	for _, str := range uniqueASCII {
+		strResults = append(strResults, stringStruct{"ascii", str})
+	}
+	for _, str := range uniqueWide {
+		strResults = append(strResults, stringStruct{"wide", str})
+	}
+	return
+}
+
+func (f *File) extractMetadata(sha256, filePath string, ctxLogger *log.Entry, cfg *Config) {
+	var err error
+	// Get exif metadata.
+	if f.Exif, err = exiftool.Scan(filePath); err != nil {
+		ctxLogger.Errorf("exiftool scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("exiftool scan success")
+	}
+
+	// Get TriD file identifier results.
+	if f.TriD, err = trid.Scan(filePath); err != nil {
+		ctxLogger.Errorf("trid scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("trid scan success")
+	}
+
+	// Get lib magic scan results.
+	if f.Magic, err = magic.Scan(filePath); err != nil {
+		ctxLogger.Errorf("magic scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("magic scan success")
+	}
+
+	// Retrieve packer/crypter scan results.
+	if f.Packer, err = packer.Scan(filePath); err != nil {
+		ctxLogger.Errorf("packer scan failed with: %v", err)
+	} else {
+		ctxLogger.Debug("packer scan success")
+	}
+
+}
+func determineType(magic string) string {
+
+	var fileType string
+
+	typeMap := map[string]string{
+		"PE32":                    "pe",
+		"MS-DOS":                  "msdos",
+		"XML":                     "xml",
+		"HTML":                    "html",
+		"ELF":                     "elf",
+		"PDF":                     "pdf",
+		"Macromedia Flash":        "swf",
+		"Zip archive data":        "zip",
+		"Java archive data (JAR)": "jar",
+		"PEG image data":          "jpeg",
+		"PNG image data":          "png",
+		"SVG Scalable Vector":     "svg",
+	}
+
+	for k, v := range typeMap {
+		if strings.HasPrefix(magic, k) {
+			fileType = v
+			break
 		}
-	}()
-
-	// Create a new file instance.
-	f := File{Sha256: sha256}
-
-	// Set the file status to `processing`.
-	f.Status = processing
-	err := h.updateMsgProgress(&f)
-	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
-		return err
 	}
 
-	// Download the sample.
-	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.Sha256)
-	b, err := h.downloadSample(filePath, &f)
-	if err != nil {
-		ctxLogger.Errorf("failed to download sample from s3: %v", err)
-		return err
-	}
-
-	// Scan the file.
-	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg)
-	if err != nil {
-		ctxLogger.Errorf("failed to scan the file: %v", err)
-		return err
-	}
-
-	// Set the file status to `finished`.
-	f.Status = finished
-	err = h.updateMsgProgress(&f)
-	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
-		return err
-	}
-
-	// Delete the file from the network share.
-	if utils.Exists(filePath) {
-		if err = utils.DeleteFile(filePath); err != nil {
-			log.Errorf("failed to delete file path %s", filePath)
-		}
-	}
-
-	return nil
+	return fileType
 }

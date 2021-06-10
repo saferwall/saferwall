@@ -34,8 +34,6 @@ var (
 	scoreRepPenalty   float64 = 0.9674
 	// MinScore represents the absolute minimal score for any given string
 	MinScore float64 = 8.6
-
-	errLoadingDataset = errors.New("Failed to load dataset")
 )
 
 // ngramsFromString returns a list of all n-grams of length n in a given string s.
@@ -179,12 +177,12 @@ func TFIDFScoreFunction(ngramFreq NGramScores, n int, lenThres float64,
 		lengthPenalty := math.Pow(math.Max(0., float64(numNGrams)-lenThres),
 			lenPenalty)
 		// compute the scores
-		scores := make([]float64, 0)
+		//	scores := make([]float64, 0)
 		score := lengthPenalty
 		for n, c := range ngramCounts {
 			sc := ngramFreq.IDF(n) * math.Pow(float64(c), repPenalty) *
 				(0.5 + 0.5*(float64(c)/maxFreq))
-			scores = append(scores, sc)
+				//	scores = append(scores, sc)
 			score += sc
 		}
 

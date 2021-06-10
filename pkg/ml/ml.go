@@ -23,13 +23,13 @@ type ClassifierPrediction struct {
 	Class       string  `json:"predicted_class,omitempty"`
 	Probability float64 `json:"predicted_probability,omitempty"`
 	Score       string  `json:"predicted_score,omitempty"`
-	Sha256      string  `json:"sha256,omitempty"`
+	SHA256      string  `json:"sha256,omitempty"`
 }
 
 // StringsRanker represents the string ranker results.
 type StringsRanker struct {
 	Strings []string `json:"strings,omitempty"`
-	Sha256  string   `json:"sha256,omitempty"`
+	SHA256  string   `json:"sha256,omitempty"`
 }
 
 // PEClassPrediction returns the ML PE classifier results.

@@ -11,25 +11,27 @@ import (
 	"github.com/saferwall/saferwall/pkg/utils"
 )
 
+var eicarFilePath = "../../testdata/eicar.com"
+
 var crc32tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/eicar.com", "0x6851cf3c"},
+	{eicarFilePath, "0x6851cf3c"},
 }
 
 var md5tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/eicar.com", "44d88612fea8a8f36de82e1278abb02f"},
+	{eicarFilePath, "44d88612fea8a8f36de82e1278abb02f"},
 }
 
 var sha1tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/eicar.com",
+	{eicarFilePath,
 		"3395856ce81f2b7382dee72602f798b642f14140"},
 }
 
@@ -37,7 +39,7 @@ var sha256tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/eicar.com",
+	{eicarFilePath,
 		"275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"},
 }
 
@@ -45,7 +47,7 @@ var sha512tests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/eicar.com",
+	{eicarFilePath,
 		"cc805d5fab1fd71a4ab352a9c533e65fb2d5b885518f4e565e68847223b8e6b85cb48f3afad842726d99239c9e36505c64b0dc9a061d9e507d833277ada336ab"},
 }
 
@@ -53,98 +55,142 @@ var ssdeeptests = []struct {
 	in  string
 	out string
 }{
-	{"../../test/multiav/clean/putty.exe",
+	{"../../testdata/putty.exe",
 		"24576:wpPg/wTlg6Xklt9e/Y/iIpNh6liEmE2CebHNpVffB:XwRg6X+twii8N0oCeLNbfB"},
 }
 
-func TestGetCrc32(t *testing.T) {
+var hashTests = []struct {
+	in  string
+	out []string
+}{
+	{
+		eicarFilePath,
+		[]string{
+			"0x6851cf3c",
+			"44d88612fea8a8f36de82e1278abb02f",
+			"3395856ce81f2b7382dee72602f798b642f14140",
+			"275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+			"cc805d5fab1fd71a4ab352a9c533e65fb2d5b885518f4e565e68847223b8e6b85cb48f3afad842726d99239c9e36505c64b0dc9a061d9e507d833277ada336ab",
+			"",
+		},
+	},
+}
+
+func TestHashBytes(t *testing.T) {
+
+	for _, tt := range hashTests {
+		b, _ := utils.ReadAll(tt.in)
+		res := HashBytes(b)
+
+		if res.CRC32 != tt.out[0] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.CRC32, tt.out[0])
+		}
+		if res.MD5 != tt.out[1] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.MD5, tt.out[1])
+		}
+		if res.SHA1 != tt.out[2] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA1, tt.out[2])
+		}
+		if res.SHA256 != tt.out[3] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA256, tt.out[3])
+		}
+		if res.SHA512 != tt.out[4] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SHA512, tt.out[4])
+		}
+		if res.SSDeep != tt.out[5] {
+			t.Errorf("TestHashBytes(%s) got %v, want %v", tt.in, res.SSDeep, tt.out[5])
+		}
+	}
+}
+
+func TestGetCRC32(t *testing.T) {
 	for _, tt := range crc32tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetCrc32 failed, got: %s", err)
+				t.Errorf("TestGetCRC32 failed, got: %s", err)
 			}
-			got := GetCrc32(b)
+			got := GetCRC32(b)
 			if got != tt.out {
-				t.Errorf("TestGetCrc32(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetCRC32(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetMd5(t *testing.T) {
+func TestGetMD5(t *testing.T) {
 	for _, tt := range md5tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetMd5 failed, got: %s", err)
+				t.Errorf("TestGetMD5 failed, got: %s", err)
 			}
-			got := GetMd5(b)
+			got := GetMD5(b)
 			if got != tt.out {
-				t.Errorf("TestGetMd5(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetMD5(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha1(t *testing.T) {
+func TestGetSHA1(t *testing.T) {
 	for _, tt := range sha1tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha1 failed, got: %s", err)
+				t.Errorf("TestGetSHA1 failed, got: %s", err)
 			}
-			got := GetSha1(b)
+			got := GetSHA1(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha1(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA1(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha256(t *testing.T) {
+func TestGetSHA256(t *testing.T) {
 	for _, tt := range sha256tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha256 failed, got: %s", err)
+				t.Errorf("TestGetSHA256 failed, got: %s", err)
 			}
-			got := GetSha256(b)
+			got := GetSHA256(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha256(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA256(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSha512(t *testing.T) {
+func TestGetSHA512(t *testing.T) {
 	for _, tt := range sha512tests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSha512 failed, got: %s", err)
+				t.Errorf("TestGetSHA512 failed, got: %s", err)
 			}
-			got := GetSha512(b)
+			got := GetSHA512(b)
 			if got != tt.out {
-				t.Errorf("TestGetSha512(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSHA512(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}
 }
 
-func TestGetSsdeep(t *testing.T) {
+func TestGetSSDeep(t *testing.T) {
 	for _, tt := range ssdeeptests {
 		t.Run(tt.in, func(t *testing.T) {
 			b, err := utils.ReadAll(tt.in)
 			if err != nil {
-				t.Errorf("TestGetSsdeep failed, got: %s", err)
+				t.Errorf("TestGetSSDeep failed, got: %s", err)
 			}
-			got, err := GetSsdeep(b)
+			got, err := GetSSDeep(b)
 			if err != nil && err != ssdeep.ErrFileTooSmall {
-				t.Errorf("TestGetSsdeep failed, got: %s", err)
+				t.Errorf("TestGetSSDeep failed, got: %s", err)
 			}
 			if got != tt.out {
-				t.Errorf("TestGetSsdeep(%s) got %v, want %v", tt.in, got, tt.in)
+				t.Errorf("TestGetSSDeep(%s) got %v, want %v", tt.in, got, tt.in)
 			}
 		})
 	}

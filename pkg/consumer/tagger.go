@@ -57,7 +57,7 @@ var sigMap = map[string]string{
 	"Dotfuscator":                        "dotfuscator",
 }
 
-func (f *File) getTags() {
+func (f *File) extractTags() {
 
 	var tags []string
 	f.Tags = map[string]interface{}{}
