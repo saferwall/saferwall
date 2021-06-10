@@ -118,7 +118,7 @@ func (c *Consumer) Start() error {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	nsqlds := c.cfg.Nsq.Lookupds
+	nsqlds := c.cfg.NSQ.Lookupds
 	c.c.ConnectToNSQLookupds(nsqlds)
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal
@@ -170,7 +170,7 @@ func NewMinioClient(cfg Config) (*minio.Client, error) {
 	accessKeyID := cfg.Minio.AccessKey
 	secretAccessKey := cfg.Minio.SecKey
 	endpoint := cfg.Minio.Endpoint
-	useSSL := cfg.Minio.Ssl
+	useSSL := cfg.Minio.SSL
 	opts := minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,

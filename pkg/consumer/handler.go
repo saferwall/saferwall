@@ -61,7 +61,9 @@ func (h *MessageHandler) processMessage(b []byte) error {
 	ctxLogger.Info("start scanning ...")
 
 	return h.scanFile(sha256, ctxLogger)
-} // scanFile does the actual file scanning
+}
+
+// scanFile does the actual file scanning
 func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
 
 	// Handle unexpected panics.
@@ -70,10 +72,12 @@ func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
 			ctxLogger.Errorf("panic occured in file scan: %v", debug.Stack())
 		}
 	}()
+
 	// Create a new file instance.
 	f := File{SHA256: sha256}
+
 	// Download the sample first before updating queue status.
-	filePath := path.Join(h.cfg.Consumer.DownloadDir, f.SHA256)
+	filePath := path.Join(h.cfg.DownloadDir, f.SHA256)
 	b, err := h.fetchSample(filePath, &f)
 	if err != nil {
 		ctxLogger.Errorf("failed to download sample from s3: %v", err)
@@ -86,16 +90,9 @@ func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
 		ctxLogger.Errorf("failed to update message status: %v", err)
 		return err
 	}
-	// Create scan config
-	scanCfg := scanConfig{
-		metadata: true,
-		strings:  true,
-		file:     true,
-		av:       true,
-		ml:       true,
-	}
+
 	// Scan the file.
-	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg, scanCfg)
+	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg)
 	if err != nil {
 		ctxLogger.Errorf("failed to scan the file: %v", err)
 		return err

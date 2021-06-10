@@ -28,15 +28,6 @@ const (
 	defaultStringsMinLength = 5
 )
 
-// scanConfig represents which scanners we wish to run.
-type scanConfig struct {
-	metadata bool
-	strings  bool
-	file     bool
-	av       bool
-	ml       bool
-}
-
 type stringStruct struct {
 	Encoding string `json:"encoding"`
 	Value    string `json:"value"`
@@ -69,7 +60,7 @@ type File struct {
 
 // Scan runs all scanners on the queued file.
 func (f *File) Scan(sha256, filePath string, b []byte,
-	ctxLogger *log.Entry, cfg *Config, scanCfg scanConfig) error {
+	ctxLogger *log.Entry, cfg *Config) error {
 
 	var err error
 
@@ -86,40 +77,36 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 	f.SSDeep = r.SSDeep
 
 	// Extract file metadata using packer/trid/magic and exif.
-	if scanCfg.metadata {
-		f.extractMetadata(sha256, filePath, ctxLogger, cfg)
-		ctxLogger.Debug("metadata scan success")
-	}
+	f.extractMetadata(sha256, filePath, ctxLogger, cfg)
+	ctxLogger.Debug("metadata scan success")
+
 	// Extract ASCII/Unicode strings
-	if scanCfg.strings {
-		f.Strings = extractStrings(b, defaultStringsMinLength)
-		ctxLogger.Debug("strings scan success")
-	}
+	f.Strings = extractStrings(b, defaultStringsMinLength)
+	ctxLogger.Debug("strings scan success")
 
 	// Determine the file type.
 	f.Type = determineType(f.Magic)
-	if scanCfg.file {
-		// Parse the file.
-		switch f.Type {
-		case "pe":
-			if f.PE, err = parsePE(filePath); err != nil {
-				ctxLogger.Errorf("pe parser failed: %v", err)
-			} else {
-				ctxLogger.Debug("pe scan success")
-			}
-
-			// Extract Byte Histogram and byte entropy.
-			f.Histogram, f.ByteEntropy = extractHistogramData(b)
-			ctxLogger.Debug("bytestats scan success")
+	// Parse the file.
+	switch f.Type {
+	case "pe":
+		if f.PE, err = parsePE(filePath); err != nil {
+			ctxLogger.Errorf("pe parser failed: %v", err)
+		} else {
+			ctxLogger.Debug("pe scan success")
 		}
+
+		// Extract Byte Histogram and byte entropy.
+		f.Histogram, f.ByteEntropy = extractHistogramData(b)
+		ctxLogger.Debug("bytestats scan success")
 	}
-	if scanCfg.av {
+
+	if cfg.MultiAV.Enabled {
 		// Run the multi-av scanning.
 		multiavScanRes := f.multiAvScan(filePath, cfg, ctxLogger)
 		f.MultiAV = map[string]interface{}{}
 		f.MultiAV["last_scan"] = multiavScanRes
-
 	}
+
 	// Extract tags.
 	f.extractTags()
 
@@ -129,13 +116,13 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		ctxLogger.Errorf("failed to json marshal object: %v", err)
 		return err
 	}
-	if scanCfg.ml {
+	if cfg.ML.Enabled {
 		// Get ML classification results.
 		f.Ml = map[string]interface{}{}
 		switch f.Type {
 		case "pe":
 			if mlPredictionResults, err :=
-				ml.PEClassPrediction(cfg.Ml.Address, buff); err != nil {
+				ml.PEClassPrediction(cfg.ML.Address, buff); err != nil {
 				ctxLogger.Errorf(
 					"failed to get ml pe classifier prediction results: %v", err)
 			} else {
@@ -146,7 +133,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 		// Get ranked strings results.
 		if mlStrRankerResults, err :=
-			ml.RankStrings(cfg.Ml.Address, buff); err != nil {
+			ml.RankStrings(cfg.ML.Address, buff); err != nil {
 			ctxLogger.Errorf(
 				"failed to get ml string ranker prediction results: %v", err)
 		} else {
