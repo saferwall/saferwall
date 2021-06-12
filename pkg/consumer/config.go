@@ -63,8 +63,8 @@ type Config struct {
 	MultiAV     MultiAVCfg `mapstructure:"multiav"`
 }
 
-// loadConfig init our configration.
-func loadConfig() (Config, error) {
+// LoadConfig init our configration.
+func LoadConfig() (Config, error) {
 
 	c := Config{}
 	// Set the path of your config file.

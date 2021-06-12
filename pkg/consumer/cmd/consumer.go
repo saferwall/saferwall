@@ -13,7 +13,12 @@ import (
 func main() {
 
 	// Create a new consumer.
-	c, err := consumer.New()
+	consumerConfig, err := consumer.LoadConfig()
+	if err != nil {
+		log.Fatal("ConsumerTest failed with error :", err)
+		return
+	}
+	c, err := consumer.New(consumerConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

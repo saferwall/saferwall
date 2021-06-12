@@ -4,16 +4,20 @@
 package consumer
 
 import (
-	"log"
 	"testing"
 )
 
 func TestConsumer(t *testing.T) {
 	t.Run("TestNew", func(t *testing.T) {
-		c, err := New()
+		consumerConfig, err := LoadConfig()
+		if err != nil {
+			t.Fatal("ConsumerTest failed with error :", err)
+		}
+		c, err := New(consumerConfig)
+		c.Start()
 		defer c.Stop()
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal("ConsumerTest failed with error", err)
 		}
 	})
 }
