@@ -1,4 +1,4 @@
-name: Bytestats Go Module
+name: ML Go Module
 on:
   push:
     paths:
