@@ -12,8 +12,6 @@ import (
 	"os"
 	"path"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var testFixturesPath = "../../testdata/"
@@ -75,18 +73,18 @@ func TestPEClass(t *testing.T) {
 	}))
 	defer s.Close()
 	for _, tt := range peClassTests {
-		t.Run(tt.in, func(t *testing.T) {
-			buff, err := readAll(tt.in)
-			if err != nil {
-				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
-			}
-			got, err := PEClassPrediction(s.URL, buff)
-			if err != nil {
-				t.Fatalf("PEClassPrediction(%s) failed with error %s", tt.in, err)
-			}
+		buff, err := readAll(tt.in)
+		if err != nil {
+			t.Fatalf("failed to read the file (%s): %v", tt.in, err)
+		}
+		got, err := PEClassPrediction(s.URL, buff)
+		if err != nil {
+			t.Fatalf("PEClassPrediction(%s) failed with error %s", tt.in, err)
+		}
+		if got != tt.out {
+			t.Fatalf("PEClassPrediction(%s) failed expected %v got %v", tt.in, tt.out, got)
+		}
 
-			assert.EqualValues(t, tt.out, got)
-		})
 	}
 }
 
@@ -100,16 +98,22 @@ func TestStringRanker(t *testing.T) {
 	}))
 	defer s.Close()
 	for _, tt := range stringRankerTests {
-		t.Run(tt.in, func(t *testing.T) {
-			buff, err := readAll(tt.in)
-			if err != nil {
-				t.Fatalf("failed to read the file (%s): %v", tt.in, err)
+		buff, err := readAll(tt.in)
+		if err != nil {
+			t.Fatalf("failed to read the file (%s): %v", tt.in, err)
+		}
+		got, err := RankStrings(s.URL, buff)
+		if err != nil {
+			t.Fatalf("RankStrings(%s) failed with error %s", tt.in, err.Error())
+		}
+		if got.SHA256 != tt.out.SHA256 {
+			t.Fatalf("RankStrings(%s) failed with expected SHA256 : %s got SHA256 %s", tt.in, tt.out.SHA256, got.SHA256)
+		}
+		for i, v := range tt.out.Strings {
+			if v != got.Strings[i] {
+				t.Fatalf("RankStrings(%s) failed at index %d expected %s got %s", tt.in, i, tt.out.Strings[i], got.Strings[i])
 			}
-			got, err := RankStrings(s.URL, buff)
-			if err != nil {
-				t.Fatalf("RankStrings(%s) failed with error %s", tt.in, err.Error())
-			}
-			assert.EqualValues(t, tt.out, got)
-		})
+		}
+
 	}
 }
