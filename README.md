@@ -12,10 +12,10 @@
 
 It aims for the following goals:
 
-- Be the collaborative platform for teams and researchers to analyze and share new threats.
-- Streamline the analysis process to help researchers generates IoC's and reports with zero friction.
-- Provide a searchable database to build intelligence feeds for threat hunting.
-- Be open-source, developer friendly and user driven.
+- Be the collaborative platform for _security teams_ and _researchers_ to analyze, identify and share malware samples.
+- Streamline the analysis process to help researchers generates IoC's and analysis reports with **zero friction**.
+- Provide a search index to build intelligence feeds for threat hunting and behavioral signatures.
+- Be _open-source_, _developer friendly_ and _user driven._
 
 <p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="auto" height="auto"></p>
 
