@@ -8,16 +8,16 @@ FROM golang:1.16-alpine AS builder
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk \
-    && update-ca-certificates 2>/dev/null || true
+	&& update-ca-certificates 2>/dev/null || true
 
 WORKDIR /saferwall
 
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
-    && git clone https://github.com/aquynh/capstone.git \
-    && cd capstone \
-    && ./make.sh \
-    && ./make.sh install
+	&& git clone https://github.com/aquynh/capstone.git \
+	&& cd capstone \
+	&& ./make.sh \
+	&& ./make.sh install
 
 # Copy go mod and sum files
 COPY go.mod go.sum ./
@@ -39,7 +39,7 @@ RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
 ############################
 FROM saferwall/consumer:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1.0"
+LABEL version="1.0.0"
 LABEL description="NSQ consumer in a docker container"
 
 WORKDIR /consumer
