@@ -21,11 +21,18 @@ It aims for the following goals:
 
 ## Features
 
-- Static analysis:
+- Static Analysis:
 
   - File metadata, packer identification and crypto hashes.
   - String (ASCII/Unicode and ASM) extraction.
   - [PE (Portable Executable) file parser](https://github.com/saferwall/pe)
+
+- Dynamic Analysis:
+
+  - Automated Malware Analysis using a Hypervisor based VM.
+  - Intercepting OS System Calls to build an exeuction trace of executable files.
+  - Generate detailed reports and gain insight into malware behavior.
+  - Choose which API's to trace, grab _screenshots_ and file changes aswell as memory dumps.
 
 - Multiple AV scanner which includes major vendors:
 
