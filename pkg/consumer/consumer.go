@@ -5,7 +5,6 @@
 package consumer
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -72,7 +71,6 @@ func (c *Consumer) Start() error {
 	}
 	// Setup logging.
 	setupLogging(&c.cfg)
-	fmt.Println(c.cfg)
 	// When running in Headless mode we only want to run the consumer
 	// without interacting with the backend API.
 	if !c.cfg.Headless {
