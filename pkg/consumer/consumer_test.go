@@ -14,10 +14,11 @@ func TestConsumer(t *testing.T) {
 			t.Fatal("ConsumerTest failed with error :", err)
 		}
 		c, err := New(consumerConfig)
-		c.Start()
-		defer c.Stop()
 		if err != nil {
 			t.Fatal("ConsumerTest failed with error", err)
 		}
+		c.Start()
+		defer c.Stop()
+
 	})
 }
