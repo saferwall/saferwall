@@ -35,11 +35,7 @@ type Consumer struct {
 }
 
 // New creates a new consumer instance.
-func New() (*Consumer, error) {
-	consumerConfig, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
+func New(cfg Config) (*Consumer, error) {
 	nsqConfig := NewNSQConfig(defaultNSQMaxAttempt, defaultNSQMaxInFlight, defaultNSQMaxTimeout)
 	cons, err := nsq.NewConsumer(scanTopic, scanChannel, nsqConfig)
 	if err != nil {
@@ -47,7 +43,7 @@ func New() (*Consumer, error) {
 	}
 
 	return &Consumer{
-		cfg:       consumerConfig,
+		cfg:       cfg,
 		c:         cons,
 		handler:   MessageHandler{},
 		auth:      fetchAuthToken,
@@ -75,13 +71,16 @@ func (c *Consumer) Start() error {
 	}
 	// Setup logging.
 	setupLogging(&c.cfg)
-	// Setup API Authentification
+	// When running in Headless mode we only want to run the consumer
+	// without interacting with the backend API.
 	if !c.cfg.Headless {
+		// Setup API Authentification
 		c.authToken, err = fetchAuthToken(&c.cfg)
 		if err != nil {
 			log.Fatalf("failed to get auth token: %v", err)
 			return err
 		}
+
 	}
 	// Setup MinioClient
 	minioClient, err := NewMinioClient(c.cfg)

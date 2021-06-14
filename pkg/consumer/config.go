@@ -47,8 +47,8 @@ type AVVendorCfg struct {
 
 // MultiAVCfg represents the multi AV config.
 type MultiAVCfg struct {
-	Vendors  map[string]AVVendorCfg `mapstructure:"vendors"`
-	Enabled bool `mapstructure:"enabled"`
+	Vendors map[string]AVVendorCfg `mapstructure:"vendors"`
+	Enabled bool                   `mapstructure:"enabled"`
 }
 
 // Config represents our application config.
@@ -63,8 +63,8 @@ type Config struct {
 	MultiAV     MultiAVCfg `mapstructure:"multiav"`
 }
 
-// loadConfig init our configration.
-func loadConfig() (Config, error) {
+// LoadConfig init our configration.
+func LoadConfig() (Config, error) {
 
 	c := Config{}
 	// Set the path of your config file.
@@ -84,7 +84,7 @@ func loadConfig() (Config, error) {
 	case "test":
 		name = "test"
 	default:
-		name = "dev"
+		name = "test"
 	}
 
 	viper.SetConfigName(name)
