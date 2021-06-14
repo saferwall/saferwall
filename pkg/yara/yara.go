@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hillu/go-yara"
+	yara "github.com/hillu/go-yara/v4"
 )
 
 // Rule represents a Yara rule.
@@ -58,6 +58,11 @@ func Load(rules []Rule) (*yara.Rules, error) {
 
 // ScanFile performs a scan over a file path
 func ScanFile(r *yara.Rules, filepath string) ([]yara.MatchRule, error) {
-	m, err := r.ScanFile(filepath, 0, 0)
+	s, err := yara.NewScanner(r)
+	if err != nil {
+		return nil, err
+	}
+	var m yara.MatchRules
+	err = s.SetCallback(&m).ScanFile(filepath)
 	return m, err
 }

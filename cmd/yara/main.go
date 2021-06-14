@@ -5,8 +5,8 @@
 package main
 
 import (
-	"github.com/hillu/go-yara"
-	"github.com/saferwall/saferwall/pkg/yara"
+	"github.com/hillu/go-yara/v4"
+	goyara "github.com/saferwall/saferwall/pkg/yara"
 
 	"errors"
 	"flag"
@@ -16,7 +16,6 @@ import (
 )
 
 type rules []goyara.Rule
-
 
 func (r *rules) Set(arg string) error {
 	if len(arg) == 0 {
@@ -89,11 +88,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not parse %s ad number", err)
 	}
-	
+
 	if processScan {
+		s, _ := yara.NewScanner(r)
 		for _, pid := range pids {
 			log.Printf("Scanning process %d...", pid)
-			m, err := r.ScanProc(pid, 0, 0)
+			var m yara.MatchRules
+			err := s.SetCallback(&m).ScanProc(pid)
 			printMatches(m, err)
 		}
 	} else {
