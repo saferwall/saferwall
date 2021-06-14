@@ -1,5 +1,5 @@
 kops-create-user:	## Create the kops IAM user to provision the cluster
-	# create kops group 
+	# create kops group
 	aws iam create-group --group-name kops
 	# attach permissions
 	aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --group-name kops
@@ -15,7 +15,7 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	echo "Copy the SecretAccessKey and AccessKeyID from the output."
 	aws configure
 
-KOPS_VERSION=1.19.1
+KOPS_VERSION=1.20.0
 kops-install:		## Install Kubernetes Kops
 	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops

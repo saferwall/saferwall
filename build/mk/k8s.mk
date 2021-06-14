@@ -1,4 +1,4 @@
-KUBECTL_VER = 1.19.9
+KUBECTL_VER = 1.20.7
 kubectl-install:		## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
@@ -170,17 +170,17 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
+CERT_MANAGER_VER=1.3.1
 k8s-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager
-	# Add the Jetstack Helm repository. 
+	# Add the Jetstack Helm repository.
 	helm repo add jetstack https://charts.jetstack.io && helm repo update
 	# Install CRDs.
-	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.crds.yaml
-	# Install the chart
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v$(CERT_MANAGER_VER)/cert-manager.crds.yaml	# Install the chart
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \
-		--version v1.2.0
+		--version v$(CERT_MANAGER_VER)
 	# Verify the installation.
 	kubectl wait --namespace cert-manager \
 	--for=condition=ready pod \

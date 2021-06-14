@@ -5,7 +5,7 @@ awscli-install:		## Install aws cli tool and configure it
 	curl "${AWS_CLI_DOWNLOAD_URL}" -o "awscliv2.zip"
 	unzip awscliv2.zip
 	sudo ./aws/install
-	rm awscliv2.zip
+	rm awscliv2.zip && rm -r ./aws
 	aws --version
 	@echo "========================================================================================="
 	@echo "log in to aws console and get your access and secret key, for more information, consult:"
