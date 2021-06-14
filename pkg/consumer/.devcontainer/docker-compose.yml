@@ -23,7 +23,7 @@ services:
       # Samples downloaded from s3.
       - samples:/samples
     environment:
-      - TZ=
+      - SFW_CONSUMER=dev
     cap_add:
       # For debugging with dlv
       - SYS_PTRACE

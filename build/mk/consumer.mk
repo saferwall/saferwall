@@ -11,11 +11,11 @@ consumer-build:		## Build consumer docker container.
 goconsumer-build:		## Build goconsumer docker container.
 	@echo "${GREEN} [*] =============== Build goConsumer =============== ${RESET}"
 	sudo make docker-build IMG=goconsumer \
-		DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=./pkg/consumer ;
+		DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=. ;
 	@EXIT_CODE=$$?
 	@if test $$EXIT_CODE ! 0; then \
 		sudo make docker-build IMG=goconsumer \
-			DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=./pkg/consumer ; \
+			DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=. ; \
 	fi
 
 consumer-release:	## Release consumer docker container.
@@ -31,9 +31,9 @@ consumer-release:	## Release consumer docker container.
 goconsumer-release:	## Release goconsumer docker container.
 	@echo "${GREEN} [*] =============== Build and Release goConsumer =============== ${RESET}"
 	sudo make docker-release IMG=goconsumer \
-		VERSION=$(SAFERWALL_VER) DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=./pkg/consumer ;
+		VERSION=$(SAFERWALL_VER) DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=. ;
 	@EXIT_CODE=$$?
 	@if test $$EXIT_CODE ! 0; then \
 		sudo make docker-release IMG=goconsumer VERSION=$(SAFERWALL_VER) \
-			DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=./pkg/consumer ; \
+			DOCKER_FILE=build/docker/Dockerfile.goconsumer DOCKER_DIR=. ; \
 	fi

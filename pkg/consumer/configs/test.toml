@@ -23,57 +23,60 @@ spacename = "samples"
 ssl = false
 
 [multiav]
-  enabled = false
+  enabled = true
   [multiav.vendors]
     [multiav.vendors.avast]
     enabled = false
-    addr = "avast:50060"
+    address = "avast:50051"
 
     [multiav.vendors.avira]
     enabled = true
-    addr = "avira:50051"
+    address = "avira:50051"
 
     [multiav.vendors.bitdefender]
     enabled = false
-    addr = "bitdefender:50061"
+    address = "bitdefender:50051"
 
     [multiav.vendors.clamav]
     enabled = true
-    addr = "clamav:50052"
+    address = "clamav:50051"
 
     [multiav.vendors.comodo]
     enabled = true
-    addr = "comodo:50053"
+    address = "comodo:50051"
 
     [multiav.vendors.drweb]
     enabled = false
-    addr = "drweb:50062"
+    address = "drweb:50051"
 
     [multiav.vendors.eset]
     enabled = false
-    addr = "eset:50063"
+    address = "eset:50051"
 
     [multiav.vendors.fsecure]
     enabled = false
-    addr = "fsecure:50064"
+    address = "fsecure:50051"
 
     [multiav.vendors.kaspersky]
     enabled = false
-    addr = "kaspersky:50065"
+    address = "kaspersky:50051"
 
     [multiav.vendors.symantec]
     enabled = false
-    addr = "symantec:50066"
+    address = "symantec:50051"
 
     [multiav.vendors.sophos]
     enabled = false
-    addr = "sophos:50067"
+    address = "sophos:50051"
 
     [multiav.vendors.mcafee]
     enabled = false
-    addr = "mcafee:50068"
+    address = "mcafee:50051"
+
+    [multiav.vendors.trendmicro]
+    enabled = false
+    address = "trendmicro:50051"
 
     [multiav.vendors.windefender]
     enabled = true
-    addr = "windefender:50054"
-
+    address = "windefender:50051"

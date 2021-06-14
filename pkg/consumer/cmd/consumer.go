@@ -15,7 +15,7 @@ func main() {
 	// Create a new consumer.
 	consumerConfig, err := consumer.LoadConfig()
 	if err != nil {
-		log.Fatal("ConsumerTest failed with error :", err)
+		log.Fatal("failed to load consumer config with error :", err)
 		return
 	}
 	c, err := consumer.New(consumerConfig)
