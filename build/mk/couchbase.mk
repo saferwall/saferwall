@@ -6,7 +6,7 @@ ifeq ($(COUCHBASE_CONTAINER_STATUS),running)
 	@echo "All good, couchabse server is already running."
 else
 	@echo "No stress, creating one ..."
-	sudo docker run -d --name $(COUCHBASE_CONTAINER_NAME) -p 8091-8094:8091-8094 -p 11210:11210 couchbase:enterprise-6.5.1
+	sudo docker run -d --name $(COUCHBASE_CONTAINER_NAME) -p 8091-8094:8091-8094 -p 11210:11210 couchbase:enterprise-6.6.0
 endif
 
 couchabse-install:	## Install Couchbase in Ubuntu
