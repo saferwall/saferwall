@@ -66,11 +66,9 @@ func New(cfg Config) (*Consumer, error) {
 func (c *Consumer) Start() error {
 	var err error
 
-	if err != nil {
-		log.Fatal(err)
-	}
 	// Setup logging.
 	setupLogging(&c.cfg)
+
 	// When running in Headless mode we only want to run the consumer
 	// without interacting with the backend API.
 	if !c.cfg.Headless {

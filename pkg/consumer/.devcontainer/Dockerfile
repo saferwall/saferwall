@@ -30,11 +30,15 @@ RUN echo "Installing TRiD..." \
     && chmod +x trid \
     && mv trid /usr/bin/ \
     && mv triddefs.trd /usr/bin/
-# trid issue a sigfault if export LC_ALL=C not set
 
 ####### Installing Exiftool #######
 RUN echo "Installing Exiftool..." \
-    && apt-get install -qq libimage-exiftool-perl
+    && wget https://exiftool.org/Image-ExifTool-12.26.tar.gz \
+    && gzip -dc Image-ExifTool-12.26.tar.gz | tar -xf - \
+    && cd Image-ExifTool-12.26 \
+    && perl Makefile.PL \
+    && make test \
+    && make install
 
 ####### Installing File #######
 RUN echo "Installing File..." \
@@ -56,6 +60,8 @@ RUN echo "Installing DiE..." \
 ENV YARA_VERSION        4.0.5
 ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL   https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
+ENV YARA_REPO_REPO https://github.com/Yara-Rules/rules.git
+ENV YARA_RULES_DIR /opt/yararules
 
 RUN echo "Installing Yara..." \
     && apt-get install libssl-dev libglib2.0-0 -y \
@@ -67,7 +73,8 @@ RUN echo "Installing Yara..." \
     && make \
     && make install \
     && rm -rf ./yara-$YARA_VERSION \
-    && rm -f $YARA_ARCHIVE
+    && rm -f $YARA_ARCHIVE\
+    && git clone $YARA_REPO_REPO $YARA_RULES_DIR
 
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
@@ -77,4 +84,3 @@ RUN echo "Installing Capstone..." \
 RUN rm -rf /tmp/* \
     && apt-get purge -y --auto-remove $buildDeps \
     && rm -rf /var/lib/apt/lists/*
-

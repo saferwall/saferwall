@@ -2,22 +2,14 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.16-alpine AS builder
-
-# Install git + SSL ca certificates.
-# Git is required for fetching the dependencies.
-# Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk \
-	&& update-ca-certificates 2>/dev/null || true
+FROM golang:1.16-stretch AS builder
 
 WORKDIR /saferwall
 
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
-	&& git clone https://github.com/aquynh/capstone.git \
-	&& cd capstone \
-	&& ./make.sh \
-	&& ./make.sh install
+    && apt-get update \
+	&& apt-get install libcapstone-dev -y
 
 # Copy go mod and sum files
 COPY go.mod go.sum ./
@@ -32,7 +24,7 @@ COPY . .
 # Build the binary.
 RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
 	cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer \
-	cmd/consumer.go
+	pkg/consumer/cmd/consumer.go
 
 ############################
 # STEP 2 build a small image
@@ -40,7 +32,7 @@ RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
 FROM saferwall/consumer:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="NSQ consumer in a docker container"
+LABEL description="saferwall NSQ consumer go pkg"
 
 WORKDIR /consumer
 
@@ -48,7 +40,7 @@ WORKDIR /consumer
 COPY --from=builder /go/bin/consumer .
 
 # Copy the dev config to use in docker-compose.
-COPY configs/saferwall.dev.toml configs/saferwall.dev.toml
+COPY pkg/consumer/configs/dev.toml configs/dev.toml
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
