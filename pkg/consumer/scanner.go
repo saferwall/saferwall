@@ -9,8 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hillu/go-yara/v4"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/utils"
+	goyara "github.com/saferwall/saferwall/pkg/yara"
 
 	peparser "github.com/saferwall/pe"
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
@@ -56,6 +58,7 @@ type File struct {
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Ml          map[string]interface{} `json:"ml,omitempty"`
 	Type        string                 `json:"type,omitempty"`
+	Yara        []yara.MatchRule       `json:"yara,omitempty"`
 }
 
 // Scan runs all scanners on the queued file.
@@ -107,6 +110,8 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 		f.MultiAV["last_scan"] = multiavScanRes
 	}
 
+	// Extract Yara matches
+	f.extractYaraRules(sha256, filePath, ctxLogger)
 	// Extract tags.
 	f.extractTags()
 
@@ -194,6 +199,22 @@ func extractStrings(b []byte, minLength int) (strResults []stringStruct) {
 		strResults = append(strResults, stringStruct{"wide", str})
 	}
 	return
+}
+
+func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *log.Entry) {
+	yaraRules, err := LoadYaraRules()
+	if err != nil {
+		ctxLogger.Errorf("loading yara rules failed with: %v", err)
+		return
+	}
+	matches, err := goyara.ScanFile(yaraRules, filePath)
+	if err != nil {
+		ctxLogger.Errorf("loading yara rules failed with: %v", err)
+		return
+	}
+	ctxLogger.Debug("yara scan sucess")
+	f.Yara = matches
+
 }
 
 func (f *File) extractMetadata(sha256, filePath string, ctxLogger *log.Entry, cfg *Config) {
