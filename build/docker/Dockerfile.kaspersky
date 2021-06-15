@@ -1,7 +1,7 @@
 
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1.0"
+LABEL version="1.0.0"
 LABEL description="Kaspersky Endpoint Security for Linux in a docker container"
 # https://help.kaspersky.com/KES4Linux/10.1.1/en-us/177085.htm
 
@@ -25,9 +25,9 @@ RUN mkdir -p $KASPERSKY_TMP \
 # Setting up locales.
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
 	&& locale-gen
-ENV LANG en_US.UTF-8  
-ENV LANGUAGE en_US:en  
-ENV LC_ALL en_US.UTF-8 
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Configure it.
 ADD install.conf install.conf

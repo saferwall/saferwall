@@ -58,7 +58,7 @@ func (h *MessageHandler) processMessage(b []byte) error {
 	sha256 := string(b)
 	// setup contextual logging using the hash as context
 	ctxLogger := log.WithFields(log.Fields{"sha256": sha256})
-	ctxLogger.Info("start scanning ...")
+	ctxLogger.Debug("start scanning ...")
 
 	return h.scanFile(sha256, ctxLogger)
 }

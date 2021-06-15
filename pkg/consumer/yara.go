@@ -19,7 +19,7 @@ func LoadYaraRules() (*yara.Rules, error) {
 	yaraRules := []goyara.Rule{
 		{
 			Namespace: "capabilities",
-			Filename:  YaraRulesPath + "/Capabilities/capabilities.yar",
+			Filename:  YaraRulesPath + "/capabilities/capabilities.yar",
 		},
 	}
 

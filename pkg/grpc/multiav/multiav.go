@@ -34,7 +34,7 @@ const (
 	port = ":50051"
 
 	// ScanTimeout is the timeout used before the scanFile API will give up.
-	ScanTimeout = 20 * time.Second
+	ScanTimeout = 60 * time.Second
 )
 
 // ScanResult av result

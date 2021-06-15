@@ -27,7 +27,7 @@ import (
 
 const (
 	// defaultStringsMinLength represents the minimum length of extracted strings
-	defaultStringsMinLength = 5
+	defaultStringsMinLength = 7
 )
 
 type stringStruct struct {
