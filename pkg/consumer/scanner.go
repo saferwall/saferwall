@@ -215,6 +215,7 @@ func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *log.Entry) {
 	}
 	ctxLogger.Debug("yara scan sucess")
 	f.Yara = matches
+	f.Yara = nil  // disabling it for now.
 
 }
 
