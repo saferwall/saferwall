@@ -30,10 +30,10 @@ func TestYara(t *testing.T) {
 		rules := []Rule{
 			{
 				Namespace: "capabilities",
-				Filename:  path.Join(yaraRulesPath, "Capabilities/capabilities.yar"),
+				Filename:  path.Join(yaraRulesPath, "capabilities/capabilities.yar"),
 			}, {
 				Namespace: "crypto",
-				Filename:  path.Join(yaraRulesPath, "Crypto/crypto_signatures.yar"),
+				Filename:  path.Join(yaraRulesPath, "crypto/crypto_signatures.yar"),
 			},
 		}
 		r, err := Load(rules)
