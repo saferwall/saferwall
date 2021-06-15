@@ -82,13 +82,13 @@ func ScanFile(filepath string) (Result, error) {
 	// 3100010A1C12,2,2,1,ubuntu,root,,,,,,,16777216,"Scan Complete:  Threats: 1   Scanned: 1   Files/Folders/Drives Omitted: 0",1546367310,,0,1:1:1:0,,,,0,,,,,,,,,,,,,,,,00:50:56:f9:3d:02,14.2.770.0000,,,,,,,,,,,,,,,,
 	lines := strings.Split(savOut, "\n")
 	if len(lines) < 2 {
-		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", savOut)
+		errUnexpectedOutput := fmt.Errorf("unexpected output: %s", savOut)
 		return Result{}, errUnexpectedOutput
 	}
 
 	lines = strings.Split(lines[1], ",")
 	if len(lines) < 7 {
-		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", savOut)
+		errUnexpectedOutput := fmt.Errorf("unexpected output: %s", savOut)
 		return Result{}, errUnexpectedOutput
 	}
 

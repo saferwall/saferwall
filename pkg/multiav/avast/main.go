@@ -80,7 +80,7 @@ func ScanFilePath(filepath string) (Result, error) {
 	// Sanitize the detection output
 	det := strings.Split(out, "\t")
 	if len(det) < 2 {
-		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", out)
+		errUnexpectedOutput := fmt.Errorf("unexpected output: %s", out)
 		return Result{}, errUnexpectedOutput
 	}
 
@@ -135,7 +135,7 @@ func UpdateVPS() error {
 func IsLicenseExpired() (bool, error) {
 
 	if _, err := os.Stat(licenseFile); os.IsNotExist(err) {
-		return true, errors.New("License not found")
+		return true, errors.New("license not found")
 	}
 
 	out, err := utils.ExecCommand(avastDaemon, "status")
@@ -175,7 +175,7 @@ func ActivateLicense(r io.Reader) error {
 	}
 
 	if isExpired {
-		return errors.New("License was expired ")
+		return errors.New("license was expired ")
 	}
 
 	return nil
@@ -202,6 +202,9 @@ func RestartService() error {
 // StartDaemon starts the Avast daemon.
 func StartDaemon() error {
 	err := utils.StartCommand("sudo", avastDaemon, "-n", "-D")
+	if err != nil {
+		return err
+	}
 	time.Sleep(5 * time.Second)
 	err = utils.StartCommand("sudo", avastDaemon, "-n", "-D")
 	return err
