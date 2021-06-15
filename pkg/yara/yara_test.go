@@ -40,13 +40,9 @@ func TestYara(t *testing.T) {
 		if err != nil {
 			t.Fatal("failed to load yara rules with error :", err)
 		}
-		m, err := ScanFile(r, "../../testdata/putty.exe")
+		_, err = ScanFile(r, "../../testdata/putty.exe")
 		if err != nil {
 			t.Fatal("failed to scan file with error :", err)
-		}
-		for _, match := range m {
-			t.Log("match namespace: ", match.Namespace)
-			t.Log("match rule: ", match.Rule)
 		}
 	})
 }
