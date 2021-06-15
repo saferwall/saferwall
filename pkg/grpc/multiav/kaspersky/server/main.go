@@ -33,6 +33,8 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
+	log.SetFormatter(&log.JSONFormatter{})
+
 	// Start Kaspersky daemon
 	log.Infoln("Starting kaspersky daemon ...")
 	err := utils.StartCommand("sudo", "/opt/kaspersky/kesl/libexec/kesl_launcher.sh")
