@@ -45,16 +45,16 @@ RUN echo "Installing File..." \
     && apt-get install -qq file
 
 ####### Installing DiE #######
-ENV DIE_VERSION     3.01
+ENV DIE_VERSION     2.05
 ENV DIE_URL         https://github.com/horsicq/DIE-engine/releases/download/$DIE_VERSION/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_ZIP         /tmp/die_lin64_portable_$DIE_VERSION.tar.gz
 ENV DIE_DIR         /opt/die/
 
 RUN echo "Installing DiE..." \
-    && apt-get install libglib2.0-0 -y \
-    && wget $DIE_URL -O $DIE_ZIP \
-    && tar zxvf $DIE_ZIP -C /tmp \
-    && mv /tmp/die_lin64_portable/ $DIE_DIR
+	&& apt-get install libglib2.0-0 -y \
+	&& wget $DIE_URL -O $DIE_ZIP \
+	&& tar zxvf $DIE_ZIP -C /tmp \
+	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
 ####### Installing Yara #######
 ENV YARA_VERSION        4.0.5

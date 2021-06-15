@@ -112,6 +112,7 @@ func (f *File) Scan(sha256, filePath string, b []byte,
 
 	// Extract Yara matches
 	f.extractYaraRules(sha256, filePath, ctxLogger)
+
 	// Extract tags.
 	f.extractTags()
 

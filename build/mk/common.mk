@@ -3,7 +3,7 @@ protoc:
 
 build-d:
 	go build -o server/server -ldflags "-s -w" server/main.go
-	sudo docker build --no-cache -t $(docker_image) . 
+	sudo docker build --no-cache -t $(docker_image) .
 
 clean:
 	sudo docker rmi -f $(docker images "dangling=true" -q)
@@ -20,7 +20,7 @@ compile:
 
 
 
-api:			## generates protocol buffers definitions files. 
+api:			## generates protocol buffers definitions files.
 	protoc -I ../../../../api/protobuf-spec/ -I${GOPATH}/src --go_out=plugins=grpc:../../../../api/protobuf-spec/ ../../../../api/protobuf-spec/avast.proto
 
 
@@ -32,7 +32,7 @@ clean:
 
 compile:
 	make api
-	go build -ldflags "-s -w" -o bin/server server/main.go 
+	go build -ldflags "-s -w" -o bin/server server/main.go
 
 buildxx: ## Build the container
 	make api
@@ -46,7 +46,7 @@ build-ncxx: ## Build the container without caching
 
 upload:
 	sudo apt install sharutils jq -y
-	
+
 	# AVAST
 	cat license.avastlic | base64 | vault write "multiav/avast" license.avastlic=-
 	vault read -field=license.avastlic multiav/avast | base64 -d > gpgkeybin2

@@ -1,4 +1,4 @@
-MK_VERSION = v1.18.1
+MK_VERSION = v1.21.0
 MK_DOWNLOAD_URL = https://github.com/kubernetes/minikube/releases/download/$(MK_VERSION)/minikube-linux-amd64
 
 minikube-install:		## Install minikube
@@ -24,14 +24,14 @@ else
 endif
 	kubectl version
 	kubectl cluster-info
-	kubectl config get-contexts  
+	kubectl config get-contexts
 	kubectl config current-context
 	kubectl config use-context minikube
 	minikube status
 ifneq ($(MINIKUBE_DRIVER),none)
 	minikube addons enable ingress
 endif
-	
+
 minikube-down:			## Stop and delete minikube cluster.
 ifeq ($(MINIKUBE_DRIVER),none)
 	sudo -E minikube stop
