@@ -19,6 +19,7 @@ type server struct {
 
 // ScanFile implements bitdefender.BitdefenderScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
 	res, err := fsecure.ScanFile(in.Filepath)
 	output := ""
 	if res.Infected {
@@ -36,6 +37,9 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	log.SetFormatter(&log.JSONFormatter{})
+
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {

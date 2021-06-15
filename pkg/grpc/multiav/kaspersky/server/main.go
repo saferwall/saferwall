@@ -21,6 +21,8 @@ type server struct {
 
 // ScanFile implements kaspersky.KasperskyScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
+
 	res, err := kaspersky.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,

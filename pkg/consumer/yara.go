@@ -11,7 +11,7 @@ import (
 
 const (
 	// YaraRulesPath is the OS level (inside docker) path to Yara rules.
-	YaraRulesPath = "/opt/yararules/"
+	YaraRulesPath = "/opt/yararules"
 )
 
 // LoadYaraRules will read yara rules in-memory.
