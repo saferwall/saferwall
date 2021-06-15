@@ -18,6 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup config
+        run: cp example.env .env
+
       - name: Install Go
         uses: actions/setup-go@v2
         with:
