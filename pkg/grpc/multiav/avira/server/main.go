@@ -22,6 +22,7 @@ type server struct {
 // ScanFile implements avira.AviraScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest)(
 	*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
 	res, err := avira.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -39,6 +40,8 @@ func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (
 
 // main start a gRPC server and waits for connection.
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {

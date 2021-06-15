@@ -11,6 +11,23 @@ RUN echo "Installing Capstone..." \
     && apt-get update \
 	&& apt-get install libcapstone-dev -y
 
+####### Installing Yara #######
+ENV YARA_VERSION        4.1.1
+ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz
+ENV YARA_DOWNLOAD_URL   https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
+ENV YARA_REPO_REPO https://github.com/Yara-Rules/rules.git
+
+RUN echo "Installing Yara..." \
+	&& apt-get update \
+    && apt-get install libssl-dev libglib2.0-0 build-essential autoconf libtool -y \
+	&& wget $YARA_DOWNLOAD_URL \
+    && tar zxvf v$YARA_ARCHIVE \
+    && cd ./yara-$YARA_VERSION \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make \
+    && make install
+
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
@@ -22,8 +39,7 @@ RUN go mod download
 COPY . .
 
 # Build the binary.
-RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix \
-	cgo -ldflags '-extldflags "-static"' -o /go/bin/consumer \
+RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/consumer \
 	pkg/consumer/cmd/consumer.go
 
 ############################

@@ -33,6 +33,7 @@ func (s *server) GetProgramVersion(ctx context.Context, in *pb.VersionRequest) (
 
 // ScanFilePath implements avast.AvastScanner.
 func (s *server) ScanFilePath(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
 	res, err := avast.ScanFilePath(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -67,6 +68,8 @@ func (s *server) UpdateVPS(ctx context.Context, in *pb.UpdateVPSRequest) (*pb.Up
 }
 
 func main() {
+
+	log.SetFormatter(&log.JSONFormatter{})
 
 	// Start by running avast daemon
 	log.Infoln("Starting avast daemon ...")

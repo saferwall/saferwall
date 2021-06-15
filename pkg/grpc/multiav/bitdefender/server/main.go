@@ -25,6 +25,7 @@ func (s *server) GetProgramVersion(ctx context.Context, in *pb.VersionRequest) (
 
 // ScanFile implements bitdefender.BitdefenderScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
 	res, err := bitdefender.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -34,6 +35,9 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	log.SetFormatter(&log.JSONFormatter{})
+
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {

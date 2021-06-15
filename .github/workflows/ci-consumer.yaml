@@ -18,6 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup config
+        run: cp example.env .env
+
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -28,6 +31,7 @@ jobs:
           sudo apt-get install libcapstone-dev -y
           go version
           go get -u golang.org/x/lint/golint
+          make yara-install
 
       - name: Build
         run: |

@@ -28,6 +28,7 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements trendmicro.TrendMicroAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	log.Printf("Scanning %s", in.Filepath)
 	res, err := trendmicro.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -37,6 +38,8 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
+
+	log.SetFormatter(&log.JSONFormatter{})
 
 	// start TrendMicro daemon
 	log.Infoln("Starting TrendMicro service ...")
