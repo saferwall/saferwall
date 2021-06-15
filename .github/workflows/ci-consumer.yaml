@@ -28,6 +28,7 @@ jobs:
           sudo apt-get install libcapstone-dev -y
           go version
           go get -u golang.org/x/lint/golint
+          make yara-install
 
       - name: Build
         run: |
