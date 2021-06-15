@@ -27,7 +27,9 @@ jobs:
         run: |
           go version
           go get -u golang.org/x/lint/golint
-
+      - name: Install Yara rules
+        run: |
+          make yara-install
       - name: Build
         run: |
           cd pkg/yara
