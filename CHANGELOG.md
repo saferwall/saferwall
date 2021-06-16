@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -7,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.1.0] - 30/04/2021
+
 ### Added
+
 - ML PE classifier and string ranker.
 - docker-compose and .devcontainer to ease development.
 - A portable executable (PE) file parser.
@@ -18,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `sdk2json`: a package to convert Win32 API definitions to JSON format.
 
 ### Changed
+
 - Consumer docker image is separated to a base image and an app image.
 - Refactor consumer and make it a go module.
 - [Helm] reduce minio MEM request, ES and Kibana CPU request to half a core.
@@ -27,12 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improvement in CI/CD pipeline: include code coverage, test only changed modules & running custom github action runners.
 
 ## [0.0.3] - 2021-15-01
+
 ### Added
+
 - A new antivirus engine (DrWeb).
 - A new antivirus engine (TrendMicro).
 - A Vagrant image (virtualbox) to test locally the product.
 
 ### Changed
+
 - Add config option to choose log level.
 - Add various labels to k8s manifests and enforce resource req and limits.
 - Create seconday indexes for couchbase n1ql queries.
@@ -46,12 +53,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve the CONTRIBUTING doc.
 
 # Fixed:
+
 - Force lower case a sha256 hash before search in Backend thanks to [@hotail](https://github.com/hotail)
-- `AV_LIST` variable in multiav mk was override somewhere thanks to  [@najashark](https://github.com/najashark)
+- `AV_LIST` variable in multiav mk was override somewhere thanks to [@najashark](https://github.com/najashark)
 - Remove `add_kubernetes_metadata` from filebeat config which was causing duplicated data to be sent to kibana and ddosing the kube api server.
 
 ## [0.0.2] - 2020-08-12
+
 ### Added
+
 - Add a cmd tool to batch upload files.
 - Add s3upload pkg to simplify mass-uploading of files into s3.
 - Add upload pkg to simplify uploading a local database of samples to saferwall.
@@ -59,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Prometheus Operator helm chart.
 
 ### Changed
+
 - Add nfs-server-provisionner for local testing in minikube.
 - Improve the building process documentation thanks to [Jameel Haffejee](https://github.com/RC114).
 - Reworked to file tags schema.
@@ -69,7 +80,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ContextLogger in consumer to always log sha256.
 
 ## [0.0.1] - 2020-03-09
+
 ### Added
+
 - Initiale release includes a multi-av scanner + strings + file metadata.
 - UI with options to download, rescan, like a sample and share comments.
 - User profile to track submissions, followers and see activities.

@@ -29,17 +29,17 @@ var (
 	lowerCaseLetters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i",
 		"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
 		"x", "y", "z"}
-	scoreLenThreshold float64 = 25.
-	scoreLenPenalty   float64 = 0.9233
-	scoreRepPenalty   float64 = 0.9674
+	scoreLenThreshold = 25.
+	scoreLenPenalty   = 0.9233
+	scoreRepPenalty   = 0.9674
 	// MinScore represents the absolute minimal score for any given string
-	MinScore float64 = 8.6
+	MinScore = 8.6
 )
 
 // ngramsFromString returns a list of all n-grams of length n in a given string s.
 func ngramsFromString(s string, n int) []string {
 
-	var ngrams []string = make([]string, 0, len(s))
+	var ngrams = make([]string, 0, len(s))
 
 	for i := 0; i < len(s)-n+1; i++ {
 		ngrams = append(ngrams, s[i:i+n])
