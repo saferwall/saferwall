@@ -15,7 +15,7 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	echo "Copy the SecretAccessKey and AccessKeyID from the output."
 	aws configure
 
-KOPS_VERSION=1.20.0
+KOPS_VERSION=1.20.1
 kops-install:		## Install Kubernetes Kops
 	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops
@@ -81,7 +81,7 @@ kops-delete-file-system:		## Delete file system
 kops-delete-cluster:	## Delete k8s cluster
 	make kops-delete-mount-targets
 	sleep 30s
-	make kops-delete-file-system 
+	make kops-delete-file-system
 	kops delete cluster --name ${KOPS_CLUSTER_NAME} --yes
 
 kops-update-cluster:		## Update k8s cluster
@@ -100,7 +100,7 @@ kops-tips:		## Some kops commands
 	# list clusters with
 	kops get clusters
  	# edit this cluster with:
-	kops edit cluster ${KOPS_CLUSTER_NAME} 
+	kops edit cluster ${KOPS_CLUSTER_NAME}
 	# edit your node instance group
 	kops edit ig --name=${KOPS_CLUSTER_NAME} nodes
  	# edit your master instance group:
@@ -119,6 +119,4 @@ saferwall: ## Deploy the cluster
 	make helm-add-repos
 	make helm-update-dep
 	make k8s-init-cert-manager
-	# Install a release
 	make helm-release
-
