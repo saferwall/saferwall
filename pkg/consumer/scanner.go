@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hillu/go-yara/v4"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/utils"
 	goyara "github.com/saferwall/saferwall/pkg/yara"
@@ -58,7 +57,7 @@ type File struct {
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Ml          map[string]interface{} `json:"ml,omitempty"`
 	Type        string                 `json:"type,omitempty"`
-	Yara        []yara.MatchRule       `json:"yara,omitempty"`
+	Yara        []string               `json:"yara,omitempty"`
 }
 
 // Scan runs all scanners on the queued file.
@@ -214,8 +213,11 @@ func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *log.Entry) {
 		return
 	}
 	ctxLogger.Debug("yara scan sucess")
-	f.Yara = matches
-	f.Yara = nil  // disabling it for now.
+	f.Yara = make([]string, 0, len(matches))
+	for _, match := range matches {
+		f.Yara = append(f.Yara, match.Rule)
+	}
+	f.Yara = nil // disabling it for now.
 
 }
 
