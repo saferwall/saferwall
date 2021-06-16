@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1.0"
+LABEL version="1.0.0"
 LABEL description="McAfee VirusScan Command Line Scanner in a docker container"
 
 # Environment variables.
@@ -20,7 +20,7 @@ RUN mkdir $MCAFEE_TMP \
 	&& tar zxvf $MCAFEE_TMP/vscl-l64-604-e.tar.gz -C $MCAFEE_INSTALL_DIR
 
 # Update virus definition file.
-RUN wget -q -Nc -r -nd -l1 -A "avvepo????dat.zip" http://download.nai.com/products/DatFiles/4.x/nai/ -P $MCAFEE_TMP \
+RUN wget -q -Nc -r -nd -l1 -A "avvepo?????dat.zip" $MCAFEE_UPDATE -P $MCAFEE_TMP \
 	&& cd $MCAFEE_TMP \
 	&& unzip -o 'avvepo*' \
 	&& unzip -o 'avvdat-*' -d $MCAFEE_INSTALL_DIR \
