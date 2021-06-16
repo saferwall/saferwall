@@ -8,7 +8,7 @@ import (
 	"math"
 )
 
-// binCount counts the number of occurences of each byte value in a buffer.
+// binCount counts the number of occurrences of each byte value in a buffer.
 func binCount(buf []byte, minlength int) []int {
 
 	count := make([]int, minlength)

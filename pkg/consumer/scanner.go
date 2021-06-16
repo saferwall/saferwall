@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hillu/go-yara/v4"
 	s "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/utils"
 	goyara "github.com/saferwall/saferwall/pkg/yara"
+	"go.uber.org/zap"
 
 	peparser "github.com/saferwall/pe"
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
@@ -22,7 +22,6 @@ import (
 	"github.com/saferwall/saferwall/pkg/ml"
 	"github.com/saferwall/saferwall/pkg/packer"
 	"github.com/saferwall/saferwall/pkg/trid"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -58,12 +57,12 @@ type File struct {
 	ByteEntropy []int                  `json:"byte_entropy,omitempty"`
 	Ml          map[string]interface{} `json:"ml,omitempty"`
 	Type        string                 `json:"type,omitempty"`
-	Yara        []yara.MatchRule       `json:"yara,omitempty"`
+	Yara        []string               `json:"yara,omitempty"`
 }
 
 // Scan runs all scanners on the queued file.
 func (f *File) Scan(sha256, filePath string, b []byte,
-	ctxLogger *log.Entry, cfg *Config) error {
+	ctxLogger *zap.SugaredLogger, cfg *Config) error {
 
 	var err error
 
@@ -202,7 +201,7 @@ func extractStrings(b []byte, minLength int) (strResults []stringStruct) {
 	return
 }
 
-func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *log.Entry) {
+func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *zap.SugaredLogger) {
 	yaraRules, err := LoadYaraRules()
 	if err != nil {
 		ctxLogger.Errorf("loading yara rules failed with: %v", err)
@@ -214,12 +213,13 @@ func (f *File) extractYaraRules(sha256, filePath string, ctxLogger *log.Entry) {
 		return
 	}
 	ctxLogger.Debug("yara scan sucess")
-	f.Yara = matches
-	f.Yara = nil  // disabling it for now.
-
+	f.Yara = make([]string, 0, len(matches))
+	for _, match := range matches {
+		f.Yara = append(f.Yara, match.Rule)
+	}
 }
 
-func (f *File) extractMetadata(sha256, filePath string, ctxLogger *log.Entry, cfg *Config) {
+func (f *File) extractMetadata(sha256, filePath string, ctxLogger *zap.SugaredLogger, cfg *Config) {
 	var err error
 	// Get exif metadata.
 	if f.Exif, err = exiftool.Scan(filePath); err != nil {

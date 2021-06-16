@@ -121,7 +121,7 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 
 			// log.Printf("Found a 0xC7 at offset: 0x%x", offset)
 
-			// disassemble arround it
+			// disassemble around it
 			insns, err := engine.Disasm(x86Code32[offset:], uint64(offset), 20)
 			check(err)
 

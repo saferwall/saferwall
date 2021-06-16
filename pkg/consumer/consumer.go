@@ -67,15 +67,18 @@ func (c *Consumer) Start() error {
 	var err error
 
 	// Setup logging.
-	setupLogging(&c.cfg)
 
+	log := setupLoggingZap(&c.cfg)
+	defer log.Sync()
+	sugar := log.Sugar()
+	sugar.Infow("logging was setup")
 	// When running in Headless mode we only want to run the consumer
 	// without interacting with the backend API.
 	if !c.cfg.Headless {
 		// Setup API Authentification
 		c.authToken, err = fetchAuthToken(&c.cfg)
 		if err != nil {
-			log.Fatalf("failed to get auth token: %v", err)
+			sugar.Fatalf("failed to get auth token: %v", err)
 			return err
 		}
 
@@ -90,6 +93,7 @@ func (c *Consumer) Start() error {
 		cfg:         &c.cfg,
 		minioClient: minioClient,
 		authToken:   c.authToken,
+		logger:      sugar,
 	}
 	c.handler = messageHandler
 

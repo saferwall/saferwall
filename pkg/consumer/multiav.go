@@ -37,11 +37,11 @@ import (
 	windefenderclient "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/client"
 	windefender_api "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 func avScan(engine string, filePath string, c chan multiav.ScanResult,
-	ctxLogger *log.Entry, cfg *Config) {
+	ctxLogger *zap.SugaredLogger, cfg *Config) {
 
 	// Fail safe.
 	defer func() {
@@ -143,7 +143,7 @@ func avScan(engine string, filePath string, c chan multiav.ScanResult,
 }
 
 func (f *File) multiAvScan(filePath string, cfg *Config,
-	ctxLogger *log.Entry) map[string]interface{} {
+	ctxLogger *zap.SugaredLogger) map[string]interface{} {
 
 	// Create channels to receive scan results.
 	aviraChan := make(chan multiav.ScanResult)

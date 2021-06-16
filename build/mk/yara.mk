@@ -13,7 +13,8 @@ yara-install:	# Install yara
 		&& ./bootstrap.sh \
 		&& ./configure \
 		&& make \
-		&& sudo make install
+		&& sudo make install \
+		&& sudo ldconfig
 	rm -rf ./yara-$(YARA_VERSION)
 	rm -f $(YARA_ARCHIVE)
 	sudo git clone $(YARA_REPO_REPO) $(YARA_RULES_DIR)

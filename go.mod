@@ -16,6 +16,9 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
+	go.uber.org/atomic v1.8.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/zap v1.17.0
 	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 // indirect
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0

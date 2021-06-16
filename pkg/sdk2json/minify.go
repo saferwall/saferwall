@@ -36,7 +36,7 @@ type StructUnionMini struct {
 	X64Size uint8                   `json:"x64size"`
 }
 
-// APIParamMini represents a paramter of a Win32 API.
+// APIParamMini represents a parameter of a Win32 API.
 type APIParamMini struct {
 	Annotation        uint8  `json:"anno"`
 	Type              uint8  `json:"type"`

@@ -70,7 +70,7 @@ func ScanFile(filePath string) (Result, error) {
 
 	lines := strings.Split(out, "\n")
 	if len(lines) == 0 {
-		errUnexpectedOutput := fmt.Errorf("Unexpected output: %s", out)
+		errUnexpectedOutput := fmt.Errorf("unexpected output: %s", out)
 		return Result{}, errUnexpectedOutput
 	}
 

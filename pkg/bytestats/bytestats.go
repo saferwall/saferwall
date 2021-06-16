@@ -15,7 +15,7 @@ const (
 )
 
 // ByteHistogram computes a histogram of byte values according to their
-// indexes, each index i represents the occurences of the byte value i.
+// indexes, each index i represents the occurrences of the byte value i.
 func ByteHistogram(buf []byte) []int {
 
 	return binCount(buf, ByteCount)

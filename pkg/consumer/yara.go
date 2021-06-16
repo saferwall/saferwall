@@ -5,24 +5,35 @@
 package consumer
 
 import (
+	"path"
+
 	"github.com/hillu/go-yara/v4"
 	goyara "github.com/saferwall/saferwall/pkg/yara"
 )
 
 const (
 	// YaraRulesPath is the OS level (inside docker) path to Yara rules.
-	YaraRulesPath = "/opt/yararules"
+	yaraRulesPath = "/opt/yararules"
 )
 
 // LoadYaraRules will read yara rules in-memory.
 func LoadYaraRules() (*yara.Rules, error) {
 	yaraRules := []goyara.Rule{
 		{
+			Namespace: "antidebug_antivm",
+			Filename:  path.Join(yaraRulesPath, "antidebug_antivm_index.yar"),
+		},
+		{
 			Namespace: "capabilities",
-			Filename:  YaraRulesPath + "/capabilities/capabilities.yar",
+			Filename:  path.Join(yaraRulesPath, "capabilities_index.yar"),
+		}, {
+			Namespace: "crypto",
+			Filename:  path.Join(yaraRulesPath, "crypto_index.yar"),
+		}, {
+			Namespace: "packers",
+			Filename:  path.Join(yaraRulesPath, "packers_index.yar"),
 		},
 	}
-
 	rules, err := goyara.Load(yaraRules)
 	if err != nil {
 		return nil, err

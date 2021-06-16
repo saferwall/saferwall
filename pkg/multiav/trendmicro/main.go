@@ -97,7 +97,7 @@ func ScanFile(filepath string) (Result, error) {
 	}
 
 	// Execute the scanner with the given file path.
-	out, err := utils.ExecCommand(splxmain, "-m", path.Dir(filePathCopy))
+	_, err = utils.ExecCommand(splxmain, "-m", path.Dir(filePathCopy))
 	if err != nil {
 		return Result{}, err
 	}
@@ -120,8 +120,7 @@ func ScanFile(filepath string) (Result, error) {
 	res := Result{}
 	data, virusErr := utils.ReadAll(virusLog)
 	if virusErr == nil && len(data) > 0 {
-		out = string(data)
-		l := re.FindStringSubmatch(out)
+		l := re.FindStringSubmatch(string(data))
 		if len(l) > 0 {
 			res.Output = l[1]
 			res.Infected = true
@@ -133,8 +132,7 @@ func ScanFile(filepath string) (Result, error) {
 	spywareLog := path.Join(logDir, "Spyware."+todayDate+".0001")
 	data, spywareErr := utils.ReadAll(spywareLog)
 	if spywareErr == nil && len(data) > 0 {
-		out = string(data)
-		l := re.FindStringSubmatch(out)
+		l := re.FindStringSubmatch(string(data))
 		if len(l) > 0 {
 			res.Output = l[1]
 			res.Infected = true

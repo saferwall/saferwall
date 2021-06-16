@@ -15,16 +15,16 @@ import (
 
 var (
 	// ErrNoLicenseFound is returned when no license is found
-	ErrNoLicenseFound = errors.New("No license found")
+	ErrNoLicenseFound = errors.New("no license found")
 
 	// ErrInvalidLicense is returned when invalid license is found
-	ErrInvalidLicense = errors.New("Invalid license")
+	ErrInvalidLicense = errors.New("invalid license")
 
 	// ErrExpiredLicense is returned when license is expired
-	ErrExpiredLicense = errors.New("License expired")
+	ErrExpiredLicense = errors.New("license expired")
 
-	// ErrLicenseUnknowError is returned when unknow error occured
-	ErrLicenseUnknowError = errors.New("License parsing failed")
+	// ErrLicenseUnknowError is returned when unknow error occurred
+	ErrLicenseUnknowError = errors.New("license parsing failed")
 )
 
 const (

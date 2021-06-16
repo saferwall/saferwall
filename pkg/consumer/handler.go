@@ -13,7 +13,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Status represents a file's status during scanning.
@@ -35,7 +35,6 @@ type NoopNSQLogger struct{}
 
 // Output allows us to implement the nsq.Logger interface
 func (l *NoopNSQLogger) Output(calldepth int, s string) error {
-	log.Info(s)
 	return nil
 }
 
@@ -46,6 +45,7 @@ func (l *NoopNSQLogger) Output(calldepth int, s string) error {
 type MessageHandler struct {
 	cfg         *Config
 	minioClient *minio.Client
+	logger      *zap.SugaredLogger
 	authToken   string
 }
 
@@ -57,19 +57,20 @@ func (h *MessageHandler) processMessage(b []byte) error {
 	// read the sample hash
 	sha256 := string(b)
 	// setup contextual logging using the hash as context
-	ctxLogger := log.WithFields(log.Fields{"sha256": sha256})
-	ctxLogger.Debug("start scanning ...")
-
-	return h.scanFile(sha256, ctxLogger)
+	h.logger.Debug("start scanning ...")
+	h.logger = h.logger.With(
+		"sha256", sha256,
+	)
+	return h.scanFile(sha256)
 }
 
 // scanFile does the actual file scanning
-func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
+func (h *MessageHandler) scanFile(sha256 string) error {
 
 	// Handle unexpected panics.
 	defer func() {
 		if r := recover(); r != nil {
-			ctxLogger.Errorf("panic occured in file scan: %v", debug.Stack())
+			h.logger.DPanic("panic occured in file scan: %v", debug.Stack())
 		}
 	}()
 
@@ -80,21 +81,21 @@ func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
 	filePath := path.Join(h.cfg.DownloadDir, f.SHA256)
 	b, err := h.fetchSample(filePath, &f)
 	if err != nil {
-		ctxLogger.Errorf("failed to download sample from s3: %v", err)
+		h.logger.Errorf("failed to download sample from s3: %v", err)
 		return err
 	}
 	// Set the file status to `processing`.
 	f.Status = int(Processing)
 	err = h.updateMsgProgress(&f)
 	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
+		h.logger.Errorf("failed to update message status: %v", err)
 		return err
 	}
 
 	// Scan the file.
-	err = f.Scan(sha256, filePath, b, ctxLogger, h.cfg)
+	err = f.Scan(sha256, filePath, b, h.logger, h.cfg)
 	if err != nil {
-		ctxLogger.Errorf("failed to scan the file: %v", err)
+		h.logger.Errorf("failed to scan the file: %v", err)
 		return err
 	}
 
@@ -102,14 +103,14 @@ func (h *MessageHandler) scanFile(sha256 string, ctxLogger *log.Entry) error {
 	f.Status = int(Finished)
 	err = h.updateMsgProgress(&f)
 	if err != nil {
-		ctxLogger.Errorf("failed to update message status: %v", err)
+		h.logger.Errorf("failed to update message status: %v", err)
 		return err
 	}
 
 	// Delete the file from the network share.
 	if utils.Exists(filePath) {
 		if err = utils.DeleteFile(filePath); err != nil {
-			log.Errorf("failed to delete file path %s", filePath)
+			h.logger.Errorf("failed to delete file path %s", filePath)
 		}
 	}
 
@@ -136,11 +137,9 @@ func (h *MessageHandler) updateMsgProgress(f *File) error {
 	if err != nil {
 		return err
 	}
-
 	// Update document.
 	err = updateDocument(f.SHA256, h.authToken, h.cfg, buff)
 	if err == errHTTPStatusUnauthorized {
-
 		// Get a new fresh jwt token.
 		h.authToken, err = fetchAuthToken(h.cfg)
 		if err != nil {

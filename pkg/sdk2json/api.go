@@ -25,7 +25,7 @@ const (
 	RegParam = `, `
 )
 
-// APIParam represents a paramter of a Win32 API.
+// APIParam represents a parameter of a Win32 API.
 type APIParam struct {
 	Annotation string `json:"anno"`
 	Type       string `json:"type"`
