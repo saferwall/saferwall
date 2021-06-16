@@ -13,11 +13,18 @@ func TestYara(t *testing.T) {
 	t.Run("TestYaraLoadRules", func(t *testing.T) {
 		rules := []Rule{
 			{
+				Namespace: "antidebug_antivm",
+				Filename:  path.Join(yaraRulesPath, "antidebug_antivm_index.yar"),
+			},
+			{
 				Namespace: "capabilities",
-				Filename:  path.Join(yaraRulesPath, "capabilities/capabilities.yar"),
+				Filename:  path.Join(yaraRulesPath, "capabilities_index.yar"),
 			}, {
 				Namespace: "crypto",
-				Filename:  path.Join(yaraRulesPath, "crypto/crypto_signatures.yar"),
+				Filename:  path.Join(yaraRulesPath, "crypto_index.yar"),
+			}, {
+				Namespace: "packers",
+				Filename:  path.Join(yaraRulesPath, "packers_index.yar"),
 			},
 		}
 		_, err := Load(rules)

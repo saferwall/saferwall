@@ -5,36 +5,48 @@
 package consumer
 
 import (
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// setupLogging set the logging according to the log level.
-func setupLogging(cfg *Config) {
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
+func getLoggingLevel(cfg *Config) zap.AtomicLevel {
 	level := cfg.LogLevel
-	if len(level) > 0 {
-		switch level {
-		case "panic":
-			log.SetLevel(log.PanicLevel)
-		case "fatal":
-			log.SetLevel(log.FatalLevel)
-		case "error":
-			log.SetLevel(log.ErrorLevel)
-		case "warn":
-			log.SetLevel(log.WarnLevel)
-		case "info":
-			log.SetLevel(log.InfoLevel)
-		case "debug":
-			log.SetLevel(log.DebugLevel)
-		case "trace":
-			log.SetLevel(log.TraceLevel)
-		default:
-			log.SetLevel(log.WarnLevel)
-		}
-	} else {
-		log.SetLevel(log.WarnLevel)
+	atom := zap.NewAtomicLevel()
+	switch level {
+	case "panic":
+		atom.SetLevel(zapcore.PanicLevel)
+		return atom
+	case "fatal":
+		atom.SetLevel(zapcore.FatalLevel)
+		return atom
+	case "error":
+		atom.SetLevel(zapcore.ErrorLevel)
+		return atom
+	case "warn":
+		atom.SetLevel(zapcore.WarnLevel)
+		return atom
+	case "info":
+		atom.SetLevel(zapcore.InfoLevel)
+		return atom
+	case "debug":
+		atom.SetLevel(zapcore.DebugLevel)
+		return atom
+	default:
+		atom.SetLevel(zapcore.WarnLevel)
+		return atom
 	}
+}
+
+// setupLoggingZap
+func setupLoggingZap(cfg *Config) *zap.Logger {
+	//NewProductionConfig is a reasonable production logging configuration. Logging //is enabled at InfoLevel and above.
+	//
+	//It uses a JSON encoder, writes to standard error, and enables sampling. //Stacktraces are automatically included on logs of ErrorLevel and above.
+	config := zap.NewProductionConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.Level = getLoggingLevel(cfg)
+	logger, _ := config.Build()
+	return logger
 }
