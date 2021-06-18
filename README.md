@@ -22,9 +22,9 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 
 :star: **Collaborative** - Built for _security teams_ and _researchers_ to streamline analysis, identification and sharing malware samples.
 
-:cloud: **Fast & cloud-native** - Scalable and cloud-native by design, deploy in seconds to bare metal or in the cloud.
+:cloud: **Fast & cloud-native** - Scalable and cloud-native by design, deploy in minutes to bare metal or in the cloud.
 
-:zap: **Save time** - Save time on cumbersome analysis tasks, automate and generate IoC's and reports with **zero friction**.
+:zap: **Save time** - Automate cumbersome analysis tasks, generate IoC's and reports with **zero friction**.
 
 :package: **Batteries included** - All your favorite tools included, build intelligence feeds for hunting threats or generating signatures.
 
@@ -49,7 +49,7 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
   - Generate detailed reports and gain insight into malware behavior.
   - Choose which API's to trace, grab _screenshots_ and file changes aswell as memory dumps.
 
-- Multiple AV scanner which includes major vendors:
+- Multiple AV scanner supporting major vendors:
 
   | Vendors     | status             | Vendors          | status             |
   | ----------- | ------------------ | ---------------- | ------------------ |
