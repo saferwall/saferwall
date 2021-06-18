@@ -1,25 +1,40 @@
 <p align="center"><a href="https://saferwall.com" target="_blank" rel="noopener noreferrer"><img width="100" src="https://i.imgur.com/zjCOKPo.png" alt="Saferwall logo"></a></p>
-<h4 align="center">Saferwall is an open source malware analysis platform</a>.</h4>
+
+<p align="center">
+<b>Collaborative and Streamlined <ins>Threat Analysis</ins> at Scale</b>
+</p>
 
 <p align="center"> 
   <a href="https://gitter.im/saferwall/community"><img src="https://img.shields.io/gitter/room/saferwall/community?style=flat-square"></a>
   <img alt="Coverage" src="https://img.shields.io/codecov/c/github/saferwall/saferwall?style=flat-square">
   <img alt="Discord" src="https://img.shields.io/discord/803411418854064148?label=Discord&style=flat-square">
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/saferwall/saferwall/Test%20Helm%20Charts?style=flat-square">
+  <img alt="Downloads" src="https://img.shields.io/github/downloads/saferwall/saferwall/v0.1.0/total?style=flat-square">
   <img alt="Report Card" src="https://goreportcard.com/badge/github.com/saferwall/saferwall">
   <img alt="GitHub" src="https://img.shields.io/github/license/saferwall/saferwall?style=flat-square">
   </p>
 
-It aims for the following goals:
+<!-- start elevator-pitch -->
 
-- Be the collaborative platform for _security teams_ and _researchers_ to analyze, identify and share malware samples.
-- Streamline the analysis process to help researchers generates IoC's and analysis reports with **zero friction**.
-- Provide a search index to build intelligence feeds for threat hunting and behavioral signatures.
-- Be _open-source_, _developer friendly_ and _user driven._
+Saferwall allows you to analyze, triage and classify threats in just minutes.
+
+<!-- end elevator-pitch -->
+
+:star: **Collaborative** - Built for _security teams_ and _researchers_ to streamline analysis, identification and sharing malware samples.
+
+:cloud: **Fast & cloud-native** - Scalable and cloud-native by design, deploy in seconds to bare metal or in the cloud.
+
+:zap: **Save time** - Save time on cumbersome analysis tasks, automate and generate IoC's and reports with **zero friction**.
+
+:package: **Batteries included** - All your favorite tools included, build intelligence feeds for hunting threats or generating signatures.
+
+:heart: **Open source first** - We are _open-source_, _developer friendly_ and _user driven._
 
 <p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="auto" height="auto"></p>
 
-## Features
+---
+
+## Batteries Included
 
 - Static Analysis:
 
@@ -48,7 +63,7 @@ It aims for the following goals:
 
 - Integrations with your own data processing pipeline.
 
-## Installation
+## Get Started
 
 Saferwall takes advantage of [Kubernetes](https://kubernetes.io/) for its high availability, scalability and ecosystem behind it.
 
