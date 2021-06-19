@@ -32,8 +32,6 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 
 <p align="center"><img src="https://i.imgur.com/lYv1B4S.png" width="auto" height="auto"></p>
 
----
-
 ## Batteries Included
 
 - Static Analysis:

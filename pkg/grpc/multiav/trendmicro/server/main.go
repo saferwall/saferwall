@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"sync"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
@@ -19,6 +20,7 @@ import (
 type server struct {
 	avDbUpdateDate int64
 	log            *zap.Logger
+	mu             sync.Mutex
 }
 
 // GetVersion implements trendmicro.TrendMicroAVScanner.
@@ -29,6 +31,8 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements trendmicro.TrendMicroAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := trendmicro.ScanFile(in.Filepath)
 	return &pb.ScanResponse{

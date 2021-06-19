@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"sync"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
@@ -18,11 +19,13 @@ import (
 type server struct {
 	avDbUpdateDate int64
 	log            *zap.Logger
+	mu             sync.Mutex
 }
 
 // ScanFile implements kaspersky.KasperskyScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := kaspersky.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
