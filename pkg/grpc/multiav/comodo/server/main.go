@@ -6,16 +6,18 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/comodo/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/comodo"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 // server is used to implement comodo.ComodoScanner.
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetVersion implements comodo.ComodoScanner.
@@ -26,7 +28,7 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements comodo.ComodoScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := comodo.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -37,7 +39,7 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
@@ -56,10 +58,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterComodoScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Comodo gRPC server ...")
+	log.Info("Starting Comodo gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

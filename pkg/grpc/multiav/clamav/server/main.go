@@ -6,16 +6,18 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/clamav"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetVersion implements clamav.ClamAVScanner.
@@ -28,7 +30,7 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (
 // ScanFile implements clamav.ClamAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (
 	*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := clamav.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -39,10 +41,10 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// start clamav daemon
-	log.Infoln("Starting clamav daemon ...")
+	log.Info("Starting clamav daemon ...")
 	_, err := utils.ExecCommand("clamd")
 	if err != nil {
 		grpclog.Fatalf("failed to start clamav daemon: %v", err)
@@ -65,10 +67,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterClamAVScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting ClamAV gRPC server ...")
+	log.Info("Starting ClamAV gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

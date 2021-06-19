@@ -10,12 +10,13 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/windefender/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/windefender"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetVersion implements windefender.WinDefenderScanner.
@@ -24,10 +25,9 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 	return &pb.VersionResponse{Version: version}, err
 }
 
-
 // ScanFile implements windefender.WinDefender.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := windefender.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -37,7 +37,7 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
@@ -56,10 +56,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterWinDefenderScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Windows Defender gRPC server ...")
+	log.Info("Starting Windows Defender gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

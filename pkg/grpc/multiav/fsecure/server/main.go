@@ -6,20 +6,22 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/fsecure/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/fsecure"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // ScanFile implements bitdefender.BitdefenderScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := fsecure.ScanFile(in.Filepath)
 	output := ""
 	if res.Infected {
@@ -38,8 +40,7 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
-
+	log := multiav.SetupLogging()
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -57,10 +58,10 @@ func main() {
 
 	// attach the FSecureScanner service to the server
 	pb.RegisterFSecureScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting FSecure gRPC server ...")
+	log.Info("Starting FSecure gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

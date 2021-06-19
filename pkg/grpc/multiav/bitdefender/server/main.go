@@ -6,15 +6,17 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/bitdefender/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/bitdefender"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetProgramVersion implements bitdefender.BitdefenderScanner.
@@ -25,7 +27,7 @@ func (s *server) GetProgramVersion(ctx context.Context, in *pb.VersionRequest) (
 
 // ScanFile implements bitdefender.BitdefenderScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := bitdefender.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -36,8 +38,7 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
-
+	log := multiav.SetupLogging()
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -55,10 +56,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterBitdefenderScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Bitdefender gRPC server ...")
+	log.Info("Starting Bitdefender gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

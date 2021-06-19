@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -20,6 +22,22 @@ import (
 // to scan a file.
 type Scanner interface {
 	Scan()
+}
+
+// AVServer wraps a versionned AV gRPC server and implements the scan interface
+
+// SetupLogging will create a new Zap logger with a predefined configuration
+func SetupLogging() *zap.Logger {
+	// NewProductionConfig is a reasonable production logging configuration
+	// Uses JSON, writes to standard error, and enables sampling.
+	// Stacktraces are automatically included on logs of ErrorLevel and above.
+	config := zap.NewProductionConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+	logger, _ := config.Build()
+	return logger
 }
 
 const (

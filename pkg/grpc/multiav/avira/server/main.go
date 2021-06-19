@@ -11,18 +11,19 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/avira/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/avira"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // ScanFile implements avira.AviraScanner.
-func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest)(
+func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (
 	*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := avira.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -40,8 +41,7 @@ func (s *server) ActivateLicense(ctx context.Context, in *pb.LicenseRequest) (
 
 // main start a gRPC server and waits for connection.
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
-
+	log := multiav.SetupLogging()
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
 	if err != nil {
@@ -50,7 +50,6 @@ func main() {
 
 	// create a gRPC server object
 	s := multiav.NewServer()
-
 	// get the av db update date
 	avDbUpdateDate, err := multiav.UpdateDate()
 	if err != nil {
@@ -59,10 +58,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterAviraScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Avira gRPC server ...")
+	log.Info("Starting Avira gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

@@ -11,7 +11,7 @@ import (
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/symantec"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -23,6 +23,7 @@ const (
 // server is used to implement symantec.SymantecScanner.
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetVersion implements eset.EsetAVScanner.
@@ -33,7 +34,7 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements symantec.SymantecScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := symantec.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -43,20 +44,20 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 
 // main start a gRPC server and waits for connection.
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
-	log.Infoln("Starting Symantec daemon `symcfgd`")
+	log := multiav.SetupLogging()
+	log.Info("Starting Symantec daemon `symcfgd`")
 	out, err := utils.ExecCommand("sudo", symcfgd, "-x")
 	if err != nil {
 		grpclog.Fatalf("failed to start symcfgd: %v", err)
 	}
-	log.Infoln(out)
+	log.Info(out)
 
-	log.Infoln("Starting Symantec daemon `rtvscand`")
+	log.Info("Starting Symantec daemon `rtvscand`")
 	out, err = utils.ExecCommand("sudo", rtvscand, "-x")
 	if err != nil {
 		grpclog.Fatalf("failed to start rtvscand: %v", err)
 	}
-	log.Infoln(out)
+	log.Info(out)
 
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
@@ -75,10 +76,10 @@ func main() {
 
 	// attach the Symanteccanner service to the server
 	pb.RegisterSymantecScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Symantec gRPC server ...")
+	log.Info("Starting Symantec gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

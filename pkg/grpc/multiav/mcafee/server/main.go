@@ -10,12 +10,13 @@ import (
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/mcafee/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/mcafee"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // ScanGetVersionFile implements mcafee.McAfeeScanner.
@@ -24,10 +25,9 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 	return &pb.VersionResponse{Version: version.ProgramVersion}, err
 }
 
-
 // ScanFile implements mcafee.McAfeeScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := mcafee.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -38,7 +38,7 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// create a listener on TCP port 50051
 	lis, err := multiav.CreateListener()
@@ -57,10 +57,10 @@ func main() {
 
 	// attach the McAfeeScanner service to the server
 	pb.RegisterMcAfeeScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting McAfee gRPC server ...")
+	log.Info("Starting McAfee gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

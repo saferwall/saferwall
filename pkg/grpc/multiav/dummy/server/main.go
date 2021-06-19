@@ -6,9 +6,9 @@ package main
 
 import (
 	"context"
+
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/dummy/proto"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -47,7 +47,6 @@ func main() {
 		s, &server{avDbUpdateDate: avDbUpdateDate})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Dummy gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

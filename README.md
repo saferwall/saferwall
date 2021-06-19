@@ -4,7 +4,7 @@
 <b>Collaborative and Streamlined <ins>Threat Analysis</ins> at Scale</b>
 </p>
 
-<p align="center"> 
+<p align="center">
   <a href="https://gitter.im/saferwall/community"><img src="https://img.shields.io/gitter/room/saferwall/community?style=flat-square"></a>
   <img alt="Coverage" src="https://img.shields.io/codecov/c/github/saferwall/saferwall?style=flat-square">
   <img alt="Discord" src="https://img.shields.io/discord/803411418854064148?label=Discord&style=flat-square">
@@ -24,7 +24,7 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 
 :cloud: **Fast & cloud-native** - Scalable and cloud-native by design, deploy in minutes to bare metal or in the cloud.
 
-:zap: **Save time** - Automate cumbersome analysis tasks, generate IoC's and reports with **zero friction**.
+:zap: **Save time** - Automate cumbersome tasks, generate IoC's and reports with **zero friction**.
 
 :package: **Batteries included** - All your favorite tools included, build intelligence feeds for hunting threats or generating signatures.
 

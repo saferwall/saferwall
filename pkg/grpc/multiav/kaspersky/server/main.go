@@ -11,18 +11,19 @@ import (
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/kaspersky/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/kaspersky"
 	"github.com/saferwall/saferwall/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // ScanFile implements kaspersky.KasperskyScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
 
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := kaspersky.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -33,10 +34,10 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// Start Kaspersky daemon
-	log.Infoln("Starting kaspersky daemon ...")
+	log.Info("Starting kaspersky daemon ...")
 	err := utils.StartCommand("sudo", "/opt/kaspersky/kesl/libexec/kesl_launcher.sh")
 	if err != nil {
 		grpclog.Fatalf("failed to start kesl daemon: %v", err)
@@ -59,10 +60,10 @@ func main() {
 
 	// attach the AviraScanner service to the server
 	pb.RegisterKasperskyScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting Kaspersky gRPC server ...")
+	log.Info("Starting Kaspersky gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

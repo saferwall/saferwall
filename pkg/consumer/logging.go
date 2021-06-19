@@ -39,9 +39,9 @@ func getLoggingLevel(cfg *Config) zap.AtomicLevel {
 
 // setupLoggingZap
 func setupLoggingZap(cfg *Config) *zap.Logger {
-	//NewProductionConfig is a reasonable production logging configuration. Logging //is enabled at InfoLevel and above.
-	//
-	//It uses a JSON encoder, writes to standard error, and enables sampling. //Stacktraces are automatically included on logs of ErrorLevel and above.
+	// NewProductionConfig is a reasonable production logging configuration
+	// Uses JSON, writes to standard error, and enables sampling.
+	// Stacktraces are automatically included on logs of ErrorLevel and above.
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	config.EncoderConfig.TimeKey = "timestamp"

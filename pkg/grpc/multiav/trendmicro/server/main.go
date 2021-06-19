@@ -8,16 +8,17 @@ import (
 	"context"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
-	"github.com/saferwall/saferwall/pkg/utils"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/trendmicro/proto"
 	"github.com/saferwall/saferwall/pkg/multiav/trendmicro"
-	log "github.com/sirupsen/logrus"
+	"github.com/saferwall/saferwall/pkg/utils"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
 // server is used to implement trendmicro.TrendMicroAVScanner.
 type server struct {
 	avDbUpdateDate int64
+	log            *zap.Logger
 }
 
 // GetVersion implements trendmicro.TrendMicroAVScanner.
@@ -28,7 +29,7 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements trendmicro.TrendMicroAVScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
-	log.Printf("Scanning %s", in.Filepath)
+	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := trendmicro.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
 		Infected: res.Infected,
@@ -39,10 +40,10 @@ func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.Scan
 // main start a gRPC server and waits for connection.
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log := multiav.SetupLogging()
 
 	// start TrendMicro daemon
-	log.Infoln("Starting TrendMicro service ...")
+	log.Info("Starting TrendMicro service ...")
 	_, err := utils.ExecCommand("sudo", "/etc/init.d/splx", "restart")
 	if err != nil {
 		grpclog.Fatalf("failed to start TrendMicro daemon: %v", err)
@@ -65,10 +66,10 @@ func main() {
 
 	// attach the TrendMicroScanner service to the server
 	pb.RegisterTrendMicroScannerServer(
-		s, &server{avDbUpdateDate: avDbUpdateDate})
+		s, &server{avDbUpdateDate: avDbUpdateDate, log: log})
 
 	// register reflection service on gRPC server and serve.
-	log.Infoln("Starting TrendMciro gRPC server ...")
+	log.Info("Starting TrendMciro gRPC server ...")
 	err = multiav.Serve(s, lis)
 	if err != nil {
 		grpclog.Fatalf("failed to serve: %v", err)

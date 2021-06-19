@@ -8,13 +8,10 @@ require (
 	github.com/golang/protobuf v1.4.1
 	github.com/hillu/go-yara/v4 v4.0.5
 	github.com/knightsc/gapstone v0.0.0-20150606025522-c8ce2e4cbb4a
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/pe v1.0.4
-	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/viper v1.7.0
-	github.com/stoewer/go-strcase v1.2.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect

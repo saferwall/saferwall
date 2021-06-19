@@ -6,9 +6,9 @@ package exiftool
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/saferwall/saferwall/pkg/utils"
-	strcase "github.com/stoewer/go-strcase"
 )
 
 const (
@@ -51,10 +51,56 @@ func ParseOutput(exifout string) map[string]string {
 			continue
 		}
 		if !utils.StringInSlice(strings.TrimSpace(keyvalue[0]), ignoreTags) {
-			datas[strings.TrimSpace(strcase.UpperCamelCase(keyvalue[0]))] =
+			datas[strings.TrimSpace(camelCase(keyvalue[0]))] =
 				strings.TrimSpace(keyvalue[1])
 		}
 	}
 
 	return datas
+}
+
+// camelCase convert a string to camelcase
+func camelCase(s string) string {
+	s = strings.TrimSpace(s)
+	buffer := make([]rune, 0, len(s))
+	stringIter(s, func(prev, curr, next rune) {
+		if !isDelimiter(curr) {
+			if isDelimiter(prev) || (prev == 0) {
+				buffer = append(buffer, unicode.ToUpper(curr))
+			} else if unicode.IsLower(prev) {
+				buffer = append(buffer, curr)
+			} else {
+				buffer = append(buffer, unicode.ToLower(curr))
+			}
+		}
+	})
+
+	return string(buffer)
+}
+
+// isDelimiter checks if a character is some kind of whitespace or '_' or '-'.
+func isDelimiter(ch rune) bool {
+	return ch == '-' || ch == '_' || unicode.IsSpace(ch)
+}
+
+// stringIter iterates over a string, invoking the callback for every single rune in the string.
+func stringIter(s string, callback func(prev, curr, next rune)) {
+	var prev rune
+	var curr rune
+	for _, next := range s {
+		if curr == 0 {
+			prev = curr
+			curr = next
+			continue
+		}
+
+		callback(prev, curr, next)
+
+		prev = curr
+		curr = next
+	}
+
+	if len(s) > 0 {
+		callback(prev, curr, 0)
+	}
 }
