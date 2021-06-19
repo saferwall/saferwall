@@ -74,7 +74,7 @@ func UniqueSlice(slice []string) []string {
 func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create a new context and add a timeout to it
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
 
 	// Create the command with our context

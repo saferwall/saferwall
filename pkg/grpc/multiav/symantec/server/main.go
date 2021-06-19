@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"sync"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/symantec/proto"
@@ -24,6 +25,7 @@ const (
 type server struct {
 	avDbUpdateDate int64
 	log            *zap.Logger
+	mu             sync.Mutex
 }
 
 // GetVersion implements eset.EsetAVScanner.
@@ -34,6 +36,8 @@ func (s *server) GetVersion(ctx context.Context, in *pb.VersionRequest) (*pb.Ver
 
 // ScanFile implements symantec.SymantecScanner.
 func (s *server) ScanFile(ctx context.Context, in *pb.ScanFileRequest) (*pb.ScanResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.log.Info("Scanning :", zap.String("filepath", in.Filepath))
 	res, err := symantec.ScanFile(in.Filepath)
 	return &pb.ScanResponse{
