@@ -189,7 +189,11 @@ func TestScorer(t *testing.T) {
 		"ieeoienkjadfakj",
 		"lalalaalkjuogaajfajlfal",
 	}
-	nonsense, err := NewScorer(nil)
+	_, err := NewScorer(nil)
+	if err != nil {
+		t.Fatal("failed to create new score function with error :", err)
+	}
+	nonsense, err := NewScorer(&Options{dataset: Dataset})
 	if err != nil {
 		t.Fatal("failed to create new score function with error :", err)
 	}

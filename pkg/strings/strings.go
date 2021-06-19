@@ -96,7 +96,7 @@ func GetAsmStrings(x86Code32 []byte) (result []string) {
 	}()
 
 	engine, err := gapstone.New(
-		gapstone.ARM64_DC_CSW,
+		gapstone.CS_ARCH_X86,
 		gapstone.CS_MODE_32,
 	)
 	check(err)

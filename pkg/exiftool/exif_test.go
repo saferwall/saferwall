@@ -16,9 +16,16 @@ var magictests = []struct {
 	{"../../testdata/ls", "ELF shared library"},
 }
 
+var failuretests = []struct {
+	in  string
+	out string
+}{
+	{"../../testdata/notfound", ""},
+}
+
 func TestExiftoolScan(t *testing.T) {
-	for _, tt := range magictests {
-		t.Run(tt.in, func(t *testing.T) {
+	t.Run("TestConsistentOutput", func(t *testing.T) {
+		for _, tt := range magictests {
 			filePath := tt.in
 			got, err := Scan(filePath)
 			if err != nil {
@@ -29,6 +36,17 @@ func TestExiftoolScan(t *testing.T) {
 				t.Errorf("TestMagicScan(%s) got %v, want %v",
 					tt.in, got["FileType"], tt.out)
 			}
-		})
-	}
+		}
+	})
+	t.Run("TestExpectedFailure", func(t *testing.T) {
+		for _, tt := range failuretests {
+			filePath := tt.in
+			got, err := Scan(filePath)
+			if got != nil || err == nil {
+				t.Errorf("TestMagicScan(%s) expected error , got %v",
+					tt.in,
+					err)
+			}
+		}
+	})
 }
