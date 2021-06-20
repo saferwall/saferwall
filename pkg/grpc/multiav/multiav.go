@@ -36,6 +36,7 @@ func SetupLogging() *zap.Logger {
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	config.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+	config.OutputPaths = []string{"stdout"}
 	logger, _ := config.Build()
 	return logger
 }
