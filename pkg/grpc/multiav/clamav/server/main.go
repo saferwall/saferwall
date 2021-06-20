@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/saferwall/saferwall/pkg/grpc/multiav"
 	pb "github.com/saferwall/saferwall/pkg/grpc/multiav/clamav/proto"
@@ -45,7 +46,7 @@ func main() {
 
 	// start clamav daemon
 	log.Info("Starting clamav daemon ...")
-	_, err := utils.ExecCommand("clamd")
+	_, err := utils.ExecCommandWithTimeout("clamd", 1*time.Minute)
 	if err != nil {
 		grpclog.Fatalf("failed to start clamav daemon: %v", err)
 	}

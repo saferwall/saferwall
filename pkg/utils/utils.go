@@ -70,11 +70,37 @@ func UniqueSlice(slice []string) []string {
 	return cleaned
 }
 
+// ExecCommandWithTimeout runs cmd on file with timeout.
+func ExecCommandWithTimeout(name string, timeout time.Duration, args ...string) (string, error) {
+
+	// Create a new context and add a timeout to it
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel() // The cancel should be deferred so resources are cleaned up
+
+	// Create the command with our context
+	cmd := exec.CommandContext(ctx, name, args...)
+
+	// We use CombinedOutput() instead of Output()
+	// which returns standard output and standard error.
+	out, err := cmd.CombinedOutput()
+
+	// We want to check the context error to see if the timeout was executed.
+	// The error returned by cmd.Output() will be OS specific based on what
+	// happens when a process is killed.
+	if ctx.Err() == context.DeadlineExceeded {
+		fmt.Println("Command timed out")
+		return string(out), err
+	}
+
+	// If there's no context error, we know the command completed (or errored).
+	return string(out), err
+}
+
 // ExecCommand runs cmd on file.
 func ExecCommand(name string, args ...string) (string, error) {
 
 	// Create a new context and add a timeout to it
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
 
 	// Create the command with our context
