@@ -7,7 +7,7 @@ kubectl-install:		## Install kubectl.
 			sudo mv kubectl /usr/local/bin; \
 			kubectl version --client; \
 		else \
-            echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
+			echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
 		fi
 
 KUBECTX_VER = 0.9.3
@@ -58,14 +58,14 @@ k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
 	kubectl create -f admission.yaml ; \
 	kubectl create -f secret.yaml ; \
 	kubectl create -f operator-deployment.yaml ; \
-	kubectl apply -f couchbase-cluster.yaml  
+	kubectl apply -f couchbase-cluster.yaml
 
 k8s-deploy-nsq:			## Deploy NSQ in a newly created k8s cluster
 	cd  $(ROOT_DIR)/build/k8s \
 	&& kubectl apply -f nsqlookupd.yaml \
 	&& kubectl apply -f nsqd.yaml \
 	&& kubectl apply -f nsqadmin.yaml
-	
+
 k8s-deploy-minio:		## Deploy minio
 	cd  $(ROOT_DIR)/build/k8s ; \
 	kubectl apply -f minio-standalone-pvc.yaml ; \
@@ -101,7 +101,7 @@ k8s-deploy-consumer:		## Deploy consumer in kubernetes cluster
 k8s-delete-nsq:
 	cd  $(ROOT_DIR)/build/k8s ; \
 	kubectl delete svc nsqd nsqadmin nsqlookupd
-	kubectl delete deployments nsqadmin 
+	kubectl delete deployments nsqadmin
 	kubectl delete deployments nsqadmin
 
 k8s-delete-cb:		## Delete all couchbase related objects from k8s
@@ -151,7 +151,6 @@ k8s-pf-couchbase:		## Port fordward couchbase ui service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
-
 k8s-pf:					## Port forward all services.
 	make k8s-pf-nsq &
 	make k8s-pf-couchbase &
@@ -193,7 +192,6 @@ k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 
 k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'
-
 
 k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 	for p in $(kubectl get pods | grep Terminating | awk '{print $1}'); \

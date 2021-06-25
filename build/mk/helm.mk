@@ -1,5 +1,5 @@
 HELM_VERSION = 3.6.0
-HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz 
+HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
 helm-install:		## Install Helm.
@@ -11,7 +11,7 @@ helm-install:		## Install Helm.
 			rm -f $(HELM_ZIP); \
 			helm version; \
 		else \
-            echo "${GREEN} [*] Helm already installed ${RESET}"; \
+			echo "${GREEN} [*] Helm already installed ${RESET}"; \
 		fi
 
 helm-add-repos:	## Add the required Helm Charts repositories.
@@ -28,7 +28,10 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo update
 
 helm-release:		## Install Helm release.
-	cd $(ROOT_DIR)/deployments \
+	cd $(ROOT_DIR) \
+		&& git clone https://github.com/saferwall/helm-chart.git \
+		cd helm-chart \
+		&& helm dependency update . \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default saferwall
 
