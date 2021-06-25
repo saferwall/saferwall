@@ -28,6 +28,8 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo update
 
 helm-release:		## Install Helm release.
+	make helm-add-repos
+	make k8s-init-cert-manager
 	cd $(ROOT_DIR) \
 		&& git clone https://github.com/saferwall/helm-chart.git \
 		cd helm-chart \
