@@ -1,5 +1,5 @@
 
-VAGRANT_VERSION = 2.2.14
+VAGRANT_VERSION = 2.2.16
 VAGRANT_ZIP_FILE = vagrant_$(VAGRANT_VERSION)_linux_amd64.zip
 VAGRANT_DOWNLOAD_URL = https://releases.hashicorp.com/vagrant/$(VAGRANT_VERSION)/$(VAGRANT_ZIP_FILE)
 
@@ -11,7 +11,7 @@ vagrant-install: ## Download and install HashiCorp Vagrant.
 			rm -f $(VAGRANT_ZIP_FILE); \
 			vagrant version; \
 		else \
-            echo "${GREEN} [*] Vagrant already installed ${RESET}"; \
+			echo "${GREEN} [*] Vagrant already installed ${RESET}"; \
 		fi
 
 vagrant-package: ## Package Vagrant box.

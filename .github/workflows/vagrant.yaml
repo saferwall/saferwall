@@ -6,13 +6,15 @@ on:
 
 jobs:
   build-vagrant-box:
-    runs-on: ubuntu-20.04
+    runs-on: [self-hosted, linux, x64, saferwall]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup config
-        run: cp example.env .env
+      - name: Decrypt Secret
+        run: ./scripts/decrypt_secret.sh
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
       - name: Install Vagrant
         run: make vagrant-install
@@ -22,8 +24,6 @@ jobs:
 
       - name: Create Vagrant box
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -qq libarchive-tools
           cd build/vagrant
           vagrant up
 
