@@ -1,6 +1,6 @@
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change. 
+When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
@@ -35,7 +35,7 @@ docker-build                   Build the container
 docker-build-nc                Build the container without caching
 docker-run                     Run container on port configured in `config.env`
 ...
-protobuf-generate-api          Generates protocol buffers definitions files. 
+protobuf-generate-api          Generates protocol buffers definitions files.
 protobuf-generate-api-all      Generates protocol buffers definitions files for all AVs.
 protobuf-install-compiler      Install protobuf compiler
 protobuf-protoc-gen-go         Install protoc plugin for Go

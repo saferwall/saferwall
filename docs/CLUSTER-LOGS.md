@@ -11,4 +11,3 @@
 - For example, we have a saved query to see the workers (or consumers) only, by using this query: `container.labels.io_kubernetes_container_name: "consumer"`
 - Then you can filter only the columns you need:
 ![Logs](https://i.imgur.com/2s2Tn5L.png)
-
