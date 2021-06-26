@@ -1,0 +1,20 @@
+{
+    "search.exclude": {
+        "**/node_modules": true,
+    },
+    "files.watcherExclude": {
+        "**/node_modules": true,
+    },
+    "git.ignoreLimitWarning": true,
+    "files.exclude": {
+        "_work/": true,
+        "_diag/": true,
+        ".vault/": true,
+        "externals/": true,
+        ".credentials*": true,
+        ".path": true,
+        ".runner": true,
+        "coverage*": true,
+        "tags.lock*": true,
+    }
+}
