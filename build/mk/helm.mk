@@ -33,9 +33,9 @@ helm-release:		## Install Helm release.
 	cd $(ROOT_DIR) \
 		&& git clone https://github.com/saferwall/helm-chart.git \
 		&& cd helm-chart \
-		&& helm dependency update . \
+		&& helm dependency update  \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
-		 --namespace default saferwall
+		 --namespace default .
 
 helm-debug:		## Dry run install chart.
 	helm install -name $(SAFERWALL_RELEASE_NAME) chart/ \
