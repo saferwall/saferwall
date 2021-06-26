@@ -32,7 +32,7 @@ helm-release:		## Install Helm release.
 	make k8s-init-cert-manager
 	cd $(ROOT_DIR) \
 		&& git clone https://github.com/saferwall/helm-chart.git \
-		cd helm-chart \
+		&& cd helm-chart \
 		&& helm dependency update . \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default saferwall
