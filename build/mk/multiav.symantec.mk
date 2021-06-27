@@ -2,7 +2,7 @@ SYMANTEC_DEB 	= sep-deb.zip
 SYMANTEC_SAV	= /opt/Symantec/symantec_antivirus/sav
 SYMANTEC_TMP	= /tmp/symantec
 
-symantec-install:	## install Symantec Endpoint Protection Linux Client	
+symantec-install:	## install Symantec Endpoint Protection Linux Client
 	apt-get update
 	apt-get install unzip libc6-i386 -y
 	mkdir -p $(SYMANTEC_TMP)

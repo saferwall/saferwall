@@ -3,7 +3,7 @@ MCAFEE_UPDATE		= 	http://download.nai.com/products/DatFiles/4.x/nai/
 MCAFEE_INSTALL_DIR 	= 	/opt/mcafee
 MCAFEE_TMP 			= 	/tmp/mcafee
 
-install-mcafee:	## install McAfee VirusScan Command Line Scanner 
+install-mcafee:	## install McAfee VirusScan Command Line Scanner
 	apt-get update
 	apt-get install wget unzip -y
 	mkdir -p $(MCAFEE_TMP)

@@ -23,7 +23,6 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	--timeout=90s
 	kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
-
 kind-down:	## Delete Kind cluster.
 	kind delete clusters saferwall
 

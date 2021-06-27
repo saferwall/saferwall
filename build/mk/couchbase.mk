@@ -14,4 +14,3 @@ couchabse-install:	## Install Couchbase in Ubuntu
 	sudo dpkg -i ./couchbase-release-1.0-amd64.deb
 	sudo apt-get update
 	sudo apt-get install couchbase-server -y
-

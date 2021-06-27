@@ -48,7 +48,7 @@ include build/mk/die.mk
 include build/mk/helm.mk
 include build/mk/kops.mk
 include build/mk/consumer.mk
-include build/mk/frontend.mk
+include build/mk/kafka.mk
 include build/mk/protobuf.mk
 include build/mk/yara.mk
 include build/mk/saferwall.mk

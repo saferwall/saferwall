@@ -75,7 +75,6 @@ Vagrant.configure("2") do |config|
       apt-get install make curl git -y
       git clone https://github.com/saferwall/saferwall
       cd saferwall \
-        && cp example.env .env \
         && make docker-install \
         && make kubectl-install \
         && make kind-install \
