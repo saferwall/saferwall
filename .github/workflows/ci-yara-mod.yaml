@@ -22,9 +22,6 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Setup config
-        run: cp example.env .env
-
       - name: Install dependencies
         run: |
           go version

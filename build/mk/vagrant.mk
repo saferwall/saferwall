@@ -16,7 +16,7 @@ vagrant-install: ## Download and install HashiCorp Vagrant.
 
 vagrant-package: ## Package Vagrant box.
 	$(eval VAGRANT_VM_NAME := $(shell VBoxManage list vms | cut -f 1 -d ' ' | tr -d '"'))
-	vagrant package --base $(VAGRANT_VM_NAME) --output saferwall.box
+	vagrant package --base $(VAGRANT_VM_NAME) --output $(VAGRANT_BOX_NAME).box
 
 vagrant-login:	## Authenticate to Vagrant cloud
 	vagrant cloud auth login --token $(VAGRANT_TOKEN)
@@ -24,9 +24,10 @@ vagrant-login:	## Authenticate to Vagrant cloud
 VAGRANT_DESCRIPTION = Saferwall kubernetes cluster for local use.
 VAGRANT_SHORT_DESCRIPTION = A hackable malware sandbox for the 21st Century.
 vagrant-publish:	## Upload the image to the cloud.
-	vagrant cloud publish saferwall/saferwall $(SAFERWALL_VER) virtualbox saferwall.box \
-	 -d "$(VAGRANT_DESCRIPTION)" --version-description "$(SAFERWALL_VER)"
-	  --release --short-description "$(VAGRANT_SHORT_DESCRIPTION)" --force
+	vagrant cloud publish $(VAGRANT_ORG)/$(VAGRANT_BOX_NAME) $(SAFERWALL_VER) \
+		virtualbox $(VAGRANT_BOX_NAME).box -d "$(VAGRANT_DESCRIPTION)" \
+		--version-description "$(SAFERWALL_VER)" --release \
+		--short-description "$(VAGRANT_SHORT_DESCRIPTION)" --force
 
 vagrant-create:		## Create  Vagrant Box.
 	cd build/vagrant \

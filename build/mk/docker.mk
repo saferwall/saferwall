@@ -87,7 +87,7 @@ docker-stats: ## Get docker stats nicely formatted.
 docker-non-root: ## Run docker as non root.
 	sudo groupadd docker
 	sudo usermod -aG docker $(USER)
-	newgrp docker 
+	newgrp docker
 	sudo chown "$(USER)":"$(USER)" /home/"$(USER)"/.docker -R
 	sudo chmod g+rwx "$(HOME)/.docker" -R
 

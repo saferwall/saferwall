@@ -113,7 +113,7 @@ spec:
     kubelet:
         maxPods: 200
 ```
-- For more information, check out: 
+- For more information, check out:
   - https://kubernetes.io/docs/concepts/cluster-administration/networking/#aws-vpc-cni-for-kubernetes
   - https://github.com/awslabs/amazon-eks-ami/blob/master/files/eni-max-pods.txt
   - https://kubernetes.io/docs/setup/best-practices/cluster-large/

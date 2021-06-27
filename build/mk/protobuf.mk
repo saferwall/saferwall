@@ -1,7 +1,7 @@
 API_DIR = $(ROOT_DIR)/api/protobuf-spec
 AV_LIST = $(ROOT_DIR)/pkg/grpc/multiav
 
-protobuf-generate-api:		## Generates protocol buffers definitions files. 
+protobuf-generate-api:		## Generates protocol buffers definitions files.
 	mkdir -p $(AV_LIST)/$$AV_VENDOR/proto
 	protoc -I $(API_DIR)/ \
 		--go_out=plugins=grpc:$(AV_LIST)/$(AV_VENDOR)/proto/ \
@@ -26,5 +26,3 @@ protobuf-install-compiler: 	## Install protobuf compiler
 
 protobuf-protoc-gen-go:	## Install protoc plugin for Go
 	go get -u github.com/golang/protobuf/protoc-gen-go
-
-

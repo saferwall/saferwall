@@ -1,6 +1,6 @@
 # Deploying documentation for developers
 
-Ubuntu `18.04/20.04` users will benefit from `make` commands available for quickly bootstrapping this deployment.
+Ubuntu `18 or 20` users will benefit from `make` commands available for quickly bootstrapping this deployment.
 - Install few dependencies: `sudo apt-get install make curl git -y`.
 - Clone the project: `git clone https://github.com/saferwall/saferwall`
 - Copy the `example.env` to `.env`, this file stores the project configuration.
@@ -18,7 +18,7 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
 1. Install `Docker`: `make docker-install`.
 2. Install `Kind`: `make kind-install` or Minikube: `make minikube-install`
 3. Install `Kubectl`: `make kubectl-install`
-4. __Minikube__ users only: 
+4. __Minikube__ users only:
     - A hypervisor like `QEMU/KVM` or `Virtualbox` is required: For KVM/QEMU: `make kvm-install`, for VirtualBox: `make vbox-install`.
     - Edit the `.env` to specify which driver to use and number of cpus, ram and disk size:
         ```mk
@@ -35,12 +35,12 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
     - Build the __multiav__:
         - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
         - By default, saferwall will use only the free ones.
-6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`, this will also enable ingress nginx.
+6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`.
 7. Install Helm: `make helm-install`.
 8. Edit the `deployments/saferwall/values.yaml`
     - If you are interested to see the logs in EFK:
         - Set `elasticsearch.enabled` to true.
-        - Set `kibana.enabled` to true. 
+        - Set `kibana.enabled` to true.
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
 9. Init cert-manager: `make k8s-init-cert-manager`.
@@ -50,7 +50,7 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
     - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
 13. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
-14. The credentials to access the dashboard are: 
+14. The credentials to access the dashboard are:
     ```
     username: Administrator
     password: password
@@ -71,5 +71,3 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
 
  Logs are found elasticsearch:
 <p align="center"><img src="https://i.imgur.com/6TnK2jR.png" width="500px" height="auto"></p>
-
-

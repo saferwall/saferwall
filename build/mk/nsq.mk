@@ -22,5 +22,3 @@ nsq-start-docker:	## Start nsq in docker
 		nsqio/nsq /nsqd \
 		--broadcast-address=172.17.42.1 \
 		--lookupd-tcp-address=172.17.42.1:4160
-
-

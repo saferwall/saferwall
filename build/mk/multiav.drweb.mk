@@ -17,10 +17,10 @@ install-drweb:	## install DrWeb Antivirus for Linux
 update-drweb:		## update DrWeb Antivirus for Linux
 	sudo /opt/drweb.com/bin/drweb-configd -d  \
 		&& /opt/drweb.com/bin/drweb-ctl update &> /dev/null; exit 0 \
-		&& @echo "Updating the database ..." \ 
+		&& @echo "Updating the database ..." \
 		&& /bin/bash -c 'while /opt/drweb.com/bin/drweb-ctl baseinfo | grep -q "Last successful update: unknown"; do sleep 5; done' \
-		&& /opt/drweb.com/bin/drweb-ctl baseinfo \ 
-		&& /opt/drweb.com/bin/drweb-ctl appinfo 
+		&& /opt/drweb.com/bin/drweb-ctl baseinfo \
+		&& /opt/drweb.com/bin/drweb-ctl appinfo
 
 uninstall-drweb:	## uninstall DrWeb Antivirus for Linux
 	yes | sudo /opt/drweb.com/bin/uninst.sh

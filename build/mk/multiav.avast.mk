@@ -10,12 +10,12 @@ install-avast:	## install Avast Security for Linux
 	old='^DOWNLOAD=(.*)$$' && new='DOWNLOAD="curl -L -s -f"' \
 		&& sed -i "s|$$old|$$new|g" /var/lib/avast/Setup/avast.setup
 ifdef SAFERWALL_DEV
-	cp $(ROOT_DIR)/build/data/license.avastlic $(AVAST_LICENSE_PATH) 
-	chown avast:avast $(AVAST_LICENSE_PATH) 
+	cp $(ROOT_DIR)/build/data/license.avastlic $(AVAST_LICENSE_PATH)
+	chown avast:avast $(AVAST_LICENSE_PATH)
 endif
 ifdef SAFERWALL_TEST
 	vault read -field=license.avastlic multiav/avast | base64 -d > $(AVAST_LICENSE_PATH)
-	chown avast:avast $(AVAST_LICENSE_PATH) 
+	chown avast:avast $(AVAST_LICENSE_PATH)
 endif
 	service avast start
 
