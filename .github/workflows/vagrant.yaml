@@ -32,6 +32,8 @@ jobs:
 
       - name: Authenticate to Vagrant cloud
         run: make vagrant-login
+        env:
+          VAGRANT_TOKEN: ${{ secrets.VAGRANT_TOKEN }}
 
       - name: Publish the box
         run: make vagrant-publish
