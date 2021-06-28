@@ -42,8 +42,8 @@ func SetupLogging() *zap.Logger {
 }
 
 const (
-	// grpc library default is 4MB
-	maxMsgSize = 1024 * 1024 * 20
+	// grpc library default is 64MB
+	maxMsgSize = 1024 * 1024 * 64
 
 	// Path to the file which holds the last time we updated the AV engine
 	// database.
@@ -53,7 +53,7 @@ const (
 	port = ":50051"
 
 	// ScanTimeout is the timeout used before the scanFile API will give up.
-	ScanTimeout = 60 * time.Second
+	ScanTimeout = 10 * time.Second
 )
 
 // ScanResult av result
