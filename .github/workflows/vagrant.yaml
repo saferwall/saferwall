@@ -30,10 +30,10 @@ jobs:
       - name: Create box package
         run: make vagrant-package
 
-      - name: Authenticate to Vagrant cloud
-        run: make vagrant-login
-        env:
-          VAGRANT_TOKEN: ${{ secrets.VAGRANT_TOKEN }}
+      # - name: Authenticate to Vagrant cloud
+      #   run: make vagrant-login
+      #   env:
+      #     VAGRANT_TOKEN: ${{ secrets.VAGRANT_TOKEN }}
 
-      - name: Publish the box
-        run: make vagrant-publish
+      # - name: Publish the box
+      #   run: make vagrant-publish
