@@ -10,20 +10,20 @@
 
 ```mk
 # ======================== KOPS ========================
-export KOPS_CLUSTER_NAME=example.k8s.local
-export KOPS_STATE_STORE=s3://kops-example-com-state-store
+KOPS_CLUSTER_NAME=example.k8s.local
+KOPS_STATE_STORE=s3://kops-example-com-state-store
 ```
 
 4. Edit the file `.env` again and choose the size of the cluster, the nodes count, the node size, region, etc:
 
 ```mk
-export AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id)
-export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
-export AWS_REGION = us-east-1
-export AWS_NODE_COUNT = 1
-export AWS_NODE_SIZE = t2.medium
-export AWS_MASTER_SIZE = t2.small
-export AWS_EFS_TOKEN = example-efs
+AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id)
+AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
+AWS_REGION = us-east-1
+AWS_NODE_COUNT = 1
+AWS_NODE_SIZE = t2.medium
+AWS_MASTER_SIZE = t2.small
+AWS_EFS_TOKEN = example-efs
 ```
 
 4. Create the cluster: `make kops-cluster`.
@@ -35,8 +35,8 @@ export AWS_EFS_TOKEN = example-efs
   - Create an account and put your credentials in the `.env` file like this:
   ```mk
   # Docker hub
-  export DOCKER_HUB_USR = your_docker_hub_username
-  export DOCKER_HUB_PWD = your_docker_hub_password
+  DOCKER_HUB_USR = your_docker_hub_username
+  DOCKER_HUB_PWD = your_docker_hub_password
   ```
   - Build and release:
     - `backend`: !todo!
