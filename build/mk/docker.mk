@@ -40,7 +40,7 @@ docker-tag-version: 	## Generate container `latest` tag
 
 docker-repo-login: 	## Login to Docker Hub
 	@echo 'login to docker hub'
-	echo $(DOCKER_HUB_PWD) | docker login -u $(DOCKER_HUB_USR) --password-stdin
+	@echo '$(DOCKER_HUB_PWD)' | docker login -u $(DOCKER_HUB_USR) --password-stdin
 
 docker-install:		## Install docker.
 	sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y

@@ -30,9 +30,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/trendmicro:0.1.0
+FROM saferwall/trendmicro:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.1.0"
+LABEL version="1.0.0"
 LABEL description="gRPC server over linux version of TrendMicro"
 
 # Environment variables.
