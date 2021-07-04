@@ -39,7 +39,8 @@ docker-tag-version: 	## Generate container `latest` tag
 	docker tag $(REPO)/$(IMG) $(REPO)/$(IMG):$(VERSION)
 
 docker-repo-login: 	## Login to Docker Hub
-	@echo '$(DOCKER_HUB_PWD)' | docker login --username=$(DOCKER_HUB_USR) --password-stdin
+	@echo 'login to docker hub'
+	echo $(DOCKER_HUB_PWD) | docker login -u $(DOCKER_HUB_USR) --password-stdin
 
 docker-install:		## Install docker.
 	sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y
@@ -50,7 +51,6 @@ docker-install:		## Install docker.
 	sudo apt-get install docker-ce -y
 
 DOCKER_COMPOSE_VER=1.29.2
-
 docker-compose-install: 	## Install docker-compose
 	sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VER}/docker-compose-$$(uname -s)-$$(uname -m)" -o /usr/local/bin/docker-compose
 	sudo chmod +x /usr/local/bin/docker-compose

@@ -1,5 +1,4 @@
 ## Saferwall project specific files
-.vault
 api
 cmd
 deployments
@@ -9,7 +8,6 @@ private
 scripts
 test
 .env
-example.env
 
 # git
 **/.git

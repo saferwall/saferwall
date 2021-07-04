@@ -27,7 +27,10 @@ WHITE        := $(shell tput -Txterm setaf 7)
 RESET := $(shell tput -Txterm sgr0)
 
 # Our config file.
-include $(ROOT_DIR)/.env
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
 
 # Include our internals makefiles.
 include build/mk/aws.mk
@@ -48,7 +51,6 @@ include build/mk/die.mk
 include build/mk/helm.mk
 include build/mk/kops.mk
 include build/mk/consumer.mk
-include build/mk/kafka.mk
 include build/mk/protobuf.mk
 include build/mk/yara.mk
 include build/mk/saferwall.mk
