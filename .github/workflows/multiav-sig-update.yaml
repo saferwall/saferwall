@@ -9,7 +9,7 @@ on:
 
 jobs:
   update-goclamav:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -23,7 +23,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=clamav
 
   update-goavira:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=avira
 
   update-gocomodo:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -51,7 +51,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=comodo
 
   update-godrweb:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -65,7 +65,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=drweb
 
   update-gofsecure:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -79,7 +79,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=fsecure
 
   update-gobitdefender:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -93,7 +93,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=bitdefender
 
   update-goeset:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -107,7 +107,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=eset
 
   update-goavast:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -121,7 +121,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=avast
 
   update-gosymantec:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -135,7 +135,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=symantec
 
   update-gomcafee:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -149,7 +149,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=mcafee
 
   update-gokaspersky:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -163,7 +163,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=kaspersky
 
   update-gosophos:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -177,7 +177,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=sophos
 
   update-gotrendmicro:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -191,7 +191,7 @@ jobs:
         run: make multiav-release-av-go AV_VENDOR=trendmicro
 
   update-gowindefender:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
