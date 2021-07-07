@@ -8,7 +8,6 @@ import (
 	"errors"
 	"io"
 
-	"github.com/saferwall/saferwall/pkg/config"
 	"github.com/saferwall/saferwall/pkg/storage/local"
 	"github.com/saferwall/saferwall/pkg/storage/s3"
 )
@@ -25,13 +24,21 @@ type Storage interface {
 	Upload(bucket, key string, file io.Reader, timeout int) error
 }
 
-func New(deployment string, cfg config.StorageCfg) (Storage, error) {
+// Options for object storage.
+type Options struct {
+	S3Region  string
+	S3AccKey  string
+	S3SecKey  string
+	LocalRootDir string
+}
 
-	switch deployment {
+func New(kind string, opts Options) (Storage, error) {
+
+	switch kind {
 	case "aws":
-		return s3.New(cfg.S3.Region, cfg.S3.AccessKey, cfg.S3.SecretKey)
+		return s3.New(opts.S3Region, opts.S3AccKey, opts.S3SecKey)
 	case "local":
-		return local.New(cfg.Local.RootDir)
+		return local.New(opts.LocalRootDir)
 	}
 
 	return nil, errDeploymentNotFound

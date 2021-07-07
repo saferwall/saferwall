@@ -24,6 +24,21 @@ type Service struct {
 	downloader *s3manager.Downloader
 }
 
+// FakeWriterAt represents a struct that provides the method WriteAt so it will
+// satisfy interface io.WriterAt. It will ignore offset and therefore works
+// like just io.Writer. AWS SDK is Using io.WriterAt because of concurrent
+// download, so it can write at offset position (e.g. in middle of file).
+// By disabling concurrent download we can safely ignore the offset argument
+// because it will be downloaded sequentially.
+type FakeWriterAt struct {
+	w io.Writer
+}
+
+func (fw FakeWriterAt) WriteAt(p []byte, offset int64) (n int, err error) {
+	// ignore 'offset' because we forced sequential downloads
+	return fw.w.Write(p)
+}
+
 // New generates new s3 object storage service.
 func New(region, accessKey, secretKey string) (Service, error) {
 
@@ -85,7 +100,7 @@ func (s Service) Upload(bucket, key string, file io.Reader, timeout int) error {
 }
 
 // Download downloads an object from s3.
-func (s Service) Download(bucket, key string, file io.WriterAt, timeout int) error {
+func (s Service) Download(bucket, key string, file io.Writer, timeout int) error {
 
 	// Create a context with a timeout that will abort the upload if it takes
 	// more than the passed in timeout.
@@ -108,7 +123,7 @@ func (s Service) Download(bucket, key string, file io.WriterAt, timeout int) err
 	}
 
 	// Perform the download.
-	_, err := s.downloader.DownloadWithContext(ctx, file, input)
+	_, err := s.downloader.DownloadWithContext(ctx, FakeWriterAt{file}, input)
 
 	return err
 }
