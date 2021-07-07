@@ -44,18 +44,18 @@ func (s Service) Upload(bucket, key string, file io.Reader, timeout int) error {
 }
 
 // Download downloads an object from the local file system.
-func (s Service) Download(bucket, key string, file io.Writer, timeout int) error {
+func (s Service) Download(bucket, key string, dst io.Writer, timeout int) error {
 
 	// Create new file.
-	dest := filepath.Join(s.root, bucket, key)
-	new, err := os.Create(dest)
+	name := filepath.Join(s.root, bucket, key)
+	src, err :=  os.Open(name)
 	if err != nil {
 		return err
 	}
-	defer new.Close()
+	defer src.Close()
 
 	// Perform the copy.
-	if _, err := io.Copy(file, new); err != nil {
+	if _, err := io.Copy(dst, src); err != nil {
 		return err
 	}
 

@@ -5,7 +5,6 @@
 package nsq
 
 import (
-	"encoding/json"
 	"os"
 	"time"
 
@@ -38,11 +37,7 @@ func NewPublisher(addr string) (pubsub.Publisher,
 }
 
 // Publish will marshal the message to json and produce it to the NSQ topic.
-func (p *publisher) Publish(ctx context.Context, topic string, m []byte) error {
-	msg, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
+func (p *publisher) Publish(ctx context.Context, topic string, msg []byte) error {
 	return p.producer.Publish(topic, msg)
 }
 
