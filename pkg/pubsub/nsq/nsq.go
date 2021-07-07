@@ -6,56 +6,44 @@ package nsq
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
+	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"golang.org/x/net/context"
 )
 
-// publisher is a publisher that provides an implementation for NSQ.
-type publisher struct {
-	producer *gonsq.Producer
-	topic    string
-}
-
-// NoopNSQLogger allows us to pipe NSQ logs to dev/null
-// The default NSQ logger is great for debugging, but did
-// not fit our normally well structured JSON logs. Luckily
-// NSQ provides a simple interface for injecting your own
+// NoopNSQLogger allows us to pipe NSQ logs to dev/null. The default NSQ logger
+// is great for debugging, but did not fit our normally well structured JSON
+// logs. Luckily NSQ provides a simple interface for injecting your own
 // logger.
 type NoopNSQLogger struct{}
 
-// Output allows us to implement the nsq.Logger interface
+// Output allows us to implement the nsq.Logger interface.
 func (l *NoopNSQLogger) Output(calldepth int, s string) error {
 	return nil
 }
 
-// NewPublisher will initiate a new nsq producer.
-func NewPublisher(cfg *Config) (pubsub.Publisher, error) {
-	var err error
-	p := &publisher{}
+// publisher is a publisher that provides an implementation for NSQ.
+type publisher struct {
+	producer *gonsq.Producer
+}
 
-	if len(cfg.Topic) == 0 {
-		return p, errors.New("topic name is required")
-	}
-	nsqConfig := cfg.Config
-	if nsqConfig == nil {
-		nsqConfig = gonsq.NewConfig()
-	}
-	p.topic = cfg.Topic
-	p.producer, err = gonsq.NewProducer(cfg.NsqdAddr, nsqConfig)
-	return p, err
+// NewPublisher will initiate a new nsq producer.
+func NewPublisher(addr string) (pubsub.Publisher,
+	error) {
+	p, err := gonsq.NewProducer(addr, gonsq.NewConfig())
+	return &publisher{p}, err
 }
 
 // Publish will marshal the message to json and produce it to the NSQ topic.
-func (p *publisher) Publish(ctx context.Context, key string, m []byte) error {
+func (p *publisher) Publish(ctx context.Context, topic string, m []byte) error {
 	msg, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
-	return p.producer.Publish(p.topic, msg)
+	return p.producer.Publish(topic, msg)
 }
 
 // Stop will close the pub connection.
@@ -66,46 +54,47 @@ func (p *publisher) Stop() error {
 
 // subscriber is a subscriber that provides an implementation for NSQ.
 type subscriber struct {
-	cons        *gonsq.Consumer
-	nsqlookupds []string
-	topic       string
-	channel     string
 	concurrency int
+	nerr        error
+	nsqlookupds []string
 	handler     gonsq.Handler
 	stop        chan chan error
-	nerr        error
+	cons        *gonsq.Consumer
 }
 
 // NewSubscriber will initiate an nsq consumer.
-func NewSubscriber(cfg *Config) (pubsub.Subscriber, error) {
+func NewSubscriber(topic, channel string, nsqlookupds []string, concurrency int,
+	h gonsq.Handler) (pubsub.Subscriber, error) {
 
-	var err error
-	s := &subscriber{
-		topic: cfg.Topic,
-		stop:  make(chan chan error, 1),
+	// Create a new nsq config.
+	nsqConfig := gonsq.NewConfig()
+
+	// Maximum number of times this consumer will attempt to process a message
+	// before giving up.
+	nsqConfig.MaxAttempts = 2
+
+	// Maximum number of messages to allow in flight (concurrency knob).
+	nsqConfig.MaxInFlight = 1
+
+	// The server-side message timeout for messages delivered to this client.
+	nsqConfig.MsgTimeout = time.Duration(2 * time.Minute)
+
+	cons, err := gonsq.NewConsumer(topic, channel, nsqConfig)
+
+	s := subscriber{
+		cons:        cons,
+		concurrency: concurrency,
+		stop:        make(chan chan error, 1),
+		handler:     h,
+		nsqlookupds: nsqlookupds,
 	}
 
-	if len(cfg.NsqLookupds) == 0 {
-		return s, errors.New("at least 1 broker host is required")
-	}
-	if len(cfg.Topic) == 0 {
-		return s, errors.New("topic name is required")
-	}
-
-	nsqConfig := cfg.Config
-	if nsqConfig == nil {
-		nsqConfig = gonsq.NewConfig()
-	}
-	s.topic = cfg.Topic
-	s.channel = cfg.Channel
-	s.nsqlookupds = cfg.NsqLookupds
-	s.cons, err = gonsq.NewConsumer(cfg.Topic, cfg.Channel, nsqConfig)
-	return s, err
+	return &s, err
 }
 
 // Start will start consuming message on the NSQ topic. If it encounters any
 // issues, it will populate the Err() error and close the returned channel.
-func (s *subscriber) Start() <-chan pubsub.SubscriberMessage {
+func (s *subscriber) Start() error {
 
 	// Here we set the logger to our NoopNSQLogger to quiet down the default logs.
 	// At Reverb we use a custom structured logging format so we'll take the
@@ -123,33 +112,26 @@ func (s *subscriber) Start() <-chan pubsub.SubscriberMessage {
 	// nsqlookupd instances The application will periodically poll
 	// these nqslookupd instances to discover new nodes or drop unhealthy
 	// producers.
-	s.cons.ConnectToNSQLookupds(s.nsqlookupds)
+	if err := s.cons.ConnectToNSQLookupds(s.nsqlookupds); err != nil {
+		return err
+	}
 
 	// Let's allow our queues to drain properly during shutdown.
 	// We'll create a channel to listen for SIGINT (Ctrl+C) to signal
 	// to our application to gracefully shutdown.
 	shutdown := make(chan os.Signal, 2)
 
-	output := make(chan pubsub.SubscriberMessage)
-	go func(s *subscriber, output chan pubsub.SubscriberMessage) {
-		defer close(output)
-
-		// channel until either the consumer dies or our application is signaled
-		// to stop.
-		for {
-			select {
-			case <-s.cons.StopChan:
-				// consumer disconnected. Time to quit.
-				return
-			case <-shutdown:
-				// Synchronously drain the queue before falling out of main
-				s.Stop()
-				return
-			}
+	for {
+		select {
+		case <-s.cons.StopChan:
+			// consumer disconnected. Time to quit.
+		case <-shutdown:
+			// Synchronously drain the queue before falling out of main
+			s.Stop()
 		}
-	}(s, output)
+	}
 
-	return output
+	return nil
 }
 
 // Stop will block until the consumer has stopped consuming messages

@@ -5,8 +5,6 @@
 package pubsub
 
 import (
-	"time"
-
 	"golang.org/x/net/context"
 )
 
@@ -23,17 +21,9 @@ type Publisher interface {
 // what happened.
 type Subscriber interface {
 	// Start will return a channel of raw messages.
-	Start() <-chan SubscriberMessage
+	Start() error
 	// Err will contain any errors returned from the consumer connection.
 	Err() error
 	// Stop will initiate a graceful shutdown of the subscriber connection.
 	Stop() error
-}
-
-// SubscriberMessage is a struct to encapsulate subscriber messages and provide
-// a mechanism for acknowledging messages _after_ they've been processed.
-type SubscriberMessage interface {
-	Message() []byte
-	ExtendDoneDeadline(time.Duration) error
-	Done() error
 }
