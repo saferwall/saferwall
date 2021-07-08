@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.39.0
+	github.com/couchbase/gocb/v2 v2.2.4
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/fatih/color v1.7.0
 	github.com/gabriel-vasile/mimetype v1.3.1
