@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.15-alpine AS builder
+FROM golang:1.16-alpine AS build-stage
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -15,7 +15,8 @@ WORKDIR $GOPATH/src/saferwall/clamav/
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download all dependencies.
+# Dependencies will be cached if the go.mod and go.sum files are not changed.
 RUN go mod download
 
 # Copy our go files
@@ -24,7 +25,7 @@ COPY . .
 # Build the binary.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-     -o /go/bin/clamavscanner pkg/grpc/multiav/clamav/server/main.go
+     -o /go/bin/clamavsvc cmd/services/multiav/clamav/clamav.go
 
 
 ############################
@@ -53,7 +54,7 @@ RUN addgroup -S saferwall \
 	&& adduser -S -G saferwall saferwall  --shell /bin/sh
 
 # Copy our binary.
-COPY --from=builder /go/bin/clamavscanner /bin/clamavscanner
+COPY --from=build-stage /go/bin/clamavscanner /bin/clamavscanner
 
 # Configure permissions.
 RUN chown saferwall:saferwall /bin/clamavscanner \
@@ -64,4 +65,4 @@ RUN chown saferwall:saferwall /bin/clamavscanner \
 # Switch to our user
 USER saferwall
 
-ENTRYPOINT ["/bin/clamavscanner"]
+ENTRYPOINT ["/bin/clamavsvc"]
