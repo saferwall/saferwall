@@ -16,5 +16,7 @@
         ".runner": true,
         "coverage*": true,
         "tags.lock*": true,
+        "topic*.dat": true,
+        "*meta.dat": true,
     }
 }
