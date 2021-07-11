@@ -12,7 +12,7 @@ require (
 	github.com/knightsc/gapstone v0.0.0-20150606025522-c8ce2e4cbb4a
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/saferwall/multiav v0.0.0-20210710024134-6d52a81f2b17
+	github.com/saferwall/multiav v0.1.0
 	github.com/saferwall/pe v1.0.4
 	github.com/spf13/viper v1.7.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb

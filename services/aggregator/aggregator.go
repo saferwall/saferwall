@@ -79,7 +79,7 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 
 // Start kicks in the service to start consuming events.
 func (s *Service) Start() error {
-	s.logger.Debug("Starting the service ...")
+	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
 	s.sub.Start()
 
 	return nil
