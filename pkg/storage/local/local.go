@@ -19,7 +19,9 @@ type Service struct {
 // New generates new object storage service.
 func New(root string) (Service, error) {
 	if _, err := os.Stat(root); os.IsNotExist(err) {
-		return Service{}, err
+		if err := os.Mkdir(root, 0755); err != nil {
+			return Service{}, err
+		}
 	}
 	return Service{root}, nil
 }
@@ -48,7 +50,7 @@ func (s Service) Download(bucket, key string, dst io.Writer, timeout int) error 
 
 	// Create new file.
 	name := filepath.Join(s.root, bucket, key)
-	src, err :=  os.Open(name)
+	src, err := os.Open(name)
 	if err != nil {
 		return err
 	}
