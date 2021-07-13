@@ -101,19 +101,24 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
+	ctx := context.Background()
 	sha256 := string(m.Body)
-	s.logger = s.logger.With(context.Background(), "sha256", sha256)
+	s.logger = s.logger.With(ctx, "sha256", sha256)
+
+	s.logger.Info("start processing")
 
 	// Download the file from object storage and place it in a directory
 	// shared between all microservices.
 	filePath := filepath.Join(s.cfg.Storage.SharedVolume, sha256)
 	file, err := os.Create(filePath)
 	if err != nil {
+		s.logger.Errorf("failed creating file: %v", err)
 		return err
 	}
 
 	if err := s.storage.Download(s.cfg.Storage.Bucket, sha256, file,
 		s.cfg.Storage.Timeout); err != nil {
+		s.logger.Errorf("failed downloading file: %v", err)
 		return err
 	}
 
@@ -121,31 +126,35 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// consumers.
 	mtype, err := mimetype.DetectFile(filePath)
 	if err != nil {
+		s.logger.Errorf("failed to detect mimetype: %v", err)
 		return err
 	}
 	msg, err := json.Marshal(micro.Message{Sha256: sha256, Body: nil})
 	if err != nil {
+		s.logger.Errorf("failed to marshall Message: %v", err)
 		return err
 	}
 
+	s.logger.Infof("file type is: %s", mtype.String())
+
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
-		err = s.pub.Publish(context.Background(), "topic-pe", msg)
+		err = s.pub.Publish(ctx, "topic-pe", msg)
 		if err != nil {
 			return err
 		}
 	case "elf":
-		err = s.pub.Publish(context.TODO(), "topic-elf", m.Body)
+		err = s.pub.Publish(ctx, "topic-elf", m.Body)
 		if err != nil {
 			return err
 		}
 	case "mach-o":
-		err = s.pub.Publish(context.TODO(), "topic-mach-o", m.Body)
+		err = s.pub.Publish(ctx, "topic-mach-o", m.Body)
 		if err != nil {
 			return err
 		}
 	case "pdf":
-		err = s.pub.Publish(context.TODO(), "topic-pdf", m.Body)
+		err = s.pub.Publish(ctx, "topic-pdf", m.Body)
 		if err != nil {
 			return err
 		}
@@ -153,7 +162,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// we always scan the file no matter which format it is with the multi-av
 	// scanner.
-	s.pub.Publish(context.TODO(), "topic-multiav", m.Body)
+	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
+	if err != nil {
+		s.logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.
