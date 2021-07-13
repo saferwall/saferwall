@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-package writer
+package aggregator
 
 import (
 	"context"
@@ -102,6 +102,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	sha256 := msg.Sha256
 	s.logger = s.logger.With(context.TODO(), "sha256", sha256)
+
+	s.logger.Info("start processing")
 
 	var payload interface{}
 	err = json.Unmarshal(msg.Body, &payload)

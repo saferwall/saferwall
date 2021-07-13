@@ -1,0 +1,30 @@
+# Log level verbosity.
+log_level = "info"
+# Kind of deployment used to host object storage.
+deployment = "local"
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD).
+nsqd = "nsqd:4150"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = ["nsqlookupd:4161"]
+# Topic name to consume from.
+topic = "topic-filescan"
+# Channel name used in conjunction with topic name.
+channel = "chan-filescan"
+# The number of concurrent workers to process the jobs.
+concurrency = 1
+
+[storage]
+# Shared volume between all microservices.
+shared_volume = "/samples"
+# Bucket name where samples are stored.
+bucket = "files"
+# Timeout used while download/uploading binaries from object storage.
+timeout = 5
+    [storage.local]
+    # Full path to the directory where to store the files.
+    root_dir = "/saferwall/samples"
