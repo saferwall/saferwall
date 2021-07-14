@@ -32,7 +32,6 @@ type LocalFsCfg struct {
 
 // StorageCfg represents the object storage config.
 type StorageCfg struct {
-	SharedVolume string     `mapstructure:"shared_volume"`
 	Bucket       string     `mapstructure:"bucket"`
 	Timeout      int        `mapstructure:"timeout"`
 	S3           AWSS3Cfg   `mapstructure:"s3"`
