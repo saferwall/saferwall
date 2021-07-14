@@ -1,13 +1,13 @@
 ## Saferwall project specific files
 api
-cmd
-deployments
 docs
-minio
 private
 scripts
 test
 .env
+# Binaries
+cmd/services/**/main
+**/__debug_bin
 
 # git
 **/.git

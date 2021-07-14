@@ -22,12 +22,12 @@ import (
 
 // Config represents our application config.
 type Config struct {
-	LogLevel   string             `mapstructure:"log_level"`
-	SharedVolume string     `mapstructure:"shared_volume"`
-	Deployment string             `mapstructure:"deployment"`
-	Producer   config.ProducerCfg `mapstructure:"producer"`
-	Consumer   config.ConsumerCfg `mapstructure:"consumer"`
-	Storage    config.StorageCfg  `mapstructure:"storage"`
+	LogLevel     string             `mapstructure:"log_level"`
+	SharedVolume string             `mapstructure:"shared_volume"`
+	Deployment   string             `mapstructure:"deployment"`
+	Producer     config.ProducerCfg `mapstructure:"producer"`
+	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
+	Storage      config.StorageCfg  `mapstructure:"storage"`
 }
 
 // Service represents the PE scan service. It adheres to the nsq.Handler
@@ -102,22 +102,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	ctx := context.Background()
 	sha256 := string(m.Body)
-	s.logger = s.logger.With(ctx, "sha256", sha256)
+	logger := s.logger.With(ctx, "sha256", sha256)
 
-	s.logger.Info("start processing")
+	logger.Info("start processing")
 
 	// Download the file from object storage and place it in a directory
 	// shared between all microservices.
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
 	file, err := os.Create(filePath)
 	if err != nil {
-		s.logger.Errorf("failed creating file: %v", err)
+		logger.Errorf("failed creating file: %v", err)
 		return err
 	}
 
 	if err := s.storage.Download(s.cfg.Storage.Bucket, sha256, file,
 		s.cfg.Storage.Timeout); err != nil {
-		s.logger.Errorf("failed downloading file: %v", err)
+		logger.Errorf("failed downloading file: %v", err)
 		return err
 	}
 
@@ -125,11 +125,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// consumers.
 	mtype, err := mimetype.DetectFile(filePath)
 	if err != nil {
-		s.logger.Errorf("failed to detect mimetype: %v", err)
+		logger.Errorf("failed to detect mimetype: %v", err)
 		return err
 	}
 
-	s.logger.Infof("file type is: %s", mtype.String())
+	logger.Infof("file type is: %s", mtype.String())
 
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
@@ -158,11 +158,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// scanner.
 	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
 	if err != nil {
-		s.logger.Errorf("failed to publish message: %v", err)
+		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
 
-	s.logger.Infof("published messaged to topic-multiav")
+	logger.Infof("published messaged to topic-multiav")
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

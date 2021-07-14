@@ -1,0 +1,14 @@
+syntax = "proto3";
+package message;
+
+option go_package = ".;__";
+
+message Message {
+    message Header {
+        string sha256 = 1;
+        string module = 2;
+    }
+
+    Header header = 1;
+    bytes body = 2;
+}

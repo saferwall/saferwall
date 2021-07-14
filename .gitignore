@@ -23,32 +23,23 @@ sep-deb.zip
 **/secrets.tar.gz
 SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
 
-## old copy
-build/data/windows-defender/
-
 # Temp
-build/helm/
 private/
 test/multiav
-vmi/README.md
-web/config/dev-app.toml
+__debug_bin
+cmd/services/**/main
 
 # Vault
 .vault
 
-# Configs
-saferwall.prod.toml
-
 # NSQ
 nsqd.*.dat
 nsqd.dat
+topic-*
+*.meta.dat
 
 # Minio
 minio/
-
-# Packer iso directory
-build/packer/iso/
-build/packer/packer_cache/
 
 # Tags
 tags
@@ -65,7 +56,3 @@ _work/
 externals/
 .path
 .runner
-
-# NSQ
-topic-*
-*.meta.dat
