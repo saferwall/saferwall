@@ -84,6 +84,14 @@ services:
     volumes:
       - samples:/samples
 
+  clamav:
+    image: saferwall/goclamav:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   faker:
     image: golang:1.16-alpine
     command: sh -c "while true; do echo faker; sleep 1000; done"
