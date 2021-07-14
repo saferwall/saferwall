@@ -64,7 +64,7 @@ RUN groupadd -r saferwall \
 # Update permissions
 RUN usermod -u 101 saferwall \
     && groupmod -g 102 saferwall \
-    && chown saferwall:saferwall . \
+    && chown -R saferwall:saferwall . \
     && chown -R saferwall:saferwall $COMODO_INSTALL_DIR
 
 # Switch to our user.

@@ -92,6 +92,14 @@ services:
     volumes:
       - samples:/samples
 
+  bitdefender:
+    image: saferwall/gobitdefender:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/bitdefender-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   comodo:
     image: saferwall/gocomodo:latest
     environment:
