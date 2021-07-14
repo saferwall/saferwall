@@ -1,13 +1,15 @@
 # Log level verbosity.
 log_level = "info"
-# Path to the directory where the samples are located.
-storage_dir = "/samples"
+# Shared volume between all microservices.
+shared_volume = "/samples"
+# Name of the antivirus.
+engine_name = "avast"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD)
 nsqd = "nsqd:4150"
 # Topic name to produce to.
-topic = "topic-orchestrator"
+topic = "topic-aggregator"
 
 [consumer]
 # The data source name (DSN) for connecting to the service discovery server

@@ -65,3 +65,7 @@ _work/
 externals/
 .path
 .runner
+
+# NSQ
+topic-*
+*.meta.dat

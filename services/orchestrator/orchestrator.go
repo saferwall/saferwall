@@ -6,13 +6,11 @@ package orchestrator
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/saferwall/saferwall/pkg/log"
-	micro "github.com/saferwall/saferwall/services"
 
 	"github.com/gabriel-vasile/mimetype"
 	gonsq "github.com/nsqio/go-nsq"
@@ -25,6 +23,7 @@ import (
 // Config represents our application config.
 type Config struct {
 	LogLevel   string             `mapstructure:"log_level"`
+	SharedVolume string     `mapstructure:"shared_volume"`
 	Deployment string             `mapstructure:"deployment"`
 	Producer   config.ProducerCfg `mapstructure:"producer"`
 	Consumer   config.ConsumerCfg `mapstructure:"consumer"`
@@ -109,7 +108,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// Download the file from object storage and place it in a directory
 	// shared between all microservices.
-	filePath := filepath.Join(s.cfg.Storage.SharedVolume, sha256)
+	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
 	file, err := os.Create(filePath)
 	if err != nil {
 		s.logger.Errorf("failed creating file: %v", err)
@@ -129,17 +128,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		s.logger.Errorf("failed to detect mimetype: %v", err)
 		return err
 	}
-	msg, err := json.Marshal(micro.Message{Sha256: sha256, Body: nil})
-	if err != nil {
-		s.logger.Errorf("failed to marshall Message: %v", err)
-		return err
-	}
 
 	s.logger.Infof("file type is: %s", mtype.String())
 
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
-		err = s.pub.Publish(ctx, "topic-pe", msg)
+		err = s.pub.Publish(ctx, "topic-pe", m.Body)
 		if err != nil {
 			return err
 		}
@@ -167,6 +161,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		s.logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
+
+	s.logger.Infof("published messaged to topic-multiav")
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

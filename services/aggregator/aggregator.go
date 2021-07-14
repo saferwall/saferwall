@@ -9,9 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/golang/protobuf/proto"
 	store "github.com/saferwall/saferwall/pkg/db"
 	"github.com/saferwall/saferwall/pkg/log"
-	micro "github.com/saferwall/saferwall/services"
+	pb "github.com/saferwall/saferwall/services/proto"
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/pubsub"
@@ -35,7 +36,6 @@ type DatabaseCfg struct {
 type Config struct {
 	LogLevel string             `mapstructure:"log_level"`
 	Consumer config.ConsumerCfg `mapstructure:"consumer"`
-	Storage  config.StorageCfg  `mapstructure:"storage"`
 	DB       DatabaseCfg        `mapstructure:"db"`
 }
 
@@ -93,27 +93,33 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
+	ctx := context.Background()
+
 	// deserialize the message.
-	msg := micro.Message{}
-	err := json.Unmarshal(m.Body, &msg)
+	msg := &pb.Message{}
+	err := proto.Unmarshal(m.Body, msg)
 	if err != nil {
 		s.logger.Error("failed to unmarshal msg")
+		return err
 	}
 
-	sha256 := msg.Sha256
-	s.logger = s.logger.With(context.TODO(), "sha256", sha256)
+	sha256 := msg.Header.Sha256
+	path := msg.Header.Module
 
-	s.logger.Info("start processing")
+	s.logger.Infof("start processing %s, path: %s", sha256, path)
 
 	var payload interface{}
 	err = json.Unmarshal(msg.Body, &payload)
 	if err != nil {
 		s.logger.Error("failed to unmarshal msg")
+		return err
 	}
 
-	err = s.db.Update(context.TODO(), sha256, "pe", payload)
+	s.logger.Debugf("payload is %v", payload)
+	err = s.db.Update(ctx, sha256, path, payload)
 	if err != nil {
-		s.logger.Error(err)
+		s.logger.Errorf("failed to update db: %v", err)
+		return err
 	}
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

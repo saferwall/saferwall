@@ -15,7 +15,7 @@ import (
 const (
 	// Duration to wait until memd connections have been established with
 	// the server and are ready.
-	timeout = 5 * time.Second
+	timeout = 20 * time.Second
 
 	// Full document updates overwrite the whole object in the database.
 	FullUpdate = ""
@@ -119,12 +119,12 @@ func (db *DB) Create(ctx context.Context, key string, val interface{}) error {
 func (db *DB) Update(ctx context.Context, key string, path string,
 	val interface{}) error {
 
-	// When `path` is empty, we performs a sub document in the collection.
+	// When `path` is not empty, we performs a sub document in the collection.
 	// Sub documents operations may be quicker and more network-efficient than
 	// full-document operations.
 	if len(path) > 0 {
 		mops := []gocb.MutateInSpec{
-			gocb.UpsertSpec(path, val, &gocb.UpsertSpecOptions{}),
+			gocb.UpsertSpec(path, val, &gocb.UpsertSpecOptions{CreatePath: true}),
 		}
 		_, err := db.Collection.MutateIn(key, mops,
 			&gocb.MutateInOptions{Timeout: 10050 * time.Millisecond})

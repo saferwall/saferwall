@@ -3,9 +3,3 @@
 // license that can be found in the LICENSE file.
 
 package micro
-
-// Message represents the message format shared across the different services/
-type Message struct {
-	Sha256 string
-	Body   []byte
-}

@@ -1,5 +1,7 @@
 # Log level verbosity.
 log_level = "info"
+# Shared volume between all microservices.
+shared_volume = "/samples"
 # Kind of deployment used to host object storage.
 deployment = "local"
 
@@ -19,8 +21,6 @@ channel = "chan-filescan"
 concurrency = 1
 
 [storage]
-# Shared volume between all microservices.
-shared_volume = "/samples"
 # Bucket name where samples are stored.
 bucket = "files"
 # Timeout used while download/uploading binaries from object storage.

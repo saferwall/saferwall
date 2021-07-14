@@ -15,20 +15,8 @@ services:
     volumes:
       - couchbase_data:/opt/couchbase/var
 
-  minio:
-    image: minio/minio:RELEASE.2021-03-17T02-33-02Z
-    ports:
-      - "9000:9000"
-    volumes:
-      - minio_data:/data
-    environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
-    command: server /data
-
   nsqlookupd:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqlookupd
     command: >
       /nsqlookupd
       --log-level error
@@ -37,39 +25,21 @@ services:
       - 4160:4160
       - 4161:4161
 
-  nsqd01:
+  nsqd:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqd01
     command: >
       /nsqd
       --lookupd-tcp-address=nsqlookupd:4160
       --log-level error
-    hostname: nsqd01
+    hostname: nsqd
     depends_on:
       - nsqlookupd
     ports:
       - 4150:4150
       - 4151:4151
 
-  nsqd02:
-    image: nsqio/nsq:v1.2.0
-    container_name: nsqd02
-    command: >
-      /nsqd
-      --lookupd-tcp-address=nsqlookupd:4160
-      --tcp-address=0.0.0.0:4140
-      --http-address=0.0.0.0:4141
-      --log-level error
-    hostname: nsqd02
-    depends_on:
-      - nsqlookupd
-    ports:
-      - 4140:4140
-      - 4141:4141
-
   nsqadmin:
     image: nsqio/nsq:v1.2.0
-    container_name: nsqadmin
     command: >
       /nsqadmin
       --lookupd-http-address=nsqlookupd:4161
@@ -80,79 +50,43 @@ services:
     ports:
       - 4171:4171
 
-  ml-pipeline:
-    image: saferwall/ml-pipeline:latest
-    ports:
-      - "8001:8000"
-
-  web:
-    image: saferwall/backend:latest
-    ports:
-      - "8080:8080"
+  orchestrator:
+    image: saferwall/orchestrator:latest
     environment:
-      ENVIRONMENT: dev
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/orchestrator-svc, -config, /saferwall/conf/]
     volumes:
-      - ./configs:/backend/configs/
+      - samples:/samples
+      - /samples:/binaries
+
+  aggregator:
+    image: saferwall/aggregator:latest
     depends_on:
-      - minio
-      - nsqd01
-      - nsqd02
       - couchbase
-      - nsqlookupd
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://web:8080/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: on-failure
-
-  ui:
-    image: saferwall/ui:latest
-    ports:
-      - "8000:80"
     environment:
-      VUE_APP_BACKEND_HOST: http://localhost:8080/
-    depends_on:
-      - web
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/aggregator-svc, -config, /saferwall/conf/]
+    restart: always
 
-  consumer:
-    image: saferwall/consumer:latest
+  pe-svc:
+    image: saferwall/pe:latest
     environment:
-      ENVIRONMENT: dev
-    depends_on:
-      - web
-      - minio
-    restart: on-failure
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/pe-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 
-  avira:
-    image: saferwall/goavira:latest
-    ports:
-      - "50051:50051"
+  avast:
+    image: saferwall/goavast:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/avast-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 
-  clamav:
-    image: saferwall/goclamav:latest
-    ports:
-      - "50052:50051"
-    volumes:
-      - samples:/samples
-
-  comodo:
-    image: saferwall/gocomodo:latest
-    ports:
-      - "50053:50051"
-    volumes:
-      - samples:/samples
-
-  windefender:
-    image: saferwall/gowindefender:latest
-    ports:
-      - "50054:50051"
-    volumes:
-      - samples:/samples
+  faker:
+    image: golang:1.16-alpine
+    command: sh -c "while true; do echo faker; sleep 1000; done"
 
 volumes:
   minio_data:

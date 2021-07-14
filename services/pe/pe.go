@@ -10,19 +10,20 @@ import (
 	"errors"
 	"path/filepath"
 
+	"github.com/golang/protobuf/proto"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/pe"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
-	micro "github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
+	pb "github.com/saferwall/saferwall/services/proto"
 )
 
 // Config represents our application config.
 type Config struct {
 	LogLevel   string             `mapstructure:"log_level"`
-	StorageDir string             `mapstructure:"storage_dir"`
+	SharedVolume string     `mapstructure:"shared_volume"`
 	Producer   config.ProducerCfg `mapstructure:"producer"`
 	Consumer   config.ConsumerCfg `mapstructure:"consumer"`
 }
@@ -79,19 +80,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
-	// deserialize the message.
-	msg := micro.Message{}
-	err := json.Unmarshal(m.Body, &msg)
-	if err != nil {
-		s.logger.Error("failed to unmarshal msg")
-		return err
-	}
-
-	sha256 := msg.Sha256
+	sha256 := string(m.Body)
 	s.logger = s.logger.With(context.TODO(), "sha256", sha256)
 
 	s.logger.Infof("processing %s", sha256)
-	filepath := filepath.Join(s.cfg.StorageDir, sha256)
+
+	filepath := filepath.Join(s.cfg.SharedVolume, sha256)
 	result, err := parse(filepath)
 	if err != nil {
 		s.logger.Error("failed to process file ...")
@@ -99,19 +93,27 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 	s.logger.Info("file parse success")
 
+	msg :=  &pb.Message{}
+	hdr :=  &pb.Message_Header{Module: "pe", Sha256: sha256}
+
 	msg.Body, err = json.Marshal(result)
 	if err != nil {
 		s.logger.Error("failed to process file ...")
 		return err
 	}
 
-	data, err := json.Marshal(msg)
+	msg.Header = hdr
+	out, err := proto.Marshal(msg)
 	if err != nil {
-		s.logger.Error("failed to process file ...")
+		s.logger.Error("failed to pb marshal: %v", err)
 		return err
 	}
 
-	s.pub.Publish(context.TODO(), s.cfg.Producer.Topic, data)
+	err = s.pub.Publish(context.TODO(), s.cfg.Producer.Topic, out)
+	if err != nil {
+		s.logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.
