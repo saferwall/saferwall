@@ -92,6 +92,14 @@ services:
     volumes:
       - samples:/samples
 
+  comodo:
+    image: saferwall/gocomodo:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   faker:
     image: golang:1.16-alpine
     command: sh -c "while true; do echo faker; sleep 1000; done"
