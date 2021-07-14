@@ -27,7 +27,7 @@ SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
 private/
 test/multiav
 __debug_bin
-cmd/services/*/main
+cmd/services/**/main
 
 # Vault
 .vault

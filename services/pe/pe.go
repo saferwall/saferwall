@@ -81,37 +81,37 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	sha256 := string(m.Body)
-	s.logger = s.logger.With(context.TODO(), "sha256", sha256)
+	logger := s.logger.With(context.TODO(), "sha256", sha256)
 
-	s.logger.Infof("processing %s", sha256)
+	logger.Infof("processing %s", sha256)
 
 	filepath := filepath.Join(s.cfg.SharedVolume, sha256)
 	result, err := parse(filepath)
 	if err != nil {
-		s.logger.Error("failed to process file ...")
+		logger.Error("failed to process file ...")
 		return err
 	}
-	s.logger.Info("file parse success")
+	logger.Info("file parse success")
 
 	msg :=  &pb.Message{}
 	hdr :=  &pb.Message_Header{Module: "pe", Sha256: sha256}
 
 	msg.Body, err = json.Marshal(result)
 	if err != nil {
-		s.logger.Error("failed to process file ...")
+		logger.Error("failed to process file ...")
 		return err
 	}
 
 	msg.Header = hdr
 	out, err := proto.Marshal(msg)
 	if err != nil {
-		s.logger.Error("failed to pb marshal: %v", err)
+		logger.Error("failed to pb marshal: %v", err)
 		return err
 	}
 
 	err = s.pub.Publish(context.TODO(), s.cfg.Producer.Topic, out)
 	if err != nil {
-		s.logger.Errorf("failed to publish message: %v", err)
+		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
 

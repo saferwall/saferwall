@@ -105,20 +105,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	sha256 := msg.Header.Sha256
 	path := msg.Header.Module
+	logger := s.logger.With(ctx, "sha256", sha256)
 
-	s.logger.Infof("start processing %s, path: %s", sha256, path)
+
+	logger.Infof("start processing %s, path: %s", sha256, path)
 
 	var payload interface{}
 	err = json.Unmarshal(msg.Body, &payload)
 	if err != nil {
-		s.logger.Error("failed to unmarshal msg")
+		logger.Error("failed to unmarshal msg")
 		return err
 	}
 
-	s.logger.Debugf("payload is %v", payload)
+	logger.Debugf("payload is %v", payload)
 	err = s.db.Update(ctx, sha256, path, payload)
 	if err != nil {
-		s.logger.Errorf("failed to update db: %v", err)
+		logger.Errorf("failed to update db: %v", err)
 		return err
 	}
 	// Returning nil signals to the consumer that the message has
