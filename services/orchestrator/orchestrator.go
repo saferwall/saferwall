@@ -121,6 +121,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
+	// we always run the multi-av scanner and the metadata extractor no matter
+	// what the file format is.
+	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
+	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
+	logger.Infof("published messaged to topic-multiav")
+
+	err = s.pub.Publish(ctx, "topic-meta", m.Body)
+	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
+	logger.Infof("published messaged to topic-meta")
+
 	// Depending on what the file format is, we produce events to different
 	// consumers.
 	mtype, err := mimetype.DetectFile(filePath)
@@ -153,16 +169,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			return err
 		}
 	}
-
-	// we always scan the file no matter which format it is with the multi-av
-	// scanner.
-	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
-	if err != nil {
-		logger.Errorf("failed to publish message: %v", err)
-		return err
-	}
-
-	logger.Infof("published messaged to topic-multiav")
 
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.

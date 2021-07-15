@@ -76,6 +76,14 @@ services:
     volumes:
       - samples:/samples
 
+  meta-svc:
+    image: saferwall/gometa:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   avast:
     image: saferwall/goavast:latest
     environment:
