@@ -107,9 +107,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	path := msg.Header.Module
 	logger := s.logger.With(ctx, "sha256", sha256)
 
-
-	logger.Infof("start processing %s, path: %s", sha256, path)
-
 	var payload interface{}
 	err = json.Unmarshal(msg.Body, &payload)
 	if err != nil {

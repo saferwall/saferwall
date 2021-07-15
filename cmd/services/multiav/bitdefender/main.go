@@ -7,14 +7,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
-	"time"
 
-	"github.com/saferwall/multiav/pkg/clamav"
+	"github.com/saferwall/multiav/pkg/bitdefender"
 	"github.com/saferwall/saferwall/pkg/config"
 	"github.com/saferwall/saferwall/pkg/log"
-	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/multiav"
 )
 
@@ -22,7 +19,7 @@ import (
 var Version = "1.0.0"
 
 var flagConfig = flag.String(
-	"config", "./../../../../configs/services/multiav/clamav",
+	"config", "./../../../../configs/services/multiav/bitdefender",
 	"path to the config file")
 
 func main() {
@@ -44,21 +41,13 @@ func run(logger log.Logger) error {
 	env := os.Getenv("SAFERWALL_DEPLOYMENT_KIND")
 
 	logger.Infof("loading %s configuration from %s", env, *flagConfig)
+
 	err := config.Load(*flagConfig, env, &c)
 	if err != nil {
 		return err
 	}
 
-	logger.Infof("Starting clamav daemon")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	out, err := utils.ExecCmdWithContext(ctx, "clamd")
-	if err != nil {
-		return fmt.Errorf("failed to start clamav daemon: out: %s, err: %v",
-			out, err)
-	}
-
-	scanner := clamav.Scanner{}
+	scanner := bitdefender.Scanner{}
 	s, err := multiav.New(c, logger, scanner)
 	if err != nil {
 		return err

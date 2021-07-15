@@ -70,12 +70,8 @@ func UniqueSlice(slice []string) []string {
 	return cleaned
 }
 
-// ExecCommandWithTimeout runs cmd on file with timeout.
-func ExecCommandWithTimeout(name string, timeout time.Duration, args ...string) (string, error) {
-
-	// Create a new context and add a timeout to it
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel() // The cancel should be deferred so resources are cleaned up
+// ExecCmdWithContext runs cmd on file.
+func ExecCmdWithContext(ctx context.Context, name string, args ...string) (string, error) {
 
 	// Create the command with our context
 	cmd := exec.CommandContext(ctx, name, args...)

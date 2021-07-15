@@ -76,11 +76,51 @@ services:
     volumes:
       - samples:/samples
 
+  meta-svc:
+    image: saferwall/gometa:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   avast:
     image: saferwall/goavast:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/avast-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
+  clamav:
+    image: saferwall/goclamav:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
+  bitdefender:
+    image: saferwall/gobitdefender:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/bitdefender-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
+  comodo:
+    image: saferwall/gocomodo:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
+  avira:
+    image: saferwall/goavira:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 

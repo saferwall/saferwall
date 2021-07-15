@@ -134,6 +134,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
+	s.logger.Infof("finished scanning: output: %s, infected:%v, out: %s",
+		r.Output, r.Infected, r.Out)
+
 	result := ScanResult{
 		Infected: r.Infected,
 		Output:   r.Output,
