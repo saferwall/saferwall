@@ -1,0 +1,58 @@
+// Copyright 2021` Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+package main
+
+import (
+	"context"
+	"flag"
+	"os"
+
+	"github.com/saferwall/multiav/pkg/fsecure"
+	"github.com/saferwall/saferwall/pkg/config"
+	"github.com/saferwall/saferwall/pkg/log"
+	"github.com/saferwall/saferwall/services/multiav"
+)
+
+// Version indicates the current version of the application.
+var Version = "1.0.0"
+
+var flagConfig = flag.String(
+	"config", "./../../../../configs/services/multiav/fsecure",
+	"path to the config file")
+
+func main() {
+
+	flag.Parse()
+
+	// Create root logger tagged with server version.
+	logger := log.New().With(context.TODO(), "version", Version)
+	if err := run(logger); err != nil {
+		logger.Errorf("failed to run the server: %s", err)
+		os.Exit(-1)
+	}
+}
+
+func run(logger log.Logger) error {
+
+	c := multiav.Config{}
+
+	env := os.Getenv("SAFERWALL_DEPLOYMENT_KIND")
+
+	logger.Infof("loading %s configuration from %s", env, *flagConfig)
+
+	err := config.Load(*flagConfig, env, &c)
+	if err != nil {
+		return err
+	}
+
+	scanner := fsecure.Scanner{}
+	s, err := multiav.New(c, logger, scanner)
+	if err != nil {
+		return err
+	}
+
+	s.Start()
+	return nil
+}

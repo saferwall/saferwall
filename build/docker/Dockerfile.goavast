@@ -61,19 +61,20 @@ RUN apt-get update && apt-get -qq install sudo
 RUN groupadd -r saferwall \
 	&& useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions.
-RUN usermod -aG sudo saferwall \
-	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
-	&& usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall
-
-# Switch to our user.
-USER saferwall
-
 # Copy our static executable.
 COPY --from=build-stage /go/bin/avast-svc .
 
 # Copy the config files.
 COPY configs/services/multiav/avast conf/
+
+# Update permissions.
+RUN usermod -aG sudo saferwall \
+	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+	&& usermod -u 101 saferwall \
+	&& groupmod -g 102 saferwall \
+	&& chown -R saferwall:saferwall .
+
+# Switch to our user.
+USER saferwall
 
 ENTRYPOINT ["/saferwall/avast-svc", "-config", "/saferwall/conf"]

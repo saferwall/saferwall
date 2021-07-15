@@ -51,6 +51,12 @@ WORKDIR /saferwall
 RUN groupadd -r saferwall \
         && useradd --no-log-init -r -g saferwall saferwall
 
+# Copy our static executable.
+COPY --from=build-stage /go/bin/meta-svc .
+
+# Copy the config files.
+COPY configs/services/meta conf/
+
 # Update permissions
 RUN usermod -u 101 saferwall \
     && groupmod -g 102 saferwall \
@@ -58,11 +64,5 @@ RUN usermod -u 101 saferwall \
 
 # Switch to our user.
 USER saferwall
-
-# Copy our static executable.
-COPY --from=build-stage /go/bin/meta-svc .
-
-# Copy the config files.
-COPY configs/services/meta conf/
 
 ENTRYPOINT ["/saferwall/meta-svc", "-config", "/saferwall/conf"]
