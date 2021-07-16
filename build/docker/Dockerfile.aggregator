@@ -59,7 +59,7 @@ COPY configs/services/aggregator/ conf/
 # Create an app user so our program doesn't run as root.
 RUN addgroup -g 102 -S $GROUP \
 	&& adduser -u 101 -S $USER -G $GROUP \
-	&& chown -R $USER:$GROUP /saferwall
+	&& chown -R $USER:$GROUP .
 
 # Switch to our user.
 USER saferwall

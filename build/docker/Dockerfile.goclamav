@@ -64,6 +64,12 @@ RUN clamd \
 RUN addgroup -S saferwall \
 	&& adduser -S -G saferwall saferwall  --shell /bin/sh
 
+# Copy our static executable.
+COPY --from=build-stage /go/bin/clamav-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/clamav conf/
+
 # Configure permissions.
 RUN chown saferwall:saferwall . \
     && chmod -R o+rw /var/log/clamav/ \
@@ -72,11 +78,5 @@ RUN chown saferwall:saferwall . \
 
 # Switch to our user.
 USER saferwall
-
-# Copy our static executable.
-COPY --from=build-stage /go/bin/clamav-svc .
-
-# Copy the config files.
-COPY configs/services/multiav/clamav conf/
 
 ENTRYPOINT ["/saferwall/clamav-svc", "-config", "/saferwall/conf"]

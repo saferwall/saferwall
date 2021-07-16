@@ -92,11 +92,11 @@ services:
     volumes:
       - samples:/samples
 
-  clamav:
-    image: saferwall/goclamav:latest
+  avira:
+    image: saferwall/goavira:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
+    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 
@@ -108,6 +108,14 @@ services:
     volumes:
       - samples:/samples
 
+  clamav:
+    image: saferwall/goclamav:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   comodo:
     image: saferwall/gocomodo:latest
     environment:
@@ -116,11 +124,11 @@ services:
     volumes:
       - samples:/samples
 
-  avira:
-    image: saferwall/goavira:latest
+  fsecure:
+    image: saferwall/gofsecure:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
+    entrypoint: [/saferwall/fsecure-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 

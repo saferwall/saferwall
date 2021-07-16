@@ -61,6 +61,12 @@ RUN $COMODO_CMDSCAN -v -s /eicar | grep -q 'Found Virus, Malware Name is Malware
 RUN groupadd -r saferwall \
         && useradd --no-log-init -r -g saferwall saferwall
 
+# Copy our static executable.
+COPY --from=build-stage /go/bin/comodo-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/comodo conf/
+
 # Update permissions
 RUN usermod -u 101 saferwall \
     && groupmod -g 102 saferwall \
@@ -69,11 +75,5 @@ RUN usermod -u 101 saferwall \
 
 # Switch to our user.
 USER saferwall
-
-# Copy our static executable.
-COPY --from=build-stage /go/bin/comodo-svc .
-
-# Copy the config files.
-COPY configs/services/multiav/comodo conf/
 
 ENTRYPOINT ["/saferwall/comodo-svc", "-config", "/saferwall/conf"]

@@ -108,7 +108,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
 	data, err := utils.ReadAll(filePath)
 	if err != nil {
-		logger.Errorf("failed to read file, err: %v", err)
+		logger.Errorf("failed to read file path: %s, err: %v", filePath, err)
 		return err
 	}
 

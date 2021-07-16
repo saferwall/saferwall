@@ -64,6 +64,12 @@ RUN mkdir $AVIRA_TMP \
 RUN groupadd -r saferwall \
     && useradd --no-log-init -r -g saferwall saferwall
 
+# Copy our static executable.
+COPY --from=build-stage /go/bin/avira-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/avira conf/
+
 # Update permissions
 RUN usermod -u 101 saferwall \
     && groupmod -g 102 saferwall \
@@ -72,12 +78,6 @@ RUN usermod -u 101 saferwall \
 
 # Switch to our user.
 USER saferwall
-
-# Copy our static executable.
-COPY --from=build-stage /go/bin/avira-svc .
-
-# Copy the config files.
-COPY configs/services/multiav/avira conf/
 
 ENTRYPOINT ["/saferwall/avira-svc", "-config", "/saferwall/conf"]
 
