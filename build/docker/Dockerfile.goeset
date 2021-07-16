@@ -2,29 +2,39 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.15-alpine AS builder
+FROM golang:1.16-alpine AS build-stage
+
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+ENV VENDOR eset
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
-    && update-ca-certificates 2>/dev/null || true
+	&& update-ca-certificates 2>/dev/null || true
 
-WORKDIR $GOPATH/src/saferwall/eset/
+# Set the Current Working Directory inside the container.
+WORKDIR $GOPATH/src/saferwall/$VENDOR/
+
+# Allow using private github repos that have private go modules.
+RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
+	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download all dependencies. Dependencies will be cached if the go.mod
+# and go.sum files are not changed.
 RUN go mod download
 
 # Copy our go files.
 COPY . .
 
 # Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \ 
-    go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-     -o /go/bin/esetscanner pkg/grpc/multiav/eset/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
+	-o /go/bin/$VENDOR-svc cmd/services/multiav/$VENDOR/main.go
 
 ############################
 # STEP 2 build a small image
@@ -33,13 +43,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM saferwall/eset:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="ESET File Server Security for Linux in a docker container"
+LABEL description="eset file server security for linux with nsq consumer"
 
 # Environment variables.
-ENV ESET_SVC /opt/eset/efs/sbin/startd
-ENV ESET_UPD_UTILITY /opt/eset/efs/bin/upd
-ENV ESET_SCANNER /opt/eset/efs/sbin/cls/cls
 ENV ESET_DB_UPDATE_DATE	/av_db_update_date.txt
+
+# Set the Current Working Directory inside the container.
+WORKDIR /saferwall
 
 # Update & test detection.
 RUN /etc/init.d/efs restart \
@@ -49,21 +59,26 @@ RUN /etc/init.d/efs restart \
 	&& echo -n "$(date +%s)" >> $ESET_DB_UPDATE_DATE \
 	&& $ESET_SCANNER --clean-mode=NONE /eicar | grep -q 'Eicar test file'
 
-# Copy our binary.
-COPY --from=builder /go/bin/esetscanner /bin/esetscanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
 	&& useradd --no-log-init -r -g saferwall saferwall
+
+# Copy our static executable.
+COPY --from=build-stage /go/bin/eset-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/eset conf/
 
 # Update permissions.
 RUN usermod -u 103 Debian-exim \
 	&& groupmod -g 103 Debian-exim \
 	&& groupmod -g 104 crontab \
 	&& usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall
+	&& groupmod -g 102 saferwall \
+	&& chown -R saferwall:saferwall .
 
 # Switch to our user.
 USER saferwall
 
-ENTRYPOINT ["/bin/esetscanner"]
+ENTRYPOINT ["/saferwall/eset-svc", "-config", "/saferwall/conf"]

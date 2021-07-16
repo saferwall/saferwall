@@ -2,29 +2,39 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.15-alpine AS builder
+FROM golang:1.16-alpine AS build-stage
+
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+ENV VENDOR symantec
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
-    && update-ca-certificates 2>/dev/null || true
+	&& update-ca-certificates 2>/dev/null || true
 
-WORKDIR $GOPATH/src/saferwall/symantec/
+# Set the Current Working Directory inside the container.
+WORKDIR $GOPATH/src/saferwall/$VENDOR/
+
+# Allow using private github repos that have private go modules.
+RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
+	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download all dependencies. Dependencies will be cached if the go.mod
+# and go.sum files are not changed.
 RUN go mod download
 
 # Copy our go files.
 COPY . .
 
 # Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \ 
-    go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-     -o /go/bin/symantecscanner pkg/grpc/multiav/symantec/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
+	-o /go/bin/$VENDOR-svc cmd/services/multiav/$VENDOR/main.go
 
 ############################
 # STEP 2 build a small image
@@ -33,49 +43,52 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM saferwall/symantec:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="Symantec Endpoint Protection Linux Client in a docker container"
+LABEL description="symantec endpoint protection linux version with nsq consumer"
 
 # Environment variables.
-ENV SYMANTEC_SAV			/opt/Symantec/symantec_antivirus/sav
-ENV SYMANTEC_INSTALL_DIR	/opt/Symantec
-ENV SYMANTEC_VAR_DIR		/var/symantec
 ENV SYMANTEC_DB_UPDATE_DATE	/av_db_update_date.txt
-ENV SYMANTEC_SCANNER /opt/Symantec/symantec_antivirus/sav
+
+# Set the Current Working Directory inside the container.
+WORKDIR /saferwall
+
+# Install sudo.
+RUN apt-get update \
+	&& apt-get install -qq sudo
 
 # Download EICAR Anti-Virus Test File.
-ADD http://www.eicar.org/download/eicar.com.txt eicar
+ADD http://www.eicar.org/download/eicar.com.txt /eicar
 
 # Update virus definition file.
 RUN /etc/init.d/symcfgd start \
-	&& /etc/init.d/rtvscand start \ 
+	&& /etc/init.d/rtvscand start \
 	&& /etc/init.d/smcd start \
-	&& $SYMANTEC_SAV liveupdate --update \
-	&& $SYMANTEC_SAV info --defs \
+	# && $SYMANTEC_SAV liveupdate --update \
+	# && $SYMANTEC_SAV info --defs \
 	&& echo -n "$(date +%s)" >> $SYMANTEC_DB_UPDATE_DATE \
-    && $SYMANTEC_SCANNER manualscan --clscan /eicar || true \ 
+    && $SYMANTEC_SAV manualscan --clscan /eicar || true \
 	&& TODAY="$(date '+%m%d%Y')" \
 	&& cat /var/symantec/sep/Logs/$TODAY.log | grep -q 'EICAR Test String'
-
-# Copy our static executable.
-COPY --from=builder /go/bin/symantecscanner /bin/symantecscanner
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
 	&& useradd --no-log-init -r -g saferwall saferwall
 
-# Install sudo.
-RUN apt-get update \
-	&& apt-get install -qq sudo
+# Copy our static executable.
+COPY --from=build-stage /go/bin/symantec-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/symantec conf/
 
 # Update permissions.
 RUN usermod -aG sudo saferwall \
 	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
 	&& usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
+	&& chown -R saferwall:saferwall . \
 	&& chown -R saferwall:saferwall $SYMANTEC_INSTALL_DIR \
 	&& chown -R saferwall:saferwall $SYMANTEC_VAR_DIR
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
-ENTRYPOINT ["/bin/symantecscanner"]
+ENTRYPOINT ["/saferwall/symantec-svc", "-config", "/saferwall/conf"]

@@ -2,29 +2,39 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.15-alpine AS builder
+FROM golang:1.16-alpine AS build-stage
+
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+ENV VENDOR trendmicro
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
-    && update-ca-certificates 2>/dev/null || true
+	&& update-ca-certificates 2>/dev/null || true
 
-WORKDIR $GOPATH/src/saferwall/trendmicro/
+# Set the Current Working Directory inside the container.
+WORKDIR $GOPATH/src/saferwall/$VENDOR/
 
-# Copy go mod and sum files
+# Allow using private github repos that have private go modules.
+RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
+	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
+
+# Copy go mod and sum files.
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download all dependencies. Dependencies will be cached if the go.mod
+# and go.sum files are not changed.
 RUN go mod download
 
-# Copy our go files
+# Copy our go files.
 COPY . .
 
 # Build the binary.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-     -o /go/bin/trendmicroscanner pkg/grpc/multiav/trendmicro/server/main.go
+	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
+	-o /go/bin/$VENDOR-svc cmd/services/multiav/$VENDOR/main.go
 
 ############################
 # STEP 2 build a small image
@@ -33,19 +43,22 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM saferwall/trendmicro:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="gRPC server over linux version of TrendMicro"
+LABEL description="trendmicro linux version with nsq consumer"
 
 # Environment variables.
 ENV TREND_MICRO_DB_UPDATE_DATE    /av_db_update_date.txt
+
+# Set the Current Working Directory inside the container.
+WORKDIR /saferwall
+
+# Install requirements.
+RUN yum install -y sudo
 
 # Update virus definition file.
 RUN /etc/init.d/splx start \
     && cd /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp \
     && ./splxmain -u \
     && echo -n "$(date +%s)" >> $TREND_MICRO_DB_UPDATE_DATE
-
-# Copy our static executable.
-COPY --from=builder /go/bin/trendmicroscanner /bin/trendmicroscanner
 
 # Performs a simple detection test.
 # ServerProtect does not seem to be able to scan a file directly,
@@ -58,20 +71,24 @@ RUN mkdir -p /tmp/sample/  \
     && sleep 15s \
     && cat /var/log/TrendMicro/SProtectLinux/Virus* | grep -q 'virus_name=Eicar_test_file'
 
-# Install requirements.
-RUN yum install -y sudo
-
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
     && useradd --no-log-init -r -g saferwall saferwall
 
-# Update permissions
+# Copy our static executable.
+COPY --from=build-stage /go/bin/trendmicro-svc .
+
+# Copy the config files.
+COPY configs/services/multiav/trendmicro conf/
+
+# Update permissions.
 RUN usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
     && usermod -aG wheel saferwall \
+    && chown -R saferwall:saferwall . \
 	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Switch to our user
+# Switch to our user.
 USER saferwall
 
-ENTRYPOINT ["sudo", "/bin/trendmicroscanner"]
+ENTRYPOINT ["/saferwall/trendmicro-svc", "-config", "/saferwall/conf"]
