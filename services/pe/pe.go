@@ -13,19 +13,21 @@ import (
 	"github.com/golang/protobuf/proto"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/pe"
+	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
+	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 )
 
 // Config represents our application config.
 type Config struct {
-	LogLevel   string             `mapstructure:"log_level"`
-	SharedVolume string     `mapstructure:"shared_volume"`
-	Producer   config.ProducerCfg `mapstructure:"producer"`
-	Consumer   config.ConsumerCfg `mapstructure:"consumer"`
+	LogLevel     string             `mapstructure:"log_level"`
+	SharedVolume string             `mapstructure:"shared_volume"`
+	Producer     config.ProducerCfg `mapstructure:"producer"`
+	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
 }
 
 // Service represents the PE scan service. It adheres to the nsq.Handler
@@ -36,6 +38,14 @@ type Service struct {
 	logger log.Logger
 	pub    pubsub.Publisher
 	sub    pubsub.Subscriber
+}
+
+// Result represents the scan results produced by the PE svc. It embeds the
+// histogram and the byte entropy.
+type Result struct {
+	*pe.File
+	Histogram   []int `json:"histogram,omitempty"`
+	ByteEntropy []int `json:"byte_entropy,omitempty"`
 }
 
 // New create a new PE scanner service.
@@ -85,18 +95,30 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Infof("processing %s", sha256)
 
-	filepath := filepath.Join(s.cfg.SharedVolume, sha256)
-	result, err := parse(filepath)
+	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
+
+	peres, err := parse(filePath)
 	if err != nil {
-		logger.Error("failed to process file ...")
+		logger.Error("failed to parse pe file: %v", err)
+	}
+
+	// Extract Byte Histogram and byte entropy.
+	b, err := utils.ReadAll(filePath)
+	if err != nil {
+		logger.Errorf("failed to read file path: %s, err: %v", filePath, err)
 		return err
 	}
-	logger.Info("file parse success")
 
-	msg :=  &pb.Message{}
-	hdr :=  &pb.Message_Header{Module: "pe", Sha256: sha256}
+	res := Result{
+		File:        peres,
+		Histogram:   bs.ByteHistogram(b),
+		ByteEntropy: bs.ByteEntropyHistogram(b),
+	}
 
-	msg.Body, err = json.Marshal(result)
+	msg := &pb.Message{}
+	hdr := &pb.Message_Header{Module: "pe", Sha256: sha256}
+
+	msg.Body, err = json.Marshal(res)
 	if err != nil {
 		logger.Error("failed to process file ...")
 		return err

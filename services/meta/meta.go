@@ -123,6 +123,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	md.SHA512 = r.SHA512
 	md.SSDeep = r.SSDeep
 
+	// file size
+	md.Size = int64(len(data))
+
 	// Get exif metadata.
 	if md.Exif, err = exiftool.Scan(filePath); err != nil {
 		logger.Errorf("exiftool scan failed with: %v", err)
