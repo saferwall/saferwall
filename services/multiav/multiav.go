@@ -124,13 +124,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	sha256 := string(m.Body)
 	ctx := context.Background()
-	s.logger = s.logger.With(ctx, "sha256", sha256)
+	logger := s.logger.With(ctx, "sha256", sha256)
 
 	s.logger.Info("start scanning")
 	filepath := filepath.Join(s.cfg.SharedVolume, sha256)
 	r, err := s.av.ScanFile(filepath)
 	if err != nil {
-		s.logger.Errorf("failed to scan file, reason: %v", err)
+		logger.Errorf("failed to scan file, reason: %v", err)
 		return err
 	}
 
@@ -142,21 +142,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		Output:   r.Output,
 		Update:   s.updatedAt}
 
-	msg := &pb.Message{}
-	hdr := &pb.Message_Header{
-		Module: "multiav." + s.cfg.EngineName,
-		Sha256: sha256}
-
-	msg.Body, err = json.Marshal(result)
+	avRes, err := json.Marshal(result)
 	if err != nil {
-		s.logger.Errorf("failed to marshal message body, reason: %v", err)
+		logger.Errorf("failed to marshal message body, reason: %v", err)
 		return err
 	}
 
-	msg.Header = hdr
+	payloads := []*pb.Message_Payload{
+		{
+			Module: "multiav." + s.cfg.EngineName,
+			Body:   avRes,
+		},
+	}
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
-		s.logger.Error("failed to pb marshal: %v", err)
+		logger.Error("failed to pb marshal: %v", err)
 		return err
 	}
 

@@ -103,23 +103,26 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	sha256 := msg.Header.Sha256
-	path := msg.Header.Module
-	logger := s.logger.With(ctx, "sha256", sha256)
+	sha256 := msg.Sha256
 
-	var payload interface{}
-	err = json.Unmarshal(msg.Body, &payload)
-	if err != nil {
-		logger.Error("failed to unmarshal msg")
-		return err
+	for _, payload := range msg.Payload {
+		path := payload.Module
+
+		logger := s.logger.With(ctx, "sha256", sha256, "module",  path)
+
+		var jsonPayload interface{}
+		err = json.Unmarshal(payload.Body, &jsonPayload)
+		if err != nil {
+			logger.Error("failed to unmarshal json payload")
+		}
+
+		logger.Debugf("payload is %v", jsonPayload)
+		err = s.db.Update(ctx, "files::"+sha256, path, jsonPayload)
+		if err != nil {
+			logger.Errorf("failed to update db: %v", err)
+		}
 	}
 
-	logger.Debugf("payload is %v", payload)
-	err = s.db.Update(ctx, sha256, path, payload)
-	if err != nil {
-		logger.Errorf("failed to update db: %v", err)
-		return err
-	}
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.
 	return nil

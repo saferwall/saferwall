@@ -96,10 +96,18 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Infof("processing %s", sha256)
 
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
-
 	peres, err := parse(filePath)
 	if err != nil {
 		logger.Error("failed to parse pe file: %v", err)
+	}
+
+	var tags []string
+	if peres.IsEXE() {
+		tags = append(tags, "exe")
+	} else if peres.IsDriver() {
+		tags = append(tags, "sys")
+	} else if peres.IsDLL() {
+		tags = append(tags, "dll")
 	}
 
 	// Extract Byte Histogram and byte entropy.
@@ -115,16 +123,28 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		ByteEntropy: bs.ByteEntropyHistogram(b),
 	}
 
-	msg := &pb.Message{}
-	hdr := &pb.Message_Header{Module: "pe", Sha256: sha256}
-
-	msg.Body, err = json.Marshal(res)
+	bodyPE, err := json.Marshal(res)
 	if err != nil {
-		logger.Error("failed to process file ...")
+		logger.Error("failed to marshal json: %v", err)
+		return err
+	}
+	bodyTags, err := json.Marshal(tags)
+	if err != nil {
+		logger.Error("failed to marshal json: %v", err)
 		return err
 	}
 
-	msg.Header = hdr
+	payloads := []*pb.Message_Payload{}
+	payloads = append(payloads, &pb.Message_Payload{
+		Module: "pe",
+		Body:   bodyPE,
+	})
+	payloads = append(payloads, &pb.Message_Payload{
+		Module: "tags.pe",
+		Body:   bodyTags,
+	})
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Error("failed to pb marshal: %v", err)

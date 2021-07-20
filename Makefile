@@ -50,7 +50,7 @@ include build/mk/minio.mk
 include build/mk/die.mk
 include build/mk/helm.mk
 include build/mk/kops.mk
-include build/mk/consumer.mk
+include build/mk/services.mk
 include build/mk/protobuf.mk
 include build/mk/yara.mk
 include build/mk/saferwall.mk

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
+	"strings"
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/crypto"
@@ -16,6 +17,7 @@ import (
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
+	str "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
 	"github.com/saferwall/saferwall/pkg/trid"
@@ -41,21 +43,6 @@ type Service struct {
 	logger log.Logger
 	pub    pubsub.Publisher
 	sub    pubsub.Subscriber
-}
-
-// Metadata represents meta data extarcted from a file.
-type Metadata struct {
-	MD5    string            `json:"md5,omitempty"`
-	SHA1   string            `json:"sha1,omitempty"`
-	SHA256 string            `json:"sha256,omitempty"`
-	SHA512 string            `json:"sha512,omitempty"`
-	SSDeep string            `json:"ssdeep,omitempty"`
-	CRC32  string            `json:"crc32,omitempty"`
-	Magic  string            `json:"magic,omitempty"`
-	Size   int64             `json:"size,omitempty"`
-	Exif   map[string]string `json:"exif,omitempty"`
-	TriD   []string          `json:"trid,omitempty"`
-	Packer []string          `json:"packer,omitempty"`
 }
 
 // New create a new PE scanner service.
@@ -92,6 +79,11 @@ func (s *Service) Start() error {
 	return nil
 }
 
+func toJSON(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
+}
+
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
@@ -112,51 +104,91 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	md := Metadata{}
-
 	// Get crypto hashes.
 	r := crypto.HashBytes(data)
-	md.CRC32 = r.CRC32
-	md.MD5 = r.MD5
-	md.SHA1 = r.SHA1
-	md.SHA256 = r.SHA256
-	md.SHA512 = r.SHA512
-	md.SSDeep = r.SSDeep
-
-	// file size
-	md.Size = int64(len(data))
 
 	// Get exif metadata.
-	if md.Exif, err = exiftool.Scan(filePath); err != nil {
+	exif, err := exiftool.Scan(filePath)
+	if err != nil {
 		logger.Errorf("exiftool scan failed with: %v", err)
 	}
 
 	// Get TriD file identifier results.
-	if md.TriD, err = trid.Scan(filePath); err != nil {
+	tridRes, err := trid.Scan(filePath)
+	if err != nil {
 		logger.Errorf("trid scan failed with: %v", err)
 	}
 
 	// Get lib magic scan results.
-	if md.Magic, err = magic.Scan(filePath); err != nil {
+	magicRes, err := magic.Scan(filePath)
+	if err != nil {
 		logger.Errorf("magic scan failed with: %v", err)
 	}
+
 	// Retrieve packer/crypter scan results.
-	if md.Packer, err = packer.Scan(filePath); err != nil {
+	packerRes, err := packer.Scan(filePath)
+	if err != nil {
 		logger.Errorf("packer scan failed with: %v", err)
+	}
+
+	// Determine type.
+	var format string
+	for k, v := range typeMap {
+		if strings.HasPrefix(magicRes, k) {
+			format = v
+			break
+		}
+	}
+
+	// Extract strings.
+	n := 8
+	asciiStrings := str.GetASCIIStrings(data, n)
+	wideStrings := str.GetUnicodeStrings(data, n)
+	asmStrings := str.GetAsmStrings(data)
+	string_res := map[string]interface{} {
+		"ascii":  utils.UniqueSlice(asciiStrings),
+		"wide":  utils.UniqueSlice(wideStrings),
+		"asm":  utils.UniqueSlice(asmStrings),
 	}
 
 	logger.Info("file metadata extraction success")
 
-	msg := &pb.Message{}
-	hdr := &pb.Message_Header{Module: "meta", Sha256: sha256}
-
-	msg.Body, err = json.Marshal(md)
-	if err != nil {
-		logger.Error("failed to process file ...")
-		return err
+	var tags []string
+	for _, out := range packerRes {
+		if strings.Contains(out, "packer") ||
+			strings.Contains(out, "protector") ||
+			strings.Contains(out, "compiler") ||
+			strings.Contains(out, "installer") ||
+			strings.Contains(out, "library") {
+			for sig, tag := range sigMap {
+				if strings.Contains(out, sig) {
+					tags = append(tags, tag)
+				}
+			}
+		}
 	}
 
-	msg.Header = hdr
+	logger.Info("tags extraction success")
+
+	payloads := []*pb.Message_Payload{
+		{Module: "crc32", Body: toJSON(r.CRC32)},
+		{Module: "md5", Body: toJSON(r.MD5)},
+		{Module: "sha1", Body: toJSON(r.SHA1)},
+		{Module: "sha256", Body: toJSON(r.SHA256)},
+		{Module: "sha256", Body: toJSON(r.SHA256)},
+		{Module: "sha512", Body: toJSON(r.SHA512)},
+		{Module: "ssdeep", Body: toJSON(r.SSDeep)},
+		{Module: "size", Body: toJSON(int64(len(data)))},
+		{Module: "exif", Body: toJSON(exif)},
+		{Module: "trid", Body: toJSON(tridRes)},
+		{Module: "magic", Body: toJSON(magicRes)},
+		{Module: "packer", Body: toJSON(packerRes)},
+		{Module: "tags.packer", Body: toJSON(tags)},
+		{Module: "strings", Body: toJSON(string_res)},
+		{Module: "fileformat", Body: toJSON(format)},
+	}
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Error("failed to pb marshal: %v", err)
