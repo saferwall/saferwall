@@ -10,16 +10,14 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/golang/protobuf/proto"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/pe"
-	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
-	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // Config represents our application config.
@@ -40,12 +38,9 @@ type Service struct {
 	sub    pubsub.Subscriber
 }
 
-// Result represents the scan results produced by the PE svc. It embeds the
-// histogram and the byte entropy.
-type Result struct {
-	*pe.File
-	Histogram   []int `json:"histogram,omitempty"`
-	ByteEntropy []int `json:"byte_entropy,omitempty"`
+func toJSON(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
 }
 
 // New create a new PE scanner service.
@@ -90,68 +85,20 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
+	ctx := context.Background()
 	sha256 := string(m.Body)
-	logger := s.logger.With(context.TODO(), "sha256", sha256)
+	logger := s.logger.With(ctx, "sha256", sha256)
 
 	logger.Infof("processing %s", sha256)
 
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
-	peres, err := parse(filePath)
+	peMsg, err := Scan(filePath, sha256)
 	if err != nil {
-		logger.Error("failed to parse pe file: %v", err)
-	}
-
-	var tags []string
-	if peres.IsEXE() {
-		tags = append(tags, "exe")
-	} else if peres.IsDriver() {
-		tags = append(tags, "sys")
-	} else if peres.IsDLL() {
-		tags = append(tags, "dll")
-	}
-
-	// Extract Byte Histogram and byte entropy.
-	b, err := utils.ReadAll(filePath)
-	if err != nil {
-		logger.Errorf("failed to read file path: %s, err: %v", filePath, err)
+		logger.Errorf("failed pe scan: %v", err)
 		return err
 	}
 
-	res := Result{
-		File:        peres,
-		Histogram:   bs.ByteHistogram(b),
-		ByteEntropy: bs.ByteEntropyHistogram(b),
-	}
-
-	bodyPE, err := json.Marshal(res)
-	if err != nil {
-		logger.Error("failed to marshal json: %v", err)
-		return err
-	}
-	bodyTags, err := json.Marshal(tags)
-	if err != nil {
-		logger.Error("failed to marshal json: %v", err)
-		return err
-	}
-
-	payloads := []*pb.Message_Payload{}
-	payloads = append(payloads, &pb.Message_Payload{
-		Module: "pe",
-		Body:   bodyPE,
-	})
-	payloads = append(payloads, &pb.Message_Payload{
-		Module: "tags.pe",
-		Body:   bodyTags,
-	})
-
-	msg := &pb.Message{Sha256: sha256, Payload: payloads}
-	out, err := proto.Marshal(msg)
-	if err != nil {
-		logger.Error("failed to pb marshal: %v", err)
-		return err
-	}
-
-	err = s.pub.Publish(context.TODO(), s.cfg.Producer.Topic, out)
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, peMsg)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
@@ -182,4 +129,28 @@ func parse(filePath string) (*pe.File, error) {
 	// Parse the PE.
 	err = f.Parse()
 	return f, err
+}
+
+func Scan(filePath, sha256 string) ([]byte, error) {
+	file, err := parse(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	if file.IsEXE() {
+		tags = append(tags, "exe")
+	} else if file.IsDriver() {
+		tags = append(tags, "sys")
+	} else if file.IsDLL() {
+		tags = append(tags, "dll")
+	}
+
+	payloads := []*pb.Message_Payload{
+		{Module: "pe", Body: toJSON(file)},
+		{Module: "tags.pe", Body: toJSON(tags)},
+	}
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	return proto.Marshal(msg)
 }

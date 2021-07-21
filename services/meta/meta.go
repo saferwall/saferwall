@@ -17,9 +17,10 @@ import (
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
-	str "github.com/saferwall/saferwall/pkg/strings"
+	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
+	str "github.com/saferwall/saferwall/pkg/strings"
 	"github.com/saferwall/saferwall/pkg/trid"
 	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/config"
@@ -185,6 +186,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Module: "packer", Body: toJSON(packerRes)},
 		{Module: "tags.packer", Body: toJSON(tags)},
 		{Module: "strings", Body: toJSON(string_res)},
+		{Module: "histogram", Body: toJSON(bs.ByteHistogram(data))},
+		{Module: "byte_entropy", Body: toJSON(bs.ByteEntropyHistogram(data))},
 		{Module: "fileformat", Body: toJSON(format)},
 	}
 
