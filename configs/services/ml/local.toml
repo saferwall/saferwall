@@ -1,0 +1,31 @@
+# Log level verbosity.
+log_level = "info"
+# Address ofthe server that host the machine learning pipeline.
+ml_address = "http://localhost:8000"
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD)
+nsqd = "localhost:4150"
+# Topic name to produce to.
+topic = "topic-aggregator"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = ["localhost:4161"]
+# Topic name to consume from.
+topic = "topic-ml"
+# Channel name used in conjunction with topic name.
+channel = "chan-ml"
+# The number of concurrent workers to process the jobs.
+concurrency = 1
+
+[db]
+# DSN for connecting to the database.
+server = "couchbase://localhost"
+# Username used to access the db.
+username = "Administrator"
+# Password used to access the db.
+password = "password"
+# Name of the couchbase bucket.
+bucket_name = "sfw"

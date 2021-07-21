@@ -1,0 +1,139 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+package machinelearning
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"time"
+
+	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/pkg/db"
+	store "github.com/saferwall/saferwall/pkg/db"
+	"github.com/saferwall/saferwall/pkg/log"
+	"github.com/saferwall/saferwall/pkg/ml"
+	"github.com/saferwall/saferwall/pkg/pubsub"
+	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
+	"github.com/saferwall/saferwall/services/config"
+	pb "github.com/saferwall/saferwall/services/proto"
+	"google.golang.org/protobuf/proto"
+)
+
+// Config represents our application config.
+type Config struct {
+	LogLevel  string             `mapstructure:"log_level"`
+	MLAddress string             `mapstructure:"ml_address"`
+	DB        store.Config       `mapstructure:"db"`
+	Producer  config.ProducerCfg `mapstructure:"producer"`
+	Consumer  config.ConsumerCfg `mapstructure:"consumer"`
+}
+
+// Service represents the PE scan service. It adheres to the nsq.Handler
+// interface. This allows us to define our own custom handlers for our messages.
+// Think of these handlers much like you would an http handler.
+type Service struct {
+	cfg    Config
+	logger log.Logger
+	pub    pubsub.Publisher
+	sub    pubsub.Subscriber
+	db     store.DB
+}
+
+// New create a new PE scanner service.
+func New(cfg Config, logger log.Logger) (Service, error) {
+	var err error
+	s := Service{}
+	s.sub, err = nsq.NewSubscriber(
+		cfg.Consumer.Topic,
+		cfg.Consumer.Channel,
+		cfg.Consumer.Lookupds,
+		cfg.Consumer.Concurrency,
+		&s,
+	)
+	if err != nil {
+		return Service{}, err
+	}
+
+	s.pub, err = nsq.NewPublisher(cfg.Producer.Nsqd)
+	if err != nil {
+		return Service{}, err
+	}
+
+	s.db, err = db.Open(cfg.DB.Server, cfg.DB.Username,
+		cfg.DB.Password, cfg.DB.BucketName)
+	if err != nil {
+		return Service{}, err
+	}
+
+	s.cfg = cfg
+	s.logger = logger
+	return s, nil
+
+}
+
+// Start kicks in the service to start consuming events.
+func (s *Service) Start() error {
+	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
+	s.sub.Start()
+
+	return nil
+}
+
+func toJSON(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
+}
+
+// HandleMessage is the only requirement needed to fulfill the nsq.Handler.
+func (s *Service) HandleMessage(m *gonsq.Message) error {
+	if len(m.Body) == 0 {
+		// returning an error results in the message being re-enqueued
+		// a REQ is sent to nsqd
+		return errors.New("body is blank re-enqueue message")
+	}
+
+	sha256 := string(m.Body)
+	ctx := context.Background()
+	logger := s.logger.With(ctx, "sha256", sha256)
+
+	logger.Infof("processing %s", sha256)
+
+	// wait until all microservices finishes processing.
+	time.Sleep(20 * time.Second)
+	var file interface{}
+	err := s.db.Get(ctx, "files::" + sha256, &file)
+	if err != nil {
+		logger.Errorf("failed to read document: %v", err)
+		return err
+	}
+
+	res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
+	if err != nil {
+		logger.Errorf("failed to get ml classification results: %v", err)
+		return err
+	}
+
+	payloads := []*pb.Message_Payload{
+		{Module: "ml.pe", Body: toJSON(res)},
+	}
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	out, err := proto.Marshal(msg)
+	if err != nil {
+		logger.Error("failed to pb marshal: %v", err)
+		return err
+	}
+
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
+	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
+
+	// Returning nil signals to the consumer that the message has
+	// been handled with success. A FIN is sent to nsqd.
+	return nil
+}
