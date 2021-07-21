@@ -153,6 +153,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		if err != nil {
 			return err
 		}
+		err = s.pub.Publish(ctx, "topic-ml", m.Body)
+		if err != nil {
+			return err
+		}
 	case "elf":
 		err = s.pub.Publish(ctx, "topic-elf", m.Body)
 		if err != nil {

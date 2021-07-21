@@ -9,10 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/golang/protobuf/proto"
 	store "github.com/saferwall/saferwall/pkg/db"
 	"github.com/saferwall/saferwall/pkg/log"
 	pb "github.com/saferwall/saferwall/services/proto"
+	"google.golang.org/protobuf/proto"
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/pubsub"
@@ -20,23 +20,11 @@ import (
 	"github.com/saferwall/saferwall/services/config"
 )
 
-// DatabaseCfg represents the database config.
-type DatabaseCfg struct {
-	// the data source name (DSN) for connecting to the database.
-	Server string `mapstructure:"server"`
-	// Username used to access the db.
-	Username string `mapstructure:"username"`
-	// Password used to access the db.
-	Password string `mapstructure:"password"`
-	// Name of the couchbase bucket.
-	BucketName string `mapstructure:"bucket_name"`
-}
-
 // Config represents our application config.
 type Config struct {
 	LogLevel string             `mapstructure:"log_level"`
 	Consumer config.ConsumerCfg `mapstructure:"consumer"`
-	DB       DatabaseCfg        `mapstructure:"db"`
+	DB       store.Config       `mapstructure:"db"`
 }
 
 // Service represents the PE scan service. It adheres to the nsq.Handler
@@ -93,9 +81,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
-	ctx := context.Background()
-
-	// deserialize the message.
 	msg := &pb.Message{}
 	err := proto.Unmarshal(m.Body, msg)
 	if err != nil {
@@ -103,23 +88,27 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	sha256 := msg.Header.Sha256
-	path := msg.Header.Module
-	logger := s.logger.With(ctx, "sha256", sha256)
+	sha256 := msg.Sha256
+	ctx := context.Background()
 
-	var payload interface{}
-	err = json.Unmarshal(msg.Body, &payload)
-	if err != nil {
-		logger.Error("failed to unmarshal msg")
-		return err
+	for _, payload := range msg.Payload {
+		path := payload.Module
+
+		logger := s.logger.With(ctx, "sha256", sha256, "module", path)
+
+		var jsonPayload interface{}
+		err = json.Unmarshal(payload.Body, &jsonPayload)
+		if err != nil {
+			logger.Error("failed to unmarshal json payload")
+		}
+
+		logger.Debugf("payload is %v", jsonPayload)
+		err = s.db.Update(ctx, "files::"+sha256, path, jsonPayload)
+		if err != nil {
+			logger.Errorf("failed to update db: %v", err)
+		}
 	}
 
-	logger.Debugf("payload is %v", payload)
-	err = s.db.Update(ctx, sha256, path, payload)
-	if err != nil {
-		logger.Errorf("failed to update db: %v", err)
-		return err
-	}
 	// Returning nil signals to the consumer that the message has
 	// been handled with success. A FIN is sent to nsqd.
 	return nil

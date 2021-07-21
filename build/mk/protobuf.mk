@@ -1,20 +1,9 @@
 API_DIR = $(ROOT_DIR)/api/protobuf-spec
-AV_LIST = $(ROOT_DIR)/pkg/grpc/multiav
+SERVICES_DIR = $(ROOT_DIR)/services
 
-protobuf-generate-api:		## Generates protocol buffers definitions files.
-	mkdir -p $(AV_LIST)/$$AV_VENDOR/proto
-	protoc -I $(API_DIR)/ \
-		--go_out=plugins=grpc:$(AV_LIST)/$(AV_VENDOR)/proto/ \
-		$(API_DIR)/multiav.$(AV_VENDOR).proto
-	cd $(AV_LIST)/$(AV_VENDOR)/proto \
-		&& mv multiav.$(AV_VENDOR).pb.go $(AV_VENDOR).pb.go
-
-protobuf-generate-api-all:	## Generates protocol buffers definitions files for all AVs.
-	for AV_VENDOR in $(shell ls $(AV_LIST)) ; do \
-		 mkdir -p $(AV_LIST)/$$AV_VENDOR/proto ; \
-		 protoc -I $(API_DIR)/ --go_out=plugins=grpc:$(AV_LIST)/$$AV_VENDOR/proto/ $(API_DIR)/multiav.$$AV_VENDOR.proto ; \
-		 cd $(AV_LIST)/$$AV_VENDOR/proto && mv multiav.$$AV_VENDOR.pb.go $$AV_VENDOR.pb.go ; \
-	done
+protobuf-generate-api:		## Generate go code from protobuf spec.
+	protoc -I $(API_DIR)/ --go_out=$(SERVICES_DIR)/proto/ \
+		$(API_DIR)/message.proto
 
 protobuf-install-compiler: 	## Install protobuf compiler
 	curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protoc-3.7.1-linux-x86_64.zip

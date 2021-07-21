@@ -50,12 +50,6 @@ RUN echo "Installing DiE..." \
 	&& tar zxvf $DIE_ZIP -C /tmp \
 	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
-RUN echo "Installing DiE..." \
-    && apt-get install libglib2.0-0 -y \
-    && wget $DIE_URL -O $DIE_ZIP \
-    && tar zxvf $DIE_ZIP -C /tmp \
-    && mv /tmp/die_lin64_portable/ $DIE_DIR
-
 ####### Installing Yara #######
 ENV YARA_VERSION        4.1.1
 ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz

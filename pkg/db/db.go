@@ -16,9 +16,6 @@ const (
 	// Duration to wait until memd connections have been established with
 	// the server and are ready.
 	timeout = 20 * time.Second
-
-	// Full document updates overwrite the whole object in the database.
-	FullUpdate = ""
 )
 
 var (
@@ -31,6 +28,18 @@ type DB struct {
 	Bucket     *gocb.Bucket
 	Cluster    *gocb.Cluster
 	Collection *gocb.Collection
+}
+
+// Config represents the database config.
+type Config struct {
+	// the data source name (DSN) for connecting to the database.
+	Server string `mapstructure:"server"`
+	// Username used to access the db.
+	Username string `mapstructure:"username"`
+	// Password used to access the db.
+	Password string `mapstructure:"password"`
+	// Name of the couchbase bucket.
+	BucketName string `mapstructure:"bucket_name"`
 }
 
 // Open opens a connection to the database.
@@ -59,7 +68,7 @@ func Open(server, username, password, bucketName string) (DB, error) {
 	// Get a collection reference.
 	collection := bucket.DefaultCollection()
 
-	// Create primary indexe.
+	// Create primary index.
 	mgr := cluster.QueryIndexes()
 	err = mgr.CreatePrimaryIndex(bucketName,
 		&gocb.CreatePrimaryQueryIndexOptions{IgnoreIfExists: true})

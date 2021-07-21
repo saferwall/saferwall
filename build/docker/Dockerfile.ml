@@ -14,7 +14,7 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Set the Current Working Directory inside the container.
-WORKDIR $GOPATH/src/saferwall/pe/
+WORKDIR $GOPATH/src/saferwall/ml/
 
 # Allow using private github repos that have private go modules.
 RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
@@ -33,7 +33,7 @@ COPY . .
 # Build the binary.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-	-o /go/bin/pe-svc cmd/services/pe/main.go
+	-o /go/bin/ml-svc cmd/services/ml/main.go
 
 ############################
 # STEP 2 build a small image
@@ -42,7 +42,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="PE scan service"
+LABEL description="machine learning service"
 
 ENV USER saferwall
 ENV GROUP saferwall
@@ -51,10 +51,10 @@ ENV GROUP saferwall
 WORKDIR /saferwall
 
 # Copy our static executable.
-COPY --from=build-stage /go/bin/pe-svc .
+COPY --from=build-stage /go/bin/ml-svc .
 
 # Copy the config files.
-COPY configs/services/pe/ conf/
+COPY configs/services/ml/ conf/
 
 # Create an app user so our program doesn't run as root.
 RUN addgroup -g 102 -S $GROUP \
@@ -64,4 +64,4 @@ RUN addgroup -g 102 -S $GROUP \
 # Switch to our user.
 USER saferwall
 
-ENTRYPOINT ["/saferwall/pe-svc", "-config", "/saferwall/conf"]
+ENTRYPOINT ["/saferwall/ml-svc", "-config", "/saferwall/conf"]
