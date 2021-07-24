@@ -50,6 +50,11 @@ services:
     ports:
       - 4171:4171
 
+  ml-pipeline:
+    image: saferwall/ml-pipeline:latest
+    ports:
+      - "8000:8000"
+
   orchestrator:
     image: saferwall/orchestrator:latest
     environment:
@@ -84,27 +89,11 @@ services:
     volumes:
       - samples:/samples
 
-  avast:
-    image: saferwall/goavast:latest
+  ml-svc:
+    image: saferwall/ml:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/avast-svc, -config, /saferwall/conf/]
-    volumes:
-      - samples:/samples
-
-  avira:
-    image: saferwall/goavira:latest
-    environment:
-    - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
-    volumes:
-      - samples:/samples
-
-  bitdefender:
-    image: saferwall/gobitdefender:latest
-    environment:
-    - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/bitdefender-svc, -config, /saferwall/conf/]
+    entrypoint: [/saferwall/ml-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 
@@ -116,25 +105,13 @@ services:
     volumes:
       - samples:/samples
 
-  comodo:
-    image: saferwall/gocomodo:latest
+  msg-publisher:
+    image: saferwall/msgpublisher:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
+    tty: true
     volumes:
       - samples:/samples
-
-  fsecure:
-    image: saferwall/gofsecure:latest
-    environment:
-    - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/fsecure-svc, -config, /saferwall/conf/]
-    volumes:
-      - samples:/samples
-
-  faker:
-    image: golang:1.16-alpine
-    command: sh -c "while true; do echo faker; sleep 1000; done"
 
 volumes:
   minio_data:
