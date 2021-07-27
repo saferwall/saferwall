@@ -28,6 +28,7 @@ private/
 test/multiav
 __debug_bin
 cmd/**/main
+private.env
 
 # Vault
 .vault

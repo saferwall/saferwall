@@ -1,4 +1,4 @@
-KUBECTL_VER = 1.20.7
+KUBECTL_VER = 1.21.0
 kubectl-install:		## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
@@ -38,103 +38,6 @@ k8s-kube-capacity: 	## Install kube-capacity
 
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
-k8s-deploy-saferwall:	k8s-deploy-nfs-server k8s-deploy-minio k8s-deploy-cb k8s-deploy-nsq k8s-deploy-backend k8s-deploy-consumer k8s-deploy-multiav ## Deploy all stack in k8s
-
-k8s-deploy-nfs-server:	## Deploy NFS server in a newly created k8s cluster
-	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl apply -f nfs-server.yaml \
-	&& kubectl apply -f samples-pv.yaml \
-	&& kubectl apply -f samples-pvc.yaml
-
-k8s-deploy-cb:	## Deploy couchbase in kubernetes cluster
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl create -f couchbase-sc.yaml ; \
-	kubectl create -f couchbase-pv.yaml ; \
-	kubectl create -f couchbase-pvc.yaml ; \
-	kubectl create -f crd.yaml ; \
-	kubectl create -f operator-role.yaml ; \
-	kubectl create serviceaccount couchbase-operator --namespace default ; \
-	kubectl create rolebinding couchbase-operator --role couchbase-operator --serviceaccount default:couchbase-operator ; \
-	kubectl create -f admission.yaml ; \
-	kubectl create -f secret.yaml ; \
-	kubectl create -f operator-deployment.yaml ; \
-	kubectl apply -f couchbase-cluster.yaml
-
-k8s-deploy-nsq:			## Deploy NSQ in a newly created k8s cluster
-	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl apply -f nsqlookupd.yaml \
-	&& kubectl apply -f nsqd.yaml \
-	&& kubectl apply -f nsqadmin.yaml
-
-k8s-deploy-minio:		## Deploy minio
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl apply -f minio-standalone-pvc.yaml ; \
-	kubectl apply -f minio-standalone-deployment.yaml ; \
-	kubectl apply -f minio-standalone-service.yaml
-
-k8s-deploy-multiav:		## Deploy multiav in a newly created k8s cluster
-	cd  $(ROOT_DIR)/build/k8s \
-	&& kubectl apply -f multiav-clamav.yaml \
-	&& kubectl apply -f multiav-avira.yaml \
-	&& kubectl apply -f multiav-eset.yaml \
-	&& kubectl apply -f multiav-kaspersky.yaml \
-	&& kubectl apply -f multiav-comodo.yaml \
-	&& kubectl apply -f multiav-fsecure.yaml \
-	&& kubectl apply -f multiav-bitdefender.yaml \
-	&& kubectl apply -f multiav-avast.yaml \
-	&& kubectl apply -f multiav-symantec.yaml \
-	&& kubectl apply -f multiav-sophos.yaml \
-	&& kubectl apply -f multiav-mcafee.yaml \
-	&& kubectl apply -f seccomp-profile.yaml \
-	&& kubectl apply -f seccomp-installer.yaml \
-	&& kubectl apply -f multiav-windefender.yaml
-
-k8s-deploy-backend:		## Deploy backend in kubernetes cluster
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl delete deployments backend ;\
-	kubectl apply -f backend.yaml
-
-k8s-deploy-consumer:		## Deploy consumer in kubernetes cluster
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl apply -f consumer.yaml
-
-k8s-delete-nsq:
-	cd  $(ROOT_DIR)/build/k8s ; \
-	kubectl delete svc nsqd nsqadmin nsqlookupd
-	kubectl delete deployments nsqadmin
-	kubectl delete deployments nsqadmin
-
-k8s-delete-cb:		## Delete all couchbase related objects from k8s
-	kubectl delete cbc cb-saferwall ; \
-	kubectl delete deployment couchbase-operator-admission ; \
-	kubectl delete deployment couchbase-operator  ; \
-	kubectl delete crd couchbaseclusters.couchbase.com  ; \
-	kubectl delete secret cb-saferwall-auth ; \
-	kubectl delete pvc couchbase-pvc ; \
-	kubectl delete pv couchbase-pv ; \
-	kubectl delete sc couchbase-sc
-
-k8s-delete-multiav:		## Delete all multiav related objects from k8s
-	cd  $(ROOT_DIR)/build/k8s ; \
-		kubectl delete deployments avast ; kubectl apply -f multiav-avast.yaml ; \
-		kubectl delete deployments avira ; kubectl apply -f multiav-avira.yaml ; \
-		kubectl delete deployments bitdefender ; kubectl apply -f multiav-bitdefender.yaml ; \
-		kubectl delete deployments comodo ; kubectl apply -f multiav-comodo.yaml ; \
-		kubectl delete deployments eset ; kubectl apply -f multiav-eset.yaml ; \
-		kubectl delete deployments fsecure ; kubectl apply -f multiav-fsecure.yaml ; \
-		kubectl delete deployments symantec ; kubectl apply -f multiav-symantec.yaml ; \
-		kubectl delete deployments kaspersky ; kubectl apply -f multiav-kaspersky.yaml ; \
-		kubectl delete deployments windefender ; kubectl apply -f multiav-windefender.yaml
-
-k8s-delete:			## delete all
-	kubectl delete deployments,service backend -l app=web
-	kubectl delete service backend
-	kubectl delete service consumer
-	kubectl delete deployments consumer ; kubectl apply -f consumer.yaml
-
-	kubectl delete cbc cb-saferwall ; kubectl create -f couchbase-cluster.yaml
-	kubectl delete deployments backend ; kubectl apply -f backend.yaml
-
 k8s-pf-kibana:			## Port fordward Kibana
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 &
 	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
@@ -169,7 +72,7 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
-CERT_MANAGER_VER=1.3.1
+CERT_MANAGER_VER=1.4.0
 k8s-init-cert-manager: ## Init cert-manager
 	# Create the namespace for cert-manager.
 	kubectl create namespace cert-manager

@@ -4,7 +4,7 @@ docs
 private
 scripts
 test
-.env
+*.env
 # Binaries
 cmd/services/**/main
 **/__debug_bin

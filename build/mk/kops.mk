@@ -15,7 +15,7 @@ kops-create-user:	## Create the kops IAM user to provision the cluster
 	echo "Copy the SecretAccessKey and AccessKeyID from the output."
 	aws configure
 
-KOPS_VERSION=1.20.1
+KOPS_VERSION=1.21.0
 kops-install:		## Install Kubernetes Kops
 	curl -Lo kops https://github.com/kubernetes/kops/releases/download/v$(KOPS_VERSION)/kops-linux-amd64
 	chmod +x ./kops
@@ -43,7 +43,7 @@ kops-create-cluster:			## Create k8s cluster
 		--cloud aws \
 		--topology private \
 		--networking calico \
-		--name ${KOPS_CLUSTER_NAME}
+		--name ${KOPS_CLUSTER_NAME} 
 	kops edit cluster --name $(KOPS_CLUSTER_NAME)
 	kops update cluster --name $(KOPS_CLUSTER_NAME) --yes
 	sleep 10m
@@ -61,7 +61,7 @@ kops-create-mount-targers:		## Create mount targets
 	sudo apt update -qq && sudo apt install -qq jq
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
 	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
-	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]'  | jq '.[0][0][1]'  | tr -d '"'))
+	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]'  | jq '.[1][0][1]'  | tr -d '"'))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
 		--subnet-id $(SUBNET) \
@@ -119,4 +119,5 @@ saferwall: ## Deploy the cluster
 	make helm-add-repos
 	make helm-update-dep
 	make k8s-init-cert-manager
+	# Install a release
 	make helm-release

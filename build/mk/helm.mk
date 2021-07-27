@@ -1,4 +1,4 @@
-HELM_VERSION = 3.6.0
+HELM_VERSION = 3.6.3
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -15,8 +15,8 @@ helm-install:		## Install Helm.
 		fi
 
 helm-add-repos:	## Add the required Helm Charts repositories.
-	helm repo add isotoma https://isotoma.github.io/charts
-	helm repo add minio https://helm.min.io/
+	helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+	helm repo add minio https://operator.min.io/
 	helm repo add kvaps https://kvaps.github.io/charts
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
 	helm repo add elastic https://helm.elastic.co

@@ -27,10 +27,9 @@ WHITE        := $(shell tput -Txterm setaf 7)
 RESET := $(shell tput -Txterm sgr0)
 
 # Our config file.
-ifneq (,$(wildcard ./.env))
-    include .env
-    export
-endif
+include .env
+-include private.env
+export
 
 # Include our internals makefiles.
 include build/mk/aws.mk
