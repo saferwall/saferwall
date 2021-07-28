@@ -74,18 +74,20 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 
 CERT_MANAGER_VER=1.4.0
 k8s-init-cert-manager: ## Init cert-manager
-	# Create the namespace for cert-manager.
-	kubectl create namespace cert-manager
-	# Install CRDs.
-	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v$(CERT_MANAGER_VER)/cert-manager.crds.yaml	# Install the chart
+	# Install the chart.
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \
-		--version v$(CERT_MANAGER_VER)
+		--create-namespace \
+		--version v$(CERT_MANAGER_VER) \
+		--set installCRDs=true
 	# Verify the installation.
 	kubectl wait --namespace cert-manager \
 	--for=condition=ready pod \
 	--selector=app.kubernetes.io/instance=cert-manager \
 	--timeout=90s
+
+k8s-install-couchbase-crds:
+	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/a25a68819b43c6fff625ef9be5a8051f471554b2/charts/couchbase-operator/crds/couchbase.crds.yaml
 
 k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd

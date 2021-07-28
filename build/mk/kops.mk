@@ -43,10 +43,11 @@ kops-create-cluster:			## Create k8s cluster
 		--cloud aws \
 		--topology private \
 		--networking calico \
-		--name ${KOPS_CLUSTER_NAME} 
+		--name ${KOPS_CLUSTER_NAME}
 	kops edit cluster --name $(KOPS_CLUSTER_NAME)
 	kops update cluster --name $(KOPS_CLUSTER_NAME) --yes
 	sleep 10m
+	kops export kubecfg --user
 	kops validate cluster
 	kubectl config current-context
 	kubectl get nodes

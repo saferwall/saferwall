@@ -43,7 +43,7 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         - Set `kibana.enabled` to true.
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-9. Init cert-manager: `make k8s-init-cert-manager`.
+9. Init cert-manager: `make k8s-init-cert-manager` and couchbase crds: `make k8s-install-couchbase-crds`.
 10. Install helm chart: `make helm-release`.
 11. Wait until the output of `kubectl get pods` show all pods are running fine.
 12. Edit your host file to setup a dns entry for for the services running inside the cluster:

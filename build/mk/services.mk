@@ -1,21 +1,20 @@
 svc-build:		## Build a microservice docker container
 	@echo "${GREEN} [*] =============== Build $(SVC) Microservice =============== ${RESET}"
-	sudo make docker-build IMG=$(SVC) \
+	$(eval BUILD_ARGS := --build-arg GITHUB_USER=$(GITHUB_USER) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN))
+	make docker-build ARGS="$(BUILD_ARGS)" IMG=$(SVC) \
 		DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ;
 	@EXIT_CODE=$$?
 	@if test $$EXIT_CODE ! 0; then \
-		sudo make docker-build IMG=$(SVC) \
+		make docker-build IMG=$(SVC) \
 			DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ; \
 	fi
 
 svc-release:	## Build and release a microservice docker container
 	@echo "${GREEN} [*] =============== Build and Release $(SVC) Microservice =============== ${RESET}"
-	sudo make docker-release IMG=$(SVC) \
-		VERSION=$(SAFERWALL_VER) \
+	make docker-release IMG=$(SVC) VERSION=$(SAFERWALL_VER) \
 		DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ;
 	@EXIT_CODE=$$?
 	@if test $$EXIT_CODE ! 0; then \
-	sudo make docker-release IMG=$(SVC) \
-		VERSION=$(SAFERWALL_VER) \
-		DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ;
+		make docker-release IMG=$(SVC) VERSION=$(SAFERWALL_VER) \
+			DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ;
 	fi
