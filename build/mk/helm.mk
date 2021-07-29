@@ -24,6 +24,7 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler
+	helm repo add beeinventor https://beeinventor.github.io/charts
 	# Update your local Helm chart repository cache.
 	helm repo update
 

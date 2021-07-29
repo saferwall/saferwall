@@ -120,7 +120,7 @@ spec:
 
 ## Autoscaling
 
-- Create an instance group for spot instances: `kops create -f deployments/aws/spot-ig.yaml`
+- Create an instance group for spot instances: `kops create -f build/k8s/spot-ig.yaml`
 - Attach required policies to the cluster: `kops edit cluster`
 ```yaml
     kind: Cluster

@@ -7,7 +7,7 @@ kind-install: ## Install Kind for local kubernetes cluster deployements.
 
 kind-create-cluster:	## Create Kind cluster.
 	kind get clusters
-	kind create cluster --name saferwall --config build/kind/cluster-config.yaml
+	kind create cluster --name saferwall --config build/k8s/kind-cluster-config.yaml
 	kubectl cluster-info --context kind-saferwall
 
 kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
