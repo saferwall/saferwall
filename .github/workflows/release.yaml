@@ -1,5 +1,7 @@
 name: Release
 on: pull_request
+env:
+  org: saferwall
 jobs:
   release:
     runs-on: ubuntu-20.04
@@ -33,10 +35,10 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          file: ${{ github.workspace }}/build/docker/Dockerfile.${{ matrix.service }}
+          file: build/docker/Dockerfile.${{ matrix.service }}
           build-args: |
             GITHUB_USER: ${{ secrets.GITHUB_USER }}
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tags: |
-            ${{ matrix.service }}:latest
-            ${{ matrix.service }}:${{ steps.prep.outputs.BUILD_VERSION }}
+            ${{ env.org }}/${{ matrix.service }}:latest
+            ${{ env.org }}/${{ matrix.service }}:${{ steps.prep.outputs.BUILD_VERSION }}
