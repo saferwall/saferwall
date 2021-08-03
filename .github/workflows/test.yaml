@@ -1,11 +1,5 @@
-name: Crypto Go Module
-on:
-  push:
-    paths:
-      - 'pkg/crypto/**'
-  pull_request:
-    paths:
-      - 'pkg/crypto/**'
+name: Bytestats Go Module
+on: [push, pull_request]
 jobs:
   test:
     name: Build & Test
@@ -27,22 +21,25 @@ jobs:
         run: |
           go version
           go get -u golang.org/x/lint/golint
+          make exiftool-install
+          make die-install
+          make trid-install
+          make yara-install
+          sudo apt install -qq wamerican
 
       - name: Build
         run: |
-          cd pkg/crypto
           go build -v ./...
 
       - name: Test With Coverage
         run: |
-          cd pkg/crypto
-          go test -race -coverprofile=coverage.out -covermode=atomic
+          export LC_ALL=C
+          go test ./... -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
 
       - name: Run Vet & Lint
         run: |
-          cd pkg/crypto
           go vet .
           golint -set_exit_status=1 .

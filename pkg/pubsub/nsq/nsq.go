@@ -125,8 +125,6 @@ func (s *subscriber) Start() error {
 			s.Stop()
 		}
 	}
-
-	return nil
 }
 
 // Stop will block until the consumer has stopped consuming messages
