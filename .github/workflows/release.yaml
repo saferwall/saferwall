@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        service: [pe, meta]
+        service: [pe, meta, aggregator, orchestrator, goclamav]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
