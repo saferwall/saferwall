@@ -9,7 +9,7 @@
   <a href="https://gitter.im/saferwall/community"><img src="https://img.shields.io/gitter/room/saferwall/community?style=flat-square"></a>
   <a href="https://discord.gg/an37PYHeZP"><img alt="Discord" src="https://img.shields.io/discord/803411418854064148?label=Discord&style=flat-square"></a>
   <img alt="Coverage" src="https://img.shields.io/codecov/c/github/saferwall/saferwall?style=flat-square">
-  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/saferwall/saferwall/Consumer%20Go%20Module?style=flat-square">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/saferwall/saferwall/build%20and%20test?style=flat-square">
   <img alt="Downloads" src="https://img.shields.io/github/downloads/saferwall/saferwall/v0.1.0/total?style=flat-square">
   <img alt="Report Card" src="https://goreportcard.com/badge/github.com/saferwall/saferwall">
   <img alt="GitHub" src="https://img.shields.io/github/license/saferwall/saferwall?style=flat-square">
