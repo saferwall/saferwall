@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          file: ${{ github.workspace }}/build/docker/${{ matrix.service }}
+          file: ${{ github.workspace }}/build/docker/Dockerfile.${{ matrix.service }}
           build-args: |
             GITHUB_USER: ${{ secrets.GITHUB_USER }}
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
