@@ -19,6 +19,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          go env -w GOPRIVATE=github.com/saferwall/multiav
+          git config --global url."https://${{ secrets.GITHUB_USER }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           go version
           go get -u golang.org/x/lint/golint
           make exiftool-install
