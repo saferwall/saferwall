@@ -1,11 +1,5 @@
 name: Release
-on:
-  workflow_dispatch:
-    inputs:
-      imageName:
-        description: 'Docker image name'
-        required: true
-        default: 'warning'
+on: pull_request
 jobs:
   release:
     runs-on: ubuntu-20.04
