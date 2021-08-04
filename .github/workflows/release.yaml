@@ -2,6 +2,7 @@ name: Release
 on:
   pull_request:
     types: [closed]
+  workflow_dispatch:
 env:
   org: saferwall
 jobs:
