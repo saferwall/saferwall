@@ -10,7 +10,6 @@
   <a href="https://discord.gg/an37PYHeZP"><img alt="Discord" src="https://img.shields.io/discord/803411418854064148?label=Discord&style=flat-square"></a>
   <img alt="Coverage" src="https://img.shields.io/codecov/c/github/saferwall/saferwall?style=flat-square">
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/saferwall/saferwall/build%20and%20test?style=flat-square">
-  <img alt="Downloads" src="https://img.shields.io/github/downloads/saferwall/saferwall/v0.1.0/total?style=flat-square">
   <img alt="Report Card" src="https://goreportcard.com/badge/github.com/saferwall/saferwall">
   <img alt="GitHub" src="https://img.shields.io/github/license/saferwall/saferwall?style=flat-square">
   </p>
@@ -39,7 +38,8 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 
   - File metadata, packer identification and crypto hashes.
   - String (ASCII/Unicode and ASM) extraction.
-  - [PE (Portable Executable) file parser](https://github.com/saferwall/pe)
+  - [PE (Portable Executable) file parser](https://github.com/saferwall/pe).
+  - [ELF (Executable Linkable Format) file parser](https://github.com/saferwall/elf).
 
 - Dynamic Analysis:
 
