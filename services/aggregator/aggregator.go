@@ -103,7 +103,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 
 		logger.Debugf("payload is %v", jsonPayload)
-		err = s.db.Update(ctx, "files::"+sha256, path, jsonPayload)
+		err = s.db.Update(ctx, sha256, path, jsonPayload)
 		if err != nil {
 			logger.Errorf("failed to update db: %v", err)
 		}

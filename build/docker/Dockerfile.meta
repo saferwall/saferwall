@@ -32,7 +32,9 @@ RUN echo "Installing Exiftool..." \
     && cd Image-ExifTool-$EXIF_VER \
     && perl Makefile.PL \
     && make test \
-    && make install
+    && make install \
+    && rm Image-ExifTool-$EXIF_VER.tar.gz \
+	&& rm -r Image-ExifTool-$EXIF_VER
 
 ####### Installing File #######
 RUN echo "Installing File..." \

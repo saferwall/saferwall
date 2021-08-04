@@ -5,7 +5,7 @@ version: "3.9"
 
 services:
   couchbase:
-    image: couchbase/server:6.6.1
+    image: couchbase/server:6.6.2
     ports:
       - "8091:8091"
       - "8092:8092"
@@ -62,7 +62,7 @@ services:
     entrypoint: [/saferwall/orchestrator-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
-      - /samples:/binaries
+      - /saferwall:/saferwall/storage
 
   aggregator:
     image: saferwall/aggregator:latest
