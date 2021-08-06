@@ -15,7 +15,7 @@ import (
 const (
 	// Duration to wait until memd connections have been established with
 	// the server and are ready.
-	timeout = 20 * time.Second
+	timeout = 30 * time.Second
 )
 
 var (

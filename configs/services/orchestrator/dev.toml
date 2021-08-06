@@ -2,8 +2,6 @@
 log_level = "info"
 # Shared volume between all microservices.
 shared_volume = "/samples"
-# Kind of deployment used to host object storage.
-deployment = "local"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).
@@ -21,10 +19,20 @@ channel = "chan-filescan"
 concurrency = 1
 
 [storage]
+# Deployement kind, possible values: aws, minio, local.
+deployment_kind = "minio"
 # Bucket name where samples are stored.
-bucket = "sfw"
-# Timeout used while download/uploading binaries from object storage.
-timeout = 5
+bucket = "samples"
+    # Only one storage type has to be provided. `deployment_kind` controls
+    # at runtime which one to use.
+    [storage.s3]
+    region = "us-east-1" # AWS region.
+    secret_key = "superSecretKey" # AWS Secret Access Key.
+    access_key = "superSecretAccessKey" # AWS Access key ID.
+    [storage.minio]
+    endpoint = "minio:9000" # MinIO endpoint.
+    region = "us-east-1" # Region.
+    access_key = "minio" # Access key ID.
+    secret_key = "minio123" # Secret Access Key.
     [storage.local]
-    # Full path to the directory where to store the files.
-    root_dir = "/saferwall/storage"
+    root_dir = "/saferwall/storage" # Full path to the directory where to store the files.

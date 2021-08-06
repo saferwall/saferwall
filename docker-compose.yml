@@ -50,6 +50,27 @@ services:
     ports:
       - 4171:4171
 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data --console-address ":9001"
+
+  webapis:
+    image: saferwall/webapis:latest
+    ports:
+      - "8080:8080"
+    environment:
+    - SFW_WEBAPIS_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/server, -config, /saferwall/conf/, -db, /saferwall/db]
+    restart: always
+
   ml-pipeline:
     image: saferwall/ml-pipeline:latest
     ports:

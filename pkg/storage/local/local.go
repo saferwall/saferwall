@@ -5,6 +5,7 @@
 package local
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -19,18 +20,20 @@ type Service struct {
 // New generates new object storage service.
 func New(root string) (Service, error) {
 	if _, err := os.Stat(root); os.IsNotExist(err) {
-		if err := os.Mkdir(root, 0755); err != nil {
+		if err := os.MkdirAll(root, os.ModePerm); err != nil {
 			return Service{}, err
 		}
 	}
 	return Service{root}, nil
 }
 
-// Upload uploads an object to local file system.
-func (s Service) Upload(bucket, key string, file io.Reader, timeout int) error {
+// Upload upload an object to s3.
+func (s Service) Upload(ctx context.Context, bucket, key string,
+	file io.Reader) error {
+
+	dest := filepath.Join(s.root, bucket, key)
 
 	// Create new file.
-	dest := filepath.Join(s.root, bucket, key)
 	new, err := os.Create(dest)
 	if err != nil {
 		return err
@@ -46,7 +49,8 @@ func (s Service) Upload(bucket, key string, file io.Reader, timeout int) error {
 }
 
 // Download downloads an object from the local file system.
-func (s Service) Download(bucket, key string, dst io.Writer, timeout int) error {
+func (s Service) Download(ctx context.Context, bucket, key string,
+	dst io.Writer) error {
 
 	// Create new file.
 	name := filepath.Join(s.root, bucket, key)
