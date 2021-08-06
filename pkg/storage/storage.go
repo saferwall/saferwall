@@ -5,10 +5,12 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"io"
 
 	"github.com/saferwall/saferwall/pkg/storage/local"
+	"github.com/saferwall/saferwall/pkg/storage/minio"
 	"github.com/saferwall/saferwall/pkg/storage/s3"
 )
 
@@ -16,27 +18,30 @@ var (
 	errDeploymentNotFound = errors.New("deployment not found")
 )
 
-// Storage abstract accessing object storage from various cloud locations.
+// Storage abstract uploading and download files from different
+// object storage solutions.
 type Storage interface {
-	// Download uploads a file to an object storage.
-	Download(bucket, key string, file io.Writer, timeout int) error
 	// Upload uploads a file to an object storage.
-	Upload(bucket, key string, file io.Reader, timeout int) error
+	Upload(ctx context.Context, bucket, key string, file io.Reader) error
+	// Download downloads a file from a remote object storage location.
+	Download(ctx context.Context, bucket, key string, file io.Writer) error
 }
 
 // Options for object storage.
 type Options struct {
-	S3Region  string
-	S3AccKey  string
-	S3SecKey  string
-	LocalRootDir string
+	Region        string
+	AccessKey     string
+	SecretKey     string
+	MinioEndpoint string
+	LocalRootDir  string
 }
 
 func New(kind string, opts Options) (Storage, error) {
-
 	switch kind {
 	case "aws":
-		return s3.New(opts.S3Region, opts.S3AccKey, opts.S3SecKey)
+		return s3.New(opts.Region, opts.AccessKey, opts.SecretKey)
+	case "minio":
+		return minio.New(opts.MinioEndpoint, opts.AccessKey, opts.SecretKey)
 	case "local":
 		return local.New(opts.LocalRootDir)
 	}

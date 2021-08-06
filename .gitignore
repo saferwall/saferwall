@@ -39,9 +39,6 @@ nsqd.dat
 topic-*
 *.meta.dat
 
-# Minio
-minio/
-
 # Tags
 tags
 tags.lock

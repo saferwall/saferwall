@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/saferwall/saferwall/pkg/log"
 
@@ -22,9 +23,9 @@ import (
 
 // Config represents our application config.
 type Config struct {
+	// Log level. Defaults to info.
 	LogLevel     string             `mapstructure:"log_level"`
 	SharedVolume string             `mapstructure:"shared_volume"`
-	Deployment   string             `mapstructure:"deployment"`
 	Producer     config.ProducerCfg `mapstructure:"producer"`
 	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
 	Storage      config.StorageCfg  `mapstructure:"storage"`
@@ -64,16 +65,21 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 	}
 
 	opts := s.Options{}
-	switch cfg.Deployment {
+	switch cfg.Storage.DeploymentKind {
 	case "aws":
-		opts.S3AccKey = cfg.Storage.S3.AccessKey
-		opts.S3SecKey = cfg.Storage.S3.SecretKey
-		opts.S3Region = cfg.Storage.S3.Region
+		opts.AccessKey = cfg.Storage.S3.AccessKey
+		opts.SecretKey = cfg.Storage.S3.SecretKey
+		opts.Region = cfg.Storage.S3.Region
+	case "minio":
+		opts.Region = cfg.Storage.Minio.Region
+		opts.AccessKey = cfg.Storage.Minio.AccessKey
+		opts.SecretKey = cfg.Storage.Minio.SecretKey
+		opts.MinioEndpoint = cfg.Storage.Minio.Endpoint
 	case "local":
 		opts.LocalRootDir = cfg.Storage.Local.RootDir
 	}
 
-	sto, err := s.New(cfg.Deployment, opts)
+	sto, err := s.New(cfg.Storage.DeploymentKind, opts)
 	if err != nil {
 		return Service{}, err
 	}
@@ -115,8 +121,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	if err := s.storage.Download(s.cfg.Storage.Bucket, sha256, file,
-		s.cfg.Storage.Timeout); err != nil {
+	// Create a context with a timeout that will abort the upload if it takes
+	// more than the passed in timeout.
+	downloadCtx, cancelFn := context.WithTimeout(
+		context.Background(), time.Duration(time.Second*30))
+	defer cancelFn()
+
+	if err := s.storage.Download(
+		downloadCtx, s.cfg.Storage.Bucket, sha256, file); err != nil {
 		logger.Errorf("failed downloading file: %v", err)
 		return err
 	}

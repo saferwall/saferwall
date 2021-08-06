@@ -25,6 +25,14 @@ type AWSS3Cfg struct {
 	AccessKey string `mapstructure:"access_key"`
 }
 
+// MinioCfg represents Minio credentials.
+type MinioCfg struct {
+	Endpoint  string `mapstructure:"endpoint"`
+	Region    string `mapstructure:"region"`
+	SecretKey string `mapstructure:"secret_key"`
+	AccessKey string `mapstructure:"access_key"`
+}
+
 // LocalFsCfg represents local file system storage data.
 type LocalFsCfg struct {
 	RootDir string `mapstructure:"root_dir"`
@@ -32,8 +40,10 @@ type LocalFsCfg struct {
 
 // StorageCfg represents the object storage config.
 type StorageCfg struct {
-	Bucket       string     `mapstructure:"bucket"`
-	Timeout      int        `mapstructure:"timeout"`
-	S3           AWSS3Cfg   `mapstructure:"s3"`
-	Local        LocalFsCfg `mapstructure:"local"`
+	// Deployment kind, possible values: aws, gcp, azure, local.
+	DeploymentKind string     `mapstructure:"deployment_kind"`
+	Bucket         string     `mapstructure:"bucket"`
+	S3             AWSS3Cfg   `mapstructure:"s3"`
+	Minio          MinioCfg   `mapstructure:"minio"`
+	Local          LocalFsCfg `mapstructure:"local"`
 }
