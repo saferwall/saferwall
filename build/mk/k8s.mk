@@ -43,7 +43,7 @@ k8s-pf-kibana:			## Port fordward Kibana
 	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
 
 k8s-pf-nsq:				## Port fordward NSQ admin service.
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsq-admin 4171:4171 &
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
 k8s-pf-grafana:			## Port fordward grafana dashboard service.
