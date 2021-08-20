@@ -150,7 +150,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	payloads := []*pb.Message_Payload{
 		{
-			Module: "multiav." + s.cfg.EngineName,
+			Module: "multiav.last_scan." + s.cfg.EngineName,
 			Body:   avRes,
 		},
 	}

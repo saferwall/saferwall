@@ -7,14 +7,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/saferwall/multiav/pkg/clamav"
 	"github.com/saferwall/saferwall/pkg/config"
 	"github.com/saferwall/saferwall/pkg/log"
-	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/multiav"
 )
 
@@ -50,12 +47,8 @@ func run(logger log.Logger) error {
 	}
 
 	logger.Infof("Starting clamav daemon")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	out, err := utils.ExecCmdWithContext(ctx, "clamd")
-	if err != nil {
-		return fmt.Errorf("failed to start clamav daemon: out: %s, err: %v",
-			out, err)
+	if err = clamav.StartDaemon(); err != nil {
+		return err
 	}
 
 	scanner := clamav.Scanner{}

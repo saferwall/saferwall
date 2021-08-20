@@ -11,7 +11,24 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        service: [pe, meta, gometa, aggregator, orchestrator, goavira, goclamav, gocomodo, gowindefender, ml]
+        service:
+          - pe
+          - meta
+          - gometa
+          - aggregator
+          - orchestrator
+          - goavira
+          - goavast
+          - gobitdefender
+          - goclamav
+          - gocomodo
+          - godrweb
+          - goeset
+          - gofsecure
+          - gosophos
+          - gosymantec
+          - gowindefender
+          - ml
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
