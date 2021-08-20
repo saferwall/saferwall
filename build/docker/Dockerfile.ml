@@ -18,7 +18,7 @@ WORKDIR $GOPATH/src/saferwall/ml/
 
 # Allow using private github repos that have private go modules.
 RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
-	&& git config --global url."https://golang:${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
+	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
