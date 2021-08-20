@@ -11,14 +11,14 @@ import (
 
 	"github.com/saferwall/saferwall/pkg/config"
 	"github.com/saferwall/saferwall/pkg/log"
-	ml "github.com/saferwall/saferwall/services/ml"
+	pp "github.com/saferwall/saferwall/services/postprocessor"
 )
 
 // Version indicates the current version of the application.
 var Version = "1.0.0"
 
 var flagConfig = flag.String(
-	"config", "./../../../configs/services/ml",
+	"config", "./../../../configs/services/postprocessor",
 	"path to the config file")
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 
 func run(logger log.Logger) error {
 
-	c := ml.Config{}
+	c := pp.Config{}
 
 	env := os.Getenv("SAFERWALL_DEPLOYMENT_KIND")
 
@@ -46,7 +46,7 @@ func run(logger log.Logger) error {
 		return err
 	}
 
-	s, err := ml.New(c, logger)
+	s, err := pp.New(c, logger)
 	if err != nil {
 		return err
 	}

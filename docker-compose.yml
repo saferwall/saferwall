@@ -110,11 +110,11 @@ services:
     volumes:
       - samples:/samples
 
-  ml-svc:
-    image: saferwall/ml:latest
+  postprocessor-svc:
+    image: saferwall/postprocessor:latest
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/ml-svc, -config, /saferwall/conf/]
+    entrypoint: [/saferwall/postprocessor-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 

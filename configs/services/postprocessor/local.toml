@@ -14,9 +14,9 @@ topic = "topic-aggregator"
 # (NSQLookupD).
 lookupds = ["localhost:4161"]
 # Topic name to consume from.
-topic = "topic-ml"
+topic = "topic-postprocessor"
 # Channel name used in conjunction with topic name.
-channel = "chan-ml"
+channel = "chan-postprocessor"
 # The number of concurrent workers to process the jobs.
 concurrency = 1
 
