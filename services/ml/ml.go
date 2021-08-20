@@ -12,7 +12,6 @@ import (
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/db"
-	store "github.com/saferwall/saferwall/pkg/db"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/ml"
 	"github.com/saferwall/saferwall/pkg/pubsub"
@@ -26,7 +25,7 @@ import (
 type Config struct {
 	LogLevel  string             `mapstructure:"log_level"`
 	MLAddress string             `mapstructure:"ml_address"`
-	DB        store.Config       `mapstructure:"db"`
+	DB        db.Config          `mapstructure:"db"`
 	Producer  config.ProducerCfg `mapstructure:"producer"`
 	Consumer  config.ConsumerCfg `mapstructure:"consumer"`
 }
@@ -39,7 +38,7 @@ type Service struct {
 	logger log.Logger
 	pub    pubsub.Publisher
 	sub    pubsub.Subscriber
-	db     store.DB
+	db     db.DB
 }
 
 // New create a new PE scanner service.
@@ -104,7 +103,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// wait until all microservices finishes processing.
 	time.Sleep(20 * time.Second)
 	var file interface{}
-	err := s.db.Get(ctx, "files::" + sha256, &file)
+	err := s.db.Get(ctx, sha256, &file)
 	if err != nil {
 		logger.Errorf("failed to read document: %v", err)
 		return err
