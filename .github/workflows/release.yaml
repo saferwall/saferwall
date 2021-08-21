@@ -17,6 +17,7 @@ jobs:
           - gometa
           - aggregator
           - orchestrator
+          - postprocessor
           - goavira
           - goavast
           - gobitdefender
@@ -25,10 +26,10 @@ jobs:
           - godrweb
           - goeset
           - gofsecure
+          - gomcafee
           - gosophos
           - gosymantec
           - gowindefender
-          - ml
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2

@@ -19,7 +19,7 @@ services:
     image: nsqio/nsq:v1.2.0
     command: >
       /nsqlookupd
-      --log-level error
+      --log-level=error
     hostname: nsqlookupd
     ports:
       - 4160:4160
@@ -30,7 +30,8 @@ services:
     command: >
       /nsqd
       --lookupd-tcp-address=nsqlookupd:4160
-      --log-level error
+      --max-msg-size=1413820683
+      --log-level=error
     hostname: nsqd
     depends_on:
       - nsqlookupd
@@ -43,7 +44,7 @@ services:
     command: >
       /nsqadmin
       --lookupd-http-address=nsqlookupd:4161
-      --log-level error
+      --log-level=error
     hostname: nsqadmin
     depends_on:
       - nsqlookupd
@@ -94,6 +95,14 @@ services:
     entrypoint: [/saferwall/aggregator-svc, -config, /saferwall/conf/]
     restart: always
 
+  postprocessor:
+    image: saferwall/postprocessor:latest
+    environment:
+    - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [/saferwall/postprocessor-svc, -config, /saferwall/conf/]
+    volumes:
+      - samples:/samples
+
   pe-svc:
     image: saferwall/pe:latest
     environment:
@@ -107,14 +116,6 @@ services:
     environment:
     - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
-    volumes:
-      - samples:/samples
-
-  ml-svc:
-    image: saferwall/ml:latest
-    environment:
-    - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/ml-svc, -config, /saferwall/conf/]
     volumes:
       - samples:/samples
 

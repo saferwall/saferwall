@@ -51,6 +51,21 @@ func New() Logger {
 	return NewWithZap(l)
 }
 
+// NewCustom creates a new logger using a custom configuration
+// given a log level.
+func NewCustom(level string) Logger {
+	// NewProductionConfig is a reasonable production logging configuration
+	// Uses JSON, writes to standard error, and enables sampling.
+	// Stacktraces are automatically included on logs of ErrorLevel and above.
+	config := zap.NewProductionConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.Level = getLoggingLevel(level)
+	logger, _ := config.Build()
+	return NewWithZap(logger)
+}
+
 // NewWithZap creates a new logger using the preconfigured zap logger.
 func NewWithZap(l *zap.Logger) Logger {
 	return &logger{l.Sugar()}
