@@ -1,5 +1,5 @@
 # Log level verbosity.
-log_level = "info"
+log_level = "debug"
 # Shared volume between all microservices.
 shared_volume = "/samples"
 # Kind of deployment used to host object storage.

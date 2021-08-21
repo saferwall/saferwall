@@ -1,5 +1,5 @@
 # Log level verbosity.
-log_level = "info"
+log_level = "debug"
 # Address ofthe server that host the machine learning pipeline.
 ml_address = "http://localhost:8000"
 
