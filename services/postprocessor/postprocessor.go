@@ -101,22 +101,33 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Infof("processing %s", sha256)
 
 	// wait until all microservices finishes processing.
-	time.Sleep(20 * time.Second)
-	var file interface{}
+	time.Sleep(30 * time.Second)
+
+	var file map[string]interface{}
 	err := s.db.Get(ctx, sha256, &file)
 	if err != nil {
 		logger.Errorf("failed to read document: %v", err)
 		return err
 	}
 
+	logger.Info(file["multiav"])
 	res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
 	if err != nil {
 		logger.Errorf("failed to get ml classification results: %v", err)
-		return err
 	}
 
 	payloads := []*pb.Message_Payload{
 		{Module: "ml.pe", Body: toJSON(res)},
+		{Module: "status", Body: toJSON(map[string]int{"status": 2})},
+	}
+
+	// if first_scan is empty
+	if _, ok := file["multiav"]; ok {
+		multiav := file["multiav"].(map[string]interface{})
+		if _, ok := multiav["first_scan"]; !ok {
+			payloads = append(payloads, &pb.Message_Payload{
+				Module: "multiav.first_scan", Body: toJSON(multiav["last_scan"])})
+		}
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}

@@ -95,7 +95,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	peMsg, err := Scan(filePath, sha256)
 	if err != nil {
 		logger.Errorf("failed pe scan: %v", err)
-		return err
 	}
 
 	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, peMsg)

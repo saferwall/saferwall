@@ -46,6 +46,7 @@ func run(logger log.Logger) error {
 		return err
 	}
 
+	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", Version)
 	s, err := orch.New(c, logger)
 	if err != nil {
 		return err

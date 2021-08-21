@@ -140,14 +140,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-	logger.Infof("published messaged to topic-multiav")
+	logger.Debugf("published messaged to topic-multiav")
 
 	err = s.pub.Publish(ctx, "topic-meta", m.Body)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-	logger.Infof("published messaged to topic-meta")
+	logger.Debugf("published messaged to topic-meta")
 
 	// Depending on what the file format is, we produce events to different
 	// consumers.
@@ -157,33 +157,21 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	logger.Infof("file type is: %s", mtype.String())
+	logger.Debugf("file type is: %s", mtype.String())
 
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
-		err = s.pub.Publish(ctx, "topic-pe", m.Body)
-		if err != nil {
+		logger.Debugf("published messaged to topic-pe")
+		if err = s.pub.Publish(ctx, "topic-pe", m.Body); err != nil {
 			return err
 		}
-		err = s.pub.Publish(ctx, "topic-ml", m.Body)
-		if err != nil {
-			return err
-		}
-	case "elf":
-		err = s.pub.Publish(ctx, "topic-elf", m.Body)
-		if err != nil {
-			return err
-		}
-	case "mach-o":
-		err = s.pub.Publish(ctx, "topic-mach-o", m.Body)
-		if err != nil {
-			return err
-		}
-	case "pdf":
-		err = s.pub.Publish(ctx, "topic-pdf", m.Body)
-		if err != nil {
-			return err
-		}
+	}
+
+	// pusblish to the post-processor.
+	logger.Debugf("published messaged to topic-postprocessor")
+	err = s.pub.Publish(ctx, "topic-postprocessor", m.Body)
+	if err != nil {
+		return err
 	}
 
 	// Returning nil signals to the consumer that the message has
