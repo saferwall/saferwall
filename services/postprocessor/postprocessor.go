@@ -118,7 +118,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	payloads := []*pb.Message_Payload{
 		{Module: "ml.pe", Body: toJSON(res)},
-		{Module: "status", Body: toJSON(map[string]int{"status": 2})},
+		{Module: "status", Body: toJSON(2)},
 	}
 
 	// if first_scan is empty
