@@ -110,23 +110,26 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	logger.Info(file["multiav"])
-	res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
-	if err != nil {
-		logger.Errorf("failed to get ml classification results: %v", err)
-	}
-
 	payloads := []*pb.Message_Payload{
-		{Module: "ml.pe", Body: toJSON(res)},
 		{Module: "status", Body: toJSON(2)},
 	}
 
-	// if first_scan is empty
+	if file["fileformat"] == "pe" {
+		res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
+		if err != nil {
+			logger.Errorf("failed to get ml classification results: %v", err)
+		} else {
+			payloads = append(payloads, &pb.Message_Payload{
+				Module: "ml.pe", Body: toJSON(res)})
+		}
+	}
+
 	if _, ok := file["multiav"]; ok {
 		multiav := file["multiav"].(map[string]interface{})
 		if _, ok := multiav["first_scan"]; !ok {
 			payloads = append(payloads, &pb.Message_Payload{
-				Module: "multiav.first_scan", Body: toJSON(multiav["last_scan"])})
+				Module: "multiav.first_scan",
+				Body:   toJSON(multiav["last_scan"])})
 		}
 	}
 

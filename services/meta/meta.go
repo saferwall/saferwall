@@ -140,6 +140,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			break
 		}
 	}
+	if format == "" {
+		format = "unknown"
+	}
 
 	// Extract strings.
 	n := 8
