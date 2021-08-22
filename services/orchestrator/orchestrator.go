@@ -67,9 +67,9 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 	opts := s.Options{}
 	switch cfg.Storage.DeploymentKind {
 	case "aws":
+		opts.Region = cfg.Storage.S3.Region
 		opts.AccessKey = cfg.Storage.S3.AccessKey
 		opts.SecretKey = cfg.Storage.S3.SecretKey
-		opts.Region = cfg.Storage.S3.Region
 	case "minio":
 		opts.Region = cfg.Storage.Minio.Region
 		opts.AccessKey = cfg.Storage.Minio.AccessKey
