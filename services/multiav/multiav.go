@@ -126,12 +126,27 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	ctx := context.Background()
 	logger := s.logger.With(ctx, "sha256", sha256)
 
+	// some multiav scanners lock the file in the nfs share
+	// and prevent the other scanners from accessing the file,
+	// we copy the file locally to the container to avoid this issue.
+	src := filepath.Join(s.cfg.SharedVolume, sha256)
+	dest := filepath.Join("/tmp", sha256)
+	if err := utils.CopyFile(src, dest); err != nil {
+		logger.Errorf("failed to copy file, reason: %v", err)
+		return err
+	}
+
 	s.logger.Info("start scanning")
-	filepath := filepath.Join(s.cfg.SharedVolume, sha256)
-	r, err := s.av.ScanFile(filepath)
+	r, err := s.av.ScanFile(dest)
 	if err != nil {
 		logger.Errorf("failed to scan file, reason: %v", err)
 		return err
+	}
+
+	if utils.Exists(dest) {
+		if err = utils.DeleteFile(dest); err != nil {
+			logger.Errorf("Failed to delete file path %s.", dest)
+		}
 	}
 
 	s.logger.Infof("finished scanning: output: %s, infected:%v, out: %s",
