@@ -12,12 +12,12 @@ import (
 	"strings"
 
 	gonsq "github.com/nsqio/go-nsq"
+	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/crypto"
 	"github.com/saferwall/saferwall/pkg/exiftool"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/magic"
 	"github.com/saferwall/saferwall/pkg/packer"
-	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
 	str "github.com/saferwall/saferwall/pkg/strings"
@@ -26,6 +26,10 @@ import (
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	maxStrLength = 8
 )
 
 // Config represents our application config.
@@ -88,20 +92,19 @@ func toJSON(v interface{}) []byte {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
 	sha256 := string(m.Body)
 	logger := s.logger.With(context.TODO(), "sha256", sha256)
 
-	logger.Infof("processing %s", sha256)
+	logger.Info("start processing")
 
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
 	data, err := utils.ReadAll(filePath)
 	if err != nil {
-		logger.Errorf("failed to read file path: %s, err: %v", filePath, err)
+		logger.Errorf("failed to read file path: %s, err: %v",
+			filePath, err)
 		return err
 	}
 
@@ -140,19 +143,19 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			break
 		}
 	}
-	if format == "" {
+	if len(format) == 0 {
 		format = "unknown"
 	}
+	logger.Debugf("file format is: %s", format)
 
 	// Extract strings.
-	n := 8
-	asciiStrings := str.GetASCIIStrings(data, n)
-	wideStrings := str.GetUnicodeStrings(data, n)
+	asciiStrings := str.GetASCIIStrings(data, maxStrLength)
+	wideStrings := str.GetUnicodeStrings(data, maxStrLength)
 	asmStrings := str.GetAsmStrings(data)
-	string_res := map[string]interface{} {
-		"ascii":  utils.UniqueSlice(asciiStrings),
+	stringRes := map[string]interface{}{
+		"ascii": utils.UniqueSlice(asciiStrings),
 		"wide":  utils.UniqueSlice(wideStrings),
-		"asm":  utils.UniqueSlice(asmStrings),
+		"asm":   utils.UniqueSlice(asmStrings),
 	}
 
 	logger.Info("file metadata extraction success")
@@ -188,7 +191,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Module: "magic", Body: toJSON(magicRes)},
 		{Module: "packer", Body: toJSON(packerRes)},
 		{Module: "tags.packer", Body: toJSON(tags)},
-		{Module: "strings", Body: toJSON(string_res)},
+		{Module: "strings", Body: toJSON(stringRes)},
 		{Module: "histogram", Body: toJSON(bs.ByteHistogram(data))},
 		{Module: "byte_entropy", Body: toJSON(bs.ByteEntropyHistogram(data))},
 		{Module: "fileformat", Body: toJSON(format)},
@@ -207,7 +210,5 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }

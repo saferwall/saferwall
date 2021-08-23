@@ -117,14 +117,14 @@ func (s *Service) Start() error {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
 	sha256 := string(m.Body)
 	ctx := context.Background()
 	logger := s.logger.With(ctx, "sha256", sha256)
+
+	logger.Info("start scanning")
 
 	// some multiav scanners lock the file in the nfs share
 	// and prevent the other scanners from accessing the file,
@@ -136,11 +136,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	s.logger.Info("start scanning")
 	r, err := s.av.ScanFile(dest)
 	if err != nil {
 		logger.Errorf("failed to scan file, reason: %v", err)
-		return err
 	}
 
 	if utils.Exists(dest) {

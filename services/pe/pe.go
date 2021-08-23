@@ -80,8 +80,6 @@ func (s *Service) Start() error {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
@@ -89,7 +87,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sha256 := string(m.Body)
 	logger := s.logger.With(ctx, "sha256", sha256)
 
-	logger.Infof("processing %s", sha256)
+	logger.Info("start processing")
 
 	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
 	peMsg, err := Scan(filePath, sha256)
@@ -103,8 +101,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }
 
