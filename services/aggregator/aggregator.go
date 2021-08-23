@@ -76,8 +76,6 @@ func (s *Service) Start() error {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
@@ -93,13 +91,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	for _, payload := range msg.Payload {
 		path := payload.Module
-
 		logger := s.logger.With(ctx, "sha256", sha256, "module", path)
 
 		var jsonPayload interface{}
 		err = json.Unmarshal(payload.Body, &jsonPayload)
 		if err != nil {
-			logger.Error("failed to unmarshal json payload")
+			logger.Errorf("failed to unmarshal json payload: %v", err)
 		}
 
 		logger.Debugf("payload is %v", jsonPayload)

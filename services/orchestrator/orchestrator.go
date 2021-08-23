@@ -121,7 +121,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// Create a context with a timeout that will abort the upload if it takes
+	// Create a context with a timeout that will abort the download if it takes
 	// more than the passed in timeout.
 	downloadCtx, cancelFn := context.WithTimeout(
 		context.Background(), time.Duration(time.Second*30))
@@ -133,24 +133,28 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// we always run the multi-av scanner and the metadata extractor no matter
-	// what the file format is.
+	logger.Debugf("file downloaded to %s", filePath)
+
+	// always run the multi-av scanner and the metadata
+	// extractor no matter what the file format is.
 	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-	logger.Debugf("published messaged to topic-multiav")
+
+	logger.Debug("published messaged to topic-multiav")
 
 	err = s.pub.Publish(ctx, "topic-meta", m.Body)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-	logger.Debugf("published messaged to topic-meta")
 
-	// Depending on what the file format is, we produce events to different
-	// consumers.
+	logger.Debug("published messaged to topic-meta")
+
+	// depending on what the file format is,
+	// we produce events to different consumers.
 	mtype, err := mimetype.DetectFile(filePath)
 	if err != nil {
 		logger.Errorf("failed to detect mimetype: %v", err)
@@ -161,20 +165,19 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
-		logger.Debugf("published messaged to topic-pe")
 		if err = s.pub.Publish(ctx, "topic-pe", m.Body); err != nil {
+			logger.Errorf("failed to publish message: %v", err)
 			return err
 		}
+		logger.Debug("published messaged to topic-pe")
 	}
 
-	// pusblish to the post-processor.
-	logger.Debugf("published messaged to topic-postprocessor")
 	err = s.pub.Publish(ctx, "topic-postprocessor", m.Body)
 	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
+	logger.Debug("published messaged to topic-postprocessor")
 	return nil
 }

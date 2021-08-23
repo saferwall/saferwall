@@ -24,7 +24,7 @@ concurrency = 1
 # Deployement kind, possible values: aws, minio, local.
 deployment_kind = "local"
 # Bucket name where samples are stored.
-bucket = "samples"
+bucket = "saferwall-samples"
     # Only one storage type has to be provided. `deployment_kind` controls
     # at runtime which one to use.
     [storage.s3]

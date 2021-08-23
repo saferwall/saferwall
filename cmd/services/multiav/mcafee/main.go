@@ -48,6 +48,7 @@ func run(logger log.Logger) error {
 	}
 
 	scanner := mcafee.Scanner{}
+	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", Version)
 	s, err := multiav.New(c, logger, scanner)
 	if err != nil {
 		return err
