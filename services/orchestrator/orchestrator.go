@@ -101,8 +101,6 @@ func (s *Service) Start() error {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
@@ -132,6 +130,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed downloading file: %v", err)
 		return err
 	}
+	file.Close()
 
 	logger.Debugf("file downloaded to %s", filePath)
 
