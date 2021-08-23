@@ -82,7 +82,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	msg := &pb.Message{}
 	err := proto.Unmarshal(m.Body, msg)
 	if err != nil {
-		s.logger.Error("failed to unmarshal msg")
+		s.logger.Errorf("failed to unmarshal msg: %v", err)
 		return err
 	}
 

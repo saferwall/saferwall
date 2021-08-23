@@ -89,8 +89,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Info("start processing")
 
-	filePath := filepath.Join(s.cfg.SharedVolume, sha256)
-	peMsg, err := Scan(filePath, sha256)
+	src := filepath.Join(s.cfg.SharedVolume, sha256)
+	logger.Debugf("file path is: %s", src)
+	peMsg, err := Scan(src, sha256)
 	if err != nil {
 		logger.Errorf("failed pe scan: %v", err)
 	}
@@ -104,7 +105,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	return nil
 }
 
-func parse(filePath string) (*pe.File, error) {
+func parse(src string) (*pe.File, error) {
 
 	var err error
 	defer func() {
@@ -115,7 +116,7 @@ func parse(filePath string) (*pe.File, error) {
 
 	// Open the file and prepare it to be parsed.
 	opts := pe.Options{SectionEntropy: true}
-	f, err := pe.New(filePath, &opts)
+	f, err := pe.New(src, &opts)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +127,8 @@ func parse(filePath string) (*pe.File, error) {
 	return f, err
 }
 
-func Scan(filePath, sha256 string) ([]byte, error) {
-	file, err := parse(filePath)
+func Scan(src, sha256 string) ([]byte, error) {
+	file, err := parse(src)
 	if err != nil {
 		return nil, err
 	}

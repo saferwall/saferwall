@@ -89,8 +89,6 @@ func toJSON(v interface{}) []byte {
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
 func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if len(m.Body) == 0 {
-		// returning an error results in the message being re-enqueued
-		// a REQ is sent to nsqd
 		return errors.New("body is blank re-enqueue message")
 	}
 
@@ -98,7 +96,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	ctx := context.Background()
 	logger := s.logger.With(ctx, "sha256", sha256)
 
-	logger.Infof("processing %s", sha256)
+	logger.Info("start processing")
 
 	// wait until all microservices finishes processing.
 	time.Sleep(30 * time.Second)

@@ -110,7 +110,6 @@ func New(cfg Config, logger log.Logger, av Scanner) (Service, error) {
 // Start kicks in the service to start consuming events.
 func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
-
 	return s.sub.Start()
 }
 
@@ -147,7 +146,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	s.logger.Infof("finished scanning: output: %s, infected:%v, out: %s",
+	logger.Debugf("finished scanning: output: %s, infected:%v, out: %s",
 		r.Output, r.Infected, r.Out)
 
 	result := ScanResult{
