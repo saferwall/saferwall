@@ -21,7 +21,9 @@ type Config struct {
 	SharedVolume      string `mapstructure:"shared_volume"`
 	Nsqd              string `mapstructure:"nsqd"`
 	OrchestratorTopic string `mapstructure:"orchestrator_topic"`
+	MetaTopic         string `mapstructure:"meta_topic"`
 	MLTopic           string `mapstructure:"ml_topic"`
+	PETopic           string `mapstructure:"pe_topic"`
 }
 
 func main() {
@@ -70,6 +72,14 @@ func run(logger log.Logger, configFile, sha256, svc string) error {
 	case "orchestrator":
 		msg := []byte(sha256)
 		topic = c.OrchestratorTopic
+		pub.Publish(ctx, topic, msg)
+	case "meta":
+		msg := []byte(sha256)
+		topic = c.MetaTopic
+		pub.Publish(ctx, topic, msg)
+	case "pe":
+		msg := []byte(sha256)
+		topic = c.PETopic
 		pub.Publish(ctx, topic, msg)
 	case "ml":
 		msg, err := pe.Scan(filePath, sha256)
