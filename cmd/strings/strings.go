@@ -42,9 +42,9 @@ func main() {
 	n := 6
 
 	// Get the strings
-	asciiStrings := s.GetASCIIStrings(data, n)
-	wideStrings := s.GetUnicodeStrings(data, n)
-	asmStrings := s.GetAsmStrings(data)
+	asciiStrings := s.GetASCIIStrings(&data, n)
+	wideStrings := s.GetUnicodeStrings(&data, n)
+	asmStrings := s.GetAsmStrings(&data)
 	fmt.Printf("Ascii: %d, Wide: %d\n", len(asciiStrings), len(wideStrings))
 
 	// Remove duplicates

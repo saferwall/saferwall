@@ -62,19 +62,19 @@ func check(e error) {
 
 // GetASCIIStrings returns list of ASCII strings
 // n: defines minimum length of string
-func GetASCIIStrings(data []byte, n int) []string {
+func GetASCIIStrings(data *[]byte, n int) []string {
 	StringRegex := fmt.Sprintf("[\x20-\x7f]{%d,}", n)
 	re := regexp.MustCompile(StringRegex)
-	asciiStrings := re.FindAllString(string(data), -1)
+	asciiStrings := re.FindAllString(string(*data), -1)
 	return asciiStrings
 }
 
 // GetUnicodeStrings returns list of Unicode strings
 // n: defines minimum length of string
-func GetUnicodeStrings(data []byte, n int) []string {
+func GetUnicodeStrings(data *[]byte, n int) []string {
 	StringRegex := fmt.Sprintf("(?:[ -~][\x00]){%d,}", n)
 	re := regexp.MustCompile(StringRegex)
-	unicodeStrings := re.FindAllString(string(data), -1)
+	unicodeStrings := re.FindAllString(string(*data), -1)
 
 	var s []string
 	for _, str := range unicodeStrings {
@@ -86,7 +86,7 @@ func GetUnicodeStrings(data []byte, n int) []string {
 
 // GetAsmStrings returns list of stacked strings
 // Well this is not finished, need a lot of enhancements.
-func GetAsmStrings(x86Code32 []byte) (result []string) {
+func GetAsmStrings(x86Code32 *[]byte) (result []string) {
 
 	// defer func() {
 	// 	if err := recover(); err != nil {

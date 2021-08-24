@@ -149,9 +149,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Debugf("file format is: %s", format)
 
 	// Extract strings.
-	asciiStrings := str.GetASCIIStrings(data, maxStrLength)
-	wideStrings := str.GetUnicodeStrings(data, maxStrLength)
-	asmStrings := str.GetAsmStrings(data)
+	asciiStrings := str.GetASCIIStrings(&data, maxStrLength)
+	wideStrings := str.GetUnicodeStrings(&data, maxStrLength)
+	asmStrings := str.GetAsmStrings(&data)
 	stringRes := map[string]interface{}{
 		"ascii": utils.UniqueSlice(asciiStrings),
 		"wide":  utils.UniqueSlice(wideStrings),
