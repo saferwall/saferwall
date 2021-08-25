@@ -1,5 +1,5 @@
 # Log level verbosity.
-log_level = "info"
+log_level = "debug"
 # Shared volume between all microservices.
 shared_volume = "/samples"
 # The data source name (DSN) for connecting to the broker server (NSQD)
@@ -8,3 +8,7 @@ nsqd = "localhost:4150"
 orchestrator_topic = "topic-filescan"
 # Topic name used by the ml service to consume messages.
 ml_topic = "topic-ml"
+# Topic name used by the meta service to consume messages.
+meta_topic = "topic-meta"
+# Topic name used by the pe service to consume messages.
+pe_topic = "topic-pe"

@@ -19,8 +19,8 @@ func TestStrings(t *testing.T) {
 
 		for _, tt := range testCases {
 			b, _ := ioutil.ReadFile(tt.filename)
-			ascii := GetASCIIStrings(b, 5)
-			wide := GetUnicodeStrings(b, 5)
+			ascii := GetASCIIStrings(&b, 5)
+			wide := GetUnicodeStrings(&b, 5)
 
 			for i, s := range ascii {
 				if s != tt.expected[i] {
@@ -64,7 +64,7 @@ func TestStrings(t *testing.T) {
 		}
 		for _, tt := range testCases {
 			b, _ := ioutil.ReadFile(tt.filename)
-			asm := GetAsmStrings(b)
+			asm := GetAsmStrings(&b)
 			if len(asm) > 0 {
 				for i, s := range tt.expected {
 					if asm[i] != s {

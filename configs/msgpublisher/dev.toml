@@ -8,3 +8,7 @@ nsqd = "nsqd:4150"
 orchestrator_topic = "topic-filescan"
 # Topic name used by the ml service to consume messages.
 ml_topic = "topic-ml"
+# Topic name used by the meta service to consume messages.
+meta_topic = "topic-meta"
+# Topic name used by the pe service to consume messages.
+pe_topic = "topic-pe"

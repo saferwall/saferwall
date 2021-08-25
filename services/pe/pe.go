@@ -90,10 +90,30 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Info("start processing")
 
 	src := filepath.Join(s.cfg.SharedVolume, sha256)
-	logger.Debugf("file path is: %s", src)
-	peMsg, err := Scan(src, sha256)
+	file, err := parse(src)
 	if err != nil {
-		logger.Errorf("failed pe scan: %v", err)
+		logger.Errorf("pe parsing failed: %v", err)
+	}
+
+	var tags []string
+	if file.IsEXE() {
+		tags = append(tags, "exe")
+	} else if file.IsDriver() {
+		tags = append(tags, "sys")
+	} else if file.IsDLL() {
+		tags = append(tags, "dll")
+	}
+
+	payloads := []*pb.Message_Payload{
+		{Module: "pe", Body: toJSON(file)},
+		{Module: "tags.pe", Body: toJSON(tags)},
+	}
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	peMsg, err := proto.Marshal(msg)
+	if err != nil {
+		logger.Errorf("failed to marshal message: %v", err)
+		return err
 	}
 
 	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, peMsg)
@@ -125,28 +145,4 @@ func parse(src string) (*pe.File, error) {
 	// Parse the PE.
 	err = f.Parse()
 	return f, err
-}
-
-func Scan(src, sha256 string) ([]byte, error) {
-	file, err := parse(src)
-	if err != nil {
-		return nil, err
-	}
-
-	var tags []string
-	if file.IsEXE() {
-		tags = append(tags, "exe")
-	} else if file.IsDriver() {
-		tags = append(tags, "sys")
-	} else if file.IsDLL() {
-		tags = append(tags, "dll")
-	}
-
-	payloads := []*pb.Message_Payload{
-		{Module: "pe", Body: toJSON(file)},
-		{Module: "tags.pe", Body: toJSON(tags)},
-	}
-
-	msg := &pb.Message{Sha256: sha256, Payload: payloads}
-	return proto.Marshal(msg)
 }
