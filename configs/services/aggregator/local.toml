@@ -6,9 +6,9 @@ log_level = "debug"
 # (NSQLookupD).
 lookupds = ["localhost:4161"]
 # Topic name to consume from.
-topic = "topic-orchestrator"
+topic = "topic-aggregator"
 # Channel name used in conjunction with topic name.
-channel = "chan-orchestrator"
+channel = "chan-aggregator"
 # The number of concurrent workers to process the jobs.
 concurrency = 1
 

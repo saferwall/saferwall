@@ -6,8 +6,8 @@ shared_volume = "/samples"
 nsqd = "nsqd:4150"
 # Topic name used by the orchestrator service to consume messages.
 orchestrator_topic = "topic-filescan"
-# Topic name used by the ml service to consume messages.
-ml_topic = "topic-ml"
+# Topic name used by the post processor service to consume messages.
+postprocessor_topic = "topic-postprocessor"
 # Topic name used by the meta service to consume messages.
 meta_topic = "topic-meta"
 # Topic name used by the pe service to consume messages.

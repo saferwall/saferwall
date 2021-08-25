@@ -18,7 +18,7 @@ topic = "topic-postprocessor"
 # Channel name used in conjunction with topic name.
 channel = "chan-postprocessor"
 # The number of concurrent workers to process the jobs.
-concurrency = 1
+concurrency = 2
 
 [db]
 # DSN for connecting to the database.
