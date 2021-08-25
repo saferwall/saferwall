@@ -4,12 +4,10 @@ import (
 	"context"
 	"flag"
 	"os"
-	"path/filepath"
 
 	cfg "github.com/saferwall/saferwall/pkg/config"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
-	"github.com/saferwall/saferwall/services/pe"
 )
 
 // Version indicates the current version of the application.
@@ -17,13 +15,13 @@ var Version = "1.0.0"
 
 // Config represents our application config.
 type Config struct {
-	LogLevel          string `mapstructure:"log_level"`
-	SharedVolume      string `mapstructure:"shared_volume"`
-	Nsqd              string `mapstructure:"nsqd"`
-	OrchestratorTopic string `mapstructure:"orchestrator_topic"`
-	MetaTopic         string `mapstructure:"meta_topic"`
-	MLTopic           string `mapstructure:"ml_topic"`
-	PETopic           string `mapstructure:"pe_topic"`
+	LogLevel           string `mapstructure:"log_level"`
+	SharedVolume       string `mapstructure:"shared_volume"`
+	Nsqd               string `mapstructure:"nsqd"`
+	OrchestratorTopic  string `mapstructure:"orchestrator_topic"`
+	MetaTopic          string `mapstructure:"meta_topic"`
+	PostProcessorTopic string `mapstructure:"postprocessor_topic"`
+	PETopic            string `mapstructure:"pe_topic"`
 }
 
 func main() {
@@ -66,8 +64,6 @@ func run(logger log.Logger, configFile, sha256, svc string) error {
 		return err
 	}
 
-	filePath := filepath.Join(c.SharedVolume, sha256)
-
 	switch svc {
 	case "orchestrator":
 		msg := []byte(sha256)
@@ -81,12 +77,10 @@ func run(logger log.Logger, configFile, sha256, svc string) error {
 		msg := []byte(sha256)
 		topic = c.PETopic
 		pub.Publish(ctx, topic, msg)
-	case "ml":
-		msg, err := pe.Scan(filePath, sha256)
-		if err != nil {
-			return err
-		}
-		pub.Publish(ctx, c.MLTopic, msg)
+	case "postprocessor":
+		msg := []byte(sha256)
+		topic = c.PostProcessorTopic
+		pub.Publish(ctx, topic, msg)
 	}
 
 	logger.Infof("Message has been produced to topic: %s", topic)

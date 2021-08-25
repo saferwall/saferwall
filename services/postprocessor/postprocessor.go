@@ -123,11 +123,19 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	if _, ok := file["multiav"]; ok {
+		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
 		if _, ok := multiav["first_scan"]; !ok {
 			payloads = append(payloads, &pb.Message_Payload{
 				Module: "multiav.first_scan",
 				Body:   toJSON(multiav["last_scan"])})
+		} else if len(multiav["first_scan"].(map[string]interface{})) == 0 {
+			payloads = append(payloads, &pb.Message_Payload{
+				Module: "multiav.first_scan",
+				Body:   toJSON(multiav["last_scan"])})
+		} else {
+			logger.Debugf("multiav first_scan already set to: %v",
+			 multiav["first_scan"])
 		}
 	}
 
@@ -144,7 +152,5 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }

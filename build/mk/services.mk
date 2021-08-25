@@ -17,5 +17,5 @@ svc-release:	## Build and release a microservice docker container
 	@EXIT_CODE=$$?
 	@if test $$EXIT_CODE ! 0; then \
 		make docker-release IMG=$(SVC) VERSION=$(SAFERWALL_VER) \
-			DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ;
+			DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ; \
 	fi

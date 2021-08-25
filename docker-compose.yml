@@ -72,7 +72,7 @@ services:
     entrypoint: [/saferwall/server, -config, /saferwall/conf/, -db, /saferwall/db]
     restart: always
 
-  ml-pipeline:
+  ml:
     image: saferwall/ml-pipeline:latest
     ports:
       - "8000:8000"
