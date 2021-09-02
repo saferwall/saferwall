@@ -97,6 +97,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		err = json.Unmarshal(payload.Body, &jsonPayload)
 		if err != nil {
 			logger.Errorf("failed to unmarshal json payload: %v", err)
+			continue
 		}
 
 		logger.Debugf("payload is %v", jsonPayload)
@@ -106,7 +107,5 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }

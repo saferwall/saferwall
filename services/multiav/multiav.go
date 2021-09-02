@@ -175,7 +175,5 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 
-	// Returning nil signals to the consumer that the message has
-	// been handled with success. A FIN is sent to nsqd.
 	return nil
 }
