@@ -99,8 +99,20 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Info("start processing")
 
 	// wait until all microservices finishes processing.
-	time.Sleep(30 * time.Second)
-
+	sleeprange := [6]time.Duration{6, 5, 4, 3, 2, 1}
+	for _, v := range sleeprange {
+		logger.Debugf("Iteratation: %d", v)
+		time.Sleep(v * time.Second)
+		var multiav map[string]interface{}
+		err := s.db.Lookup(ctx, sha256, "multiav.last_scan", &multiav)
+		if err != nil {
+			logger.Errorf("failed to read document: %v", err)
+		}
+		logger.Debugf("finish av scanners: %d", len(multiav))
+		if len(multiav) > 11 {
+			break
+		}
+	}
 	var file map[string]interface{}
 	err := s.db.Get(ctx, sha256, &file)
 	if err != nil {
@@ -113,12 +125,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	if file["fileformat"] == "pe" {
-		res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
-		if err != nil {
-			logger.Errorf("failed to get ml classification results: %v", err)
-		} else {
-			payloads = append(payloads, &pb.Message_Payload{
-				Module: "ml.pe", Body: toJSON(res)})
+		if _, ok := file["pe"]; ok {
+			res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
+			if err != nil {
+				logger.Errorf("failed to get ml classification results: %v", err)
+			} else {
+				payloads = append(payloads, &pb.Message_Payload{
+					Module: "ml.pe", Body: toJSON(res)})
+			}
 		}
 	}
 
@@ -135,7 +149,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 				Body:   toJSON(multiav["last_scan"])})
 		} else {
 			logger.Debugf("multiav first_scan already set to: %v",
-			 multiav["first_scan"])
+				multiav["first_scan"])
 		}
 	}
 

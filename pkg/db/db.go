@@ -174,3 +174,16 @@ func (db *DB) Count(ctx context.Context, docType string,
 
 	return nil
 }
+
+// Lookup query the document for certain path(s); these path(s) are then returned.
+func (db *DB) Lookup(ctx context.Context, key string, path string,
+	val interface{}) error {
+
+	ops := []gocb.LookupInSpec{gocb.GetSpec(path, &gocb.GetSpecOptions{})}
+	getResult, err := db.Collection.LookupIn(key, ops, &gocb.LookupInOptions{})
+	if err != nil {
+		return err
+	}
+
+	return getResult.ContentAt(0, &val)
+}
