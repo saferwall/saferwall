@@ -29,6 +29,7 @@ jobs:
           - gomcafee
           - gosophos
           - gosymantec
+          - gotrendmicro
           - gowindefender
     steps:
       - name: Check out the repo

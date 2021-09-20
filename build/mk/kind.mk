@@ -5,10 +5,11 @@ kind-install: ## Install Kind for local kubernetes cluster deployements.
 	sudo mv kind /usr/local/bin
 	kind version
 
+KIND_CLUSTER_NAME = sfw
 kind-create-cluster:	## Create Kind cluster.
 	kind get clusters
-	kind create cluster --name saferwall --config build/k8s/kind-cluster-config.yaml
-	kubectl cluster-info --context kind-saferwall
+	kind create cluster --name $(KIND_CLUSTER_NAME) --config build/k8s/kind-cluster-config.yaml
+	kubectl cluster-info --context kind-sfw
 
 kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	# The manifests contains kind specific patches to forward the hostPorts to the ingress controller,
@@ -24,7 +25,7 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
 kind-down:	## Delete Kind cluster.
-	kind delete clusters saferwall
+	kind delete clusters sfw
 
 kind-up: ## Deploy Kind cluster and install requirements.
 	make kind-create-cluster
