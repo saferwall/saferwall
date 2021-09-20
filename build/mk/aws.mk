@@ -1,7 +1,7 @@
 AWS_CLI_DOWNLOAD_URL=https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
 
 awscli-install:		## Install aws cli tool and configure it
-	sudo apt install curl python3 -y
+	# requires python 3.
 	curl "${AWS_CLI_DOWNLOAD_URL}" -o "awscliv2.zip"
 	unzip awscliv2.zip
 	sudo ./aws/install

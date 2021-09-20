@@ -8,7 +8,7 @@ helm-install:		## Install Helm.
 			wget -q $(HELM_URL); \
 			tar zxvf $(HELM_ZIP); \
 			sudo mv linux-amd64/helm /usr/local/bin/helm; \
-			rm -f $(HELM_ZIP); \
+			rm -f $(HELM_ZIP) linux-amd64/ ; \
 			helm version; \
 		else \
 			echo "${GREEN} [*] Helm already installed ${RESET}"; \
