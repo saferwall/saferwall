@@ -40,7 +40,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/windefender:latest
+FROM saferwall/windefender:0.0.3
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
 LABEL description="windows defender port into linux with nsq consumer"
@@ -54,7 +54,7 @@ WORKDIR /saferwall
 # Update virus definition file.
 RUN curl -sS -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
 	&& cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
-	&& cabextract mpam-fe.exe \
+	# && cabextract mpam-fe.exe \
 	&& rm mpam-fe.exe \
 	&& echo -n "$(date +%s)" >> $WINDOWS_DEFENDER_DB_UPDATE_DATE
 

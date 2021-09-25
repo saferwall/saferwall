@@ -60,6 +60,9 @@ RUN /etc/init.d/splx start \
     && ./splxmain -u \
     && echo -n "$(date +%s)" >> $TREND_MICRO_DB_UPDATE_DATE
 
+# Temporary fix to splx_manual_scan to ignore (defunct) proc.
+RUN sed -i 's/gdb/def/g' /opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splx_manual_scan
+
 # Performs a simple detection test.
 # ServerProtect does not seem to be able to scan a file directly,
 # it only take a directory as argument. So we create a tmp dir
@@ -86,6 +89,8 @@ RUN usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
     && usermod -aG wheel saferwall \
     && chown -R saferwall:saferwall . \
+    && chown -R saferwall:saferwall /opt/TrendMicro/ \
+    && chown -R saferwall:saferwall /var/log/TrendMicro/ \
 	&& echo 'saferwall    ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Switch to our user.
