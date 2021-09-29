@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2021 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,30 +6,47 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/saferwall/saferwall/pkg/avlabel"
+	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 func main() {
 	if len(os.Args) != 3 {
-		fmt.Println("Usage: avlabel engine <detection>")
+		fmt.Println("Usage: avlabel engine </path/text/file>")
 		return
 	}
 
 	engine := os.Args[1]
-	detection := os.Args[2]
-	var parsed map[string]string
+	filePath := os.Args[2]
+	var parsed avlabel.Detection
 
-	switch engine {
-	case "windefender":
-		parsed = avlabel.ParseWindefender(detection)
-	case "eset":
-		parsed = avlabel.ParseEset(detection)
-	case "avira":
-		parsed = avlabel.ParseAvira(detection)
+	data, err := utils.ReadAll(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	content := string(data)
+	content = strings.Replace(content, "\r\n", "\n", -1)
+	detections := strings.Split(content, "\n")
+	var count int
+	for _, detection := range detections {
+		switch engine {
+		case "windefender":
+			parsed = avlabel.ParseWindefender(detection)
+		case "eset":
+			parsed = avlabel.ParseEset(detection)
+		case "avira":
+			parsed = avlabel.ParseAvira(detection)
+		}
+		if parsed == (avlabel.Detection{}) {
+			count += 1
+		}
+		fmt.Printf("%s => %v\n", detection, parsed)
 	}
 
-	fmt.Print(parsed)
+	fmt.Printf("\n Count of misses: %d", count)
 
 }

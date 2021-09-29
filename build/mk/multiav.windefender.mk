@@ -3,7 +3,7 @@ WINDOWS_DEFENDER_LOADLIBRARY = https://codeload.github.com/taviso/loadlibrary/zi
 WINDOWS_DEFENDER_INSTALL_DIR = /opt/windowsdefender
 WINDOWS_DEFENDER_TMP	= /tmp/windowsdefender
 
-windows-defender-install:	## install Windows Defender
+windefender-install:	## install Windows Defender
 	apt-get update
 	apt-get install wget unzip libc6-i386 gcc-multilib exiftool cabextract -y
 	mkdir -p $(WINDOWS_DEFENDER_TMP)
@@ -13,10 +13,10 @@ windows-defender-install:	## install Windows Defender
 	mv $(WINDOWS_DEFENDER_TMP)/loadlibrary-master $(WINDOWS_DEFENDER_INSTALL_DIR)
 	make windows-defender-update
 
-windows-defender-update:		## update Windows Defender
-	wget "$(WINDOWS_DEFENDER_UPDATE)" -O $(WINDOWS_DEFENDER_INSTALL_DIR)/engine/mpam-fe.exe
+windefender-update:		## update Windows Defender
+	curl -sS -o $(WINDOWS_DEFENDER_INSTALL_DIR)/engine/mpam-fe.exe -L $(WINDOWS_DEFENDER_UPDATE)
 	cd $(WINDOWS_DEFENDER_INSTALL_DIR)/engine && cabextract mpam-fe.exe && rm mpam-fe.exe
 	rm -rf $(WINDOWS_DEFENDER_TMP)
 
-windows-defender-uninstall:	## uninstall Windows Defender
+windefender-uninstall:	## uninstall Windows Defender
 	rm -rf $(WINDOWS_DEFENDER_INSTALL_DIR)

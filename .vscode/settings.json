@@ -18,6 +18,7 @@
         "tags.lock*": true,
         "topic*.dat": true,
         "*meta.dat": true,
+        "nsqd.dat": true,
         "*/**/main": true,
         "*/**/__debug_bin": true,
     }

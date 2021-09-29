@@ -42,6 +42,13 @@ type Service struct {
 	storage s.Storage
 }
 
+// Progress of a file scan.
+const (
+	queued     = iota
+	processing = iota
+	finished   = iota
+)
+
 // New create a new PE scanner service.
 func New(cfg Config, logger log.Logger) (Service, error) {
 

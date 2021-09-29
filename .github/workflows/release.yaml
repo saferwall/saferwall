@@ -26,6 +26,7 @@ jobs:
           - godrweb
           - goeset
           - gofsecure
+          - gokaspersky
           - gomcafee
           - gosophos
           - gosymantec
