@@ -19,7 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7"
 	"github.com/yeka/zip"
 )
 
@@ -349,21 +348,6 @@ func Exists(name string) bool {
 		}
 	}
 	return true
-}
-
-// Download downloads an object from a bucket.
-func Download(client *minio.Client, bucketName, filePath, objectName string) (
-	[]byte, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	err := client.FGetObject(ctx, bucketName, objectName, filePath,
-		minio.GetObjectOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := ReadAll(filePath)
-	return data, err
 }
 
 // ZipEncrypt compresses binary data to zip using a password.

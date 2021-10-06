@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/aws/aws-sdk-go v1.39.0
 	github.com/couchbase/gocb/v2 v2.2.4
+	github.com/digitalocean/go-libvirt v0.0.0-20210723161134-761cfeeb5968
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/glaslos/ssdeep v0.3.1
 	github.com/golang/protobuf v1.5.0
@@ -19,7 +20,5 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0
 	golang.org/x/net v0.0.0-20210505024714-0287a6fb4125
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.27.1
 )
