@@ -96,7 +96,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	sha256 := string(m.Body)
-	logger := s.logger.With(context.TODO(), "sha256", sha256)
+	ctx := context.Background()
+	logger := s.logger.With(ctx, "sha256", sha256)
 
 	logger.Info("start processing")
 
@@ -204,7 +205,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	err = s.pub.Publish(context.TODO(), s.cfg.Producer.Topic, out)
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err

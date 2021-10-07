@@ -95,7 +95,7 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 	return domains, nil
 }
 
-// Revert reverts the domain to a particular snapshot
+// Revert reverts the domain to a particular snapshot.
 func (vmm *VMManager) Revert(dom libvirt.Domain, name string) error {
 
 	snap, err := vmm.Conn.DomainSnapshotLookupByName(dom, name, flagsUnused)
