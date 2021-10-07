@@ -18,7 +18,7 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 WORKDIR $GOPATH/src/saferwall/$VENDOR/
 
 # Allow using private github repos that have private go modules.
-RUN go env -w GOPRIVATE=github.com/saferwall/multiav \
+RUN go env -w GOPRIVATE=github.com/saferwall/* \
 	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.

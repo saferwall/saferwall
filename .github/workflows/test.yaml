@@ -5,7 +5,7 @@ jobs:
     name: Build & Test
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [1.16.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           go version
-          go env -w GOPRIVATE=github.com/saferwall/multiav
+          go env -w GOPRIVATE=github.com/saferwall/*
           git config --global url."https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com".insteadOf "https://github.com"
           go get -u golang.org/x/lint/golint
           make exiftool-install
@@ -31,6 +31,7 @@ jobs:
 
       - name: Build
         run: |
+          go env -w GOFLAGS=-mod=mod
           go build -v ./...
 
       - name: Test With Coverage

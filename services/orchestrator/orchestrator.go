@@ -6,6 +6,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -111,8 +112,17 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
+	fileScanCfg := config.FileScanCfg{}
 	ctx := context.Background()
-	sha256 := string(m.Body)
+
+	// Deserialize the msg sent from the web apis.
+	err := json.Unmarshal(m.Body, &fileScanCfg)
+	if err != nil {
+		s.logger.Errorf("failed unmarshalling json messge body: %v", err)
+		return err
+	}
+
+	sha256 := fileScanCfg.SHA256
 	logger := s.logger.With(ctx, "sha256", sha256)
 
 	logger.Info("start processing")
@@ -143,7 +153,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// always run the multi-av scanner and the metadata
 	// extractor no matter what the file format is.
-	err = s.pub.Publish(ctx, "topic-multiav", m.Body)
+	err = s.pub.Publish(ctx, "topic-multiav", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
@@ -151,7 +161,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Debug("published messaged to topic-multiav")
 
-	err = s.pub.Publish(ctx, "topic-meta", m.Body)
+	err = s.pub.Publish(ctx, "topic-meta",[]byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
@@ -171,14 +181,20 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	switch mtype.String() {
 	case "application/vnd.microsoft.portable-executable":
-		if err = s.pub.Publish(ctx, "topic-pe", m.Body); err != nil {
+		if err = s.pub.Publish(ctx, "topic-pe", []byte(sha256)); err != nil {
 			logger.Errorf("failed to publish message: %v", err)
 			return err
 		}
 		logger.Debug("published messaged to topic-pe")
+
+		if err = s.pub.Publish(ctx, "topic-sandbox", m.Body); err != nil {
+			logger.Errorf("failed to publish message: %v", err)
+			return err
+		}
+		logger.Debug("published messaged to topic-sandbox")
 	}
 
-	err = s.pub.Publish(ctx, "topic-postprocessor", m.Body)
+	err = s.pub.Publish(ctx, "topic-postprocessor", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
