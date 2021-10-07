@@ -6,7 +6,6 @@ FROM golang:1.16-alpine AS build-stage
 
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
-ENV VENDOR windefender
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -15,7 +14,7 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Set the Current Working Directory inside the container.
-WORKDIR $GOPATH/src/saferwall/$VENDOR/
+WORKDIR $GOPATH/src/saferwall/sandbox/
 
 # Allow using private github repos that have private go modules.
 RUN go env -w GOPRIVATE=github.com/saferwall/* \
@@ -34,47 +33,35 @@ COPY . .
 # Build the binary.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-	-o /go/bin/$VENDOR-svc cmd/services/multiav/$VENDOR/main.go
+	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
 ############################
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/windefender:0.0.3
+FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="1.0.0"
-LABEL description="windows defender port into linux with nsq consumer"
+LABEL description="Sandbox scan service"
 
-# Environment variables.
-ENV WINDOWS_DEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
+ENV USER saferwall
+ENV GROUP saferwall
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
 
-# Update virus definition file.
-RUN curl -sS -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
-	&& cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
-	# && cabextract mpam-fe.exe \
-	&& rm mpam-fe.exe \
-	&& echo -n "$(date +%s)" >> $WINDOWS_DEFENDER_DB_UPDATE_DATE
-
-# Create an app user so our program doesn't run as root.
-RUN groupadd -r saferwall \
-	&& useradd --no-log-init -r -g saferwall saferwall
-
 # Copy our static executable.
-COPY --from=build-stage /go/bin/windefender-svc .
+COPY --from=build-stage /go/bin/sandbox-svc .
 
 # Copy the config files.
-COPY configs/services/multiav/windefender conf/
+COPY configs/services/sandbox/ conf/
 
-# Update permissions.
-RUN usermod -u 101 saferwall \
-	&& groupmod -g 102 saferwall \
-	&& chown -R saferwall:saferwall . \
-	&& chown -R saferwall:saferwall $WINDOWS_DEFENDER_INSTALL_DIR
+# Create an app user so our program doesn't run as root.
+RUN addgroup -g 102 -S $GROUP \
+	&& adduser -u 101 -S $USER -G $GROUP \
+	&& chown -R $USER:$GROUP /saferwall
 
 # Switch to our user.
 USER saferwall
 
-ENTRYPOINT ["/saferwall/windefender-svc", "-config", "/saferwall/conf"]
+ENTRYPOINT ["/saferwall/sandbox-svc", "-config", "/saferwall/conf"]

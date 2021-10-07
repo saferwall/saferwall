@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/user"
@@ -401,4 +402,18 @@ func ZipDecrypt(zipFilepath string, password string) error {
 	}
 
 	return nil
+}
+
+// DownloadFile downloads a file from a given URL and place
+// it to the writer.
+func DownloadFile(url string, wr io.Writer) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	_, err = io.Copy(wr, resp.Body)
+	return err
 }
