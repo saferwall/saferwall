@@ -1,0 +1,40 @@
+# Log level verbosity.
+log_level = "debug"
+# Shared volume between all microservices.
+shared_volume = "/samples"
+
+[agent]
+# Destinary directory inside the guest where the agent is deployed.
+dest_dir = "C:\\saferwall\\"
+# The sandbox binary components.
+package_name = "package.zip"
+
+[virt_manager]
+# Specify whether a remote or local session.
+# Local session uses "unix" and ignore the fields below.
+network = "tcp"
+# IP address of the host running libvirt RPC server.
+address = "192.168.10.2"
+# Port number of the SSH server.
+port = "22"
+# The username used when connecting via a remote SSH conn.
+user = "foo"
+# Snapshot name to restore to to go back to a clean state.
+snapshot_name = "clean-state"
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD)
+nsqd = "localhost:4150"
+# Topic name to produce to.
+topic = "topic-aggregator"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = ["localhost:4161"]
+# Topic name to consume from.
+topic = "topic-sandbox"
+# Channel name used in conjunction with topic name.
+channel = "chan-sandbox"
+# The number of concurrent workers to process the jobs.
+concurrency = 1

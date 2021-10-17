@@ -7,6 +7,10 @@ FROM golang:1.16-alpine AS build-stage
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
+ENV RELEASE_VERSION=v0.0.1
+ENV ARTIFACT_NAME=package.zip
+ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
+
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
@@ -34,6 +38,16 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
 	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
+
+# Download fetch.
+ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.2/fetch_linux_amd64 fetch
+RUN chmod +x fetch
+
+# Download the sandbox components files.
+RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
+	--repo="${REPO_URL}" \
+	--tag="${RELEASE_VERSION}" \
+	--release-asset="${ARTIFACT_NAME}" .
 
 ############################
 # STEP 2 build a small image

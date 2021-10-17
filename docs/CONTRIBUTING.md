@@ -7,24 +7,24 @@ Please note we have a code of conduct, please follow it in all your interactions
 # Table of Contents
 
 - [Repostiory Layout](#Repostiory-Layout)
-- [Requirements](#Requirements)
-- [Developing on the backend](#Developing-on-the-backend)
-- [Developing on the frontend](#Developing-on-the-frontend)
+- [Makefiles](#Makefiles)
 
 ## Repostiory Layout
+
 * __api__ : proto buffer specs, swagger manifests.
 * __build__ : docker files, makefiles, packer scripts.
 * __cmd__: main applications for this project.
 * __configs__: Configuration file templates or default configs.
+* __deployments__: aws configs.
 * __docs__: design and user documents (in addition to your godoc generated documentation).
-* __deployments__: helm chart.
 * __pkg__ : core package implementations and consumer instance.
 * __scripts__: scripts to perform any build, install, analysis, etc operations.
-* __test__: test data, (the tests are found on the location as the go code).
+* __services__: represen the different services.
+* __testdata__: test dat/fixtures, (the tests are found on the location as the go code).
 
-## Requirements
+## Makefiles
 
-- Copy the `example.env` to `.env`. This file stores the project configuration.
+- The `.env` contains the environment variables for project configuration.
 - Nearly all operations that we work with daily in this project, is automated using __makefiles__. You can print thefull list of supported commands by typing `make` on the root directory:
 
 ```shell
@@ -43,4 +43,8 @@ certbot-install                Install Certbot for nginx
 elastic-drop-db                Delete all indexes.
 ```
 
-Your commits **should** follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- Your commits **should** follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- After staring `docker-compose`, the `samples` volume is mounter as root and to make it readable/writable for the different containers:
+    - list the docker volumes using: `docker volume ls` and look for the `samples` volume name.
+    - inspect the volume by running: `docker volume inspect <volume_name>`, this command will show you where the volume is store on the local disk.
+    - finally change the volume permissions: `chmod -R 777 <sample_dir>`.

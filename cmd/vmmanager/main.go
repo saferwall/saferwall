@@ -15,7 +15,7 @@ import (
 
 func main() {
 
-	var flagNetwork = flag.String("network", "unix", "network to us3")
+	var flagNetwork = flag.String("network", "unix", "network to use")
 	var flagAddress = flag.String("address", "192.168.20.24", "IP address of the target server")
 	var flagPort = flag.String("port", "22", "ssh port number")
 	var flagUser = flag.String("user", "linux", "username for the ssh session")
