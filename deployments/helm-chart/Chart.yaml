@@ -2,8 +2,8 @@ apiVersion: v2
 name: saferwall
 description: A hackable malware sandbox for the 21st Century
 type: application
-version: 1.0.0
-appVersion: 1.0.0
+version: 0.2.0
+appVersion: 0.2.0
 home: https://saferwall.com
 icon: https://saferwall.com/favicon.png
 sources:
