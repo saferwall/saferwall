@@ -1,0 +1,11 @@
+{{- if .Values.webapis.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-webapis
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  webapis_conf: {{ tpl (.Files.Get "files/webapis.toml") . | quote }}
+{{- end }}

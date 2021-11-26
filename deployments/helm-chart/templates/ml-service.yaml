@@ -1,0 +1,17 @@
+{{- if .Values.ml.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-ml
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-ml
+{{ include "saferwall.labels" . | indent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-ml
+  ports:
+    - port: {{ .Values.ml.service.port }}
+      targetPort: {{ .Values.ml.service.targetPort }}
+      protocol: TCP
+{{- end }}

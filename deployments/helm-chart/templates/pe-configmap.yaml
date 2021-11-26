@@ -1,0 +1,11 @@
+{{- if .Values.pe.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-pe
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-pe
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  pe_conf: {{ tpl (.Files.Get "files/pe.toml") . | quote }}
+{{- end }}

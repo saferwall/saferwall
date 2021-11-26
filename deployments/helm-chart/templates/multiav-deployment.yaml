@@ -1,0 +1,59 @@
+{{- if .Values.multiav.enabled }}
+{{- $root := . -}}
+{{- range $av, $value := .Values.multiav.vendors }}
+{{- if $value.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "saferwall.fullname" $root }}-multiav-{{ $av }}
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" $root }}-multiav-{{ $av }}
+{{ include "saferwall.labels" $root | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" $root }}-multiav-{{ $av }}
+  replicas: {{ $value.replicas }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "saferwall.name" $root }}-multiav-{{ $av }}
+{{ include "saferwall.labels" $root | indent 8 }}
+    spec:
+      {{ if eq $root.Values.global.privateRegistryServer.enabled true }}
+      imagePullSecrets:
+        - name: regcred
+      {{- end }}
+      containers:
+        - name: "{{ $av }}"
+          image: "{{ $value.image.repository }}:{{ $value.image.tag }}"
+          imagePullPolicy: "{{ $value.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ $value.containerPort }}
+          resources:
+            requests:
+              cpu: "{{ $root.Values.multiav.resources.requests.cpu }}"
+              memory: "{{ $root.Values.multiav.resources.requests.memory }}"
+          env:
+            - name: SAFERWALL_DEPLOYMENT_KIND
+              value: "prod"
+          volumeMounts:
+            - name: samples
+              mountPath: /samples
+            - name:  {{ $.Release.Name }}-configmap-volume
+              mountPath: /saferwall/conf/
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: {{ include "saferwall.fullname" $root }}-samples
+      - name: {{ $.Release.Name }}-configmap-volume
+        configMap:
+          name: {{ template  "saferwall.fullname" $root }}-multiav-{{ $av }}
+          items:
+            - key: av_conf
+              path: prod.toml
+---
+{{- end }}
+{{- end }}
+{{- end }}

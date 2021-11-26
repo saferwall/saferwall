@@ -1,0 +1,20 @@
+{{- if .Values.webapis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-webapis
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+{{ include "saferwall.labels" . | indent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+  ports:
+    - port: {{ .Values.webapis.service.port }}
+      targetPort: {{ .Values.webapis.service.targetPort }}
+    {{- if .Values.webapis.service.nodePort }}
+      nodePort: {{ .Values.webapis.service.nodePort }}
+    {{- end }}
+  type: {{ .Values.webapis.service.type }}
+{{- end }}

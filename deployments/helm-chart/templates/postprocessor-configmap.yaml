@@ -1,0 +1,11 @@
+{{- if .Values.postprocessor.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-postprocessor
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-postprocessor
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  postprocessor_conf: {{ tpl (.Files.Get "files/postprocessor.toml") . | quote }}
+{{- end }}

@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-k8s-wait-for
+rules:
+- apiGroups: [""]
+  resources: ["services","pods","jobs"]
+  verbs: ["get","watch","list"]
+- apiGroups: ["batch"]
+  resources: ["services","pods","jobs"]
+  verbs: ["get","watch","list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-k8s-wait-for
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Release.Name }}-k8s-wait-for
+  apiGroup: rbac.authorization.k8s.io

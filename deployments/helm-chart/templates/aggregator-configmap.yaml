@@ -1,0 +1,11 @@
+{{- if .Values.aggregator.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-aggregator
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-aggregator
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  aggregator_conf: {{ tpl (.Files.Get "files/aggregator.toml") . | quote }}
+{{- end }}

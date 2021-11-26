@@ -1,0 +1,44 @@
+{{- if .Values.multiav.enabled }}
+{{- $root := . -}}
+{{- range $av, $value := .Values.multiav.vendors }}
+{{- if $value.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" $root }}-multiav-{{ $av }}
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" $root }}-multiav-{{ $av }}
+{{ include "saferwall.labels" $root | indent 4 }}
+data:
+  av_conf: |
+    # Log level verbosity.
+    log_level = "{{ $value.logLevel }}"
+    # Shared volume between all microservices.
+    shared_volume = "{{ $root.Values.global.storage.sharedVolume }}"
+    # Name of the antivirus.
+    engine_name = "{{ $av }}"
+
+    [producer]
+    # The data source name (DSN) for connecting to the broker server (NSQD)
+    nsqd = '{{ printf "%s-%s" $root.Release.Name $root.Values.nsq.nsqd.name }}:4150'
+    # Topic name to produce to.
+    topic = "topic-aggregator"
+
+    [consumer]
+    # The data source name (DSN) for connecting to the service discovery server
+    # (NSQLookupD).
+    lookupds = [
+    {{ $lookupdFullName := printf "%s-%s" $root.Release.Name $root.Values.nsq.nsqlookupd.name -}}
+    {{ range $i, $e := until (atoi (printf "%d" (int64 $root.Values.nsq.nsqlookupd.replicaCount))) -}}
+        "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
+    {{- end }}]
+    # Topic name to consume from.
+    topic = "topic-multiav"
+    # Channel name used in conjunction with topic name.
+    channel = "chan-{{ $av }}"
+    # The number of concurrent workers to process the jobs.
+    concurrency = {{ $value.replicas }}
+---
+{{- end }}
+{{- end }}
+{{- end }}

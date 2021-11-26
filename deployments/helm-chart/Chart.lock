@@ -1,0 +1,36 @@
+dependencies:
+- name: minio-operator
+  repository: https://operator.min.io/
+  version: 4.3.5
+- name: couchbase-operator
+  repository: https://couchbase-partners.github.io/helm-charts/
+  version: 2.2.006
+- name: aws-efs-csi-driver
+  repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+  version: 2.1.5
+- name: nfs-server-provisioner
+  repository: https://kvaps.github.io/charts
+  version: 1.3.1
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx/
+  version: 3.40.0
+- name: filebeat
+  repository: https://helm.elastic.co
+  version: 7.13.4
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.13.4
+- name: kibana
+  repository: https://helm.elastic.co
+  version: 7.13.4
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 17.0.2
+- name: nsq
+  repository: https://beeinventor.github.io/charts
+  version: 1.2.0
+- name: cluster-autoscaler
+  repository: https://kubernetes.github.io/autoscaler
+  version: 9.9.2
+digest: sha256:06e8cdb840156f92bd4a51897e78ad81dd71d92d28788395b900599e66ca7d6e
+generated: "2021-11-25T11:04:02.82693404+11:00"
