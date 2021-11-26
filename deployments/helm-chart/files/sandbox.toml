@@ -1,0 +1,42 @@
+# Log level verbosity.
+log_level = "{{ .Values.sandbox.logLevel }}"
+# Shared volume between all microservices.
+shared_volume = "{{ .Values.global.storage.sharedVolume }}"
+
+[agent]
+# Destinary directory inside the guest where the agent is deployed.
+dest_dir = "C:\\saferwall\\"
+# The sandbox binary components.
+package_name = "package.zip"
+
+[virt_manager]
+# Specify whether a remote or local session.
+# Local session uses "unix" and ignore the fields below.
+network = "tcp"
+# IP address of the host running libvirt RPC server.
+address = "192.168.10.2"
+# Port number of the SSH server.
+port = "22"
+# The username used when connecting via a remote SSH conn.
+user = "foo"
+# Snapshot name to restore to to go back to a clean state.
+snapshot_name = "{{ .Values.sandbox.snapshotName }}"
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD).
+nsqd = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150'
+# Topic name to produce to.
+topic = "topic-aggregator"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = [
+{{ $lookupdFullName := printf "%s-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}
+{{ range $i, $e := until (atoi (printf "%d" (int64 .Values.nsq.nsqlookupd.replicaCount))) -}}
+    "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
+{{- end }}]
+# Topic name to consume from.
+topic = "topic-sandbox"
+# Channel name used in conjunction with topic name.
+channel = "chan-sandbox"

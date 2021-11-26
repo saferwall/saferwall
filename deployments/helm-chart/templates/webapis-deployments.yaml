@@ -1,0 +1,52 @@
+{{- if .Values.webapis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-webapis
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+{{ include "saferwall.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+  replicas:  {{ .Values.webapis.replicas }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-webapis
+{{ include "saferwall.labels" . | indent 8 }}
+    spec:
+      {{ if eq .Values.global.privateRegistryServer.enabled true }}
+      imagePullSecrets:
+        - name: regcred
+      {{- end }}
+      containers:
+        - name: "{{ .Values.webapis.name }}"
+          image: "{{ .Values.webapis.image.repository }}:{{ .Values.webapis.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webapis.containerPort }}
+          resources:
+{{- toYaml .Values.webapis.resources | nindent 12 }}
+          env:
+            - name: SFW_WEBAPIS_DEPLOYMENT_KIND
+              value: "prod"
+          volumeMounts:
+            - name:  {{ $.Release.Name }}-configmap-volume
+              mountPath: /saferwall/conf/
+      volumes:
+      - name: {{ $.Release.Name }}-configmap-volume
+        configMap:
+          name: {{ template  "saferwall.fullname" . }}-webapis
+          items:
+            - key: webapis_conf
+              path: prod.toml
+      initContainers:
+        - name: wait-for-couchbase
+          image: groundnuty/k8s-wait-for:v1.3
+          imagePullPolicy: Always
+          args:
+            - "pod"
+            - "-lapp=couchbase"
+{{- end }}

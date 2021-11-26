@@ -1,0 +1,54 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "saferwall.fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "64M"
+    nginx.ingress.kubernetes.io/proxy-body-size: "64M"
+    {{- if index .Values "cert-manager" "enabled" }}
+    cert-manager.io/cluster-issuer: {{ index .Values "cert-manager" "ingressShim" "defaultIssuerName" }}
+    {{- end }}
+spec:
+  tls:
+  - hosts:
+    - {{ include "saferwall.ui-hostname" . }}
+    - {{ include "saferwall.webapis-hostname" . }}
+    {{- if .Values.website.enabled }}
+    - {{ include "saferwall.website-hostname" . }}
+    {{- end }}
+    secretName: {{ include "saferwall.fullname" . }}-tls
+  rules:
+  - host: {{ include "saferwall.ui-hostname" . }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "saferwall.fullname" . }}-ui
+            port:
+              number: {{ .Values.ui.service.port }}
+  - host: {{ include "saferwall.webapis-hostname" . }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "saferwall.fullname" . }}-webapis
+            port:
+              number: {{ .Values.webapis.service.port }}
+{{- if .Values.website.enabled }}
+  - host: {{ include "saferwall.website-hostname" . }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "saferwall.fullname" . }}-website
+            port:
+              number: {{ .Values.website.service.port }}
+{{- end }}
+

@@ -1,0 +1,25 @@
+# Log level verbosity.
+log_level = "{{ .Values.meta.logLevel }}"
+# Shared volume between all microservices.
+shared_volume = "{{ .Values.global.storage.sharedVolume }}"
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD).
+nsqd = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150'
+# Topic name to produce to.
+topic = "topic-aggregator"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = [
+{{ $lookupdFullName := printf "%s-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}
+{{ range $i, $e := until (atoi (printf "%d" (int64 .Values.nsq.nsqlookupd.replicaCount))) -}}
+    "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
+{{- end }}]
+# Topic name to consume from.
+topic = "topic-meta"
+# Channel name used in conjunction with topic name.
+channel = "chan-meta"
+# The number of concurrent workers to process the jobs.
+concurrency = {{ .Values.meta.concurrency }}

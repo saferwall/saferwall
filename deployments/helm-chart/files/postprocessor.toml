@@ -1,0 +1,35 @@
+# Log level verbosity.
+log_level = "{{ .Values.postprocessor.logLevel }}"
+# Address ofthe server that host the machine learning pipeline.
+ml_address = 'http://{{ template  "saferwall.fullname" . }}-ml'
+
+[producer]
+# The data source name (DSN) for connecting to the broker server (NSQD).
+nsqd = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150'
+# Topic name to produce to.
+topic = "topic-aggregator"
+
+[consumer]
+# The data source name (DSN) for connecting to the service discovery server
+# (NSQLookupD).
+lookupds = [
+{{ $lookupdFullName := printf "%s-%s" .Release.Name .Values.nsq.nsqlookupd.name -}}
+{{ range $i, $e := until (atoi (printf "%d" (int64 .Values.nsq.nsqlookupd.replicaCount))) -}}
+    "{{ $lookupdFullName }}-{{ $i }}.{{ $lookupdFullName }}:4161",
+{{- end }}]
+# Topic name to consume from.
+topic = "topic-postprocessor"
+# Channel name used in conjunction with topic name.
+channel = "chan-postprocessor"
+# The number of concurrent workers to process the jobs.
+concurrency = {{ .Values.postprocessor.concurrency }}
+
+[db]
+# DSN for connecting to the database.
+server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}'
+# Username used to access the db.
+username = '{{ index .Values "couchbase-operator" "cluster" "security" "username" }}'
+# Password used to access the db.
+password = '{{ index .Values "couchbase-operator" "cluster" "security" "password" }}'
+# Name of the couchbase bucket.
+bucket_name = "{{ .Values.global.couchbase.bucketName }}"

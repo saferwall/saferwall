@@ -1,0 +1,58 @@
+apiVersion: v2
+name: saferwall
+description: A hackable malware sandbox for the 21st Century
+type: application
+version: 0.2.0
+appVersion: 0.2.0
+home: https://saferwall.com
+icon: https://saferwall.com/favicon.png
+sources:
+    - https://github.com/saferwall/saferwall
+maintainers:
+    - name: saferwall
+      email: contact@saferwall.com
+dependencies:
+    - name: minio-operator
+      version: 4.3.5
+      repository: https://operator.min.io/
+      condition: minio-operator.enabled
+    - name: couchbase-operator
+      version: 2.2.006
+      repository: https://couchbase-partners.github.io/helm-charts/
+      condition: couchbase-operator.enabled
+    - name: aws-efs-csi-driver
+      version: 2.1.5
+      repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+      condition: aws-efs-csi-driver.enabled
+    - name: nfs-server-provisioner
+      version: 1.3.1
+      repository: https://kvaps.github.io/charts
+      condition: nfs-server-provisioner.enabled
+    - name: ingress-nginx
+      version: 3.40.0
+      repository: https://kubernetes.github.io/ingress-nginx/
+      condition: ingress-nginx.enabled
+    - name: filebeat
+      version: 7.13.4
+      repository: https://helm.elastic.co
+      condition: filebeat.enabled
+    - name: elasticsearch
+      version: 7.13.4
+      repository: https://helm.elastic.co
+      condition: elasticsearch.enabled
+    - name: kibana
+      version: 7.13.4
+      repository: https://helm.elastic.co
+      condition: kibana.enabled
+    - name: kube-prometheus-stack
+      version: 17.0.2
+      repository: https://prometheus-community.github.io/helm-charts
+      condition: kube-prometheus-stack.enabled
+    - name: nsq
+      version: 1.2.0
+      repository: https://beeinventor.github.io/charts
+      condition: nsq.enabled
+    - name: cluster-autoscaler
+      version: 9.9.2
+      repository: https://kubernetes.github.io/autoscaler
+      condition: cluster-autoscaler.enabled

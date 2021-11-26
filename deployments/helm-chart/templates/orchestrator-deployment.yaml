@@ -1,0 +1,63 @@
+{{- if .Values.orchestrator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-orchestrator
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-orchestrator
+{{ include "saferwall.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-orchestrator
+  replicas:  {{ .Values.orchestrator.replicas }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-orchestrator
+{{ include "saferwall.labels" . | indent 8 }}
+    spec:
+      {{ if eq .Values.global.privateRegistryServer.enabled true }}
+      imagePullSecrets:
+        - name: regcred
+      {{- end }}
+      containers:
+        - name: "{{ .Values.orchestrator.name }}"
+          command: ["/saferwall/orchestrator-svc"]
+          args: ["-config", "/saferwall/conf"]
+          image: "{{ .Values.orchestrator.image.repository }}:{{ .Values.orchestrator.image.tag }}"
+          volumeMounts:
+          - name: samples
+            mountPath: /samples
+          - name:  {{ $.Release.Name }}-orchestrator-configmap-volume
+            mountPath: /saferwall/conf/
+          resources:
+{{- toYaml .Values.orchestrator.resources | nindent 12 }}
+          env:
+            - name: SAFERWALL_DEPLOYMENT_KIND
+              value: "prod"
+      volumes:
+      - name: samples
+        persistentVolumeClaim:
+          claimName: {{ include "saferwall.fullname" . }}-samples
+      - name: {{ $.Release.Name }}-orchestrator-configmap-volume
+        configMap:
+          name: {{ include "saferwall.fullname" . }}-orchestrator
+          items:
+            - key: orchestrator_conf
+              path: prod.toml
+      initContainers:
+      - name: wait-for-nsqd
+        image: groundnuty/k8s-wait-for:v1.4
+        imagePullPolicy: Always
+        args:
+          - "pod"
+          - '-lapp.kubernetes.io/component=nsqd'
+      - name: wait-for-nsqlookupd
+        image: groundnuty/k8s-wait-for:v1.4
+        imagePullPolicy: Always
+        args:
+          - "pod"
+          - '-lapp.kubernetes.io/component=nsqlookupd'
+{{- end }}

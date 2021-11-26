@@ -1,0 +1,48 @@
+# Config used for kubernetes.
+
+# General app config.
+address = ":8080" # The IP:Port. Defaults to 8080.
+debug = {{ .Values.webapis.debug }} # Set to true for debug mode.
+log_level = "{{ .Values.webapis.logLevel }}" # Log level. Defaults to info.
+jwt_signkey = "{{ .Values.webapis.jwt.signKey }}" # JWT sign key secret.
+jwt_expiration = {{ .Values.webapis.jwt.expiration }} # JWT expiration in hours. Defaults to 72 hours (3 days)
+reset_pwd_token_expiration = {{ .Values.webapis.token.expiration }} # represents the token expiration for reset password and email confirmation requests in minutes.
+max_file_size = 64 # Maximum file size to allow for samples in MB.
+max_avatar_file_size = 1 # Maximum avatar size to allow for user profile picture in MB.
+
+[ui]
+address = '{{ printf "https://%s" .Values.global.hostname }}' # DSN for the frontend.
+
+[db]
+server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}' # DSN for connecting to the database
+username = {{ index .Values "couchbase-operator" "cluster" "security" "username" | quote }} # Username used to access the db.
+password = {{ index .Values "couchbase-operator" "cluster" "security" "password" | quote }} # Password used to access the db.
+bucket_name = "{{ .Values.global.couchbase.bucketName }}" # Name of the couchbase bucket.
+
+[nsq]
+address = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150' # The data source name (DSN) for connecting to the broker server (NSQD).
+topic = "topic-filescan" # Topic name to produce to.
+
+[storage]
+deployment_kind = "{{ .Values.global.storage.deploymentKind }}" # Deployement kind, possible values: aws, minio, local.
+files_container_name = "{{ .Values.webapis.storage.filesContainer }}" # Container name for samples.
+avatars_container_name = "{{ .Values.webapis.storage.avatarContainer }}" # Container name for avatars.
+    {{ if eq .Values.global.storage.deploymentKind "aws" }}
+    [storage.s3]
+    region = "{{ .Values.global.s3.region }}" # AWS region.
+    access_key = "{{ .Values.global.s3.accessKey }}" # AWS Access key ID.
+    secret_key = "{{ .Values.global.s3.secretKey }}" # AWS Secret Access Key.
+    {{ else if eq .Values.global.storage.deploymentKind "minio" }}
+    [storage.minio]
+    endpoint = '{{ printf "%s-minio" .Release.Name }}:9000' # MinIO endpoint.
+    region = "{{ .Values.global.minio.region }}" # MinIO region.
+    access_key = "{{ .Values.global.minio.accessKey }}" # MinIO Access key ID.
+    secret_key = "{{ .Values.global.minio.secretKey }}" # MinIO Secret Access Key.
+    {{ end }}
+
+[smtp]
+enabled = {{ .Values.webapis.smtp.enabled }}
+server = "{{ .Values.webapis.smtp.server }}"
+port = {{ .Values.webapis.smtp.port }}
+user = "{{ .Values.webapis.smtp.user }}"
+password = "{{ .Values.webapis.smtp.password }}"

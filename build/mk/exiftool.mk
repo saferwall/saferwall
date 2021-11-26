@@ -1,4 +1,4 @@
-EXIF_VER = 12.32
+EXIF_VER = 12.36
 exiftool-install: # Install ExifTool
 	sudo apt-get -qq update
 	wget https://exiftool.org/Image-ExifTool-$(EXIF_VER).tar.gz

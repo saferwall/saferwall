@@ -1,0 +1,17 @@
+{{- if or (index .Values "aws-efs-csi-driver" "enabled") (index .Values "nfs-server-provisioner" "enabled") }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "saferwall.fullname" . }}-samples
+spec:
+  {{- if index .Values "aws-efs-csi-driver" "enabled" }}
+  storageClassName: efs-sc
+  {{- else if index .Values "nfs-server-provisioner" "enabled" }}
+  storageClassName: nfs
+  {{- end }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+{{- end }}

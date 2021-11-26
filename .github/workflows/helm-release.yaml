@@ -1,0 +1,45 @@
+name: Release Charts
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.4.0
+
+      - name: Helm Deps
+        run: |
+          helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+          helm repo add minio https://operator.min.io/
+          helm repo add kvaps https://kvaps.github.io/charts
+          helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
+          helm repo add elastic https://helm.elastic.co
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add autoscaler https://kubernetes.github.io/autoscaler
+          helm repo add beeinventor https://beeinventor.github.io/charts
+          helm repo update
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.0.0
+        with:
+          charts_dir: 'deployments'
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

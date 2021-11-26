@@ -1,0 +1,29 @@
+{{- if .Values.website.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-website
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-website
+{{ include "saferwall.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "saferwall.name" . }}-website
+  replicas:  {{ .Values.website.replicas }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "saferwall.name" . }}-website
+{{ include "saferwall.labels" . | indent 8 }}
+    spec:
+      containers:
+        - name: "{{ .Values.website.name }}"
+          image: "{{ .Values.website.image.repository }}:{{ .Values.website.image.tag }}"
+          imagePullPolicy: "{{ .Values.website.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.website.containerPort }}
+          resources:
+{{- toYaml .Values.website.resources | nindent 12 }}
+{{- end }}

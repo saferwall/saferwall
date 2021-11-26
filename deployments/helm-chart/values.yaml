@@ -1,0 +1,587 @@
+#
+# Default values for Saferwall malware sandbox.
+# https://github.com/saferwall/saferwall
+#
+
+## Global project configuration
+##
+global:
+  # email used to generate let's encrypt ssl cert.
+  email: admin@mysaferwall.com
+  # web apis host name
+  backendHostname: https://api.mysaferwall.com
+  # set to true when using a private docker registry.
+  privateRegistryServer:
+    enabled: false
+    token: ""
+  # Host name to use.
+  hostname: mysaferwall.com
+  storage:
+    # Shared volume between all microservices.
+    sharedVolume: "/samples"
+    # Deployement kind, possible values: aws, minio, local.
+    deploymentKind: "minio"
+  # Couchbase.
+  couchbase:
+    # Name of the couchbase bucket.
+    bucketName: "sfw"
+  # AWS s3 config.
+  minio:
+    region: us-east-1
+    accessKey: minio
+    secretKey: minio123
+  s3:
+
+########### MINIO ###########
+minio-operator:
+  enabled: true
+
+####### FILEBEAT #########
+filebeat:
+  enabled: false
+  filebeatConfig:
+    filebeat.yml: |-
+      filebeat.autodiscover:
+        providers:
+          - type: kubernetes
+            templates:
+              - condition:
+                  or:
+                    - equals:
+                        kubernetes.container.name: backend
+                    - equals:
+                        kubernetes.container.name: consumer
+                config:
+                  - type: container
+                    paths:
+                      - "/var/log/containers/*-${data.kubernetes.container.id}.log"
+                    json.add_error_key: true
+      processors:
+        - add_cloud_metadata: ~
+        - add_docker_metadata: ~
+      output.elasticsearch:
+        host: '${NODE_NAME}'
+        hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
+
+####### ELASTIC SEARCH #########
+elasticsearch:
+  enabled: false
+  replicas: 1
+  minimumMasterNodes: 1
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: "500m"
+
+####### KIBANA #########
+kibana:
+  enabled: false
+  resources:
+    requests:
+      cpu: "500m"
+
+###### KUBE PROMETHEUS STACK #########
+kube-prometheus-stack:
+  enabled: false
+  grafana:
+    serviceMonitor:
+      # Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "5s"
+
+####### COUCHBASE #########
+couchbase-operator:
+  enabled: true
+  buckets:
+    sfw:
+      compressionMode: passive
+      conflictResolution: seqno
+      enableFlush: false
+      enableIndexReplica: false
+      evictionPolicy: valueOnly
+      ioPriority: low
+      kind: CouchbaseBucket
+    default: null
+  cluster:
+    antiAffinity: false
+    security:
+      username: admin
+      password: password
+    servers:
+      default:
+        autoscaleEnabled: false
+        pod:
+          spec: {}
+        services:
+        - data
+        - index
+        - query
+        - search
+        size: 1
+        volumeMounts:
+          default: couchbase
+          data: couchbase
+          index: couchbase
+    volumeClaimTemplates:
+      - metadata:
+          name: couchbase
+        spec:
+          storageClassName: standard
+          resources:
+            requests:
+              storage: 1Gi
+########### NSQ ###########
+nsq:
+  enabled: true
+  nsqd:
+    name: nsqd
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    persistence:
+      storageClass: "standard"
+      resources:
+        requests:
+          storage: 1Gi
+    extraArgs:
+    - --max-msg-size=10000000
+    - --log-level=error
+  nsqlookupd:
+    enabled: true
+    name: nsqlookupd
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    extraArgs:
+    - --log-level=error
+  nsqadmin:
+    enabled: true
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    extraArgs:
+    - --log-level=error
+
+########### AWS-EFS-CSI-DRIVER ###########
+aws-efs-csi-driver:
+  enabled: false
+  storageClasses:
+  - name: efs-sc
+    parameters:
+      provisioningMode: efs-ap
+      fileSystemId: fs-id-here
+      directoryPerms: "700"
+      gidRangeStart: "1000"
+      gidRangeEnd: "2000"
+      basePath: "/dynamic_provisioning"
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+
+########### NFS SERVER PROVISONNER ###########
+nfs-server-provisioner:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: standard
+    size: 10Gi
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+########### NGINX INGRESS  #############
+ingress-nginx:
+  enabled: false
+  controller:
+    config:
+      use-proxy-protocol: "true"
+      use-forwarded-headers: "true"
+      compute-full-forwarded-for: "true"
+    headers:
+      X-GeoIP-Country: "$geoip_country_code"
+      X-GeoIP-Region-Name: "$geoip_region_name"
+      X-GeoIP-City: "$geoip_city"
+      X-GeoIP-Postal-Code: "$geoip_postal_code"
+    service:
+      externalTrafficPolicy: "Local"
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+
+########## CERT-MANAGER ############
+cert-manager:
+  enabled: true
+  ingressShim:
+    # Isssuer name to use, possible values:
+    # letsencrypt-prod, letsencrypt-staging
+    defaultIssuerName: selfsigned-issuer
+    defaultIssuerKind: ClusterIssuer
+
+########## CLUSTER-AUTOSCALER ############
+cluster-autoscaler:
+  enabled: false
+  cloudProvider: aws
+  awsRegion: us-east-1
+  autoDiscovery:
+    clusterName: kops.saferwall.com
+
+########### BACKEND ###########
+webapis:
+  enabled: true
+  name: webapis
+  replicas: 1
+  containerPort: 8080
+  image:
+    repository: saferwall/webapis
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+    nodePort:
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  debug: false
+  logLevel: info
+  storage:
+    filesContainer: sfw-samples
+    avatarContainer: sfw-images
+  jwt:
+    signKey: secret
+    expiration: 72
+  token:
+    expiration: 10
+  smtp:
+    enabled: false
+    server:
+    port:
+    user:
+    password:
+
+########### FRONTEND ###########
+ui:
+  enabled: true
+  name: ui
+  replicas: 1
+  containerPort: 80
+  image:
+    repository: saferwall/ui
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+    nodePort:
+  resources:
+    requests:
+      memory: 50Mi
+      cpu: 50m
+
+########### ORCHESTRATOR ###########
+orchestrator:
+  enabled: true
+  name: orchestrator
+  replicas: 1
+  image:
+    repository: saferwall/orchestrator
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: info
+  concurrency: 1
+
+########### META ###########
+meta:
+  enabled: true
+  name: meta
+  replicas: 1
+  image:
+    repository: saferwall/gometa
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: info
+  concurrency: 1
+
+########### AGGREGATOR ###########
+aggregator:
+  enabled: true
+  name: meta
+  replicas: 1
+  image:
+    repository: saferwall/aggregator
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: info
+  concurrency: 1
+
+########### PE ###########
+pe:
+  enabled: true
+  name: pe
+  replicas: 1
+  image:
+    repository: saferwall/pe
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: info
+  concurrency: 1
+
+######### POST-PROCESSOR #########
+postprocessor:
+  enabled: true
+  name: postprocessor
+  replicas: 1
+  image:
+    repository: saferwall/postprocessor
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: info
+  concurrency: 1
+
+######### ML PIPILINE #########
+ml:
+  enabled: false
+  name: ml
+  replicas: 1
+  containerPort: 8000
+  image:
+    repository: saferwall/ml-pipeline
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 80
+    targetPort: 8000
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+
+########### WEBSITE ###########
+website:
+  enabled: true
+  name: website
+  replicas: 1
+  containerPort: 4000
+  image:
+    repository: saferwall/website
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 4000
+    nodePort:
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+
+########### MULTIAV ###########
+multiav:
+  enabled: true
+  name: multiav
+  vendors:
+    avast:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goavast
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    avira:
+      enabled: true
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goavira
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    bitdefender:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gobitdefender
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    clamav:
+      enabled: true
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goclamav
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    comodo:
+      enabled: true
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gocomodo
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    eset:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/goeset
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    drweb:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/godrweb
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    fsecure:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gofsecure
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    kaspersky:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gokaspersky
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    mcafee:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gomcafee
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    sophos:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gosophos
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    symantec:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gosymantec
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    trendmicro:
+      enabled: false
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gotrendmicro
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+    windefender:
+      enabled: true
+      replicas: 1
+      containerPort: 50051
+      image:
+        repository: saferwall/gowindefender
+        tag: latest
+        pullPolicy: Always
+      service:
+        port: 50051
+        targetPort: 50051
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+
+########### SANDBOX ###########
+# Not available in community edition.
+sandbox:
+  enabled: false
+  image:
+    repository: saferwall/sandbox
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+  logLevel: debug
+  virt_manager:
+    snapshot_name: clean-state-1

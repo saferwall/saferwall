@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 25/11/2021
+
+### Added
+
+- Unit tests for ASCII & Unicode strings and AV label pkg.
+- [exiftool] ELF binary testcases.
+- [yara]: implement yara scanner and update go package version.
+- [kubernetes] AWS spot instance template.
+- Introduce a new package for virt-manager.
+### Fixed
+
+- [magic] Handle case where input is empty.
+- [magic] fix out of bounds errors due to file help output on null input.
+
+### Changed
+
+- Move cli to a separate github repository
+- Clean up package tests + add tests for `HashBytes` func.
+- Update crypto functions to follow idiomatic initialisms.
+-[bytestats]  remove python3 poc + use package fixtures for testing.
+- Using `zap` instead of `logrus` and asbtract the logging code.
+- Asbtract access to object storage and to the database.
+- Move the multiav package to a separate repo.
+- Separate the consumer into different services (orchestrator, aggregator, pe, metadata, multiav, ML, post-processor).
+- Use external NSQ helm chart.
+
 ## [0.1.0] - 30/04/2021
 
 ### Added

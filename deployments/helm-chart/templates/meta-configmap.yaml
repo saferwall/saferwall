@@ -1,0 +1,11 @@
+{{- if .Values.meta.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-meta
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-meta
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  meta_conf: {{ tpl (.Files.Get "files/meta.toml") . | quote }}
+{{- end }}

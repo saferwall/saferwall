@@ -1,0 +1,11 @@
+{{- if .Values.orchestrator.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-orchestrator
+  labels:
+    app.kubernetes.io/name: {{ template "saferwall.name" . }}-orchestrator
+{{ include "saferwall.labels" . | indent 4 }}
+data:
+  orchestrator_conf: {{ tpl (.Files.Get "files/orchestrator.toml") . | quote }}
+{{- end }}
