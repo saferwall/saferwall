@@ -113,6 +113,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			break
 		}
 	}
+
 	var file map[string]interface{}
 	err := s.db.Get(ctx, sha256, &file)
 	if err != nil {

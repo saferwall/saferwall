@@ -400,8 +400,8 @@ github.com/saferwall/agent v0.0.1 h1:HPIgKwI99FDr1cGLz9ZFsD1HkAw/AZXRov3tkOVO4rE
 github.com/saferwall/agent v0.0.1/go.mod h1:N6E9d2IptPjHOSB0eSrYEVK4HM+FQ9GntFlsY6n1lds=
 github.com/saferwall/multiav v0.2.2 h1:4mjGSDrxXLrYaSyjGaHQa+Ovn+Gv0xOq/NfkzLq2EC8=
 github.com/saferwall/multiav v0.2.2/go.mod h1:/R70dO3gxkmfkVSwWTlK4M/rgFgT9MsDtzJYSuC3EgI=
-github.com/saferwall/pe v1.0.8 h1:OHRToJd1awWvJNuukZD/uVzhsJJkvoR+wF0sjPjRmso=
-github.com/saferwall/pe v1.0.8/go.mod h1:B69thcNHBJG8bxPDZG6ee0nJRm4FTSp+RIw1vo1afEg=
+github.com/saferwall/pe v1.1.0 h1:nTQH3MF7vJhmRn1DVxnQL2eetJlRRPbMSDqysvLMxVU=
+github.com/saferwall/pe v1.1.0/go.mod h1:B69thcNHBJG8bxPDZG6ee0nJRm4FTSp+RIw1vo1afEg=
 github.com/sagikazarmark/crypt v0.1.0/go.mod h1:B/mN0msZuINBtQ1zZLEQcegFJJf9vnYIR88KRMEuODE=
 github.com/sagikazarmark/crypt v0.4.0/go.mod h1:ALv2SRj7GxYV4HO9elxH9nS6M9gW+xDNxqmyJ6RfDFM=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
