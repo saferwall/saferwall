@@ -11,17 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# MultiAV pkg
-**/*.key
-**/*.lic
-license.avastlic*
-hbedv.key*
-sav-linux-free
-sep-deb.zip
-**/*.lic-expired
-**/*.key-expired
-**/secrets.tar.gz
-SPLX30-X64-Redhat8_CentOS8_Suse15-repack2.tar.gz
+# Private files
+**/private.yaml
 
 # Temp
 private/
@@ -54,3 +45,6 @@ _work/
 externals/
 .path
 .runner
+
+# Helm
+**/charts/*.tgz
