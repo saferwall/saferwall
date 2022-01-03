@@ -3,6 +3,68 @@ entries:
   saferwall:
   - apiVersion: v2
     appVersion: 0.2.0
+    created: "2022-01-03T07:03:15.930916802Z"
+    dependencies:
+    - condition: minio-operator.enabled
+      name: minio-operator
+      repository: https://operator.min.io/
+      version: 4.3.5
+    - condition: couchbase-operator.enabled
+      name: couchbase-operator
+      repository: https://couchbase-partners.github.io/helm-charts/
+      version: 2.2.006
+    - condition: aws-efs-csi-driver.enabled
+      name: aws-efs-csi-driver
+      repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+      version: 2.2.2
+    - condition: nfs-server-provisioner.enabled
+      name: nfs-server-provisioner
+      repository: https://kvaps.github.io/charts
+      version: 1.4.0
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.0.13
+    - condition: filebeat.enabled
+      name: filebeat
+      repository: https://helm.elastic.co
+      version: 7.16.2
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      version: 7.16.2
+    - condition: kibana.enabled
+      name: kibana
+      repository: https://helm.elastic.co
+      version: 7.16.2
+    - condition: kube-prometheus-stack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 27.1.0
+    - condition: nsq.enabled
+      name: nsq
+      repository: https://beeinventor.github.io/charts
+      version: 1.2.0
+    - condition: cluster-autoscaler.enabled
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.11.0
+    description: A hackable malware sandbox for the 21st Century
+    digest: c68f56e7b3495e5dcaf3e401d70e71a28d2858e7feac0d5061ab64f4ca26f5b3
+    home: https://saferwall.com
+    icon: https://saferwall.com/favicon.png
+    maintainers:
+    - email: contact@saferwall.com
+      name: saferwall
+    name: saferwall
+    sources:
+    - https://github.com/saferwall/saferwall
+    type: application
+    urls:
+    - https://github.com/saferwall/saferwall/releases/download/saferwall-0.2.1/saferwall-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.2.0
     created: "2021-11-26T03:14:40.358541828Z"
     dependencies:
     - condition: minio-operator.enabled
@@ -63,4 +125,4 @@ entries:
     urls:
     - https://github.com/saferwall/saferwall/releases/download/saferwall-0.2.0/saferwall-0.2.0.tgz
     version: 0.2.0
-generated: "2021-11-26T03:14:40.358563028Z"
+generated: "2022-01-03T07:03:15.930928703Z"
