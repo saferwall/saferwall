@@ -45,3 +45,6 @@ _work/
 externals/
 .path
 .runner
+
+# Helm
+**/charts/*.tgz
