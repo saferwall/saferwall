@@ -8,8 +8,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/blackironj/periodic"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/db"
 	"github.com/saferwall/saferwall/pkg/log"
@@ -19,6 +22,7 @@ import (
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
+	"github.com/djherbis/times"
 )
 
 // Config represents our application config.
@@ -78,12 +82,57 @@ func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
 	s.sub.Start()
 
+	// start a background job that deletes samples from
+	// the nfs share that has not been accessed since
+	// more than a day.
+	scheduler := periodic.NewScheduler()
+	cleanupStorage, _ := periodic.NewTask(deleteOldSamples)
+	scheduler.RegisterTask("cleanupStorageTask", time.Hour*24, cleanupStorage)
+	s.logger.Info("run cleanup samples from storage task")
+	scheduler.Run()
+
+	//Stop tasks before program is shutting down
+	defer func() {
+		scheduler.Stop()
+		s.logger.Info("every task is stopped")
+	}()
 	return nil
 }
 
 func toJSON(v interface{}) []byte {
 	b, _ := json.Marshal(v)
 	return b
+}
+
+func deleteOldSamples(logger log.Logger, root string) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		logger.Errorf("error while walk storage dir: %s, reason: %v", root, err)
+		return
+	}
+
+	yesterday := time.Now().AddDate(0, 0, -1)
+
+	for _, file := range files {
+		t, err := times.Stat(file)
+		if err != nil {
+			logger.Errorf("error while time stating file: %s, reason: %v", file, err)
+			continue
+		}
+		if t.AccessTime().Before(yesterday) {
+			err = os.Remove(file)
+			if err != nil {
+				logger.Errorf("error while deleting file: %s, reason: %v", file, err)
+				continue
+			}
+
+			logger.Infof("file: %s has been cleaned up from the storage", file)
+		}
+	}
 }
 
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
