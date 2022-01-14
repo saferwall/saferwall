@@ -88,7 +88,7 @@ services:
   ml:
     image: saferwall/ml-pipeline:latest
     ports:
-      - "8000:8000"
+      - "8001:8001"
 
   orchestrator:
     image: saferwall/orchestrator:latest
