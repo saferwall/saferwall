@@ -16,21 +16,18 @@ services:
       - couchbase_data:/opt/couchbase/var
 
   nsqlookupd:
-    image: nsqio/nsq:v1.2.0
+    image: nsqio/nsq:v1.2.1
     command: >
-      /nsqlookupd
-      --log-level=error
+      /nsqlookupd --log-level=error
     hostname: nsqlookupd
     ports:
       - 4160:4160
       - 4161:4161
 
   nsqd:
-    image: nsqio/nsq:v1.2.0
+    image: nsqio/nsq:v1.2.1
     command: >
-      /nsqd
-      --lookupd-tcp-address=nsqlookupd:4160
-      --max-msg-size=1413820683
+      /nsqd --lookupd-tcp-address=nsqlookupd:4160 --max-msg-size=1413820683
       --log-level=error
     hostname: nsqd
     depends_on:
@@ -40,11 +37,9 @@ services:
       - 4151:4151
 
   nsqadmin:
-    image: nsqio/nsq:v1.2.0
+    image: nsqio/nsq:v1.2.1
     command: >
-      /nsqadmin
-      --lookupd-http-address=nsqlookupd:4161
-      --log-level=error
+      /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=error
     hostname: nsqadmin
     depends_on:
       - nsqlookupd
@@ -77,20 +72,29 @@ services:
         -db,
         /saferwall/db,
         -tpl,
-        /saferwall/templates,
+        /saferwall/templates
       ]
     restart: always
+
+  ui:
+    image: saferwall/ui:latest
+    ports:
+      - "8000:80"
+    environment:
+      VUE_APP_BACKEND_HOST: http://localhost:8080/
+    depends_on:
+      - webapis
 
   ml:
     image: saferwall/ml-pipeline:latest
     ports:
-      - "8000:8000"
+      - "8001:8001"
 
   orchestrator:
     image: saferwall/orchestrator:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/orchestrator-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/orchestrator-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
       - /saferwall:/saferwall/storage
@@ -101,14 +105,19 @@ services:
       - couchbase
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/aggregator-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/aggregator-svc, -config, /saferwall/conf/ ]
     restart: always
 
   postprocessor:
     image: saferwall/postprocessor:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/postprocessor-svc, -config, /saferwall/conf/]
+    entrypoint:
+      [
+        /saferwall/postprocessor-svc,
+        -config,
+        /saferwall/conf/
+      ]
     volumes:
       - samples:/samples
 
@@ -116,7 +125,7 @@ services:
     image: saferwall/pe:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/pe-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/pe-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
 
@@ -124,7 +133,7 @@ services:
     image: saferwall/gometa:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/meta-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
 
@@ -132,7 +141,7 @@ services:
     image: saferwall/goavira:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/avira-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
 
@@ -140,7 +149,7 @@ services:
     image: saferwall/goclamav:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/clamav-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
 
@@ -148,7 +157,7 @@ services:
     image: saferwall/gocomodo:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
+    entrypoint: [ /saferwall/comodo-svc, -config, /saferwall/conf/ ]
     volumes:
       - samples:/samples
 
@@ -161,6 +170,6 @@ services:
       - samples:/samples
 
 volumes:
-  minio_data:
-  couchbase_data:
-  samples:
+  minio_data: null
+  couchbase_data: null
+  samples: null
