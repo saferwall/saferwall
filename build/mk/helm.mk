@@ -33,8 +33,7 @@ helm-release:		## Install Helm release.
 	make k8s-init-cert-manager
 	make k8s-install-couchbase-crds
 	cd $(ROOT_DIR) \
-		&& git clone https://github.com/saferwall/helm-chart.git \
-		&& cd helm-chart \
+		&& cd deployment/saferwall \
 		&& helm dependency update  \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default .
