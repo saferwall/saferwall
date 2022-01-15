@@ -39,19 +39,13 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         - Set `kibana.enabled` to true.
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-9. Init cert-manager, couchbase CRDs and helm repos:
-    ```sh
-	- make helm-add-repos
-	- make k8s-init-cert-manager
-	- make k8s-install-couchbase-crds
-    ```
-10. Install helm chart: `make helm-release`.
-11. Wait until the output of `kubectl get pods` show all pods are running fine.
-12. Edit your host file to setup a dns entry for for the services running inside the cluster:
+9. Install helm chart: `make helm-release`.
+10. Wait until the output of `watch | kubectl get pods` show all pods are running fine.
+11. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
     - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-13. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
-14. The credentials to access the dashboard are:
+12. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
+13. The credentials to access the dashboard are:
     ```
     username: Administrator
     password: password
