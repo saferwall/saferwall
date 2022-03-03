@@ -170,10 +170,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
+	// set the file analysis status to `finished`.
 	payloads := []*pb.Message_Payload{
 		{Module: "status", Body: toJSON(2)},
 	}
 
+	// if the file format is PE, run the ML classifier.
 	if file["fileformat"] == "pe" {
 		if _, ok := file["pe"]; ok {
 			res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
@@ -186,6 +188,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
+	// update multiav last_scan and first_scan if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
@@ -203,6 +206,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
+	// serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
@@ -210,6 +214,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
+	// finally, produce the message to the right queue.
 	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
