@@ -53,7 +53,7 @@ WORKDIR /saferwall
 
 # Update virus definition file.
 RUN $SOPHOS_INSTALL_DIR/update/savupdate.sh \
-    && echo -n "$(date +%s)" >> $SOPHOS_DB_UPDATE_DATE
+    || echo -n "$(date +%s)" >> $SOPHOS_DB_UPDATE_DATE
 
 # Performs a simple detection test.
 RUN $SOPHOS_SCANNER -f -nc -nb -ss -archive -loopback \

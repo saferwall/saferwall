@@ -28,13 +28,9 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         export MINIKUBE_MEMORY=8192
         export MINIKUBE_DISK_SIZE=40GB
         ```
-5. _Optional_ step: building the containers if you do not wish to use the public ones or you want to build your own.
-    - Build the __frontend__: !todo!
-    - Build the __backend__ : !todo!
-    - Build the __consumer__: `make consumer-build`.
-    - Build the __multiav__:
-        - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
-        - By default, saferwall will use only the free ones.
+5. _Optional_ step: build the paid anti-virus docker images.
+    - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
+    - By default, saferwall will use only the free ones.
 6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`.
 7. Install Helm: `make helm-install`.
 8. Edit the `deployments/saferwall/values.yaml`
@@ -43,14 +39,13 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
         - Set `kibana.enabled` to true.
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-9. Init cert-manager: `make k8s-init-cert-manager` and couchbase crds: `make k8s-install-couchbase-crds`.
-10. Install helm chart: `make helm-release`.
-11. Wait until the output of `kubectl get pods` show all pods are running fine.
-12. Edit your host file to setup a dns entry for for the services running inside the cluster:
+9. Install helm chart: `make helm-release`.
+10. Wait until the output of `watch | kubectl get pods` show all pods are running fine.
+11. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
     - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-13. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
-14. The credentials to access the dashboard are:
+12. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and add an certificate exception for both domains.
+13. The credentials to access the dashboard are:
     ```
     username: Administrator
     password: password

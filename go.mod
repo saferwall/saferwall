@@ -4,8 +4,10 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.39.0
+	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.2.4
 	github.com/digitalocean/go-libvirt v0.0.0-20210723161134-761cfeeb5968
+	github.com/djherbis/times v1.5.0
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/glaslos/ssdeep v0.3.1
 	github.com/golang/protobuf v1.5.2
