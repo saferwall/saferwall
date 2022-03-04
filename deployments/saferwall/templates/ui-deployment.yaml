@@ -30,6 +30,5 @@ spec:
           resources:
 {{- toYaml .Values.ui.resources | nindent 12 }}
           env:
-            - name: VUE_APP_BACKEND_HOST
-              value: "{{ .Values.global.backendHostname }}"
+{{- toYaml .Values.ui.env | nindent 12 }}
 {{- end }}
