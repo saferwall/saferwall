@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/blackironj/periodic"
+	"github.com/djherbis/times"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/pkg/db"
 	"github.com/saferwall/saferwall/pkg/log"
@@ -22,16 +23,16 @@ import (
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
-	"github.com/djherbis/times"
 )
 
 // Config represents our application config.
 type Config struct {
-	LogLevel  string             `mapstructure:"log_level"`
-	MLAddress string             `mapstructure:"ml_address"`
-	DB        db.Config          `mapstructure:"db"`
-	Producer  config.ProducerCfg `mapstructure:"producer"`
-	Consumer  config.ConsumerCfg `mapstructure:"consumer"`
+	LogLevel     string             `mapstructure:"log_level"`
+	MLAddress    string             `mapstructure:"ml_address"`
+	SharedVolume string             `mapstructure:"shared_volume"`
+	DB           db.Config          `mapstructure:"db"`
+	Producer     config.ProducerCfg `mapstructure:"producer"`
+	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
 }
 
 // Service represents the PE scan service. It adheres to the nsq.Handler
@@ -86,9 +87,8 @@ func (s *Service) Start() error {
 	// the nfs share that has not been accessed since
 	// more than a day.
 	scheduler := periodic.NewScheduler()
-	cleanupStorage, _ := periodic.NewTask(deleteOldSamples)
+	cleanupStorage, _ := periodic.NewTask(deleteOldSamples, s.cfg.SharedVolume)
 	scheduler.RegisterTask("cleanupStorageTask", time.Hour*24, cleanupStorage)
-	s.logger.Info("run cleanup samples from storage task")
 	scheduler.Run()
 
 	//Stop tasks before program is shutting down
@@ -106,6 +106,9 @@ func toJSON(v interface{}) []byte {
 
 func deleteOldSamples(logger log.Logger, root string) {
 	var files []string
+
+	logger.Info("run cleanup samples from storage task")
+
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
 		return nil
@@ -170,9 +173,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// set the file analysis status to `finished`.
+	// set the file analysis status to `finished` and
+	// set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
 		{Module: "status", Body: toJSON(2)},
+		{Module: "last_scan", Body: toJSON(time.Now().Unix())},
 	}
 
 	// if the file format is PE, run the ML classifier.

@@ -2,6 +2,8 @@
 log_level = "debug"
 # Address ofthe server that host the machine learning pipeline.
 ml_address = "http://ml-pipeline:8000"
+# Shared volume between all microservices.
+shared_volume = "/samples"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).

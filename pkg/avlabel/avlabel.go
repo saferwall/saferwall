@@ -98,3 +98,17 @@ func ParseAvira(detection string) Detection {
 		Variant:  params["Variant"],
 	}
 }
+
+// Parse parses an Antivirus detection name.
+func Parse(av, detection string) Detection {
+	switch av {
+	case "windefender":
+		return ParseWindefender(detection)
+	case "eset":
+		return ParseEset(detection)
+	case "avira":
+		return ParseAvira(detection)
+	}
+
+	return Detection{}
+}

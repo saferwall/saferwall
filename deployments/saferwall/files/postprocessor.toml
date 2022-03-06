@@ -2,6 +2,8 @@
 log_level = "{{ .Values.postprocessor.logLevel }}"
 # Address ofthe server that host the machine learning pipeline.
 ml_address = 'http://{{ template  "saferwall.fullname" . }}-ml'
+# Shared volume between all microservices.
+shared_volume = "{{ .Values.global.storage.sharedVolume }}"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).
