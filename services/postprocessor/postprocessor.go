@@ -173,9 +173,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// set the file analysis status to `finished`.
+	// set the file analysis status to `finished` and
+	// set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
 		{Module: "status", Body: toJSON(2)},
+		{Module: "last_scan", Body: toJSON(time.Now().Unix())},
 	}
 
 	// if the file format is PE, run the ML classifier.

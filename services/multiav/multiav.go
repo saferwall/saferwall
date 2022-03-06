@@ -16,6 +16,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/pkg/avlabel"
 	"github.com/saferwall/saferwall/pkg/log"
 	"github.com/saferwall/saferwall/pkg/pubsub"
 	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
@@ -107,6 +108,11 @@ func New(cfg Config, logger log.Logger, av Scanner) (Service, error) {
 
 }
 
+func toJSON(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
+}
+
 // Start kicks in the service to start consuming events.
 func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
@@ -154,18 +160,24 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		Output:   r.Output,
 		Update:   s.updatedAt}
 
-	avRes, err := json.Marshal(result)
-	if err != nil {
-		logger.Errorf("failed to marshal message body, reason: %v", err)
-		return err
-	}
-
 	payloads := []*pb.Message_Payload{
 		{
 			Module: "multiav.last_scan." + s.cfg.EngineName,
-			Body:   avRes,
+			Body:   toJSON(result),
 		},
 	}
+
+	// get the multiav tag.
+	if r.Infected && len(r.Output) > 0 {
+		parsedDet := avlabel.Parse(s.cfg.EngineName, r.Output)
+		if len(parsedDet.Family) > 0 {
+			payloads = append(payloads, &pb.Message_Payload{
+				Module: "tags." + s.cfg.EngineName,
+				Body:   toJSON(parsedDet.Family),
+			})
+		}
+	}
+
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
