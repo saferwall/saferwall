@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 31/03/2022
+
+### Added
+
+- Add antivirus detections to the list of tags.
+- Cleanup file that has not been accessed since a day from the nfs share.
+- Documenting saferwall architecture.
+- Saferwall sandbox microservice.
+
+### Changed
+
+- Move helm chart from its own repo to main repo.
+- Numerous tolling updates: docker-compose, devContainers,, and bumping go pkg dependencies.
+
+
 ## [0.2.0] - 25/11/2021
 
 ### Added
