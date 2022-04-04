@@ -16,7 +16,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/agent v0.0.1
 	github.com/saferwall/multiav v0.2.2
-	github.com/saferwall/pe v1.1.0
+	github.com/saferwall/pe v1.1.3
 	github.com/spf13/viper v1.10.1
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/atomic v1.8.0 // indirect
