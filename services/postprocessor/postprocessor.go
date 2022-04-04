@@ -161,7 +161,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			logger.Errorf("failed to read document: %v", err)
 		}
 		logger.Debugf("finish av scanners: %d", len(multiav))
-		if len(multiav) > 11 {
+		if len(multiav) == 14 {
 			break
 		}
 	}
@@ -177,7 +177,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
 		{Module: "status", Body: toJSON(2)},
-		{Module: "last_scan", Body: toJSON(time.Now().Unix())},
+		{Module: "last_scanned", Body: toJSON(time.Now().Unix())},
 	}
 
 	// if the file format is PE, run the ML classifier.

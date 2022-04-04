@@ -101,3 +101,33 @@ func (s Service) Download(ctx context.Context, bucket, key string,
 
 	return err
 }
+
+// ListObjects returns the list of objects in a bucket.
+func (s Service) ListObjects(ctx context.Context, bucket string,
+	fn func(*awss3.ListObjectsV2Output, bool) bool) error {
+
+	input := &awss3.ListObjectsV2Input{
+		Bucket: aws.String(bucket),
+	}
+
+	err := s.s3svc.ListObjectsV2PagesWithContext(ctx, input, fn)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Exists checks if an object key exists without returning the object itself.
+func (s Service) Exists(ctx context.Context, bucket string, key string) (bool, error) {
+
+	input := &awss3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+
+	_, err := s.s3svc.HeadObjectWithContext(ctx, input)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
