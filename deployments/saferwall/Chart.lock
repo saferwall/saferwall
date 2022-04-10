@@ -4,7 +4,7 @@ dependencies:
   version: 4.3.7
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
-  version: 2.2.006
+  version: 2.2.301
 - name: aws-efs-csi-driver
   repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
   version: 2.2.5
@@ -32,5 +32,5 @@ dependencies:
 - name: cluster-autoscaler
   repository: https://kubernetes.github.io/autoscaler
   version: 9.16.2
-digest: sha256:3b815d619e651f483fe46766891cf1155b2355957dfffaae9dd89cc3ed76a318
-generated: "2022-04-10T18:53:19.501709892+10:00"
+digest: sha256:47f12fb342451829296b6f6a767aebd5a058c9ced04aa385d4d860205046af79
+generated: "2022-04-10T19:03:18.477021855+10:00"
