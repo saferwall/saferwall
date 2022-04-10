@@ -13,7 +13,7 @@ maintainers:
       email: contact@saferwall.com
 dependencies:
     - name: minio-operator
-      version: 4.3.5
+      version: 4.3.7
       repository: https://operator.min.io/
       condition: minio-operator.enabled
     - name: couchbase-operator
@@ -21,7 +21,7 @@ dependencies:
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver
-      version: 2.2.2
+      version: 2.2.5
       repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
       condition: aws-efs-csi-driver.enabled
     - name: nfs-server-provisioner
@@ -29,30 +29,30 @@ dependencies:
       repository: https://kvaps.github.io/charts
       condition: nfs-server-provisioner.enabled
     - name: ingress-nginx
-      version: 4.0.13
+      version: 4.0.19
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: filebeat
-      version: 7.16.2
+      version: 7.17.1
       repository: https://helm.elastic.co
       condition: filebeat.enabled
     - name: elasticsearch
-      version: 7.16.2
+      version: 7.17.1
       repository: https://helm.elastic.co
       condition: elasticsearch.enabled
     - name: kibana
-      version: 7.16.2
+      version: 7.17.1
       repository: https://helm.elastic.co
       condition: kibana.enabled
     - name: kube-prometheus-stack
-      version: 27.1.0
+      version: 34.9.0
       repository: https://prometheus-community.github.io/helm-charts
       condition: kube-prometheus-stack.enabled
     - name: nsq
-      version: 1.2.0
+      version: 1.2.2
       repository: https://beeinventor.github.io/charts
       condition: nsq.enabled
     - name: cluster-autoscaler
-      version: 9.11.0
+      version: 9.16.2
       repository: https://kubernetes.github.io/autoscaler
       condition: cluster-autoscaler.enabled
