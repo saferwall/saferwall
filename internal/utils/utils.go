@@ -463,3 +463,41 @@ func ExecCmdBackground(name string, args ...string) error {
 	}
 	return nil
 }
+
+// Resolve first element of a filepath as environment variable
+// if enclosed in %. Only the first path element is considered
+// as an environment variable.
+func Resolve(s string) (out string) {
+
+	// return the original filepath unchanged unless we get to the end
+	out = s
+
+	// return unless strings starts with %
+	if !strings.HasPrefix(s, "%") {
+		return
+	}
+
+	// return unless there's a second %
+	trim := strings.TrimPrefix(s, "%")
+	i := strings.Index(trim, "%")
+	if i == -1 {
+		return
+	}
+
+	// check if substr between two % is the name of an existing env var
+	val, ok := os.LookupEnv(trim[:i])
+	if !ok {
+		return
+	}
+
+	// env var value will use os path separator
+	remainder := filepath.FromSlash(trim[i+1:])
+
+	// check the remainder starts with path separateor
+	if !strings.HasPrefix(remainder, "\\") {
+		return
+	}
+
+	// prepend the value to the remainder of the path
+	return val + remainder
+}

@@ -1,0 +1,11 @@
+# The address that the gRPC server we will connect to.
+address = "192.168.122.22:50051"
+# Destination path where the sandbox will be deployed.
+agent_dest_path = "c:\\saferwall"
+# Source path that contains the sandbox component files.
+agent_src_path = "./../../assets/package.zip"
+# Source path of a test sample we can run to mimic a malware.
+sample_src_path = "./../../assets/test.exe"
+# Maximum timeout in seconds for the client to wait for the server
+# to deply back during an analysis request before it hang up.
+Timeout = 600

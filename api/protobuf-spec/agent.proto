@@ -1,0 +1,97 @@
+// Copyright 2021 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package sandbox;
+
+option go_package = "github.com/saferwall/agent/proto";
+
+
+// The agent service definition.
+service Agent {
+  // Deploy installs all the malware sandbox component files.
+  // This include the dll to be injected, the driver, the loader, etc ...
+  rpc Deploy (DeployRequest) returns (DeployReply) {}
+
+  // Analyze executes the sample inside the virtual machine and monitor its
+  // behavior.
+  rpc Analyze (AnalyzeFileRequest) returns (AnalyzeFileReply) {}
+}
+
+// DeployRequest message contains a zip package that includes all
+// necessery files.
+message DeployRequest {
+  // Zip file containing the sandbox app with its dependencies.
+  bytes package = 1;
+  // Destination path where to deploy the package.
+  string path = 2;
+}
+
+// DeployReply contains the version of the package that was deployed.
+message DeployReply {
+  string version = 1;
+}
+
+// The request message containing a sample for analysis.
+message AnalyzeFileRequest {
+
+  // The binary file content.
+  bytes binary = 1;
+
+  // Configuration used to run the binary.
+  // This is basically a JSON serialized byte array that contains
+  // the configuration used to run the malware.
+  // Example of fields that it contains is:
+  //  - Full path to where the binary should be dropped in the guest.
+  //  - Arguments used to execute the binary.
+  //  - Timeout in seconds for how long to run the binary.
+  //  - Country used to tunnel the connections.
+  //  - The SHA256 hash of the binary.
+  //  - Whether mem dumps should be taken.
+  //  - etc ...
+  bytes config = 2;
+}
+
+// The response message containing the analysis results.
+message AnalyzeFileReply {
+
+    // APIs log produced by the sandbox in JSON Lines;
+    bytes apitrace = 1;
+
+    // Screenshots collected during the analysis.
+    message Screenshot {
+    // id represents an identifier to keep screenshots order.
+      int32 id = 1;
+      // content contains the image data.
+      bytes content = 2;
+    }
+    repeated Screenshot screenshots = 2;
+
+    // (Optional) memory dumps taken during the analysis.
+    message Memdump {
+      // string represents metadata about the dump:
+      // i.e = 8DC.memory.400000.mshta.exe.inet
+      string name = 1;
+      // content contains the memory dump data.
+      bytes content = 2;
+    }
+    repeated Memdump memdumps = 3;
+
+    // (Optional) arfifacts like created files during the analysis.
+    message Artifact {
+      // string represents metadata about the artifact:
+      // i.e = deleted-file-%appdata%/explorer.exe
+      string name = 1;
+      // content contains the memory dump data.
+      bytes content = 2;
+    }
+    repeated Artifact collected_artifacts = 4;
+
+    // gRPC server logs.
+    bytes serverlog = 5;
+
+    // controller.exe logs.
+    bytes controllerlog = 6;
+}

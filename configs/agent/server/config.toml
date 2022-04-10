@@ -1,0 +1,11 @@
+# The address that the gRPC server will listen on.
+address = "localhost:50051"
+# Text file contaning a list of english words.
+english_words = "words.txt"
+# The sandbox config file name to write inside the guest.
+config_file_name = "config.toml"
+# File name of the go template file that we use to generate
+# dynamically the sandbox config file.
+template_file_name = "filescan.tpl"
+# The user mode controller component of the sandbox.
+controller_name = "controller.exe"

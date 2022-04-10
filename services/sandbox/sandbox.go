@@ -13,7 +13,7 @@ import (
 
 	"github.com/digitalocean/go-libvirt"
 	gonsq "github.com/nsqio/go-nsq"
-	agent "github.com/saferwall/agent/pkg/grpc"
+	agent "github.com/saferwall/saferwall/internal/agent"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
