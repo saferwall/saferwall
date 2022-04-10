@@ -1,4 +1,4 @@
-// Copyright 2021 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -12,13 +12,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/saferwall/saferwall/pkg/log"
+	"github.com/saferwall/saferwall/internal/log"
 
 	"github.com/gabriel-vasile/mimetype"
 	gonsq "github.com/nsqio/go-nsq"
-	"github.com/saferwall/saferwall/pkg/pubsub"
-	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
-	s "github.com/saferwall/saferwall/pkg/storage"
+	"github.com/saferwall/saferwall/internal/pubsub"
+	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	s "github.com/saferwall/saferwall/internal/storage"
 	"github.com/saferwall/saferwall/services/config"
 )
 
@@ -161,7 +161,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Debug("published messaged to topic-multiav")
 
-	err = s.pub.Publish(ctx, "topic-meta",[]byte(sha256))
+	err = s.pub.Publish(ctx, "topic-meta", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err

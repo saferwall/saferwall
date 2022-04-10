@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@ package main
 
 import (
 	"github.com/hillu/go-yara/v4"
-	goyara "github.com/saferwall/saferwall/pkg/yara"
+	goyara "github.com/saferwall/saferwall/internal/yara"
 
 	"errors"
 	"flag"

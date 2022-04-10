@@ -1,4 +1,4 @@
-// Copyright 2020 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -10,7 +10,7 @@ import (
 	"log"
 
 	"github.com/digitalocean/go-libvirt"
-	"github.com/saferwall/saferwall/pkg/vmmanager"
+	"github.com/saferwall/saferwall/internal/vmmanager"
 )
 
 func main() {

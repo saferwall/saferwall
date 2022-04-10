@@ -9,8 +9,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/saferwall/saferwall/pkg/config"
-	"github.com/saferwall/saferwall/pkg/log"
+	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/log"
 	pesvc "github.com/saferwall/saferwall/services/pe"
 )
 
