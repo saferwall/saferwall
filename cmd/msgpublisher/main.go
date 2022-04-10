@@ -5,9 +5,9 @@ import (
 	"flag"
 	"os"
 
-	cfg "github.com/saferwall/saferwall/pkg/config"
-	"github.com/saferwall/saferwall/pkg/log"
-	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
+	cfg "github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/log"
+	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 )
 
 // Version indicates the current version of the application.

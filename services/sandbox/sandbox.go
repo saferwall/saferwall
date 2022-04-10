@@ -1,4 +1,4 @@
-// Copyright 2021 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -14,11 +14,11 @@ import (
 	"github.com/digitalocean/go-libvirt"
 	gonsq "github.com/nsqio/go-nsq"
 	agent "github.com/saferwall/agent/pkg/grpc"
-	"github.com/saferwall/saferwall/pkg/log"
-	"github.com/saferwall/saferwall/pkg/pubsub"
-	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
-	"github.com/saferwall/saferwall/pkg/utils"
-	"github.com/saferwall/saferwall/pkg/vmmanager"
+	"github.com/saferwall/saferwall/internal/log"
+	"github.com/saferwall/saferwall/internal/pubsub"
+	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	"github.com/saferwall/saferwall/internal/utils"
+	"github.com/saferwall/saferwall/internal/vmmanager"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"

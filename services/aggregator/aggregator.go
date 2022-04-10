@@ -1,4 +1,4 @@
-// Copyright 2021 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -9,14 +9,14 @@ import (
 	"encoding/json"
 	"errors"
 
-	store "github.com/saferwall/saferwall/pkg/db"
-	"github.com/saferwall/saferwall/pkg/log"
+	store "github.com/saferwall/saferwall/internal/db"
+	"github.com/saferwall/saferwall/internal/log"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
 
 	gonsq "github.com/nsqio/go-nsq"
-	"github.com/saferwall/saferwall/pkg/pubsub"
-	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
+	"github.com/saferwall/saferwall/internal/pubsub"
+	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	"github.com/saferwall/saferwall/services/config"
 )
 

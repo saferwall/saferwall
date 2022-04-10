@@ -1,4 +1,4 @@
-// Copyright 2021 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -12,17 +12,17 @@ import (
 	"strings"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/exiftool"
+	"github.com/saferwall/saferwall/internal/log"
+	"github.com/saferwall/saferwall/internal/magic"
+	"github.com/saferwall/saferwall/internal/packer"
+	"github.com/saferwall/saferwall/internal/pubsub"
+	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	"github.com/saferwall/saferwall/internal/trid"
+	"github.com/saferwall/saferwall/internal/utils"
 	bs "github.com/saferwall/saferwall/pkg/bytestats"
 	"github.com/saferwall/saferwall/pkg/crypto"
-	"github.com/saferwall/saferwall/pkg/exiftool"
-	"github.com/saferwall/saferwall/pkg/log"
-	"github.com/saferwall/saferwall/pkg/magic"
-	"github.com/saferwall/saferwall/pkg/packer"
-	"github.com/saferwall/saferwall/pkg/pubsub"
-	"github.com/saferwall/saferwall/pkg/pubsub/nsq"
 	str "github.com/saferwall/saferwall/pkg/strings"
-	"github.com/saferwall/saferwall/pkg/trid"
-	"github.com/saferwall/saferwall/pkg/utils"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"

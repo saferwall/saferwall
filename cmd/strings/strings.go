@@ -1,4 +1,4 @@
-// Copyright 2021 Saferwall. All rights reserved.
+// Copyright 2022 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -11,8 +11,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/saferwall/saferwall/internal/utils"
 	s "github.com/saferwall/saferwall/pkg/strings"
-	"github.com/saferwall/saferwall/pkg/utils"
 )
 
 // Result return the results

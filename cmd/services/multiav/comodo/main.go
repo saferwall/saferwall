@@ -9,9 +9,9 @@ import (
 	"flag"
 	"os"
 
-	"github.com/saferwall/multiav/pkg/comodo"
-	"github.com/saferwall/saferwall/pkg/config"
-	"github.com/saferwall/saferwall/pkg/log"
+	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/log"
+	"github.com/saferwall/saferwall/internal/multiav/comodo"
 	"github.com/saferwall/saferwall/services/multiav"
 )
 
