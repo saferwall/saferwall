@@ -8,14 +8,13 @@
 global:
   # email used to generate let's encrypt ssl cert.
   email: admin@mysaferwall.com
-  # web apis host name
-  backendHostname: https://api.mysaferwall.com
   # set to true when using a private docker registry.
   privateRegistryServer:
     enabled: false
     token: ""
   # Host name to use.
   hostname: mysaferwall.com
+  # Storage configuration.
   storage:
     # Shared volume between all microservices.
     sharedVolume: "/samples"
@@ -151,6 +150,7 @@ couchbase-operator:
           resources:
             requests:
               storage: 1Gi
+
 ########### NSQ ###########
 nsq:
   enabled: true
@@ -282,7 +282,6 @@ webapis:
   token:
     expiration: 10
   smtp:
-    enabled: false
     server:
     port: 587
     user:

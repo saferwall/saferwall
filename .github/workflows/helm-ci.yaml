@@ -70,7 +70,7 @@ jobs:
           make helm-release
 
       - name: Wait for pods to be ready
-        run: kubectl wait --for=condition=Ready pods --all --timeout=600s
+        run: kubectl wait --for=condition=Ready pods --all --timeout=900s
 
       - name: Add DNS entry
         run: echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts
