@@ -40,7 +40,10 @@ jobs:
       - name: Check success
         run: |
             curl -k -I https://mysaferwall.com
-            curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+            curl -k -X POST https://api.mysaferwall.com/v1/users/ \
+              -H 'Content-Type: application/json' \
+              -d '{"username":"mrrobot","password":"password", "email": "mrrobot@mysaferwall.com"}'
+            curl -k -I -X GET https://api.mysaferwall.com/v1/users/mrrobot
 
   deploy-on-kind:
     runs-on: ${{ matrix.os }}
@@ -77,5 +80,8 @@ jobs:
 
       - name: Check success
         run: |
-          curl -k -I https://mysaferwall.com
-          curl -k -I -X GET https://api.mysaferwall.com/v1/users/Administrator
+            curl -k -I https://mysaferwall.com
+            curl -k -X POST https://api.mysaferwall.com/v1/users/ \
+              -H 'Content-Type: application/json' \
+              -d '{"username":"mrrobot","password":"password", "email": "mrrobot@mysaferwall.com"}'
+            curl -k -I -X GET https://api.mysaferwall.com/v1/users/mrrobot
