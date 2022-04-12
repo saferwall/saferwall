@@ -21,7 +21,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v1
         with:
-          version: v3.4.0
+          version: v3.8.1
 
       - name: Helm Deps
         run: |
@@ -38,7 +38,7 @@ jobs:
           helm repo update
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
+        uses: helm/chart-releaser-action@v1.4.0
         with:
           charts_dir: 'deployments'
         env:

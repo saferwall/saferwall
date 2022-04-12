@@ -264,7 +264,7 @@ webapis:
   smtp:
     enabled: false
     server:
-    port:
+    port: 587
     user:
     password:
 

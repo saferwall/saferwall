@@ -12,9 +12,13 @@ maintainers:
     - name: saferwall
       email: contact@saferwall.com
 dependencies:
-    - name: minio-operator
-      version: 4.3.7
+    - name: operator
       repository: https://operator.min.io/
+      version: 4.4.14
+      condition: minio-operator.enabled
+    - name: tenant
+      repository: https://operator.min.io/
+      version: 4.4.14
       condition: minio-operator.enabled
     - name: couchbase-operator
       version: 2.2.301
