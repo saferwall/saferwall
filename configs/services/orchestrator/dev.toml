@@ -32,7 +32,7 @@ bucket = "saferwall-samples"
     [storage.minio]
     endpoint = "minio:9000" # MinIO endpoint.
     region = "us-east-1" # Region.
-    access_key = "minio" # Access key ID.
-    secret_key = "minio123" # Secret Access Key.
+    access_key = "console" # Access key ID.
+    secret_key = "console123" # Secret Access Key.
     [storage.local]
     root_dir = "/saferwall/storage" # Full path to the directory where to store the files.

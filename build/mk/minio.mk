@@ -13,8 +13,8 @@ minio-start:  ## Start a minio server locally
 minio-docker-run:	## Run a mini docker container
 	sudo docker pull minio/minio
 	sudo docker run --name minio  \
-		-e "MINIO_ACCESS_KEY=minio" \
-  		-e "MINIO_SECRET_KEY=minio123" \
+		-e "MINIO_ACCESS_KEY=console" \
+  		-e "MINIO_SECRET_KEY=console123" \
   		-it -p 9000:9000 minio/minio server /data
 
 minio-docker-start:	## Start existing minio  container.
