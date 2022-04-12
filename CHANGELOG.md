@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0] - 31/03/2022
+## [0.3.0] - 12/04/2022
 
 ### Added
 
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Change minio helm chart to the new minio operator/tenant.
+- Change minio operator to the basic minio.
 - Move private go packages to `internal/` directory.
 - Move helm chart from its own repo to main repo.
 - Numerous tolling updates: docker-compose, devContainers, and bumping go pkg dependencies.
