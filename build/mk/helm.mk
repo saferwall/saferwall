@@ -1,4 +1,4 @@
-HELM_VERSION = 3.6.3
+HELM_VERSION = 3.8.1
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -16,7 +16,7 @@ helm-install:		## Install Helm.
 
 helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-	helm repo add minio https://operator.min.io/
+	helm repo add minio https://charts.min.io/
 	helm repo add kvaps https://kvaps.github.io/charts
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
 	helm repo add elastic https://helm.elastic.co
@@ -33,13 +33,14 @@ helm-release:		## Install Helm release.
 	make k8s-init-cert-manager
 	make k8s-install-couchbase-crds
 	cd $(ROOT_DIR)/deployments/saferwall \
-		&& helm dependency update  \
+		&& helm dependency update \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default .
 
 helm-debug:		## Dry run install chart.
-	helm install -name $(SAFERWALL_RELEASE_NAME) chart/ \
-	 	--debug --dry-run >> debug.yaml
+	cd $(ROOT_DIR)/deployments/saferwall \
+		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
+			--debug --dry-run --namespace default . >> debug.yaml
 
 helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall

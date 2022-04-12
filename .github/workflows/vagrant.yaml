@@ -7,7 +7,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, saferwall]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Decrypt Secret
         run: ./scripts/decrypt_secret.sh

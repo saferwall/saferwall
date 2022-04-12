@@ -5,7 +5,7 @@ version: "3.9"
 
 services:
   couchbase:
-    image: couchbase/server:6.6.2
+    image: couchbase/server:6.6.5
     ports:
       - "8091:8091"
       - "8092:8092"
@@ -54,8 +54,8 @@ services:
     volumes:
       - minio_data:/data
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: console
+      MINIO_ROOT_PASSWORD: console123
     command: server /data --console-address ":9001"
 
   webapis:
@@ -85,10 +85,10 @@ services:
     depends_on:
       - webapis
 
-  ml:
-    image: saferwall/ml-pipeline:latest
-    ports:
-      - "8000:8000"
+  # ml:
+  #   image: saferwall/ml-pipeline:latest
+  #   ports:
+  #     - "8000:8000"
 
   orchestrator:
     image: saferwall/orchestrator:latest
@@ -161,13 +161,13 @@ services:
     volumes:
       - samples:/samples
 
-  msg-publisher:
-    image: saferwall/msgpublisher:latest
-    environment:
-      - SAFERWALL_DEPLOYMENT_KIND=dev
-    tty: true
-    volumes:
-      - samples:/samples
+  # msg-publisher:
+  #   image: saferwall/msgpublisher:latest
+  #   environment:
+  #     - SAFERWALL_DEPLOYMENT_KIND=dev
+  #   tty: true
+  #   volumes:
+  #     - samples:/samples
 
 volumes:
   minio_data: null

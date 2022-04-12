@@ -8,14 +8,13 @@
 global:
   # email used to generate let's encrypt ssl cert.
   email: admin@mysaferwall.com
-  # web apis host name
-  backendHostname: https://api.mysaferwall.com
   # set to true when using a private docker registry.
   privateRegistryServer:
     enabled: false
     token: ""
   # Host name to use.
   hostname: mysaferwall.com
+  # Storage configuration.
   storage:
     # Shared volume between all microservices.
     sharedVolume: "/samples"
@@ -28,13 +27,33 @@ global:
   # AWS s3 config.
   minio:
     region: us-east-1
-    accessKey: minio
-    secretKey: minio123
+    accessKey: console
+    secretKey: console123
   s3:
 
 ########### MINIO ###########
-minio-operator:
+minio:
   enabled: true
+
+  # We choose distributed for HA. This can be set to standalone in dev env.
+  mode: standalone
+  # mode: distributed
+
+  # Number of nodes (applicable only for MinIO distributed mode)
+  # Should be a minimum value of 4.
+  # replicas: 1
+
+  persistence:
+    # Use persistent volume to store data
+    enabled: true
+
+    # Size of persistent volume claim
+    size: 10Gi
+
+  ## Configure resource requests and limits
+  resources:
+    requests:
+      memory: 2Gi
 
 ####### FILEBEAT #########
 filebeat:
@@ -131,6 +150,7 @@ couchbase-operator:
           resources:
             requests:
               storage: 1Gi
+
 ########### NSQ ###########
 nsq:
   enabled: true
@@ -262,9 +282,8 @@ webapis:
   token:
     expiration: 10
   smtp:
-    enabled: false
     server:
-    port:
+    port: 587
     user:
     password:
 
