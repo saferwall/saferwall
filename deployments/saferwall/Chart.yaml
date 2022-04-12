@@ -12,14 +12,10 @@ maintainers:
     - name: saferwall
       email: contact@saferwall.com
 dependencies:
-    - name: operator
-      repository: https://operator.min.io/
-      version: 4.4.14
-      condition: minio-operator.enabled
-    - name: tenant
-      repository: https://operator.min.io/
-      version: 4.4.14
-      condition: minio-operator.enabled
+    - name: minio
+      repository: https://charts.min.io/
+      version: 3.6.4
+      condition: minio.enabled
     - name: couchbase-operator
       version: 2.2.301
       repository: https://couchbase-partners.github.io/helm-charts/

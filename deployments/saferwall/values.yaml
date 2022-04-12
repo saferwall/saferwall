@@ -33,8 +33,28 @@ global:
   s3:
 
 ########### MINIO ###########
-minio-operator:
+minio:
   enabled: true
+
+  # We choose distributed for HA. This can be set to standalone in dev env.
+  mode: standalone
+  # mode: distributed
+
+  # Number of nodes (applicable only for MinIO distributed mode)
+  # Should be a minimum value of 4.
+  # replicas: 1
+
+  persistence:
+    # Use persistent volume to store data
+    enabled: true
+
+    # Size of persistent volume claim
+    size: 10Gi
+
+  ## Configure resource requests and limits
+  resources:
+    requests:
+      memory: 2Gi
 
 ####### FILEBEAT #########
 filebeat:

@@ -1,10 +1,7 @@
 dependencies:
-- name: operator
-  repository: https://operator.min.io/
-  version: 4.4.14
-- name: tenant
-  repository: https://operator.min.io/
-  version: 4.4.14
+- name: minio
+  repository: https://charts.min.io/
+  version: 3.6.4
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
   version: 2.2.301
@@ -35,5 +32,5 @@ dependencies:
 - name: cluster-autoscaler
   repository: https://kubernetes.github.io/autoscaler
   version: 9.16.2
-digest: sha256:bd6f7625687735aab72ad1cf86125b89e3c1856453bb7eb4d188dd4741999a02
-generated: "2022-04-11T11:07:18.011435804+10:00"
+digest: sha256:6c1b92a392c248a578781df5441f4baee1551bc11afbfdff157b4cf001c5b9e9
+generated: "2022-04-12T16:29:12.63994235+10:00"

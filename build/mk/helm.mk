@@ -16,7 +16,7 @@ helm-install:		## Install Helm.
 
 helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-	helm repo add minio https://operator.min.io/
+	helm repo add minio https://charts.min.io/
 	helm repo add kvaps https://kvaps.github.io/charts
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
 	helm repo add elastic https://helm.elastic.co
