@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add pre-commit-config.yaml.
+- Update packer/installer/protector sigs and file magic data.
+- Introduce new env variables in the UI k8s manifests.
 - Add antivirus detections to the list of tags.
 - Cleanup file that has not been accessed since a day from the nfs share.
 - Documenting saferwall architecture.
@@ -18,9 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Change minio helm chart to the new minio operator/tenant.
+- Move private go packages to `internal/` directory.
 - Move helm chart from its own repo to main repo.
-- Numerous tolling updates: docker-compose, devContainers,, and bumping go pkg dependencies.
+- Numerous tolling updates: docker-compose, devContainers, and bumping go pkg dependencies.
 
+### Fixed
+
+- Fix crash on webapis k8s manifest when generating the toml config.
 
 ## [0.2.0] - 25/11/2021
 

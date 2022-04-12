@@ -33,13 +33,14 @@ helm-release:		## Install Helm release.
 	make k8s-init-cert-manager
 	make k8s-install-couchbase-crds
 	cd $(ROOT_DIR)/deployments/saferwall \
-		&& helm dependency update  \
+		&& helm dependency update \
 		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
 		 --namespace default .
 
 helm-debug:		## Dry run install chart.
-	helm install -name $(SAFERWALL_RELEASE_NAME) chart/ \
-	 	--debug --dry-run >> debug.yaml
+	cd $(ROOT_DIR)/deployments/saferwall \
+		&& helm install -name $(SAFERWALL_RELEASE_NAME) \
+			--debug --dry-run --namespace default . >> debug.yaml
 
 helm-upgrade:		## Upgrade a given release.
 	helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall
