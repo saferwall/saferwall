@@ -55,7 +55,7 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="1.0.0"
+LABEL version="0.0.3"
 LABEL description="Sandbox scan service"
 
 ENV USER saferwall

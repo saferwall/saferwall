@@ -1,11 +1,11 @@
 name: Release Charts
-
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   release:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -24,18 +24,7 @@ jobs:
           version: v3.8.1
 
       - name: Helm Deps
-        run: |
-          helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-          helm repo add minio https://operator.min.io/
-          helm repo add kvaps https://kvaps.github.io/charts
-          helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
-          helm repo add elastic https://helm.elastic.co
-          helm repo add jetstack https://charts.jetstack.io
-          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add autoscaler https://kubernetes.github.io/autoscaler
-          helm repo add beeinventor https://beeinventor.github.io/charts
-          helm repo update
+        run: make helm-add-repos
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0

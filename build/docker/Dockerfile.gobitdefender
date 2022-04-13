@@ -4,8 +4,6 @@
 
 FROM golang:1.16-alpine AS build-stage
 
-ARG GITHUB_USER
-ARG GITHUB_TOKEN
 ENV VENDOR bitdefender
 
 # Install git + SSL ca certificates.
@@ -16,10 +14,6 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/$VENDOR/
-
-# Allow using private github repos that have private go modules.
-RUN go env -w GOPRIVATE=github.com/saferwall/* \
-	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
@@ -42,7 +36,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM saferwall/bitdefender:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="1.0.0"
+LABEL version="0.0.3"
 LABEL description="bitdefender linux version with nsq consumer"
 
 # Environment variables.
