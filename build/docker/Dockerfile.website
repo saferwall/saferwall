@@ -1,6 +1,6 @@
 FROM jekyll/jekyll:3.8.6
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.1"
+LABEL version="0.0.3"
 LABEL description="Saferwall Jekyll website: about.saferwall.com"
 
 # Set the Current Working Directory inside the container

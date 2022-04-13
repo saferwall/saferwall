@@ -4,9 +4,6 @@
 
 FROM golang:1.16-alpine AS build-stage
 
-ARG GITHUB_USER
-ARG GITHUB_TOKEN
-
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
@@ -15,10 +12,6 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/pe/
-
-# Allow using private github repos that have private go modules.
-RUN go env -w GOPRIVATE=github.com/saferwall/* \
-	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
@@ -41,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="1.0.0"
+LABEL version="0.0.3"
 LABEL description="PE scan service"
 
 ENV USER saferwall

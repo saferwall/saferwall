@@ -1,37 +1,38 @@
-name: Generate Vagrant Box
-on:
-  pull_request:
-    branches: [main]
-jobs:
-  build-vagrant-box:
-    runs-on: [self-hosted, linux, x64, saferwall]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+# name: Generate Vagrant Box
+# on:
+#   pull_request:
+#     branches: [main]
+#   workflow_dispatch:
 
-      - name: Decrypt Secret
-        run: ./scripts/decrypt_secret.sh
-        env:
-          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+# jobs:
+#   build-vagrant-box:
+#     runs-on: self-hosted
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-      - name: Install Vagrant
-        run: make vagrant-install
+#       - name: Decrypt Secret
+#         run: ./scripts/decrypt_secret.sh
+#         env:
+#           SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
 
-      - name: Install VirtualBox
-        run: make vbox-install
+#       - name: Install VirtualBox|Vagrant
+#         run: |
+#           make vbox-install
+#           make vagrant-install
 
-      - name: Create Vagrant box
-        run: |
-          cd build/vagrant
-          vagrant up
+#       - name: Create Vagrant box
+#         run: |
+#           cd build/vagrant
+#           vagrant up
 
-      - name: Create box package
-        run: make vagrant-package
+#       - name: Create box package
+#         run: make vagrant-package
 
-      # - name: Authenticate to Vagrant cloud
-      #   run: make vagrant-login
-      #   env:
-      #     VAGRANT_TOKEN: ${{ secrets.VAGRANT_TOKEN }}
+#       - name: Authenticate to Vagrant cloud
+#         run: make vagrant-login
+#         env:
+#           VAGRANT_TOKEN: ${{ secrets.VAGRANT_TOKEN }}
 
-      # - name: Publish the box
-      #   run: make vagrant-publish
+#       - name: Publish the box
+#         run: make vagrant-publish
