@@ -14,6 +14,7 @@ jobs:
           - pe
           - meta
           - gometa
+          - sandbox
           - aggregator
           - orchestrator
           - postprocessor
