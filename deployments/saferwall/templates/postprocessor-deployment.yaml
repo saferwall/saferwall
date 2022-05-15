@@ -47,13 +47,13 @@ spec:
               path: prod.toml
       initContainers:
       - name: wait-for-nsqd
-        image: groundnuty/k8s-wait-for:v1.4
+        image: groundnuty/k8s-wait-for:v1.5.1
         imagePullPolicy: Always
         args:
           - "pod"
           - '-lapp.kubernetes.io/component=nsqd'
       - name: wait-for-nsqlookupd
-        image: groundnuty/k8s-wait-for:v1.4
+        image: groundnuty/k8s-wait-for:v1.5.1
         imagePullPolicy: Always
         args:
           - "pod"
