@@ -1,4 +1,4 @@
-HELM_VERSION = 3.8.1
+HELM_VERSION = 3.8.2
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -8,7 +8,7 @@ helm-install:		## Install Helm.
 			wget -q $(HELM_URL); \
 			tar zxvf $(HELM_ZIP); \
 			sudo mv linux-amd64/helm /usr/local/bin/helm; \
-			rm -f $(HELM_ZIP) linux-amd64/ ; \
+			rm -rf $(HELM_ZIP) linux-amd64/ ; \
 			helm version; \
 		else \
 			echo "${GREEN} [*] Helm already installed ${RESET}"; \

@@ -17,7 +17,7 @@ dependencies:
       version: 3.6.4
       condition: minio.enabled
     - name: couchbase-operator
-      version: 2.2.301
+      version: 2.3.001
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver
@@ -45,7 +45,7 @@ dependencies:
       repository: https://helm.elastic.co
       condition: kibana.enabled
     - name: kube-prometheus-stack
-      version: 34.9.0
+      version: 35.2.0
       repository: https://prometheus-community.github.io/helm-charts
       condition: kube-prometheus-stack.enabled
     - name: nsq

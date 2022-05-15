@@ -1,4 +1,4 @@
-KUBECTL_VER = 1.21.0
+KUBECTL_VER = 1.23.6
 kubectl-install:		## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
@@ -39,19 +39,19 @@ k8s-kube-capacity: 	## Install kube-capacity
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
 k8s-pf-kibana:			## Port fordward Kibana
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 &
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
 
 k8s-pf-nsq:				## Port fordward NSQ admin service.
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 &
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
 k8s-pf-grafana:			## Port fordward grafana dashboard service.
-	kubectl port-forward deployment/$(SAFERWALL_RELEASE_NAME)-grafana 3000:3000 &
+	kubectl port-forward deployment/$(SAFERWALL_RELEASE_NAME)-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
 k8s-pf-couchbase:		## Port fordward couchbase ui service.
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 &
+	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
 k8s-pf:					## Port forward all services.
@@ -97,8 +97,8 @@ k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'
 
 k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
-	for p in $(kubectl get pods | grep Terminating | awk '{print $1}'); \
-	 do kubectl delete pod $p --grace-period=0 --force;done
+	for p in $$(kubectl get pods | grep Terminating | awk '{print $$1}'); \
+	 do kubectl delete pod $$p --grace-period=0 --force;done
 
 k8s-delete-evicted-pods:	## Clean up all evicted pods
-	kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
+	kubectl get pods | grep Evicted | awk '{print $$1}' | xargs kubectl delete pod
