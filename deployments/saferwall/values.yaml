@@ -123,6 +123,7 @@ couchbase-operator:
       kind: CouchbaseBucket
     default: null
   cluster:
+    name: couchbase-cluster
     antiAffinity: false
     security:
       username: admin
@@ -251,6 +252,14 @@ cluster-autoscaler:
   awsRegion: us-east-1
   autoDiscovery:
     clusterName: kops.saferwall.com
+
+########### INLETS OPERATOR ##############
+inlets-operator:
+  enabled: false
+
+############### METALLB ####################
+metallb:
+  enabled: false
 
 ########### BACKEND ###########
 webapis:

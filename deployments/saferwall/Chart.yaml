@@ -21,7 +21,7 @@ dependencies:
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver
-      version: 2.2.5
+      version: 2.2.6
       repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
       condition: aws-efs-csi-driver.enabled
     - name: nfs-server-provisioner
@@ -29,7 +29,7 @@ dependencies:
       repository: https://kvaps.github.io/charts
       condition: nfs-server-provisioner.enabled
     - name: ingress-nginx
-      version: 4.0.19
+      version: 4.1.3
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: filebeat
@@ -56,3 +56,11 @@ dependencies:
       version: 9.16.2
       repository: https://kubernetes.github.io/autoscaler
       condition: cluster-autoscaler.enabled
+    - name: metallb
+      repository: https://metallb.github.io/metallb
+      version: 0.12.1
+      condition: metallb.enabled
+    - name: inlets-operator
+      version: 0.16.0
+      repository: https://inlets.github.io/inlets-operator/
+      condition: inlets-operator.enablede
