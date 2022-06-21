@@ -51,7 +51,7 @@ k8s-pf-grafana:			## Port fordward grafana dashboard service.
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
 k8s-pf-couchbase:		## Port fordward couchbase ui service.
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
+	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
 k8s-pf:					## Port forward all services.

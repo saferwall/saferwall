@@ -13,7 +13,8 @@ max_avatar_file_size = 1 # Maximum avatar size to allow for user profile picture
 address = '{{ printf "https://%s" .Values.global.hostname }}' # DSN for the frontend.
 
 [db]
-server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}' # DSN for connecting to the database
+server = '{{ template "couchbaseUri" . }}'
+
 username = {{ index .Values "couchbase-operator" "cluster" "security" "username" | quote }} # Username used to access the db.
 password = {{ index .Values "couchbase-operator" "cluster" "security" "password" | quote }} # Password used to access the db.
 bucket_name = "{{ .Values.global.couchbase.bucketName }}" # Name of the couchbase bucket.
