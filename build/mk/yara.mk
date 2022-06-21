@@ -1,4 +1,4 @@
-YARA_VERSION = 4.1.1
+YARA_VERSION = 4.2.1
 YARA_ARCHIVE = ${YARA_VERSION}.tar.gz
 YARA_DOWNLOAD_URL = https://github.com/VirusTotal/yara/archive/v${YARA_ARCHIVE}
 YARA_REPO_REPO  = https://github.com/Yara-Rules/rules.git
