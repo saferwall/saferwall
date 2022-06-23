@@ -76,3 +76,13 @@ Create the docker private registry server token.
 {{ printf "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"%s\"}}}" .Values.global.privateRegistryServer.token }}
 {{- end -}}
 {{- end -}}
+
+
+{{/*
+Our couchbase DB URI.
+*/}}
+{{- define "couchbaseUri" -}}
+{{- $server := index .Values "couchbase-operator" "cluster" "name" -}}
+{{- printf "couchbase://%s-srv" $server -}}
+{{- end -}}
+

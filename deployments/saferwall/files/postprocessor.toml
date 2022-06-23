@@ -28,7 +28,7 @@ concurrency = {{ .Values.postprocessor.concurrency }}
 
 [db]
 # DSN for connecting to the database.
-server = '{{ printf "couchbase://%s-couchbase-cluster-srv" .Release.Name }}'
+server = '{{ template "couchbaseUri" . }}'
 # Username used to access the db.
 username = '{{ index .Values "couchbase-operator" "cluster" "security" "username" }}'
 # Password used to access the db.

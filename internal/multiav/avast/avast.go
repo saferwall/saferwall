@@ -20,7 +20,7 @@ const (
 	cmd         = "scan"
 	avastDaemon = "/usr/bin/avast"
 	licenseFile = "/etc/avast/license.avastlic"
-	vpsUpdate   = "/var/lib/avast/Setup/avast.vpsupdate"
+	vpsUpdate   = "/usr/lib/avast/avast.setup"
 	scanTimeout = 10 * time.Second
 	tmpFilename = "tmpFile"
 )
@@ -217,11 +217,9 @@ func RestartService() error {
 
 // StartDaemon starts the Avast daemon.
 func StartDaemon() error {
-	err := utils.ExecCmdBackground("sudo", avastDaemon, "-n", "-D")
+	err := utils.ExecCmdBackground("sudo", avastDaemon)
 	if err != nil {
 		return err
 	}
-	time.Sleep(5 * time.Second)
-	err = utils.ExecCmdBackground("sudo", avastDaemon, "-n", "-D")
-	return err
+	return nil
 }

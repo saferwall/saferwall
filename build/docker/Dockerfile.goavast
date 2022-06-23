@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.16-alpine AS build-stage
+FROM golang:1.17-alpine AS build-stage
 
 ENV VENDOR avast
 
@@ -46,7 +46,7 @@ ENV AVAST_DB_UPDATE_DATE	/av_db_update_date.txt
 WORKDIR /saferwall
 
 # Update virus definition file.
-RUN /var/lib/avast/Setup/avast.vpsupdate \
+RUN ${AVAST_UPDATE_SCRIPT} \
 	&&  echo -n "$(date +%s)" >> $AVAST_DB_UPDATE_DATE
 
 # Install requirements.
