@@ -8,7 +8,7 @@ ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
 ENV RELEASE_VERSION=v0.0.2
-ENV ARTIFACT_NAME=package.zip
+ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
 
 # Install git + SSL ca certificates.
