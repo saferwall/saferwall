@@ -8,17 +8,17 @@ require (
 	github.com/couchbase/gocb/v2 v2.5.0
 	github.com/digitalocean/go-libvirt v0.0.0-20210723161134-761cfeeb5968
 	github.com/djherbis/times v1.5.0
-	github.com/gabriel-vasile/mimetype v1.4.0
+	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/glaslos/ssdeep v0.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/saferwall/pe v1.2.1
+	github.com/saferwall/pe v1.3.0
 	github.com/spf13/viper v1.12.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/zap v1.19.1
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
+	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
 )
