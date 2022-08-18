@@ -27,8 +27,8 @@ global:
   # AWS s3 config.
   minio:
     region: us-east-1
-    accessKey: console
-    secretKey: console123
+    accessKey: minio
+    secretKey: minio123
   s3:
 
 ########### MINIO ###########

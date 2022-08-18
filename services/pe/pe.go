@@ -93,6 +93,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	file, err := parse(src)
 	if err != nil {
 		logger.Errorf("pe parsing failed: %v", err)
+		file.Close()
 		return nil
 	}
 
@@ -110,6 +111,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Module: "pe", Body: curate(file)},
 		{Module: "tags.pe", Body: toJSON(tags)},
 	}
+
+	file.Close()
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	peMsg, err := proto.Marshal(msg)
@@ -142,7 +145,6 @@ func parse(src string) (*pe.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
 
 	// Parse the PE.
 	err = f.Parse()
@@ -153,107 +155,106 @@ func parse(src string) (*pe.File, error) {
 // that are not available, also create a `meta` element
 // that stores all the available PE fields. This make it
 // easier for the UI to query only the needed part of the file.
-func curate(file *pe.File) ([]byte) {
+func curate(file *pe.File) []byte {
 
-	var fields []string
 	m := make(map[string]interface{})
+	fields := make([]string, 0)
 
 	if file.HasDOSHdr {
 		m["dos_header"] = file.DOSHeader
 		fields = append(fields, "dos_header")
-
 	}
+
 	if file.HasRichHdr {
 		m["rich_header"] = file.RichHeader
 		fields = append(fields, "rich_header")
-
 	}
+
 	if file.HasCOFF {
 		m["coff"] = file.COFF
 		fields = append(fields, "coff")
-
 	}
+
 	if file.HasNTHdr {
 		m["nt_header"] = file.NtHeader
 		fields = append(fields, "nt_header")
-
 	}
+
 	if file.HasSections {
 		m["sections"] = file.Sections
 		fields = append(fields, "sections")
-
 	}
+
 	if file.HasExport {
 		m["export"] = file.Export
 		fields = append(fields, "export")
-
 	}
+
 	if file.HasImport {
 		m["import"] = file.Imports
 		fields = append(fields, "import")
-
 	}
+
 	if file.HasResource {
 		m["resource"] = file.Resources
 		fields = append(fields, "resource")
-
 	}
+
 	if file.HasException {
 		m["exception"] = file.Exceptions
 		fields = append(fields, "exception")
-
 	}
+
 	if file.HasSecurity {
 		m["security"] = file.Certificates
 		fields = append(fields, "security")
-
 	}
+
 	if file.HasReloc {
 		m["reloc"] = file.Relocations
 		fields = append(fields, "reloc")
-
 	}
+
 	if file.HasDebug {
 		m["debug"] = file.Debugs
 		fields = append(fields, "debug")
-
 	}
+
 	if file.HasGlobalPtr {
 		m["global_ptr"] = file.GlobalPtr
 		fields = append(fields, "global_ptr")
-
 	}
+
 	if file.HasTLS {
 		m["tls"] = file.TLS
 		fields = append(fields, "tls")
-
 	}
+
 	if file.HasLoadCFG {
 		m["load_config"] = file.LoadConfig
 		fields = append(fields, "load_config")
-
 	}
+
 	if file.HasBoundImp {
 		m["bound_import"] = file.BoundImports
 		fields = append(fields, "bound_import")
-
 	}
+
 	if file.HasIAT {
 		m["iat"] = file.IAT
 		fields = append(fields, "iat")
-
 	}
+
 	if file.HasDelayImp {
 		m["delay_import"] = file.DelayImports
 		fields = append(fields, "delay_import")
-
 	}
+
 	if file.HasCLR {
 		m["clr"] = file.CLR
 		fields = append(fields, "clr")
 	}
 
 	m["meta"] = fields
-
 	return toJSON(m)
 }
