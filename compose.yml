@@ -1,11 +1,6 @@
-version: "3.9"
-
-# Use this docker-compose file to setup the test environment before running the
-# tests.
-
 services:
   couchbase:
-    image: couchbase/server:6.6.5
+    image: couchbase/server:7.1.0
     ports:
       - "8091:8091"
       - "8092:8092"
@@ -17,18 +12,16 @@ services:
 
   nsqlookupd:
     image: nsqio/nsq:v1.2.1
-    command: >
-      /nsqlookupd --log-level=error
+    command: /nsqlookupd --log-level=error
     hostname: nsqlookupd
     ports:
-      - 4160:4160
+      - 4160
       - 4161:4161
 
   nsqd:
     image: nsqio/nsq:v1.2.1
     command: >
-      /nsqd --lookupd-tcp-address=nsqlookupd:4160 --max-msg-size=1413820683
-      --log-level=error
+      /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd --max-msg-size=1413820683 --log-level=error
     hostname: nsqd
     depends_on:
       - nsqlookupd
@@ -54,8 +47,8 @@ services:
     volumes:
       - minio_data:/data
     environment:
-      MINIO_ROOT_USER: console
-      MINIO_ROOT_PASSWORD: console123
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
     command: server /data --console-address ":9001"
 
   webapis:
@@ -81,7 +74,10 @@ services:
     ports:
       - "8000:80"
     environment:
-      VUE_APP_BACKEND_HOST: http://localhost:8080/
+      VUE_APP_BASE_URI: http://localhost:8000/
+      VUE_APP_API_BASE_URL: http://localhost:8080/v1/
+      VUE_APP_AVATAR_BASE_URL: https://avatar.saferwall.com
+      NGINX_HTTP_PORT: 80
     depends_on:
       - webapis
 
@@ -96,7 +92,7 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/orchestrator-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
       - /saferwall:/saferwall/storage
 
   aggregator:
@@ -119,7 +115,7 @@ services:
         /saferwall/conf/
       ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
   pe-svc:
     image: saferwall/pe:latest
@@ -127,7 +123,7 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/pe-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
   meta-svc:
     image: saferwall/gometa:latest
@@ -135,7 +131,7 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/meta-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
   avira:
     image: saferwall/goavira:latest
@@ -143,7 +139,7 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/avira-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
   clamav:
     image: saferwall/goclamav:latest
@@ -151,7 +147,7 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/clamav-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
   comodo:
     image: saferwall/gocomodo:latest
@@ -159,17 +155,16 @@ services:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/comodo-svc, -config, /saferwall/conf/ ]
     volumes:
-      - samples:/samples
+      - /samples:/samples
 
-  # msg-publisher:
-  #   image: saferwall/msgpublisher:latest
-  #   environment:
-  #     - SAFERWALL_DEPLOYMENT_KIND=dev
-  #   tty: true
-  #   volumes:
-  #     - samples:/samples
+  msg-publisher:
+    image: saferwall/msgpublisher:latest
+    environment:
+      - SAFERWALL_DEPLOYMENT_KIND=dev
+    tty: true
+    volumes:
+      - /samples:/samples
 
 volumes:
   minio_data: null
   couchbase_data: null
-  samples: null

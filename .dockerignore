@@ -5,9 +5,16 @@ private
 scripts
 test
 *.env
+.pre-commit-config.yaml
+LICENSE
+Makefile
+VERSION
+compose.yaml
+
 # Binaries
 cmd/services/**/main
 **/__debug_bin
+coverage
 
 # git
 **/.git

@@ -3,6 +3,7 @@
 # General app config.
 address = ":8080" # The IP:Port. Defaults to 8080.
 log_level = "{{ .Values.webapis.logLevel }}" # Log level. Defaults to info.
+disable_cors = false # Disable CORS policy.
 jwt_signkey = "{{ .Values.webapis.jwt.signKey }}" # JWT sign key secret.
 jwt_expiration = {{ .Values.webapis.jwt.expiration }} # JWT expiration in hours. Defaults to 72 hours (3 days)
 reset_pwd_token_expiration = {{ .Values.webapis.token.expiration }} # represents the token expiration for reset password and email confirmation requests in minutes.

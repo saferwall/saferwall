@@ -35,8 +35,5 @@ dependencies:
 - name: metallb
   repository: https://metallb.github.io/metallb
   version: 0.12.1
-- name: inlets-operator
-  repository: https://inlets.github.io/inlets-operator/
-  version: 0.16.0
-digest: sha256:6320f3f7d92c76268e0bffc41a1402566457f8d0f0f261ed494aff1f4ba38e7c
-generated: "2022-06-21T21:59:21.530072349+08:00"
+digest: sha256:1edb6e7b3b218f47969ccf622fb54e0469d978407b3034d58d56ad5a7d993f90
+generated: "2022-08-19T10:01:35.217528811+01:00"

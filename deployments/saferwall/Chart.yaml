@@ -60,7 +60,3 @@ dependencies:
       repository: https://metallb.github.io/metallb
       version: 0.12.1
       condition: metallb.enabled
-    - name: inlets-operator
-      version: 0.16.0
-      repository: https://inlets.github.io/inlets-operator/
-      condition: inlets-operator.enablede
