@@ -1,11 +1,11 @@
-EXIF_VER = 12.41
+EXIF_VER = 12.44
 exiftool-install: # Install ExifTool
-	sudo apt-get -qq update
 	wget https://exiftool.org/Image-ExifTool-$(EXIF_VER).tar.gz
 	gzip -dc Image-ExifTool-$(EXIF_VER).tar.gz | tar -xf -
 	cd Image-ExifTool-$(EXIF_VER) \
 		&& perl Makefile.PL \
 		&& make test \
 		&& sudo make install
+	cd Image-ExifTool-$(EXIF_VER) && sudo cp -r exiftool lib /usr/local/bin
 	rm Image-ExifTool-$(EXIF_VER).tar.gz
-	rm -r Image-ExifTool-$(EXIF_VER)
+	rm -rf Image-ExifTool-$(EXIF_VER)
