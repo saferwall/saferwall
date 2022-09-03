@@ -10,6 +10,7 @@ require (
 	github.com/djherbis/times v1.5.0
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/glaslos/ssdeep v0.3.2
+	github.com/go-enry/go-enry/v2 v2.8.2
 	github.com/golang/protobuf v1.5.2
 	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/minio/minio-go/v7 v7.0.10
@@ -27,6 +28,7 @@ require (
 	github.com/couchbase/gocbcore/v10 v10.1.2 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/go-enry/go-oniguruma v1.2.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
