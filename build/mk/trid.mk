@@ -11,3 +11,4 @@ trid-install:	## Install TRiD
 	sudo mv /tmp/trid /usr/bin/
 	sudo mv /tmp/triddefs.trd /usr/bin/
 	chmod +x /usr/bin/trid
+	## export LC_ALL=C

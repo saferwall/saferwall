@@ -58,3 +58,4 @@ include build/mk/saferwall.mk
 include build/mk/elastic.mk
 include build/mk/vagrant.mk
 include build/mk/github.mk
+include build/mk/yarn.mk

@@ -37,7 +37,7 @@ type Service struct {
 	db     store.DB
 }
 
-// New create a new PE scanner service.
+// New create a new aggregator scanner service.
 func New(cfg Config, logger log.Logger) (Service, error) {
 
 	svc := Service{}

@@ -136,18 +136,26 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("packer scan failed with: %v", err)
 	}
 
-	// Determine type.
-	var format string
+	// Determine file format.
+	var fileFormat string
+	var fileExt string
 	for k, v := range typeMap {
-		if strings.HasPrefix(magicRes, k) {
-			format = v
+		if strings.Contains(magicRes, k) {
+			fileFormat = v
 			break
 		}
 	}
-	if len(format) == 0 {
-		format = "unknown"
+	if len(fileFormat) == 0 {
+		fileFormat = "unknown"
+		fileExt = "unknown"
 	}
-	logger.Debugf("file format is: %s", format)
+	logger.Debugf("file format is: %s", fileFormat)
+
+	// Determine file extension.
+	if fileFormat != "unknown" {
+		fileExt = guessFileExtension(data, magicRes, fileFormat, tridRes)
+	}
+	logger.Debugf("file extension is: %s", fileExt)
 
 	// Extract strings.
 	asciiStrings := str.GetASCIIStrings(&data, maxStrLength)
@@ -195,7 +203,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Module: "strings", Body: toJSON(stringRes)},
 		{Module: "histogram", Body: toJSON(bs.ByteHistogram(data))},
 		{Module: "byte_entropy", Body: toJSON(bs.ByteEntropyHistogram(data))},
-		{Module: "fileformat", Body: toJSON(format)},
+		{Module: "fileformat", Body: toJSON(fileFormat)},
+		{Module: "file_extension", Body: toJSON(fileExt)},
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
