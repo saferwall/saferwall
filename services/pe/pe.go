@@ -97,19 +97,24 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return nil
 	}
 
-	// Extract some PE related tags.
+	// Extract PE related tags and file extension.
 	var tags []string
+	var ext string
 	if file.IsEXE() {
 		tags = append(tags, "exe")
+		ext = "exe"
 	} else if file.IsDLL() {
 		tags = append(tags, "sys")
+		ext = "sys"
 	} else if file.IsDriver() {
 		tags = append(tags, "dll")
+		ext = "dll"
 	}
 
 	payloads := []*pb.Message_Payload{
 		{Module: "pe", Body: curate(file)},
 		{Module: "tags.pe", Body: toJSON(tags)},
+		{Module: "file_extension", Body: toJSON(ext)},
 	}
 
 	file.Close()
@@ -205,11 +210,6 @@ func curate(file *pe.File) []byte {
 		fields = append(fields, "exception")
 	}
 
-	if file.HasSecurity {
-		m["security"] = file.Certificates
-		fields = append(fields, "security")
-	}
-
 	if file.HasReloc {
 		m["reloc"] = file.Relocations
 		fields = append(fields, "reloc")
@@ -253,6 +253,20 @@ func curate(file *pe.File) []byte {
 	if file.HasCLR {
 		m["clr"] = file.CLR
 		fields = append(fields, "clr")
+	}
+
+	if file.HasSecurity {
+		m["security"] = file.Certificates
+		if file.IsSigned {
+			if file.Certificates.Verified {
+				m["signature"] = "Signed file, valid signature"
+			} else {
+				m["signature"] = "Signed file, invalid signature"
+			}
+		}
+		fields = append(fields, "security")
+	} else {
+		m["signature"] = "File is not signed"
 	}
 
 	m["meta"] = fields
