@@ -28,8 +28,10 @@ type Config struct {
 	AgentSrcPath string `mapstructure:"agent_src_path"`
 	// Sample to analyze file path.
 	SampleSrcPath string `mapstructure:"sample_src_path"`
+	// Duration in seconds for how long to run the file
+	SampleTimeout int `mapstructure:"sample_timeout"`
 	// Maximum timeout in seconds for the client to wait for the server
-	// to deply back during an alaysis request before it hang up.
+	// to deply back during an anaysis request before it hang up.
 	Timeout int `mapstructure:"timeout"`
 }
 
@@ -78,7 +80,7 @@ func run(logger log.Logger) error {
 	}
 
 	// Deploy saferwall package request.
-	ctx, cancelDeploy := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancelDeploy := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelDeploy()
 	ver, err := ac.Deploy(ctx, c.AgentDestPath, zipPackage)
 	if err != nil {
@@ -95,12 +97,12 @@ func run(logger log.Logger) error {
 	}
 
 	fileScanCfg, _ := json.Marshal(map[string]interface{}{
-		"timeout": 5,
+		"timeout": c.SampleTimeout,
 	})
 
 	// Setting a hard timeout on the client side in case
 	// the server never replied back.
-	timeout := time.Duration(c.Timeout) * time.Second
+	timeout := (time.Duration(c.Timeout) + 10) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
