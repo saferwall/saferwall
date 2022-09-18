@@ -61,7 +61,7 @@ type ScanConfig struct {
 	// Destination path where the sample will be located in the VM.
 	SampleDestPath string `json:"sample_dest_path"`
 	// Arguments used to run the sample.
-	Arguments string `json:"arguments"`
+	SampleArguments string `json:"sample_args"`
 	// Timeout in seconds for how long to keep the VM running.
 	Timeout int `json:"timeout"`
 }
@@ -88,7 +88,7 @@ func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 		return nil, err
 	}
 
-	verfile := filepath.Join(s.agentPath, "VERSION.txt")
+	verfile := filepath.Join(s.agentPath, "VERSION")
 	ver, err := utils.ReadAll(verfile)
 
 	return &pb.DeployReply{Version: string(ver)}, err
@@ -161,15 +161,68 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// available on disk for collection.
 	apiTrace, err := utils.ReadAll(filepath.Join(s.agentPath, "apilog.jsonl"))
 	if err != nil {
-		s.logger.Error("failed to read api trace log, reason: :%v", err)
-		return nil, err
+		s.logger.Error("failed to read api trace log, reason: %v", err)
 	}
+	s.logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
+
+	// Collect screenshots.
+	screenshots := []*pb.AnalyzeFileReply_Screenshot{}
+	screenshotsPath := filepath.Join(s.agentPath, "screenshots")
+	err = filepath.Walk(screenshotsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			s.logger.Errorf("walking screenshots directory failed: %v", err)
+			return err
+		}
+		if !info.IsDir() {
+			s.logger.Infof("screenshot path: %s", path)
+			content, e := utils.ReadAll(path)
+			if e != nil {
+				s.logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
+			} else {
+				screenshots = append(screenshots,
+					&pb.AnalyzeFileReply_Screenshot{Id: 1, Content: content})
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		s.logger.Error("failed to collect screenshots, reason: %v", err)
+	}
+	s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
+
+	// Collect memory dumps.
+	memdumps := []*pb.AnalyzeFileReply_Memdump{}
+	memdumpsPath := filepath.Join(s.agentPath, "dumps")
+	err = filepath.Walk(memdumpsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			s.logger.Errorf("walking memdumps directory failed: %v", err)
+			return err
+		}
+
+		if !info.IsDir() {
+			s.logger.Infof("dump path: %s", path)
+			content, e := utils.ReadAll(path)
+			if e != nil {
+				s.logger.Errorf("failed reading memdump: %s, err: %v", path, err)
+			} else {
+				memdumps = append(memdumps,
+					&pb.AnalyzeFileReply_Memdump{Name: info.Name(), Content: content})
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		s.logger.Error("failed to collect memdumps, reason: %v", err)
+	}
+	s.logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
 
 	return &pb.AnalyzeFileReply{
 		Apitrace:           apiTrace,
-		Screenshots:        nil,
+		Screenshots:        screenshots,
 		CollectedArtifacts: nil,
-		Memdumps:           nil,
+		Memdumps:           memdumps,
 		Serverlog:          nil,
 		Controllerlog:      nil,
 	}, nil
