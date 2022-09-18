@@ -130,6 +130,7 @@ var typeMap = map[string]string{
 func guessFileExtension(data []byte, magic string, format string, trid []string) string {
 
 	switch format {
+	// binaries
 	case "lnk":
 		return "lnk"
 
@@ -234,7 +235,7 @@ func guessFileExtension(data []byte, magic string, format string, trid []string)
 		}
 
 	}
-	return "?"
+	return "unknown"
 }
 
 func IsHtmlApp(data []byte) bool {
