@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package local
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -66,4 +67,29 @@ func (s Service) Download(ctx context.Context, bucket, key string,
 	}
 
 	return nil
+}
+
+// MakeBucket creates a new folder in the local file system that acts like
+// a bucket or a container in a object storage.
+func (s Service) MakeBucket(ctx context.Context, bucketName, location string) error {
+	dest := filepath.Join(s.root, bucketName)
+	if _, err := os.Stat(dest); os.IsNotExist(err) {
+		if err := os.MkdirAll(dest, os.ModePerm); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Exists checks whether a file exists in disk.
+func (s Service) Exists(ctx context.Context, bucketName, key string) (bool, error) {
+	name := filepath.Join(s.root, bucketName, key)
+	_, err := os.Stat(name)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
 }
