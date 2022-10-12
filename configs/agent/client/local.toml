@@ -1,11 +1,11 @@
 # The address that the gRPC server we will connect to.
-address = "localhost:50051"
+address = "192.168.1.20:50051"
 # Destination path where the sandbox will be deployed.
 agent_dest_path = "c:\\saferwall"
 # Source path that contains the sandbox component files.
-agent_src_path = ".\\..\\..\\..\\hack\\package.zip"
+agent_src_path = "./../../../hack/package.zip"
 # Source path of a test sample we can run to mimic a malware.
-sample_src_path = ".\\..\\..\\..\\hack\\test.exe"
+sample_src_path = "./../../../hack/test.exe"
 # Duration in seconds for how long to run the file.
 sample_timeout = 10
 # Maximum timeout in seconds for the client to wait for the server

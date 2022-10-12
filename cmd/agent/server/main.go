@@ -66,7 +66,7 @@ type server struct {
 	agentPath  string
 }
 
-// Deploy deloys the sandbox application in the guest.
+// Deploy the sandbox application in the guest.
 func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 	*pb.DeployReply, error) {
 
@@ -94,8 +94,8 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	logger.Info("start processing")
 
 	// The config comes from the client as a JSON file.
-	// This is explicitely left as map<string>interface{}
-	// as we don't want to cause any unmarshalling issues
+	// This is explicitly left as map<string>interface{}
+	// as we don't want to cause any un-marshalling issues
 	// when the scan config changes. All code in the server
 	// side has to be carefully written as updating the VMs
 	// is expensive.
@@ -122,16 +122,16 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Drop the sample to disk.
 	sampleData := bytes.NewBuffer(in.Binary)
-	samplePath := scanCfg["sample_dest_path"].(string)
+	samplePath := scanCfg["dest_path"].(string)
 	_, err = utils.WriteBytesFile(samplePath, sampleData)
 	if err != nil {
 		s.logger.Error("failed to write sample to disk, reason: :%v", err)
 		return nil, err
 	}
 
-	// Add a 5 seconds to thr timeout to account for bootstraping the
+	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := scanCfg["timeout"].(int) + 5
+	sampleTimeout := scanCfg["timeout"].(float64) + 5
 	timeout := time.Duration(sampleTimeout) * time.Second
 
 	// Create a new context and add a timeout to it.
@@ -236,17 +236,21 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	io.Reader, error) {
 
-	if scanCfg["timeout"] == 0 {
+	var ok bool
+
+	if _, ok = scanCfg["timeout"]; !ok {
 		scanCfg["timeout"] = 60
 	}
-	if scanCfg["sample_dest_path"] == "" {
+
+	_, ok = scanCfg["dest_path"]
+	if !ok || scanCfg["dest_path"] == "" {
 		randomFilename := s.randomizer.Random()
-		scanCfg["sample_dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+		scanCfg["dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
 	}
 
 	// For path expansion to work in Windows, we need to replace the
 	// `%` with `$`.
-	scanCfg["sample_dest_path"] = utils.Resolve(scanCfg["sample_dest_path"].(string))
+	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)
