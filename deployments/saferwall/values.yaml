@@ -281,6 +281,7 @@ webapis:
   storage:
     filesContainer: sfw-samples
     avatarContainer: sfw-images
+    artifactsContainer: sfw-artifacts
   jwt:
     signKey: secret
     expiration: 72
