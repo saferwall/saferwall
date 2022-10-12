@@ -1,17 +1,22 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"image"
+	"image/color"
+	"io"
 	"path/filepath"
 	"sync"
 
 	"github.com/digitalocean/go-libvirt"
+	"github.com/disintegration/imaging"
 	gonsq "github.com/nsqio/go-nsq"
 	agent "github.com/saferwall/saferwall/internal/agent"
 	"github.com/saferwall/saferwall/internal/log"
@@ -64,6 +69,8 @@ type VM struct {
 	Snapshots []string
 	// InUse represents the availability of the VM.
 	InUse bool
+	// Indicates if the VM is healthy.
+	IsHealthy bool
 	// Pointer to the domain object.
 	Dom *libvirt.Domain
 }
@@ -81,6 +88,10 @@ type Service struct {
 	vmm     vmmanager.VMManager
 	sandbox []byte
 }
+
+var (
+	errNotEnoughResources = errors.New("failed to find a free VM")
+)
 
 func toJSON(v interface{}) []byte {
 	b, _ := json.Marshal(v)
@@ -110,6 +121,8 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 			Name:      d.Dom.Name,
 			IP:        d.IP,
 			Snapshots: d.Snapshots,
+			InUse:     false,
+			IsHealthy: true,
 		})
 	}
 
@@ -178,28 +191,38 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	vm := s.findFreeVM()
 	if vm == nil {
 		logger.Infof("no VM currently available, call 911")
-		return errors.New("failed to find a free VM")
+		return errNotEnoughResources
 	}
 
 	logger = s.logger.With(ctx, "VM", vm.Name)
 	logger.Infof("VM %s was selected", vm.Name)
 
-	// Revert the VM to a clean state.
+	// Perform the actual detonation.
+	res, errDetonation := s.detonate(logger, vm, sha256, fileScanCfg.Dynamic)
+	if errDetonation != nil {
+		logger.Errorf("failed to detonation the sample: %v", err)
+		// Don't return now as we have to revert the snapshot.
+	}
+
+	// Reverting the virtual machine to a clean state at the end of the analysis
+	// is safer than during the start of the analysis, as we instantely stop
+	// the malware from running further.
 	err = s.vmm.Revert(*vm.Dom, s.cfg.snapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
-	}
+		// mark the VM as non healthy so we can repair it.
+		s.markStale(vm)
 
-	// Perform the actual detonation.
-	res, err := s.detonate(logger, vm, sha256, fileScanCfg.Dynamic)
-	if err != nil {
-		logger.Errorf("failed to detonation the sample: %v", err)
-		s.freeVM(vm)
-		return err
+		// Returns now and don't free it.
+		return nil
 	}
 
 	// Make sure to free the VM for next job.
 	s.freeVM(vm)
+
+	if errDetonation != nil {
+		return nil
+	}
 
 	payloads := []*pb.Message_Payload{
 		{Module: "sandbox", Body: toJSON(res)},
@@ -231,20 +254,20 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	client, err := agent.New(vm.IP)
 	if err != nil {
 		logger.Errorf("failed to establish connection to server: %v", err)
-		return agent.FileScanResult{}, nil
+		return agent.FileScanResult{}, err
 	}
 
 	// Deploy the sandbox component files inside the guest.
 	ver, err := client.Deploy(ctx, s.cfg.Agent.AgentDestDir, s.sandbox)
 	if err != nil {
-		return agent.FileScanResult{}, nil
+		return agent.FileScanResult{}, err
 	}
 	logger.Infof("sandbox version %s has been deployed", ver)
 
 	src := filepath.Join(s.cfg.SharedVolume, sha256)
 	sampleContent, err := utils.ReadAll(src)
 	if err != nil {
-		return agent.FileScanResult{}, nil
+		return agent.FileScanResult{}, err
 	}
 
 	// Analyze the sample. This call will block until results
@@ -252,7 +275,12 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	sandboxCfg := toJSON(cfg)
 	res, err := client.Analyze(ctx, sandboxCfg, sampleContent)
 	if err != nil {
-		return agent.FileScanResult{}, nil
+		return agent.FileScanResult{}, err
+	}
+
+	// Generate thumbnails for screenshots.
+	for _, sc := range res.Screenshots {
+		sc.GetContent()
 	}
 
 	return res, nil
@@ -265,7 +293,7 @@ func (s *Service) findFreeVM() *VM {
 	var freeVM *VM
 	s.mu.Lock()
 	for _, vm := range s.vms {
-		if !vm.InUse {
+		if !vm.InUse && vm.IsHealthy {
 			vm.InUse = true
 			freeVM = &vm
 			break
@@ -277,7 +305,41 @@ func (s *Service) findFreeVM() *VM {
 
 // freeVM makes the VM free for consumption.
 func (s *Service) freeVM(vm *VM) {
-	s.mu.Lock()
 	vm.InUse = false
-	s.mu.Unlock()
+}
+
+// markStale markes the VM as non-healthy.
+func (s *Service) markStale(vm *VM) {
+	vm.IsHealthy = false
+}
+
+func (s *Service) generateThumbnail(r io.Reader) (io.Writer, error) {
+
+	buf := new(bytes.Buffer)
+
+	// load images and make 100x100 thumbnails of them
+	img, err := imaging.Decode(r, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	x := 730
+	y := 450
+	thumbnail := imaging.Thumbnail(img, x, y, imaging.CatmullRom)
+
+	// create a new blank image
+	dst := imaging.New(x, y, color.NRGBA{0, 0, 0, 0})
+
+	// paste thumbnails into the new image side by side
+	dst = imaging.Paste(dst, thumbnail, image.Pt(0, 0))
+
+	// write the combined image to an io writer.
+	opts := imaging.JPEGQuality(80)
+	err = imaging.Encode(buf, dst, imaging.JPEG, opts)
+	if err != nil {
+		return nil, err
+
+	}
+
+	return buf, nil
 }

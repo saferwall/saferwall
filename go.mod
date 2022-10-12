@@ -7,6 +7,7 @@ require (
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.5.0
 	github.com/digitalocean/go-libvirt v0.0.0-20210723161134-761cfeeb5968
+	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.5.0
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/glaslos/ssdeep v0.3.2
@@ -15,7 +16,7 @@ require (
 	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/saferwall/pe v1.3.1
+	github.com/saferwall/pe v1.3.2
 	github.com/spf13/viper v1.12.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/zap v1.19.1
@@ -26,7 +27,7 @@ require (
 
 require (
 	github.com/couchbase/gocbcore/v10 v10.1.2 // indirect
-	github.com/edsrzf/mmap-go v1.0.0 // indirect
+	github.com/edsrzf/mmap-go v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-enry/go-oniguruma v1.2.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -54,6 +55,7 @@ require (
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
