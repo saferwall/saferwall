@@ -151,6 +151,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Info("start processing")
 
 	// wait until all microservices finishes processing.
+	// as AVs are the slowest, by waiting for them to
+	// finish, we can make sure everything else also finished.
 	sleeprange := [6]time.Duration{6, 5, 4, 3, 2, 1}
 	for _, v := range sleeprange {
 		logger.Debugf("Iteratation: %d", v)
@@ -193,7 +195,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// update multiav last_scan and first_scan if needed.
+	// update multiav first_scan if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})

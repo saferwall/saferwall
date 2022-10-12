@@ -21,3 +21,22 @@ username = "Administrator"
 password = "password"
 # Name of the couchbase bucket.
 bucket_name = "sfw"
+
+[storage]
+# Deployement kind, possible values: aws, minio, local.
+deployment_kind = "minio"
+# Bucket name where artifacts are stored.
+bucket = "saferwall-artifacts"
+    # Only one storage type has to be provided. `deployment_kind` controls
+    # at runtime which one to use.
+    [storage.s3]
+    region = "us-east-1" # AWS region.
+    secret_key = "superSecretKey" # AWS Secret Access Key.
+    access_key = "superSecretAccessKey" # AWS Access key ID.
+    [storage.minio]
+    endpoint = "minio:9000" # MinIO endpoint.
+    region = "us-east-1" # Region.
+    access_key = "minio" # Access key ID.
+    secret_key = "minio123" # Secret Access Key.
+    [storage.local]
+    root_dir = "/saferwall/storage" # Full path to the directory where to store the files.

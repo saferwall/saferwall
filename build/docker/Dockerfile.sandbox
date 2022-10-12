@@ -7,7 +7,7 @@ FROM golang:1.17-alpine AS build-stage
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV RELEASE_VERSION=v0.0.2
+ENV RELEASE_VERSION=v0.0.3
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
 
@@ -40,7 +40,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
 # Download fetch.
-ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.2/fetch_linux_amd64 fetch
+ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.5/fetch_linux_amd64 fetch
 RUN chmod +x fetch
 
 # Download the sandbox components files.
