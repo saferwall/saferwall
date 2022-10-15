@@ -56,7 +56,24 @@ type DynFileScanCfg struct {
 	Arguments string `json:"arguments,omitempty"`
 	// Timeout in seconds for how long to keep the VM running.
 	Timeout int `json:"timeout,omitempty"`
+	// Country to route traffic through.
+	Country string `json:"country,omitempty"`
 }
+
+
+
+"dynamic-analysis": {
+	- timestamp: 1663856134
+	- os: "windows-10"
+	- arch: "x64"
+	- sandbox_version: "v0.0.3"
+	- agent_version: "v0.0.2"
+	- sample_parameters: "-c 123"
+	- sample_country: "USA"
+	- sample_dest_path: "C:\sample.exe"
+	- id: "c75b07d2-5397-41e5-98b1-160eacdfb840"
+}
+
 
 // FileScanCfg represents a file scanning config.
 type FileScanCfg struct {

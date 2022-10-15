@@ -27,6 +27,8 @@ import (
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/google/uuid"
 )
 
 // Config represents our application config.
@@ -96,6 +98,12 @@ var (
 func toJSON(v interface{}) []byte {
 	b, _ := json.Marshal(v)
 	return b
+}
+
+// generateGuid returns a unique ID to identify a document.
+func generateGuid() string {
+	id := uuid.New()
+	return id.String()
 }
 
 // New create a new sandbox service.
@@ -173,8 +181,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
-	fileScanCfg := config.FileScanCfg{}
 	ctx := context.Background()
+	fileScanCfg := config.FileScanCfg{}
+	detonationID := generateGuid()
 
 	// Deserialize the msg sent from the web apis.
 	err := json.Unmarshal(m.Body, &fileScanCfg)
@@ -187,48 +196,48 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger := s.logger.With(ctx, "sha256", sha256)
 	logger.Info("start processing")
 
-	// Find a free virtual machine to process this job.
+	// Find a free VM to process this job.
 	vm := s.findFreeVM()
 	if vm == nil {
 		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources
 	}
 
-	logger = s.logger.With(ctx, "VM", vm.Name)
-	logger.Infof("VM %s was selected", vm.Name)
+	logger.Infof("VM [%s] with ID: %s was selected", vm.Name, vm.ID)
+	logger = s.logger.With(ctx, "vm_id", vm.ID)
 
 	// Perform the actual detonation.
 	res, errDetonation := s.detonate(logger, vm, sha256, fileScanCfg.Dynamic)
 	if errDetonation != nil {
-		logger.Errorf("failed to detonation the sample: %v", err)
-		// Don't return now as we have to revert the snapshot.
+		logger.Errorf("detonation failed with: %v", err)
+	} else {
+		logger.Infof("detonation succeeded")
 	}
 
-	// Reverting the virtual machine to a clean state at the end of the analysis
-	// is safer than during the start of the analysis, as we instantely stop
-	// the malware from running further.
+	// Reverting the VM to a clean state at the end of the analysis
+	// is safer than during the start of the analysis, as we instantely
+	// stop the malware from running further.
 	err = s.vmm.Revert(*vm.Dom, s.cfg.snapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
+
 		// mark the VM as non healthy so we can repair it.
 		s.markStale(vm)
 
-		// Returns now and don't free it.
-		return nil
+	} else {
+		// Free the VM for next job now, then continue on processing
+		// sandbox results.
+		s.freeVM(vm)
 	}
 
-	// Make sure to free the VM for next job.
-	s.freeVM(vm)
-
-	if errDetonation != nil {
-		return nil
-	}
+	// If something went wrong during detonation, we still want to
+	// upload the results back to the backend.
 
 	payloads := []*pb.Message_Payload{
-		{Module: "sandbox", Body: toJSON(res)},
+		{Key: detonationID, Body: toJSON(res)},
 	}
 
-	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	msg := &pb.Message{Sha256: sha256, Key: detonationID, Payload: payloads}
 	peMsg, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Errorf("failed to marshal message: %v", err)
@@ -278,11 +287,6 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		return agent.FileScanResult{}, err
 	}
 
-	// Generate thumbnails for screenshots.
-	for _, sc := range res.Screenshots {
-		sc.GetContent()
-	}
-
 	return res, nil
 
 }
@@ -313,6 +317,7 @@ func (s *Service) markStale(vm *VM) {
 	vm.IsHealthy = false
 }
 
+// generate thumbnails for the sandbox desktop screenshots.
 func (s *Service) generateThumbnail(r io.Reader) (io.Writer, error) {
 
 	buf := new(bytes.Buffer)

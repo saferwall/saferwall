@@ -12,7 +12,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/glaslos/ssdeep v0.3.2
 	github.com/go-enry/go-enry/v2 v2.8.2
-	github.com/golang/protobuf v1.5.2
 	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
@@ -22,7 +21,7 @@ require (
 	go.uber.org/zap v1.19.1
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	google.golang.org/grpc v1.46.2
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
@@ -30,6 +29,7 @@ require (
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-enry/go-oniguruma v1.2.1 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

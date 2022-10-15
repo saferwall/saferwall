@@ -1,10 +1,11 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package aggregator
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -17,6 +18,7 @@ import (
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	s "github.com/saferwall/saferwall/internal/storage"
 	"github.com/saferwall/saferwall/services/config"
 )
 
@@ -25,16 +27,18 @@ type Config struct {
 	LogLevel string             `mapstructure:"log_level"`
 	Consumer config.ConsumerCfg `mapstructure:"consumer"`
 	DB       store.Config       `mapstructure:"db"`
+	Storage  config.StorageCfg  `mapstructure:"storage"`
 }
 
 // Service represents the PE scan service. It adheres to the nsq.Handler
 // interface. This allows us to define our own custom handlers for our messages.
 // Think of these handlers much like you would an http handler.
 type Service struct {
-	cfg    Config
-	logger log.Logger
-	sub    pubsub.Subscriber
-	db     store.DB
+	cfg     Config
+	logger  log.Logger
+	sub     pubsub.Subscriber
+	db      store.DB
+	storage s.Storage
 }
 
 // New create a new aggregator scanner service.
@@ -60,8 +64,31 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 		return Service{}, err
 	}
 
+	opts := s.Options{}
+	switch cfg.Storage.DeploymentKind {
+	case "aws":
+		opts.Region = cfg.Storage.S3.Region
+		opts.AccessKey = cfg.Storage.S3.AccessKey
+		opts.SecretKey = cfg.Storage.S3.SecretKey
+	case "minio":
+		opts.Region = cfg.Storage.Minio.Region
+		opts.AccessKey = cfg.Storage.Minio.AccessKey
+		opts.SecretKey = cfg.Storage.Minio.SecretKey
+		opts.MinioEndpoint = cfg.Storage.Minio.Endpoint
+	case "local":
+		opts.LocalRootDir = cfg.Storage.Local.RootDir
+	}
+
+	opts.Bucket = cfg.Storage.Bucket
+
+	sto, err := s.New(cfg.Storage.DeploymentKind, opts)
+	if err != nil {
+		return Service{}, err
+	}
+
 	svc.cfg = cfg
 	svc.logger = logger
+	svc.storage = sto
 	return svc, nil
 }
 
@@ -89,22 +116,33 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sha256 := msg.Sha256
 	ctx := context.Background()
 
+	logger := s.logger.With(ctx, "sha256", sha256)
+
 	for _, payload := range msg.Payload {
-		path := payload.Module
-		logger := s.logger.With(ctx, "sha256", sha256, "module", path)
+		key := payload.Key
+		path := payload.Path
 
-		var jsonPayload interface{}
-		err = json.Unmarshal(payload.Body, &jsonPayload)
-		if err != nil {
-			logger.Errorf("failed to unmarshal json payload: %v", err)
-			continue
+		switch payload.Kind {
+		case pb.Message_DBUPDATE:
+			var jsonPayload interface{}
+			err = json.Unmarshal(payload.Body, &jsonPayload)
+			if err != nil {
+				logger.Errorf("failed to unmarshal json payload: %v", err)
+				continue
+			}
+			logger.Debugf("payload is %v", jsonPayload)
+			err = s.db.Update(ctx, key, path, jsonPayload)
+			if err != nil {
+				logger.Errorf("failed to update db: %v", err)
+			}
+		case pb.Message_UPLOAD:
+			obj := bytes.NewReader(payload.Body)
+			err = s.storage.Upload(ctx, s.cfg.Storage.Bucket, key, obj)
+			if err != nil {
+				logger.Errorf("failed to upload object %s err: %v", key, err)
+			}
 		}
 
-		logger.Debugf("payload is %v", jsonPayload)
-		err = s.db.Update(ctx, sha256, path, jsonPayload)
-		if err != nil {
-			logger.Errorf("failed to update db: %v", err)
-		}
 	}
 
 	return nil
