@@ -32,8 +32,5 @@ dependencies:
 - name: cluster-autoscaler
   repository: https://kubernetes.github.io/autoscaler
   version: 9.16.2
-- name: metallb
-  repository: https://metallb.github.io/metallb
-  version: 0.12.1
-digest: sha256:1edb6e7b3b218f47969ccf622fb54e0469d978407b3034d58d56ad5a7d993f90
-generated: "2022-08-19T10:01:35.217528811+01:00"
+digest: sha256:fab147e6cbbeabf78283d8b59e4e62782063d373c7d5f6b7d9ef4e6601074ba3
+generated: "2022-10-16T13:21:53.604409837+11:00"

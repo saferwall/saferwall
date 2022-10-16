@@ -25,7 +25,6 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler
 	helm repo add beeinventor https://beeinventor.github.io/charts
-	helm repo add metallb https://metallb.github.io/metallb
 	# Update your local Helm chart repository cache.
 	helm repo update
 

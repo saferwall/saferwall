@@ -253,10 +253,6 @@ cluster-autoscaler:
   autoDiscovery:
     clusterName: kops.saferwall.com
 
-############### METALLB ####################
-metallb:
-  enabled: false
-
 ########### BACKEND ###########
 webapis:
   enabled: true

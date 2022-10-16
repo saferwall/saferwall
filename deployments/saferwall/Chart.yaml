@@ -56,7 +56,3 @@ dependencies:
       version: 9.16.2
       repository: https://kubernetes.github.io/autoscaler
       condition: cluster-autoscaler.enabled
-    - name: metallb
-      repository: https://metallb.github.io/metallb
-      version: 0.12.1
-      condition: metallb.enabled
