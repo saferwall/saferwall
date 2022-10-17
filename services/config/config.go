@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -48,37 +48,18 @@ type StorageCfg struct {
 	Local          LocalFsCfg `mapstructure:"local"`
 }
 
-// DynFileScanCfg represents the dynamic malware analysis configuration.
-type DynFileScanCfg struct {
+// FileScanCfg represents a file scanning config.
+type FileScanCfg struct {
+	// SHA256 hash of the file.
+	SHA256 string
 	// Destination path where the sample will be located in the VM.
-	SampleDestPath string `json:"sample_dest_path,omitempty"`
+	DestPath string `json:"dest_path,omitempty"`
 	// Arguments used to run the sample.
 	Arguments string `json:"arguments,omitempty"`
 	// Timeout in seconds for how long to keep the VM running.
 	Timeout int `json:"timeout,omitempty"`
 	// Country to route traffic through.
 	Country string `json:"country,omitempty"`
-}
-
-
-
-"dynamic-analysis": {
-	- timestamp: 1663856134
-	- os: "windows-10"
-	- arch: "x64"
-	- sandbox_version: "v0.0.3"
-	- agent_version: "v0.0.2"
-	- sample_parameters: "-c 123"
-	- sample_country: "USA"
-	- sample_dest_path: "C:\sample.exe"
-	- id: "c75b07d2-5397-41e5-98b1-160eacdfb840"
-}
-
-
-// FileScanCfg represents a file scanning config.
-type FileScanCfg struct {
-	// SHA256 hash of the file.
-	SHA256 string
-	// Dynamic scan configuration.
-	Dynamic DynFileScanCfg
+	// Operating System used to run the sample.
+	OS string `json:"os,omitempty"`
 }
