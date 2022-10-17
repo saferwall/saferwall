@@ -14,6 +14,7 @@ import (
 	"io"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/digitalocean/go-libvirt"
 	"github.com/disintegration/imaging"
@@ -29,6 +30,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/google/uuid"
+)
+
+var (
+	errNotEnoughResources = errors.New("failed to find a free VM")
 )
 
 // Config represents our application config.
@@ -63,7 +68,7 @@ type VirtManagerCfg struct {
 type VM struct {
 	// ID identify uniquely the VM.
 	ID int32
-	// Name of the VM.
+	// Name of the VM, should match: Windows-10-x64-1 or Windows-7-x86-2
 	Name string
 	// IP address of the VM.
 	IP string
@@ -75,6 +80,28 @@ type VM struct {
 	IsHealthy bool
 	// Pointer to the domain object.
 	Dom *libvirt.Domain
+}
+
+// VMRun repreents a configuration for a VM run instance.
+type VMRun struct {
+	// A unique ID to identify the detonation.
+	ID string `json:"id,omitempty"`
+	// Timestamp when this detonation happened.
+	Timestamp int64 `json:"timestamp,omitempty"`
+	// The sandbox version.
+	SandboxVersion string `json:"sandbox_version,omitempty"`
+	// The agent version.
+	AgentVersion string `json:"agent_version,omitempty"`
+	// Destination path where the sample will be located in the VM.
+	DestPath string `json:"dest_path,omitempty"`
+	// Arguments used to run the sample.
+	Arguments string `json:"arguments,omitempty"`
+	// Operating System used to run the sample.
+	OS string `json:"os,omitempty"`
+	// Timeout in seconds for how long to keep the VM running.
+	Timeout int `json:"timeout,omitempty"`
+	// Country to route traffic through.
+	Country string `json:"country,omitempty"`
 }
 
 // Service represents the sandbox scan service. It adheres to the nsq.Handler
@@ -91,9 +118,16 @@ type Service struct {
 	sandbox []byte
 }
 
-var (
-	errNotEnoughResources = errors.New("failed to find a free VM")
-)
+// OS() parses the name of the VM and return a pretty name.
+func (vm *VM) OS() string {
+	r := `(?P<os>W\w+)-(?P<version>\d{1,2})-(?P<paltform>\x86|x64)-(?P<number>\d{1,2})`
+	m := utils.RegSubMatchToMapString(r, vm.Name)
+	if m["os"] != "" || m["version"] != "" || m["platform"] != "" {
+		return "windows-7-x64"
+	} else {
+		return m["os"] + "-" + m["version"] + "-" + m["platform"]
+	}
+}
 
 func toJSON(v interface{}) []byte {
 	b, _ := json.Marshal(v)
@@ -181,11 +215,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return errors.New("body is blank re-enqueue message")
 	}
 
+	vmRun := VMRun{}
 	ctx := context.Background()
-	fileScanCfg := config.FileScanCfg{}
-	detonationID := generateGuid()
 
 	// Deserialize the msg sent from the web apis.
+	fileScanCfg := config.FileScanCfg{}
 	err := json.Unmarshal(m.Body, &fileScanCfg)
 	if err != nil {
 		s.logger.Errorf("failed unmarshalling json messge body: %v", err)
@@ -196,18 +230,30 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger := s.logger.With(ctx, "sha256", sha256)
 	logger.Info("start processing")
 
+	// Generate a unique ID for this detonation.
+	detonationID := generateGuid()
+
+	vmRun.ID = detonationID
+	vmRun.Timestamp = time.Now().Unix()
+	vmRun.Country = fileScanCfg.Dynamic.Country
+	vmRun.Timeout = fileScanCfg.Dynamic.Timeout
+	vmRun.Arguments = fileScanCfg.Dynamic.Arguments
+	vmRun.DestPath = fileScanCfg.Dynamic.DestPath
+
 	// Find a free VM to process this job.
-	vm := s.findFreeVM()
+	vm := s.findFreeVM(fileScanCfg.Dynamic.OS)
 	if vm == nil {
 		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources
 	}
 
+	vmRun.OS = vm.OS()
+
 	logger.Infof("VM [%s] with ID: %s was selected", vm.Name, vm.ID)
 	logger = s.logger.With(ctx, "vm_id", vm.ID)
 
 	// Perform the actual detonation.
-	res, errDetonation := s.detonate(logger, vm, sha256, fileScanCfg.Dynamic)
+	res, errDetonation := s.detonate(logger, vm, sha256, &vmRun)
 	if errDetonation != nil {
 		logger.Errorf("detonation failed with: %v", err)
 	} else {
@@ -237,7 +283,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: detonationID, Body: toJSON(res)},
 	}
 
-	msg := &pb.Message{Sha256: sha256, Key: detonationID, Payload: payloads}
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	peMsg, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Errorf("failed to marshal message: %v", err)
@@ -254,7 +300,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
-	sha256 string, cfg config.DynFileScanCfg) (agent.FileScanResult, error) {
+	sha256 string, cfg *VMRun) (agent.FileScanResult, error) {
 
 	ctx := context.Background()
 
@@ -272,6 +318,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		return agent.FileScanResult{}, err
 	}
 	logger.Infof("sandbox version %s has been deployed", ver)
+	cfg.SandboxVersion = ver
 
 	src := filepath.Join(s.cfg.SharedVolume, sha256)
 	sampleContent, err := utils.ReadAll(src)
@@ -293,10 +340,11 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 
 // findFreeVM iterates over the list of available VM and find
 // one which is currently not in use.
-func (s *Service) findFreeVM() *VM {
+func (s *Service) findFreeVM(preferredOS string) *VM {
 	var freeVM *VM
 	s.mu.Lock()
 	for _, vm := range s.vms {
+		// Todo: use `preferredOS` when looking for free VMs.
 		if !vm.InUse && vm.IsHealthy {
 			vm.InUse = true
 			freeVM = &vm
