@@ -1,5 +1,6 @@
 API_DIR = $(ROOT_DIR)/api/protobuf-spec
 SERVICES_DIR = $(ROOT_DIR)/services
+INTERNAL_DIR = $(ROOT_DIR)/internal
 
 protobuf-generate-api:		## Generate go code from protobuf spec.
 	protoc -I $(API_DIR)/ --go_out=$(SERVICES_DIR)/proto/ \
@@ -7,6 +8,10 @@ protobuf-generate-api:		## Generate go code from protobuf spec.
 	mv $(SERVICES_DIR)/proto/github.com/saferwall/saferwall/message.pb.go \
 		$(SERVICES_DIR)/proto/message.pb.go
 	rm -r $(SERVICES_DIR)/proto/github.com/
+
+	protoc -I $(API_DIR)/ --go_out=$(INTERNAL_DIR)/agent/proto \
+		--go_opt=paths=source_relative --go-grpc_out=$(INTERNAL_DIR)/agent/proto \
+		--go-grpc_opt=paths=source_relative $(API_DIR)/agent.proto
 
 PROTOC_VERSION=3.20.3
 protobuf-install-compiler: 	## Install protobuf compiler
@@ -19,4 +24,5 @@ protobuf-install-compiler: 	## Install protobuf compiler
 	protoc --version
 
 protobuf-protoc-gen-go:	## Install protoc plugin for Go
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@1.28
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
