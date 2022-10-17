@@ -16,6 +16,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -500,4 +501,19 @@ func Resolve(s string) (out string) {
 
 	// prepend the value to the remainder of the path
 	return val + remainder
+}
+
+// RegSubMatchToMapString maps a regex group match to a map.
+func RegSubMatchToMapString(regEx, s string) (paramsMap map[string]string) {
+
+	r := regexp.MustCompile(regEx)
+	match := r.FindStringSubmatch(s)
+
+	paramsMap = make(map[string]string)
+	for i, name := range r.SubexpNames() {
+		if i > 0 && i <= len(match) {
+			paramsMap[name] = match[i]
+		}
+	}
+	return
 }
