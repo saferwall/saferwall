@@ -245,14 +245,6 @@ cert-manager:
     defaultIssuerName: selfsigned-issuer
     defaultIssuerKind: ClusterIssuer
 
-########## CLUSTER-AUTOSCALER ############
-cluster-autoscaler:
-  enabled: false
-  cloudProvider: aws
-  awsRegion: us-east-1
-  autoDiscovery:
-    clusterName: kops.saferwall.com
-
 ########### BACKEND ###########
 webapis:
   enabled: true
