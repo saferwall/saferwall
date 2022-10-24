@@ -64,7 +64,9 @@ COPY --from=build-stage /go/bin/windefender-svc .
 COPY configs/services/multiav/windefender conf/
 
 # Update permissions.
-RUN usermod -u 101 saferwall \
+RUN usermod -u 120 messagebus \
+	&& groupmod -g 121 ssl-cert \
+	&& usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
 	&& chown -R saferwall:saferwall . \
 	&& chown -R saferwall:saferwall $WINDOWS_DEFENDER_INSTALL_DIR
