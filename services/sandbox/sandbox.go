@@ -235,13 +235,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	vmRun.ID = detonationID
 	vmRun.Timestamp = time.Now().Unix()
-	vmRun.Country = fileScanCfg.Dynamic.Country
-	vmRun.Timeout = fileScanCfg.Dynamic.Timeout
-	vmRun.Arguments = fileScanCfg.Dynamic.Arguments
-	vmRun.DestPath = fileScanCfg.Dynamic.DestPath
+	vmRun.Country = fileScanCfg.Country
+	vmRun.Timeout = fileScanCfg.Timeout
+	vmRun.Arguments = fileScanCfg.Arguments
+	vmRun.DestPath = fileScanCfg.DestPath
 
 	// Find a free VM to process this job.
-	vm := s.findFreeVM(fileScanCfg.Dynamic.OS)
+	vm := s.findFreeVM(fileScanCfg.OS)
 	if vm == nil {
 		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources

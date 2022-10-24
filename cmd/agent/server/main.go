@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -56,16 +56,6 @@ type Config struct {
 	ControllerFilename string `mapstructure:"controller_name"`
 }
 
-// ScanConfig represents the dynamic malware analysis configuration.
-type ScanConfig struct {
-	// Destination path where the sample will be located in the VM.
-	SampleDestPath string `json:"sample_dest_path"`
-	// Arguments used to run the sample.
-	SampleArguments string `json:"sample_args"`
-	// Timeout in seconds for how long to keep the VM running.
-	Timeout int `json:"timeout"`
-}
-
 // server is used to implement agent.GreeterServer.
 type server struct {
 	pb.UnimplementedAgentServer
@@ -104,7 +94,12 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	logger.Info("start processing")
 
 	// The config comes from the client as a JSON file.
-	var scanCfg ScanConfig
+	// This is explicitely left as map<string>interface{}
+	// as we don't want to cause any unmarshalling issues
+	// when the scan config changes. All code in the server
+	// side has to be carefully written as updating the VMs
+	// is expensive.
+	var scanCfg map[string]interface{}
 	err := json.Unmarshal(in.Config, &scanCfg)
 	if err != nil {
 		s.logger.Errorf("failed to unmarshal json config: %v", err)
@@ -112,7 +107,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}
 
 	// Generates the sandbox config from the values from the client.
-	tomlConfig, err := s.genSandboxConfig(&scanCfg)
+	tomlConfig, err := s.genSandboxConfig(scanCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -127,16 +122,19 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Drop the sample to disk.
 	sampleData := bytes.NewBuffer(in.Binary)
-	_, err = utils.WriteBytesFile(scanCfg.SampleDestPath, sampleData)
+	samplePath := scanCfg["sample_dest_path"].(string)
+	_, err = utils.WriteBytesFile(samplePath, sampleData)
 	if err != nil {
 		s.logger.Error("failed to write sample to disk, reason: :%v", err)
 		return nil, err
 	}
 
+	// Add a 5 seconds to thr timeout to account for bootstraping the
+	// sample execution: loading driver, etc.
+	sampleTimeout := scanCfg["timeout"].(int) + 5
+	timeout := time.Duration(sampleTimeout) * time.Second
+
 	// Create a new context and add a timeout to it.
-	// It is possible that the controller crashes and never
-	// returns back, this timeout helps remediating this issue.
-	timeout := (time.Duration(scanCfg.Timeout + 5)) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -153,7 +151,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			s.logger.Errorf("controller failed: %v, output: %s", err, out)
 		} else {
 			s.logger.Info("controller success")
-
 		}
 	}
 
@@ -162,12 +159,14 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	apiTrace, err := utils.ReadAll(filepath.Join(s.agentPath, "apilog.jsonl"))
 	if err != nil {
 		s.logger.Error("failed to read api trace log, reason: %v", err)
+	} else {
+		s.logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
 	}
-	s.logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
 
 	// Collect screenshots.
 	screenshots := []*pb.AnalyzeFileReply_Screenshot{}
 	screenshotsPath := filepath.Join(s.agentPath, "screenshots")
+	screenShotId := int32(0)
 	err = filepath.Walk(screenshotsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			s.logger.Errorf("walking screenshots directory failed: %v", err)
@@ -180,7 +179,8 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 				s.logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
 			} else {
 				screenshots = append(screenshots,
-					&pb.AnalyzeFileReply_Screenshot{Id: 1, Content: content})
+					&pb.AnalyzeFileReply_Screenshot{Id: screenShotId, Content: content})
+				screenShotId++
 			}
 		}
 
@@ -188,8 +188,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	})
 	if err != nil {
 		s.logger.Error("failed to collect screenshots, reason: %v", err)
+	} else {
+		s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
 	}
-	s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
 
 	// Collect memory dumps.
 	memdumps := []*pb.AnalyzeFileReply_Memdump{}
@@ -215,8 +216,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	})
 	if err != nil {
 		s.logger.Error("failed to collect memdumps, reason: %v", err)
+	} else {
+		s.logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
 	}
-	s.logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
 
 	return &pb.AnalyzeFileReply{
 		Apitrace:           apiTrace,
@@ -231,20 +233,20 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 // Build sandbox config by taking the values from from the
 // `FileScanCfg` and generates a TOML config on the fly using
 // go templates.
-func (s *server) genSandboxConfig(scanCfg *ScanConfig) (
+func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	io.Reader, error) {
 
-	if scanCfg.Timeout == 0 {
-		scanCfg.Timeout = 60
+	if scanCfg["timeout"] == 0 {
+		scanCfg["timeout"] = 60
 	}
-	if scanCfg.SampleDestPath == "" {
+	if scanCfg["sample_dest_path"] == "" {
 		randomFilename := s.randomizer.Random()
-		scanCfg.SampleDestPath = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+		scanCfg["sample_dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
 	}
 
 	// For path expansion to work in Windows, we need to replace the
 	// `%` with `$`.
-	scanCfg.SampleDestPath = utils.Resolve(scanCfg.SampleDestPath)
+	scanCfg["sample_dest_path"] = utils.Resolve(scanCfg["sample_dest_path"].(string))
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)
