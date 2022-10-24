@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use wine + loadlibrary to make windows defender works again thanks to [prsyahmi](https://github.com/prsyahmi) [#386](https://github.com/saferwall/saferwall/pull/386).
+
 ## [0.3.0] - 12/04/2022
 
 ### Added
