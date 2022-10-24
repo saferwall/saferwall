@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -16,7 +16,7 @@ import (
 // Our consts
 const (
 	loadlibraryPath = "/opt/windows-defender/"
-	mpclient        = "./mpclient"
+	mploader        = "./mploader.exe"
 	mpenginedll     = "/engine/mpengine.dll"
 )
 
@@ -46,30 +46,39 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 		return res, err
 	}
 
-	// mpclient requires us to run from loadlibrary folder or it fails
+	// mploader requires us to run from loadlibrary folder or it fails
 	if err := os.Chdir(loadlibraryPath); err != nil {
 		return res, err
 	}
 	defer os.Chdir(dir)
 
 	// Execute the scanner with the given file path
-	// main(): usage: ./mpclient [filenames...]
-	res.Out, err = utils.ExecCmd(mpclient, filePath)
+	// main(): usage: ./mploader -f <filePath> -u
+	res.Out, err = utils.ExecCmd("wine", mploader, "-f", filePath, "-u")
 	if err != nil {
 		return res, err
 	}
 
 	// main(): Scanning /samples/locky...
-	// EngineScanCallback(): Scanning input
-	// EngineScanCallback(): Threat Ransom:Win32/Locky.A identified.
+	// ....
+	// Engine Boot Success!
+	// 0024:fixme:ntdll:EtwEventActivityIdControl 0x2, 0032F9DC: stub
+	// Scan Start /eicar
+	// 0024:fixme:wintrust:CryptCATAdminAcquireContext2 0032C530 (null) L"SHA1" 00000000 0 stub
+	// 0024:fixme:wintrust:CryptCATAdminAcquireContext2 0032C530 (null) L"SHA256" 00000000 0 stub
+	// 0024:fixme:bcrypt:BCryptGenRandom ignoring selected algorithm
+	// Threat Virus:DOS/EICAR_Test_File identified.
 	lines := strings.Split(res.Out, "\n")
 	for _, line := range lines {
-		if !strings.Contains(line, "EngineScanCallback(): Threat ") {
+		if !strings.Contains(line, "Threat ") {
+			continue
+		}
+		if strings.Contains(line, "No Threat identified ") {
 			continue
 		}
 
-		detection := strings.TrimPrefix(line, "EngineScanCallback(): Threat ")
-		res.Output = strings.TrimSuffix(detection, " identified.")
+		detection := strings.TrimPrefix(line, "Threat ")
+		res.Output = strings.TrimSuffix(detection, " identified.\r")
 		res.Infected = true
 		break
 	}

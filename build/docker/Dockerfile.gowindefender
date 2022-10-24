@@ -37,7 +37,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM saferwall/windefender:0.0.3
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.0.3"
-LABEL description="windows defender port into linux with nsq consumer"
+LABEL description="windows defender port + wine into linux with nsq consumer"
 
 # Environment variables.
 ENV WINDOWS_DEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
@@ -46,15 +46,16 @@ ENV WINDOWS_DEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
 WORKDIR /saferwall
 
 # Update virus definition file.
-RUN curl -sS -o $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe -L $WINDOWS_DEFENDER_UPDATE \
+RUN wget -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0" \
+	-O $WINDOWS_DEFENDER_INSTALL_DIR/engine/mpam-fe.exe $WINDOWS_DEFENDER_UPDATE \
 	&& cd $WINDOWS_DEFENDER_INSTALL_DIR/engine \
-	# && cabextract mpam-fe.exe \
+	&& cabextract mpam-fe.exe \
 	&& rm mpam-fe.exe \
 	&& echo -n "$(date +%s)" >> $WINDOWS_DEFENDER_DB_UPDATE_DATE
 
 # Create an app user so our program doesn't run as root.
 RUN groupadd -r saferwall \
-	&& useradd --no-log-init -r -g saferwall saferwall
+	&& useradd --no-log-init --create-home -r -g saferwall saferwall
 
 # Copy our static executable.
 COPY --from=build-stage /go/bin/windefender-svc .
@@ -67,6 +68,7 @@ RUN usermod -u 101 saferwall \
 	&& groupmod -g 102 saferwall \
 	&& chown -R saferwall:saferwall . \
 	&& chown -R saferwall:saferwall $WINDOWS_DEFENDER_INSTALL_DIR
+
 
 # Switch to our user.
 USER saferwall
