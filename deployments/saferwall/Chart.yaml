@@ -17,7 +17,7 @@ dependencies:
       version: 3.6.4
       condition: minio.enabled
     - name: couchbase-operator
-      version: 2.3.001
+      version: 2.32.2
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver

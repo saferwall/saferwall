@@ -88,10 +88,14 @@ k8s-init-cert-manager: ## Init cert-manager
 
 METALLB_VERSION=0.13.7
 k8s-install-metallb:
+	# Create namespace.
+	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/namespace.yaml
 	# Install the chart.
 	helm install metallb metallb/metallb \
 		--namespace metallb-system
 		--version v$(METALLB_VERSION) \
+	# Create an IP adress pool and L2 advertisement.
+	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
 k8s-install-couchbase-crds:
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml

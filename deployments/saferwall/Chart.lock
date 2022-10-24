@@ -4,7 +4,7 @@ dependencies:
   version: 3.6.4
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
-  version: 2.3.001
+  version: 2.32.2
 - name: aws-efs-csi-driver
   repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
   version: 2.2.6
@@ -29,5 +29,5 @@ dependencies:
 - name: nsq
   repository: https://beeinventor.github.io/charts
   version: 1.2.2
-digest: sha256:a82349cb5a398d8341b2690d8297a8079eb434a7f1c22dd9568b567d06739e37
-generated: "2022-10-17T11:04:15.689588571+11:00"
+digest: sha256:82a596987de2a99f3a2bb5fe5f895065af1de9a25e99fcc3713f23e6a0d5ad75
+generated: "2022-10-24T11:10:21.721366482+11:00"
