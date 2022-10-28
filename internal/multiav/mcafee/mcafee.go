@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,13 +6,16 @@ package mcafee
 
 import (
 	"regexp"
+	"strings"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	cmd = "/opt/mcafee/uvscan"
+	cmd          = "/opt/mcafee/uvscan"
+	regVersion   = `Linux64 Version: ([\\d\\.]+)[\\s\\S]+Engine version: ([\\d\\.]+)[\\s\\S]+set version: ([\\d\\.]+)`
+	regDetection = `Found (the|potentially unwanted program|trojan or variant) (.*)( !!!|\.)`
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -42,7 +45,7 @@ func GetVersion() (Version, error) {
 	}
 
 	v := Version{}
-	re := regexp.MustCompile("Linux64 Version: ([\\d\\.]+)[\\s\\S]+Engine version: ([\\d\\.]+)[\\s\\S]+set version: ([\\d\\.]+)")
+	re := regexp.MustCompile(regVersion)
 	l := re.FindStringSubmatch(out)
 	if len(l) > 2 {
 		v.ProgramVersion, v.AVEngineVersion, v.VDFVersion = l[1], l[2], l[3]
@@ -62,20 +65,24 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// --ASCII                    : Display filenames as ASCII text.
 	// --MANALYZE                 : Turn on macro heuristics.
 	// --MACRO-HEURISTICS         : Turn on macro heuristics.
-	// --UNZIP                    : Scan inside archive files, such as those saved in ZIP, LHA, PKarc, ARJ, TAR, CHM, and RAR.
+	// --UNZIP                    : Scan inside archive files, such as those saved in ZIP,
+	//                              LHA, PKarc, ARJ, TAR, CHM, and RAR.
+	// --PROGRAM                  : Scan for potentially unwanted applications
 
 	// /opt/mcafee/uvscan --ANALYZE --ASCII --MANALYZE --MACRO-HEURISTICS --UNZIP sample
 	res.Out, err = utils.ExecCmd(cmd, "--ANALYZE", "--ASCII",
 		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filePath)
 
 	// Exit codes:
-	//  0 The scanner found no viruses or other potentially unwanted software, and returned no errors.
+	//  0 The scanner found no viruses or other potentially unwanted software,
+	//    and returned no errors.
 	//  2 Integrity check on DAT file failed.
 	//  6 A general problem occurred.
 	//  8 The scanner was unable to find a DAT file.
 	//  10 A virus was found in memory.
 	//  12 The scanner tried to clean a file, the attempt failed, and the file is still infected.
-	//  13 The scanner found one or more viruses or hostile objects — such as a Trojan-horse program, joke program, or test file.
+	//  13 The scanner found one or more viruses or hostile objects such as a
+	//     Trojan-horse program, joke program, or test file.
 	//  15 The scanner’s self-check failed; the scanner may be infected or damaged.
 	//  19 The scanner succeeded in cleaning all infected files.
 	//  20 Scanning was prevented because of the /FREQUENCY option.
@@ -93,15 +100,25 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// Dat set version: 9118 created Dec 26 2018
 	// Scanning for 668680 viruses, trojans and variants.
 
-	// /home/ubuntu/malware ... Found the RDN/Generic.tfr trojan !!!
+	// /samples/0000c0018968d974c61f143cfb8f0c60f79f261485fde74f24581e1d8e300051 \
+	// ... Found potentially unwanted program Adware-HotBar.d.
+	// /samples/0000280440c145d1b0cdaa2ef6dde37ef82435eeb73719353e46169fd9f16eda \
+	// ... Found the W32/Virut.j.gen virus !!!
+	// /samples/0000b374791e3b7d2baa3e05695f6633869b4bdf25cc3dedfe76d3a72a53517f \
+	// ... Found the PWS-Zbot.gen.cr trojan !!!
+	// /samples/0000e69606177daf097465df30b759c6ea10818f6948bd49b8fc4abddbe4962d/00014a4c.js \
+	//... Found trojan or variant JS/HideLink.A !!!
 
 	// Time: 00:00.00
 
 	// Grab the detection result
-	re := regexp.MustCompile(`Found the (.*) trojan`)
+	re := regexp.MustCompile(regDetection)
 	l := re.FindStringSubmatch(res.Out)
 	if len(l) > 0 {
-		res.Output = l[1]
+		output := l[1]
+		output = strings.TrimSuffix(output, " virus")
+		output = strings.TrimSuffix(output, " trojan")
+		res.Output = output
 		res.Infected = true
 	}
 	return res, nil

@@ -21,5 +21,6 @@
         "nsqd.dat": true,
         "*/**/main": true,
         "*/**/__debug_bin": true,
-    }
+    },
+    "editor.rulers": [80,120]
 }

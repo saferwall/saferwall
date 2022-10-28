@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- MultiAV McAfee enable scan for potentially unwanted program [#387](https://github.com/saferwall/saferwall/pull/387).
+
 ### Fixed
 
 - Use wine + loadlibrary to make windows defender works again thanks to [prsyahmi](https://github.com/prsyahmi) [#386](https://github.com/saferwall/saferwall/pull/386).
+- MultiAV McAfee doesn't report other kind of malware besides trojan thanks to [prsyahmi](https://github.com/prsyahmi) [#387](https://github.com/saferwall/saferwall/pull/387).
 
 ## [0.3.0] - 12/04/2022
 
