@@ -68,7 +68,7 @@ type VirtManagerCfg struct {
 type VM struct {
 	// ID identify uniquely the VM.
 	ID int32
-	// Name of the VM, should match: Windows-10-x64-1 or Windows-7-x86-2
+	// Name of the VM, should match: Windows-10-x64-1 or Windows-7-x86-2.
 	Name string
 	// IP address of the VM.
 	IP string
@@ -82,7 +82,7 @@ type VM struct {
 	Dom *libvirt.Domain
 }
 
-// VMRun repreents a configuration for a VM run instance.
+// VMRun represents a configuration for a VM run instance.
 type VMRun struct {
 	// A unique ID to identify the detonation.
 	ID string `json:"id,omitempty"`
