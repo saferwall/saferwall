@@ -114,8 +114,8 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// Grab the detection result
 	re := regexp.MustCompile(regDetection)
 	l := re.FindStringSubmatch(res.Out)
-	if len(l) > 0 {
-		output := l[1]
+	if len(l) > 1 {
+		output := l[2]
 		output = strings.TrimSuffix(output, " virus")
 		output = strings.TrimSuffix(output, " trojan")
 		res.Output = output
