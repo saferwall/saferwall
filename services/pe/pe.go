@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -112,9 +112,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	payloads := []*pb.Message_Payload{
-		{Module: "pe", Body: curate(file)},
-		{Module: "tags.pe", Body: toJSON(tags)},
-		{Module: "file_extension", Body: toJSON(ext)},
+		{Key: sha256, Path: "pe", Kind: pb.Message_DBUPDATE, Body: curate(file)},
+		{Key: sha256, Path: "tags.pe", Kind: pb.Message_DBUPDATE, Body: toJSON(tags)},
+		{Key: sha256, Path: "file_extension", Kind: pb.Message_DBUPDATE, Body: toJSON(ext)},
 	}
 
 	file.Close()

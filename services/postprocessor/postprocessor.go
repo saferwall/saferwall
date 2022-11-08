@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -15,11 +15,11 @@ import (
 	"github.com/blackironj/periodic"
 	"github.com/djherbis/times"
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/db"
 	"github.com/saferwall/saferwall/internal/log"
+	"github.com/saferwall/saferwall/internal/ml"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
-	"github.com/saferwall/saferwall/internal/db"
-	"github.com/saferwall/saferwall/internal/ml"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
@@ -151,6 +151,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Info("start processing")
 
 	// wait until all microservices finishes processing.
+	// as AVs are the slowest, by waiting for them to
+	// finish, we can make sure everything else also finished.
 	sleeprange := [6]time.Duration{6, 5, 4, 3, 2, 1}
 	for _, v := range sleeprange {
 		logger.Debugf("Iteratation: %d", v)
@@ -176,8 +178,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// set the file analysis status to `finished` and
 	// set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
-		{Module: "status", Body: toJSON(2)},
-		{Module: "last_scanned", Body: toJSON(time.Now().Unix())},
+		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE, Body: toJSON(2)},
+		{Key: sha256, Path: "last_scanned", Kind: pb.Message_DBUPDATE, Body: toJSON(time.Now().Unix())},
 	}
 
 	// if the file format is PE, run the ML classifier.
@@ -188,23 +190,27 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 				logger.Errorf("failed to get ml classification results: %v", err)
 			} else {
 				payloads = append(payloads, &pb.Message_Payload{
-					Module: "ml.pe", Body: toJSON(res)})
+					Key: sha256, Path: "ml.pe", Kind: pb.Message_DBUPDATE, Body: toJSON(res)})
 			}
 		}
 	}
 
-	// update multiav last_scan and first_scan if needed.
+	// update multiav first_scan if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
 		if _, ok := multiav["first_scan"]; !ok {
 			payloads = append(payloads, &pb.Message_Payload{
-				Module: "multiav.first_scan",
-				Body:   toJSON(multiav["last_scan"])})
+				Key:  sha256,
+				Path: "multiav.first_scan",
+				Kind: pb.Message_DBUPDATE,
+				Body: toJSON(multiav["last_scan"])})
 		} else if len(multiav["first_scan"].(map[string]interface{})) == 0 {
 			payloads = append(payloads, &pb.Message_Payload{
-				Module: "multiav.first_scan",
-				Body:   toJSON(multiav["last_scan"])})
+				Key:  sha256,
+				Path: "multiav.first_scan",
+				Kind: pb.Message_DBUPDATE,
+				Body: toJSON(multiav["last_scan"])})
 		} else {
 			logger.Debugf("multiav first_scan already set to: %v",
 				multiav["first_scan"])

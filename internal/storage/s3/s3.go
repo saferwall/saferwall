@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -9,8 +9,10 @@ import (
 	"io"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	awss3 "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
@@ -102,31 +104,53 @@ func (s Service) Download(ctx context.Context, bucket, key string,
 	return err
 }
 
-// ListObjects returns the list of objects in a bucket.
-func (s Service) ListObjects(ctx context.Context, bucket string,
-	fn func(*awss3.ListObjectsV2Output, bool) bool) error {
+// MakeBucket creates a new bucket in s2.
+func (s Service) MakeBucket(ctx context.Context, bucketName, location string) error {
 
-	input := &awss3.ListObjectsV2Input{
-		Bucket: aws.String(bucket),
+	input := &awss3.CreateBucketInput{Bucket: aws.String(bucketName)}
+
+	// ignore location constraint for `us-east-1`, otherwise bucket
+	// creation request fails.
+	if location != "us-east-1" {
+		input.CreateBucketConfiguration = &awss3.CreateBucketConfiguration{
+			LocationConstraint: aws.String(location)}
 	}
 
-	err := s.s3svc.ListObjectsV2PagesWithContext(ctx, input, fn)
+	_, err := s.s3svc.CreateBucket(input)
 	if err != nil {
-		return err
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case awss3.ErrCodeBucketAlreadyExists:
+				return aerr
+			case awss3.ErrCodeBucketAlreadyOwnedByYou:
+				return nil
+			default:
+				return aerr
+			}
+		} else {
+			return err
+		}
 	}
+
 	return nil
 }
 
-// Exists checks if an object key exists without returning the object itself.
-func (s Service) Exists(ctx context.Context, bucket string, key string) (bool, error) {
+func (s Service) Exists(ctx context.Context, bucketName,
+	key string) (bool, error) {
 
-	input := &awss3.HeadObjectInput{
-		Bucket: aws.String(bucket),
+	_, err := s.s3svc.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucketName),
 		Key:    aws.String(key),
-	}
-
-	_, err := s.s3svc.HeadObjectWithContext(ctx, input)
+	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case "NotFound": // s3.ErrCodeNoSuchKey does not work, aws is missing this error code so we hardwire a string
+				return false, nil
+			default:
+				return false, err
+			}
+		}
 		return false, err
 	}
 	return true, nil

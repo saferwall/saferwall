@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -188,29 +188,31 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Info("tags extraction success")
 
 	payloads := []*pb.Message_Payload{
-		{Module: "crc32", Body: toJSON(r.CRC32)},
-		{Module: "md5", Body: toJSON(r.MD5)},
-		{Module: "sha1", Body: toJSON(r.SHA1)},
-		{Module: "sha256", Body: toJSON(r.SHA256)},
-		{Module: "sha256", Body: toJSON(r.SHA256)},
-		{Module: "sha512", Body: toJSON(r.SHA512)},
-		{Module: "ssdeep", Body: toJSON(r.SSDeep)},
-		{Module: "size", Body: toJSON(int64(len(data)))},
-		{Module: "exif", Body: toJSON(exif)},
-		{Module: "trid", Body: toJSON(tridRes)},
-		{Module: "magic", Body: toJSON(magicRes)},
-		{Module: "packer", Body: toJSON(packerRes)},
-		{Module: "tags.packer", Body: toJSON(tags)},
-		{Module: "strings", Body: toJSON(stringRes)},
-		{Module: "histogram", Body: toJSON(bs.ByteHistogram(data))},
-		{Module: "byte_entropy", Body: toJSON(bs.ByteEntropyHistogram(data))},
-		{Module: "fileformat", Body: toJSON(fileFormat)},
+		{Key: sha256, Path: "crc32", Kind: pb.Message_DBUPDATE, Body: toJSON(r.CRC32)},
+		{Key: sha256, Path: "md5", Kind: pb.Message_DBUPDATE, Body: toJSON(r.MD5)},
+		{Key: sha256, Path: "sha1", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA1)},
+		{Key: sha256, Path: "sha256", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA256)},
+		{Key: sha256, Path: "sha256", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA256)},
+		{Key: sha256, Path: "sha512", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA512)},
+		{Key: sha256, Path: "ssdeep", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SSDeep)},
+		{Key: sha256, Path: "size", Kind: pb.Message_DBUPDATE, Body: toJSON(int64(len(data)))},
+		{Key: sha256, Path: "exif", Kind: pb.Message_DBUPDATE, Body: toJSON(exif)},
+		{Key: sha256, Path: "trid", Kind: pb.Message_DBUPDATE, Body: toJSON(tridRes)},
+		{Key: sha256, Path: "magic", Kind: pb.Message_DBUPDATE, Body: toJSON(magicRes)},
+		{Key: sha256, Path: "packer", Kind: pb.Message_DBUPDATE, Body: toJSON(packerRes)},
+		{Key: sha256, Path: "tags.packer", Kind: pb.Message_DBUPDATE, Body: toJSON(tags)},
+		{Key: sha256, Path: "strings", Kind: pb.Message_DBUPDATE, Body: toJSON(stringRes)},
+		{Key: sha256, Path: "histogram", Kind: pb.Message_DBUPDATE, Body: toJSON(bs.ByteHistogram(data))},
+		{Key: sha256, Path: "byte_entropy", Kind: pb.Message_DBUPDATE, Body: toJSON(bs.ByteEntropyHistogram(data))},
+		{Key: sha256, Path: "fileformat", Kind: pb.Message_DBUPDATE, Body: toJSON(fileFormat)},
 	}
 
 	if fileExt != "unknown" {
 		payloads = append(payloads, &pb.Message_Payload{
-			Module: "file_extension",
-			Body:   toJSON(fileExt)})
+			Key:  sha256,
+			Path: "file_extension",
+			Kind: pb.Message_DBUPDATE,
+			Body: toJSON(fileExt)})
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}

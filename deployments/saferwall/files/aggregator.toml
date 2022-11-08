@@ -25,3 +25,21 @@ username = '{{ index .Values "couchbase-operator" "cluster" "security" "username
 password = '{{ index .Values "couchbase-operator" "cluster" "security" "password" }}'
 # Name of the couchbase bucket.
 bucket_name = "{{ .Values.global.couchbase.bucketName }}"
+
+[storage]
+# Kind of deployment used to host object storage.
+deployment_kind = "{{ .Values.global.storage.deploymentKind }}" # Deployement kind, possible values: aws, minio, local.
+# Bucket name where artifacts are stored.
+bucket = "{{ .Values.webapis.storage.artifactsContainer }}"
+    {{ if eq .Values.global.storage.deploymentKind "aws"  }}
+    [storage.s3]
+    region = "{{ .Values.global.s3.region }}" # AWS region.
+    access_key = "{{ .Values.global.s3.accessKey }}" # AWS Secret Access Key.
+    secret_key = "{{ .Values.global.s3.secretKey }}" # AWS Access key ID.
+    {{ else if eq .Values.global.storage.deploymentKind "minio" }}
+    [storage.minio]
+    endpoint = '{{ printf "%s-minio" .Release.Name }}:9000' # MinIO endpoint.
+    region = "{{ .Values.global.minio.region }}" # MinIO region.
+    access_key = "{{ .Values.global.minio.accessKey }}" # MinIO Secret Access Key.
+    secret_key = "{{ .Values.global.minio.secretKey }}" # MinIO Access key ID.
+    {{ end }}

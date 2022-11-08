@@ -10,7 +10,7 @@ kubectl-install:		## Install kubectl.
 			echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
 		fi
 
-KUBECTX_VER = 0.9.3
+KUBECTX_VER = 0.9.4
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
 k8s-kubectx-install:		## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
@@ -19,7 +19,7 @@ k8s-kubectx-install:		## Install kubectx
 	chmod +x /usr/local/bin/kubectx
 	kubectx
 
-KUBENS_VER = 0.9.3
+KUBENS_VER = 0.9.4
 KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
 k8s-kubens-install:			## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
@@ -28,7 +28,7 @@ k8s-kubens-install:			## Install Kubens
 	chmod +x /usr/local/bin/kubens
 	kubens
 
-KUBE_CAPACITY_VER = 0.5.0
+KUBE_CAPACITY_VER = 0.7.1
 k8s-kube-capacity: 	## Install kube-capacity
 	wget https://github.com/robscott/kube-capacity/releases/download/$(KUBE_CAPACITY_VER)/kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz -P /tmp
 	cd /tmp \
@@ -72,7 +72,7 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
-CERT_MANAGER_VER=1.8.0
+CERT_MANAGER_VER=1.10.0
 k8s-init-cert-manager: ## Init cert-manager
 	# Install the chart.
 	helm install cert-manager jetstack/cert-manager \
@@ -85,6 +85,17 @@ k8s-init-cert-manager: ## Init cert-manager
 	--for=condition=ready pod \
 	--selector=app.kubernetes.io/instance=cert-manager \
 	--timeout=90s
+
+METALLB_VERSION=0.13.7
+k8s-install-metallb:
+	# Create namespace.
+	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/namespace.yaml
+	# Install the chart.
+	helm install metallb metallb/metallb \
+		--namespace metallb-system
+		--version v$(METALLB_VERSION) \
+	# Create an IP adress pool and L2 advertisement.
+	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
 k8s-install-couchbase-crds:
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml

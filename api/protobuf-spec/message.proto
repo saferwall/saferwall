@@ -1,13 +1,36 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 syntax = "proto3";
 package service;
 
 option go_package = "github.com/saferwall/saferwall";
 
+// The services message definition.
 message Message {
-    string sha256 = 1;
-    message Payload {
-        string module = 1;
-        bytes body = 2;
-    }
-    repeated Payload payload =  2;
+
+  // PayloadKind represents the kind of message.
+  enum PayloadKind {
+    DBUPDATE = 0;
+    UPLOAD = 1;
+  }
+
+  // SHA256 of the binary file.
+  string sha256 = 1;
+
+  // Payload represents the body of the message.
+  message Payload {
+    // Kind represents the type of payload.
+    PayloadKind kind = 1;
+    // The key to use to write the payload, can be either an
+    // object stortage key or a DB document key.
+    string key = 2;
+    // Path represents the DB path where to write the payload
+    // when the message kind is a DBUPDATE.
+    string path = 3;
+    // The raw body.
+    bytes body = 4;
+  }
+  repeated Payload payload = 2;
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -87,6 +87,8 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 		opts.LocalRootDir = cfg.Storage.Local.RootDir
 	}
 
+	opts.Bucket = cfg.Storage.Bucket
+
 	sto, err := s.New(cfg.Storage.DeploymentKind, opts)
 	if err != nil {
 		return Service{}, err
@@ -158,7 +160,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-
 	logger.Debug("published messaged to topic-multiav")
 
 	err = s.pub.Publish(ctx, "topic-meta", []byte(sha256))
@@ -166,7 +167,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
 	}
-
 	logger.Debug("published messaged to topic-meta")
 
 	// depending on what the file format is,
@@ -176,7 +176,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to detect mimetype: %v", err)
 		return err
 	}
-
 	logger.Debugf("file type is: %s", mtype.String())
 
 	switch mtype.String() {
@@ -194,6 +193,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Debug("published messaged to topic-sandbox")
 	}
 
+	// Always qeueue to the post processor.
 	err = s.pub.Publish(ctx, "topic-postprocessor", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)

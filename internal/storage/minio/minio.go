@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -11,6 +11,11 @@ import (
 
 	miniogo "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+)
+
+var (
+	// ErrNoSuchKey is raised when the object is not found.
+	ErrNoSuchKey = "The specified key does not exist."
 )
 
 // Service provides abstraction to cloud object storage.
@@ -72,4 +77,39 @@ func (s Service) Download(ctx context.Context, bucket, key string,
 		return err
 	}
 	return nil
+}
+
+// MakeBucket creates a new bucket with bucketName with a context to control
+// cancellations and timeouts.
+func (s Service) MakeBucket(ctx context.Context, bucketName,
+	location string) error {
+	err := s.client.MakeBucket(ctx, bucketName,
+		miniogo.MakeBucketOptions{Region: location})
+	if err != nil {
+		// Check to see if we already own this bucket
+		// (which happens if you run this twice)
+		exists, errBucketExists := s.client.BucketExists(ctx, bucketName)
+		if errBucketExists == nil && exists {
+			return nil
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
+// Exists checks whether an object exists already in the object storage.
+func (s Service) Exists(ctx context.Context, bucketName,
+	key string) (bool, error) {
+	opts := miniogo.GetObjectOptions{}
+	_, err := s.client.StatObject(ctx, bucketName, key, opts)
+	if err != nil {
+		switch err.Error() {
+		case ErrNoSuchKey:
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }

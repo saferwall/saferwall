@@ -245,18 +245,6 @@ cert-manager:
     defaultIssuerName: selfsigned-issuer
     defaultIssuerKind: ClusterIssuer
 
-########## CLUSTER-AUTOSCALER ############
-cluster-autoscaler:
-  enabled: false
-  cloudProvider: aws
-  awsRegion: us-east-1
-  autoDiscovery:
-    clusterName: kops.saferwall.com
-
-############### METALLB ####################
-metallb:
-  enabled: false
-
 ########### BACKEND ###########
 webapis:
   enabled: true
@@ -281,6 +269,7 @@ webapis:
   storage:
     filesContainer: sfw-samples
     avatarContainer: sfw-images
+    artifactsContainer: sfw-artifacts
   jwt:
     signKey: secret
     expiration: 72

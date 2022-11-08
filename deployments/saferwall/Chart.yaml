@@ -17,7 +17,7 @@ dependencies:
       version: 3.6.4
       condition: minio.enabled
     - name: couchbase-operator
-      version: 2.3.001
+      version: 2.32.2
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver
@@ -29,7 +29,7 @@ dependencies:
       repository: https://kvaps.github.io/charts
       condition: nfs-server-provisioner.enabled
     - name: ingress-nginx
-      version: 4.1.3
+      version: 4.3.0
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: filebeat
@@ -52,11 +52,3 @@ dependencies:
       version: 1.2.2
       repository: https://beeinventor.github.io/charts
       condition: nsq.enabled
-    - name: cluster-autoscaler
-      version: 9.16.2
-      repository: https://kubernetes.github.io/autoscaler
-      condition: cluster-autoscaler.enabled
-    - name: metallb
-      repository: https://metallb.github.io/metallb
-      version: 0.12.1
-      condition: metallb.enabled

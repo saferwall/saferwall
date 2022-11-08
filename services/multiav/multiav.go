@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -162,8 +162,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	payloads := []*pb.Message_Payload{
 		{
-			Module: "multiav.last_scan." + s.cfg.EngineName,
-			Body:   toJSON(result),
+			Key:  sha256,
+			Path: "multiav.last_scan." + s.cfg.EngineName,
+			Kind: pb.Message_DBUPDATE,
+			Body: toJSON(result),
 		},
 	}
 
@@ -172,8 +174,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		parsedDet := avlabel.Parse(s.cfg.EngineName, r.Output)
 		if len(parsedDet.Family) > 0 {
 			payloads = append(payloads, &pb.Message_Payload{
-				Module: "tags." + s.cfg.EngineName,
-				Body:   toJSON(parsedDet.Family),
+				Key:  sha256,
+				Path: "tags." + s.cfg.EngineName,
+				Kind: pb.Message_DBUPDATE,
+				Body: toJSON(parsedDet.Family),
 			})
 		}
 	}

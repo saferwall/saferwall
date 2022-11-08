@@ -39,8 +39,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
 	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
+# Build the agent binary.
+RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
+	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
+	-o /go/bin/agent.exe cmd/agent/server/main.go
+
 # Download fetch.
-ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.2/fetch_linux_amd64 fetch
+ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.5/fetch_linux_amd64 fetch
 RUN chmod +x fetch
 
 # Download the sandbox components files.
@@ -66,6 +71,12 @@ WORKDIR /saferwall
 
 # Copy our static executable.
 COPY --from=build-stage /go/bin/sandbox-svc .
+
+# Copy the VM agent.
+COPY --from=build-stage /go/bin/agent.exe .
+
+# Copy the sandbox zip package.
+COPY --from=build-stage ${ARTIFACT_NAME} .
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/
