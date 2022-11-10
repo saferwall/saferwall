@@ -2,6 +2,64 @@ apiVersion: v1
 entries:
   saferwall:
   - apiVersion: v2
+    appVersion: 0.3.0
+    created: "2022-11-10T22:44:06.062906508Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 3.6.4
+    - condition: couchbase-operator.enabled
+      name: couchbase-operator
+      repository: https://couchbase-partners.github.io/helm-charts/
+      version: 2.32.2
+    - condition: aws-efs-csi-driver.enabled
+      name: aws-efs-csi-driver
+      repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+      version: 2.2.6
+    - condition: nfs-server-provisioner.enabled
+      name: nfs-server-provisioner
+      repository: https://kvaps.github.io/charts
+      version: 1.4.0
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.3.0
+    - condition: filebeat.enabled
+      name: filebeat
+      repository: https://helm.elastic.co
+      version: 7.17.1
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      version: 7.17.1
+    - condition: kibana.enabled
+      name: kibana
+      repository: https://helm.elastic.co
+      version: 7.17.1
+    - condition: kube-prometheus-stack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 35.2.0
+    - condition: nsq.enabled
+      name: nsq
+      repository: https://beeinventor.github.io/charts
+      version: 1.2.2
+    description: A hackable malware sandbox for the 21st Century
+    digest: 711b68865404a52fa229d06cf86dc610dbc260b178bcaa270f4e832ffd04de4b
+    home: https://saferwall.com
+    icon: https://saferwall.com/favicon.png
+    maintainers:
+    - email: contact@saferwall.com
+      name: saferwall
+    name: saferwall
+    sources:
+    - https://github.com/saferwall/saferwall
+    type: application
+    urls:
+    - https://github.com/saferwall/saferwall/releases/download/saferwall-0.3.0/saferwall-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
     appVersion: 0.2.0
     created: "2022-01-03T07:03:15.930916802Z"
     dependencies:
@@ -125,4 +183,4 @@ entries:
     urls:
     - https://github.com/saferwall/saferwall/releases/download/saferwall-0.2.0/saferwall-0.2.0.tgz
     version: 0.2.0
-generated: "2022-01-03T07:03:15.930928703Z"
+generated: "2022-11-10T22:44:06.062930808Z"
