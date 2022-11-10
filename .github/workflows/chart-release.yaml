@@ -1,4 +1,4 @@
-name: Release Charts
+name: Chart Release
 on:
   workflow_dispatch:
 jobs:
@@ -24,7 +24,7 @@ jobs:
         run: make helm-add-repos
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.0
+        uses: helm/chart-releaser-action@v1.4.1
         with:
           charts_dir: 'deployments'
         env:
