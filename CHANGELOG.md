@@ -5,16 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 11/11/2022
 
 ### Added
 
 - MultiAV McAfee enable scan for potentially unwanted program [#387](https://github.com/saferwall/saferwall/pull/387).
+- Numerous updates to support different types of messages for the aggregator [#383](https://github.com/saferwall/saferwall/pull/383).
+    - Add methods for the `storage` internal pkg to support bucket creation.
+    - Generate thumbnails for the sandbox screenshots and add health checks for VMs.
+    - Remove `cluster-autoscaler` form helm chart.
+    - Add documentation with the communication format used between services.
+- Agent: collect screenshots and memdumps [#380](https://github.com/saferwall/saferwall/pull/380).
+- Guess file extension and include PE signature [#379](https://github.com/saferwall/saferwall/pull/379).
+- Curate PE scan results [#378](https://github.com/saferwall/saferwall/pull/378).
+- Add `inlets-operator` and `metallb` charts [#376](https://github.com/saferwall/saferwall/pull/376). `inlets-operator` has been deleted later, and `metallb` is installed separately from the chart dependencies.
+- Add `kube-prometheus-stack` CRDs and experiment with k3s for local dev.
+- Add `workflow_dispatch` for `helm-release` and `release` services job.
+
+### Changed
+
+- Change protobuf message scheme to support uploading object to s3 [#383](https://github.com/saferwall/saferwall/pull/383).
+- Bind k8s port forwarding services to `0.0.0.0`.
+- Bump wait-for and golang docker images.
+- Bump `yara`, `helm`, `kuberneters`, `exiftool`, `kubens/kubectx` and `kube-capacity`.
+- Bump `aws-efs-csi-driver`, `ingress-nginx`, `couchbase-operator` helm chart dependencies.
 
 ### Fixed
 
 - Use wine + loadlibrary to make windows defender works again thanks to [prsyahmi](https://github.com/prsyahmi) [#386](https://github.com/saferwall/saferwall/pull/386).
 - MultiAV McAfee doesn't report other kind of malware besides trojan thanks to [prsyahmi](https://github.com/prsyahmi) [#387](https://github.com/saferwall/saferwall/pull/387).
+- Do not set the file extension/format when it is now known [#381](https://github.com/saferwall/saferwall/pull/381).
+- MultiAV upgrade Avast to a newer major release.
 
 ## [0.3.0] - 12/04/2022
 
