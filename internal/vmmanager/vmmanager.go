@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -6,10 +6,14 @@ package vmmanager
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
 	"time"
 
 	"github.com/digitalocean/go-libvirt"
 	"github.com/digitalocean/go-libvirt/socket/dialers"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -21,6 +25,8 @@ const (
 
 	// Maximum snapshot to get.
 	maxSnapshotLen = 3
+
+	defaultUnixSock = "/var/run/libvirt/libvirt-sock"
 )
 
 type VMManager struct {
@@ -37,27 +43,65 @@ type Domain struct {
 	Snapshots []string
 }
 
+// create a net SSH connection.
+func dialSSH(hostname, username, port, sshKeyPath string) (net.Conn, error) {
+
+	sshKey, err := ioutil.ReadFile(os.ExpandEnv(sshKeyPath))
+	if err != nil {
+		return nil, err
+	}
+
+	signer, err := ssh.ParsePrivateKey(sshKey)
+	if err != nil {
+		return nil, err
+	}
+	authMethods := make([]ssh.AuthMethod, 0)
+	authMethods = append(authMethods, ssh.PublicKeys(signer))
+	hostKeyCallback := ssh.InsecureIgnoreHostKey()
+
+	cfg := ssh.ClientConfig{
+		User:            username,
+		HostKeyCallback: hostKeyCallback,
+		Auth:            authMethods,
+		Timeout:         dialTimeout,
+	}
+
+	sshClient, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", hostname, port), &cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	address := defaultUnixSock
+	c, err := sshClient.Dial("unix", address)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to libvirt on the remote host: %w", err)
+	}
+
+	return c, nil
+}
+
 // New creates a new libvirt RPC connection.  It dials libvirt
 // either on the local machine or the remote one depending on
-// the network parameter ("tcp" for rmote and "unix" for local),
-func New(network, address, port, user string) (VMManager, error) {
+// the transport parameter "unix" for local and "ssh" for remote connections.
+func New(transport, address, port, user, sshKeyPath string) (VMManager, error) {
 
 	var err error
 	var conn *libvirt.Libvirt
 
-	switch network {
+	switch transport {
 	case "unix":
 		dialer := dialers.NewLocal(dialers.WithLocalTimeout(dialTimeout))
 		conn = libvirt.NewWithDialer(dialer)
-		err = conn.Connect()
-	case "tcp":
-		dialer := dialers.NewRemote(address, dialers.UsePort(port))
+	case "ssh":
+		c, err := dialSSH(address, user, port, sshKeyPath)
+		if err != nil {
+			return VMManager{}, err
+		}
+		dialer := dialers.NewAlreadyConnected(c)
 		conn = libvirt.NewWithDialer(dialer)
-		uri := fmt.Sprintf("qemu+ssh://%s@%s/system", user, address)
-		err = conn.ConnectToURI(libvirt.ConnectURI(uri))
-
 	}
 
+	err = conn.Connect()
 	if err != nil {
 		return VMManager{}, err
 	}
