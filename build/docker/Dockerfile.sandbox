@@ -74,7 +74,7 @@ COPY --from=build-stage /go/bin/sandbox-svc .
 COPY --from=build-stage /go/bin/agent.exe .
 
 # Copy the sandbox zip package.
-COPY --from=build-stage ${ARTIFACT_NAME} .
+COPY --from=build-stage ${ARTIFACT_NAME} package.zip
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/

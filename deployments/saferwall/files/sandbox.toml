@@ -7,7 +7,7 @@ shared_volume = "{{ .Values.global.storage.sharedVolume }}"
 # Destinary directory inside the guest where the agent is deployed.
 dest_dir = "C:\\saferwall\\"
 # The sandbox binary components.
-package_name = "package.zip"
+package_name = "/saferwall/package.zip"
 
 [virt_manager]
 # Specify whether a remote or local session.

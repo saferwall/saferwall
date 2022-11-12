@@ -48,3 +48,11 @@ elastic-drop-db                Delete all indexes.
     - list the docker volumes using: `docker volume ls` and look for the `samples` volume name.
     - inspect the volume by running: `docker volume inspect <volume_name>`, this command will show you where the volume is store on the local disk.
     - finally change the volume permissions: `chmod -R 777 <sample_dir>`.
+
+## Port Mapping
+
+- 4150: nsqd TCP port
+- 4151: nsqd HTTP port
+- 4160: nsqlookupd TCP port
+- 4161: nsqlookupd HTTP port
+- 4171: nsqadmin HTTP

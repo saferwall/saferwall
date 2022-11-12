@@ -193,7 +193,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Debug("published messaged to topic-sandbox")
 	}
 
-	// Always qeueue to the post processor.
+	// Always queue to the post processor.
 	err = s.pub.Publish(ctx, "topic-postprocessor", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)

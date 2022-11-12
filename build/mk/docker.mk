@@ -103,5 +103,3 @@ docker-cadvisor:	## Run docker cAdvisor.
 	--name=cadvisor \
 	google/cadvisor:latest
 
-docker-compose-pull: ## Get the lastest images of all services
-	docker-compose pull meta-svc pe-svc sandbox-svc aggregator orchestrator postprocessor avira comodo clamav ui webapis
