@@ -33,6 +33,9 @@ import (
 const (
 	// grpc library default is 64MB.
 	maxMsgSize = 1024 * 1024 * 64
+
+	// default file scan timeout in seconds.
+	defaultFileScanTimeout = 30
 )
 
 // Version indicates the current version of the application.
@@ -102,7 +105,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	var scanCfg map[string]interface{}
 	err := json.Unmarshal(in.Config, &scanCfg)
 	if err != nil {
-		s.logger.Errorf("failed to unmarshal json config: %v", err)
+		logger.Errorf("failed to unmarshal json config: %v", err)
 		return nil, err
 	}
 
@@ -116,7 +119,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	configPath := filepath.Join(s.agentPath, s.cfg.SandboxConfig)
 	_, err = utils.WriteBytesFile(configPath, tomlConfig)
 	if err != nil {
-		s.logger.Errorf("failed to write config file: %v", err)
+		logger.Errorf("failed to write config file: %v", err)
 		return nil, err
 	}
 
@@ -125,13 +128,13 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	samplePath := scanCfg["dest_path"].(string)
 	_, err = utils.WriteBytesFile(samplePath, sampleData)
 	if err != nil {
-		s.logger.Error("failed to write sample to disk, reason: :%v", err)
+		logger.Error("failed to write sample to disk, reason: :%v", err)
 		return nil, err
 	}
 
 	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := scanCfg["timeout"].(float64) + 5
+	sampleTimeout := scanCfg["timeout"].(int) + 5
 	timeout := time.Duration(sampleTimeout) * time.Second
 
 	// Create a new context and add a timeout to it.
@@ -145,12 +148,12 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// was executed. In any case, we try to collect if they are any
 	// artifacts that was created during the analysis.
 	if ctx.Err() == context.DeadlineExceeded {
-		s.logger.Errorf("deadline exceeded: %v, output: %s", err, out)
+		logger.Errorf("deadline exceeded: %v, output: %s", err, out)
 	} else {
 		if err != nil {
-			s.logger.Errorf("controller failed: %v, output: %s", err, out)
+			logger.Errorf("controller failed: %v, output: %s", err, out)
 		} else {
-			s.logger.Info("controller success")
+			logger.Info("controller success")
 		}
 	}
 
@@ -158,9 +161,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// available on disk for collection.
 	apiTrace, err := utils.ReadAll(filepath.Join(s.agentPath, "apilog.jsonl"))
 	if err != nil {
-		s.logger.Error("failed to read api trace log, reason: %v", err)
+		logger.Error("failed to read api trace log, reason: %v", err)
 	} else {
-		s.logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
+		logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
 	}
 
 	// Collect screenshots.
@@ -169,14 +172,14 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	screenShotId := int32(0)
 	err = filepath.Walk(screenshotsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			s.logger.Errorf("walking screenshots directory failed: %v", err)
+			logger.Errorf("walking screenshots directory failed: %v", err)
 			return err
 		}
 		if !info.IsDir() {
-			s.logger.Infof("screenshot path: %s", path)
+			logger.Infof("screenshot path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
-				s.logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
+				logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
 			} else {
 				screenshots = append(screenshots,
 					&pb.AnalyzeFileReply_Screenshot{Id: screenShotId, Content: content})
@@ -197,7 +200,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	memdumpsPath := filepath.Join(s.agentPath, "dumps")
 	err = filepath.Walk(memdumpsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			s.logger.Errorf("walking memdumps directory failed: %v", err)
+			logger.Errorf("walking memdumps directory failed: %v", err)
 			return err
 		}
 
@@ -205,7 +208,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			s.logger.Infof("dump path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
-				s.logger.Errorf("failed reading memdump: %s, err: %v", path, err)
+				logger.Errorf("failed reading memdump: %s, err: %v", path, err)
 			} else {
 				memdumps = append(memdumps,
 					&pb.AnalyzeFileReply_Memdump{Name: info.Name(), Content: content})
@@ -215,9 +218,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to collect memdumps, reason: %v", err)
+		logger.Error("failed to collect memdumps, reason: %v", err)
 	} else {
-		s.logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
+		logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
 	}
 
 	return &pb.AnalyzeFileReply{
@@ -239,7 +242,7 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	var ok bool
 
 	if _, ok = scanCfg["timeout"]; !ok {
-		scanCfg["timeout"] = 60
+		scanCfg["timeout"] = defaultFileScanTimeout
 	}
 
 	_, ok = scanCfg["dest_path"]

@@ -1,5 +1,5 @@
 # The address that the gRPC server we will connect to.
-address = "192.168.1.20:50051"
+address = "192.168.122.22:50051"
 # Destination path where the sandbox will be deployed.
 agent_dest_path = "c:\\saferwall"
 # Source path that contains the sandbox component files.

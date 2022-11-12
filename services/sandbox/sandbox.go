@@ -34,6 +34,7 @@ import (
 
 var (
 	errNotEnoughResources = errors.New("failed to find a free VM")
+	defaultGRPCPort = ":50051"
 )
 
 // Config represents our application config.
@@ -166,6 +167,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 			Snapshots: d.Snapshots,
 			InUse:     false,
 			IsHealthy: true,
+			Dom:       d.Dom,
 		})
 	}
 
@@ -250,30 +252,32 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	vmRun.OS = vm.OS()
 
-	logger.Infof("VM [%s] with ID: %s was selected", vm.Name, vm.ID)
+	logger.Infof("VM [%s] with ID: %d was selected", vm.Name, vm.ID)
 	logger = s.logger.With(ctx, "vm_id", vm.ID)
 
 	// Perform the actual detonation.
 	res, errDetonation := s.detonate(logger, vm, sha256, &vmRun)
 	if errDetonation != nil {
-		logger.Errorf("detonation failed with: %v", err)
+		logger.Errorf("detonation failed with: %v", errDetonation)
 	} else {
 		logger.Infof("detonation succeeded")
 	}
 
 	// Reverting the VM to a clean state at the end of the analysis
-	// is safer than during the start of the analysis, as we instantely
+	// is safer than during the start of the analysis, as we instantly
 	// stop the malware from running further.
 	err = s.vmm.Revert(*vm.Dom, s.cfg.VirtMgr.SnapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
 
 		// mark the VM as non healthy so we can repair it.
+		logger.Infof("marking the VM as stale")
 		s.markStale(vm)
 
 	} else {
 		// Free the VM for next job now, then continue on processing
 		// sandbox results.
+		logger.Infof("freeing the VM")
 		s.freeVM(vm)
 	}
 
@@ -285,13 +289,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
-	peMsg, err := proto.Marshal(msg)
+	out, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Errorf("failed to marshal message: %v", err)
 		return err
 	}
 
-	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, peMsg)
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
 		return err
@@ -307,7 +311,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 
 	// Establish a gRPC connection to the agent server running
 	// inside the guest.
-	client, err := agent.New(vm.IP)
+	client, err := agent.New(vm.IP + defaultGRPCPort)
 	if err != nil {
 		logger.Errorf("failed to establish connection to server: %v", err)
 		return agent.FileScanResult{}, err
@@ -361,7 +365,7 @@ func (s *Service) freeVM(vm *VM) {
 	vm.InUse = false
 }
 
-// markStale markes the VM as non-healthy.
+// markStale marks the VM as non-healthy.
 func (s *Service) markStale(vm *VM) {
 	vm.IsHealthy = false
 }

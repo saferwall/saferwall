@@ -31,7 +31,7 @@ type Config struct {
 	// Duration in seconds for how long to run the file
 	SampleTimeout int `mapstructure:"sample_timeout"`
 	// Maximum timeout in seconds for the client to wait for the server
-	// to deply back during an anaysis request before it hang up.
+	// to reply back during an analysis request before it hang up.
 	Timeout int `mapstructure:"timeout"`
 }
 
@@ -102,7 +102,7 @@ func run(logger log.Logger) error {
 
 	// Setting a timeout on the client side in case
 	// the server never replied back.
-	timeout := (time.Duration(c.Timeout) + 15) * time.Second
+	timeout := (time.Duration(c.Timeout)) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
