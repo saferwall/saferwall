@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 env:
   org: saferwall
+  ssh_private_key: ./build/data/id_rsa
 jobs:
   release:
     runs-on: ubuntu-20.04
@@ -52,6 +53,10 @@ jobs:
         run: |
           version=$(cat VERSION)
           echo "::set-output name=BUILD_VERSION::${version}"
+
+      - name: Decrypt secrets
+        run: |
+          echo '${{ secrets.SFW_SSH_PRIV_KEY }}' > $ssh_private_key
 
       - name: Build and push
         id: docker_build

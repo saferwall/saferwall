@@ -40,16 +40,15 @@ var (
 type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
 	SharedVolume string             `mapstructure:"shared_volume"`
+	Agent        AgentCfg           `mapstructure:"agent"`
+	VirtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
 	Producer     config.ProducerCfg `mapstructure:"producer"`
 	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
-	Agent        AgentCfg           `mapstructure:"agent"`
-	virtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
-	snapshotName string             `mapstructure:"snapshot_name"`
 }
 
 // AgentCfg represents the guest agent config.
 type AgentCfg struct {
-	// Destinary directory inside the guest where the agent is deployed.
+	// Destination directory inside the guest where the agent is deployed.
 	AgentDestDir string `mapstructure:"dest_dir"`
 	// The sandbox binary components.
 	PackageName string `mapstructure:"package_name"`
@@ -58,10 +57,12 @@ type AgentCfg struct {
 // VirtManagerCfg represents the virtualization manager config.
 // For now, only libvirt server.
 type VirtManagerCfg struct {
-	Network string `mapstructure:"network"`
-	Address string `mapstructure:"address"`
-	port    string `mapstructure:"port"`
-	user    string `mapstructure:"user"`
+	Network      string `mapstructure:"network"`
+	Address      string `mapstructure:"address"`
+	Port         string `mapstructure:"port"`
+	User         string `mapstructure:"user"`
+	SSHKeyPath   string `mapstructure:"ssh_key_path"`
+	SnapshotName string `mapstructure:"snapshot_name"`
 }
 
 // VM represents a virtual machine config.
@@ -146,8 +147,8 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	s := Service{}
 
 	// retrieve the list of active VMs.
-	conn, err := vmmanager.New(cfg.virtMgr.Network, cfg.virtMgr.Address,
-		cfg.virtMgr.port, cfg.virtMgr.user)
+	conn, err := vmmanager.New(cfg.VirtMgr.Network, cfg.VirtMgr.Address,
+		cfg.VirtMgr.Port, cfg.VirtMgr.User, cfg.VirtMgr.SSHKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	}
 
 	// download the sandbox release package.
-	zipPackageData, err := utils.ReadAll(s.cfg.Agent.PackageName)
+	zipPackageData, err := utils.ReadAll(cfg.Agent.PackageName)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	fileScanCfg := config.FileScanCfg{}
 	err := json.Unmarshal(m.Body, &fileScanCfg)
 	if err != nil {
-		s.logger.Errorf("failed unmarshalling json messge body: %v", err)
+		s.logger.Errorf("failed un-marshalling json message body: %v", err)
 		return err
 	}
 
@@ -263,7 +264,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Reverting the VM to a clean state at the end of the analysis
 	// is safer than during the start of the analysis, as we instantely
 	// stop the malware from running further.
-	err = s.vmm.Revert(*vm.Dom, s.cfg.snapshotName)
+	err = s.vmm.Revert(*vm.Dom, s.cfg.VirtMgr.SnapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
 

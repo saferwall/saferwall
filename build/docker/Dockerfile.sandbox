@@ -7,7 +7,7 @@ FROM golang:1.17-alpine AS build-stage
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV RELEASE_VERSION=v0.0.2
+ENV RELEASE_VERSION=v0.0.3
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
 
@@ -19,10 +19,6 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/sandbox/
-
-# Allow using private github repos that have private go modules.
-RUN go env -w GOPRIVATE=github.com/saferwall/* \
-	&& git config --global url."https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
 
 # Copy go mod and sum files.
 COPY go.mod go.sum ./
@@ -52,7 +48,7 @@ RUN chmod +x fetch
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${REPO_URL}" \
 	--tag="${RELEASE_VERSION}" \
-	--release-asset="${ARTIFACT_NAME}" .
+	--release-asset="${ARTIFACT_NAME}" /
 
 ############################
 # STEP 2 build a small image
@@ -65,6 +61,8 @@ LABEL description="Sandbox scan service"
 
 ENV USER saferwall
 ENV GROUP saferwall
+ENV RELEASE_VERSION=v0.0.3
+ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
@@ -80,6 +78,9 @@ COPY --from=build-stage ${ARTIFACT_NAME} .
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/
+
+# Copy the SSH private key used for accessing the remote  libvirt RPC server.
+COPY build/data/id_rsa .
 
 # Create an app user so our program doesn't run as root.
 RUN addgroup -g 102 -S $GROUP \

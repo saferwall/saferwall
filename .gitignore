@@ -13,13 +13,14 @@
 
 # Private files
 **/private.yaml
+private.env
+private/
+id_rsa
 
 # Temp
-private/
 test/multiav
 __debug_bin
 cmd/**/main
-private.env
 
 # Vault
 .vault

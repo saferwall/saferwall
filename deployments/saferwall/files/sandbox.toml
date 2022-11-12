@@ -12,15 +12,17 @@ package_name = "package.zip"
 [virt_manager]
 # Specify whether a remote or local session.
 # Local session uses "unix" and ignore the fields below.
-network = "tcp"
+network = "{{ .Values.sandbox.virtManager.network }}"
 # IP address of the host running libvirt RPC server.
-address = "192.168.10.2"
+address = "{{ .Values.sandbox.virtManager.address }}"
 # Port number of the SSH server.
-port = "22"
+port = "{{ .Values.sandbox.virtManager.port }}"
 # The username used when connecting via a remote SSH conn.
-user = "foo"
+user = "{{ .Values.sandbox.virtManager.user }}"
+# File path of the SSH private key when using remote transport.
+ssh_key_path = "{{ .Values.sandbox.virtManager.sshKeyPath }}"
 # Snapshot name to restore to to go back to a clean state.
-snapshot_name = "{{ .Values.sandbox.snapshotName }}"
+snapshot_name = "{{ .Values.sandbox.virtManager.snapshotName }}"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).
