@@ -227,12 +227,20 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
 	}
 
+	// Keep the agent log the last thing to read.
+	agentLog, err := utils.ReadAll(filepath.Join(s.agentPath, s.cfg.LogFile))
+	if err != nil {
+		logger.Error("failed to read agent log, reason: %v", err)
+	} else {
+		logger.Infof("agent logs size is: %d bytes", len(agentLog))
+	}
+
 	return &pb.AnalyzeFileReply{
 		Apitrace:           apiTrace,
 		Screenshots:        screenshots,
 		CollectedArtifacts: nil,
 		Memdumps:           memdumps,
-		Serverlog:          nil,
+		Serverlog:          agentLog,
 		Controllerlog:      nil,
 	}, nil
 }

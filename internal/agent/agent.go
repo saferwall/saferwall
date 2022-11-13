@@ -21,9 +21,12 @@ type AgentClient struct {
 }
 
 type FileScanResult struct {
-	TraceLog    []byte
-	Screenshots []*pb.AnalyzeFileReply_Screenshot
-	Memdumps    []*pb.AnalyzeFileReply_Memdump
+	TraceLog       []byte
+	AgentLog       []byte
+	SandboxLog     []byte
+	SandboxVersion []byte
+	Screenshots    []*pb.AnalyzeFileReply_Screenshot
+	MemDumps       []*pb.AnalyzeFileReply_Memdump
 }
 
 func New(addr string) (AgentClient, error) {
@@ -60,7 +63,9 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 
 	scanRes := FileScanResult{
 		TraceLog:    r.GetApitrace(),
-		Memdumps:    r.GetMemdumps(),
+		AgentLog:    r.GetServerlog(),
+		SandboxLog:  r.GetControllerlog(),
+		MemDumps:    r.GetMemdumps(),
 		Screenshots: r.GetScreenshots(),
 	}
 

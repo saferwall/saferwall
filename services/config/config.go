@@ -48,10 +48,17 @@ type StorageCfg struct {
 	Local          LocalFsCfg `mapstructure:"local"`
 }
 
-// FileScanCfg represents a file scanning config.
+// FileScanCfg represents a file scanning config. This map to a 1:1 mapping between
+// the config stored in the main saferwall repo.
 type FileScanCfg struct {
 	// SHA256 hash of the file.
-	SHA256 string
+	SHA256 string `json:"sha256,omitempty"`
+	// Config used during dynamic file scan.
+	DynFileScanCfg `json:"dynamic,omitempty"`
+}
+
+// DynFileScanCfg represents the config used to detonate a file.
+type DynFileScanCfg struct {
 	// Destination path where the sample will be located in the VM.
 	DestPath string `json:"dest_path,omitempty"`
 	// Arguments used to run the sample.
