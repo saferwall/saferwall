@@ -46,9 +46,13 @@ var flagConfig = flag.String("config", "./../../configs/server",
 
 // Config represents our server config.
 type Config struct {
+	// Log level. Defaults to info.
+	LogLevel string `mapstructure:"log_level"`
+	// Log file where to write logs.
+	LogFile string `mapstructure:"log_file"`
 	// gRPC server address.
 	Address string `mapstructure:"address"`
-	// EnglishWords points to a text file contaning a list of english words.
+	// EnglishWords points to a text file containing a list of english words.
 	EnglishWords string `mapstructure:"english_words"`
 	// The sandbox config file name to write inside the guest.
 	SandboxConfig string `mapstructure:"config_file_name"`
@@ -315,6 +319,8 @@ func run(logger log.Logger, configFile string) error {
 	if err != nil {
 		return err
 	}
+
+	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", Version)
 
 	// create a hasher.
 	hashsvc := hasher.New(sha256.New())

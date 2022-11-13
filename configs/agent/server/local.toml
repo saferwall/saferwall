@@ -1,3 +1,7 @@
+# Log level verbosity.
+log_level = "info"
+# Log file where to log.
+log_file = "agent.log"
 # The address that the gRPC server will listen on.
 address = "0.0.0.0:50051"
 # Text file contaning a list of english words.
