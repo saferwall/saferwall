@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -15,14 +15,15 @@ import (
 
 func main() {
 
-	var flagNetwork = flag.String("network", "unix", "network to use")
+	var flagTransport = flag.String("transport", "unix", "network to use")
 	var flagAddress = flag.String("address", "192.168.20.24", "IP address of the target server")
 	var flagPort = flag.String("port", "22", "ssh port number")
 	var flagUser = flag.String("user", "linux", "username for the ssh session")
+	var sshKeyPath = flag.String("sshKeyPath", "linux", "username for the ssh session")
 
 	flag.Parse()
 
-	s, err := vmmanager.New(*flagNetwork, *flagAddress, *flagPort, *flagUser)
+	s, err := vmmanager.New(*flagTransport, *flagAddress, *flagPort, *flagUser, *sshKeyPath)
 	if err != nil {
 		log.Fatalf("failed to create new libvirt conn: %v", err)
 	}
@@ -84,7 +85,7 @@ func main() {
 
 	networks, ret, err := s.Conn.ConnectListAllNetworks(1, libvirt.ConnectListNetworksActive)
 	if err != nil {
-		log.Fatalf("failed to retrieve betworks: %v", err)
+		log.Fatalf("failed to retrieve networks: %v", err)
 	}
 
 	fmt.Println(networks)
