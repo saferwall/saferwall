@@ -17,6 +17,7 @@ import (
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	"github.com/saferwall/saferwall/internal/utils"
 	"github.com/saferwall/saferwall/internal/vmmanager"
+	"github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
@@ -173,11 +174,34 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger := s.logger.With(ctx, "sha256", sha256, "guid", detonationID)
 	logger.Info("start processing")
 
+	// Update the state of the job to processing
+	status := make(map[string]interface{})
+	status["sha256"] = sha256
+	status["timestamp"] = time.Now().Unix()
+
+	// Type is only to state to that the document we are storing in the DB is of
+	// type `detonate`.
+	status["type"] = "dynamic-scan"
+	status["status"] = micro.Processing
+
+	payloads := []*pb.Message_Payload{
+		{Key: detonationID, Body: toJSON(status), Kind: pb.Message_DBCREATE},
+	}
+
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	out, err := proto.Marshal(msg)
+	if err != nil {
+		logger.Errorf("failed to marshal message: %v", err)
+		return err
+	}
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
+	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
+
 	// Generate a unique ID for this detonation.
 	detRes := DetonationResult{}
-	detRes.Type = "dynamic-scan"
-	detRes.SHA256 = sha256
-	detRes.Timestamp = time.Now().Unix()
 	detRes.ScanCfg = fileScanCfg.DynFileScanCfg
 
 	// Find a free VM to process this job.
@@ -220,12 +244,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	detRes.APITrace = res.TraceLog
 	detRes.AgentLog = res.AgentLog
 	detRes.SandboxLog = res.SandboxLog
-	payloads := []*pb.Message_Payload{
-		{Key: detonationID, Body: toJSON(detRes)},
+	payloads = []*pb.Message_Payload{
+		{Key: detonationID, Body: toJSON(detRes), Kind: pb.Message_DBUPDATE},
 	}
 
-	msg := &pb.Message{Sha256: sha256, Payload: payloads}
-	out, err := proto.Marshal(msg)
+	msg = &pb.Message{Sha256: sha256, Payload: payloads}
+	out, err = proto.Marshal(msg)
 	if err != nil {
 		logger.Errorf("failed to marshal message: %v", err)
 		return err

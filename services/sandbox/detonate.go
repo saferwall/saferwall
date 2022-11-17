@@ -25,13 +25,6 @@ const (
 
 // DetonationResults represents the results for a detonation.
 type DetonationResult struct {
-	// Type is only to state to that the document we are storing in the DB is of
-	// type `detonate`.
-	Type string `json:"type,omitempty"`
-	// SHA256 hash of the file.
-	SHA256 string `json:"sha256,omitempty"`
-	// Timestamp when this detonation happened.
-	Timestamp int64 `json:"timestamp,omitempty"`
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
 	APITrace []byte `json:"api_trace,omitempty"`
@@ -83,7 +76,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 
 	// Analyze the sample. This call will block until results
 	// are ready.
-	scanCfg := toJSON(cfg)
+	scanCfg := toJSON(cfg.DynFileScanCfg)
 	res, err := client.Analyze(ctx, scanCfg, sampleContent)
 	if err != nil {
 		return agent.FileScanResult{}, err
