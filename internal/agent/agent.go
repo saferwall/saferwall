@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -9,6 +9,11 @@ import (
 
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+const (
+	gRPCMaxMsgSize = 1 * 1024 * 1024 * 1024 // 1GB
 )
 
 type Sandbox interface {
@@ -30,8 +35,8 @@ type FileScanResult struct {
 }
 
 func New(addr string) (AgentClient, error) {
-	conn, err := grpc.Dial(addr,
-		[]grpc.DialOption{grpc.WithInsecure()}...)
+
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return AgentClient{}, err
 	}
@@ -56,7 +61,12 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 		Config: config,
 	}
 
-	r, err := ac.client.Analyze(ctx, req)
+	opts := []grpc.CallOption{
+		grpc.MaxCallSendMsgSize(gRPCMaxMsgSize),
+		grpc.MaxCallRecvMsgSize(gRPCMaxMsgSize),
+	}
+
+	r, err := ac.client.Analyze(ctx, req, opts...)
 	if err != nil {
 		return FileScanResult{}, err
 	}

@@ -221,7 +221,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	detRes.AgentLog = res.AgentLog
 	detRes.SandboxLog = res.SandboxLog
 	payloads := []*pb.Message_Payload{
-		{Key: detonationID, Body: toJSON(res.TraceLog)},
+		{Key: detonationID, Body: toJSON(detRes)},
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
