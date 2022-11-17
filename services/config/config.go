@@ -62,7 +62,7 @@ type DynFileScanCfg struct {
 	// Destination path where the sample will be located in the VM.
 	DestPath string `json:"dest_path,omitempty"`
 	// Arguments used to run the sample.
-	Arguments string `json:"arguments,omitempty"`
+	Arguments string `json:"args,omitempty"`
 	// Timeout in seconds for how long to keep the VM running.
 	Timeout int `json:"timeout,omitempty"`
 	// Country to route traffic through.

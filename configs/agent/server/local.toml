@@ -1,9 +1,11 @@
+# The address that the gRPC server will listen on.
+address = "0.0.0.0:50051"
 # Log level verbosity.
 log_level = "info"
 # Log file where to log.
 log_file = "agent.log"
-# The address that the gRPC server will listen on.
-address = "0.0.0.0:50051"
+# Hide console window upon startup.
+hide_console_window = false
 # Text file contaning a list of english words.
 english_words = "words.txt"
 # The sandbox config file name to write inside the guest.

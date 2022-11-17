@@ -10,12 +10,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"flag"
 	"html/template"
 	"io"
 	"net"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
@@ -36,6 +38,9 @@ const (
 
 	// default file scan timeout in seconds.
 	defaultFileScanTimeout = 30
+
+	// Hides the window and activates another window.
+	SW_HIDE = 0
 )
 
 // Version indicates the current version of the application.
@@ -46,12 +51,14 @@ var flagConfig = flag.String("config", "./../../configs/server",
 
 // Config represents our server config.
 type Config struct {
+	// gRPC server address.
+	Address string `mapstructure:"address"`
 	// Log level. Defaults to info.
 	LogLevel string `mapstructure:"log_level"`
 	// Log file where to write logs.
 	LogFile string `mapstructure:"log_file"`
-	// gRPC server address.
-	Address string `mapstructure:"address"`
+	// Hide console window upon startup.
+	HideConsoleWindow bool `mapstructure:"hide_console_window"`
 	// EnglishWords points to a text file containing a list of english words.
 	EnglishWords string `mapstructure:"english_words"`
 	// The sandbox config file name to write inside the guest.
@@ -112,12 +119,15 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		logger.Errorf("failed to unmarshal json config: %v", err)
 		return nil, err
 	}
+	logger.Infof("scan config: %v", scanCfg)
 
 	// Generates the sandbox config from the values from the client.
 	tomlConfig, err := s.genSandboxConfig(scanCfg)
 	if err != nil {
 		return nil, err
 	}
+	logger.Infof("generated scan config: %v", scanCfg)
+
 
 	// Write the sandbox TOML config to disk.
 	configPath := filepath.Join(s.agentPath, s.cfg.SandboxConfig)
@@ -259,9 +269,8 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	io.Reader, error) {
 
-	var ok bool
-
-	if _, ok = scanCfg["timeout"]; !ok {
+	_, ok := scanCfg["timeout"]
+	if !ok || scanCfg["timeout"] == 0 {
 		scanCfg["timeout"] = defaultFileScanTimeout
 	}
 
@@ -291,7 +300,31 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	return tomlConfig, nil
 }
 
-// DefaultServerOpts returns the set of default grpc ServerOption's that Tiller
+// Hide the current window console.
+func hideConsoleWindow(logger log.Logger) error {
+	getConsoleWindow := syscall.NewLazyDLL("kernel32.dll").NewProc("GetConsoleWindow")
+	hWindow, _, _ := getConsoleWindow.Call()
+
+	// NULL if there is no such associated console.
+	if hWindow == 0 {
+		return errors.New("no associated console with the current process")
+	}
+
+	showWindow := syscall.NewLazyDLL("user32.dll").NewProc("ShowWindow")
+	st, _, _ := showWindow.Call(hWindow, SW_HIDE)
+
+	if st != 0 {
+		// If the window was previously visible, the return value is nonzero.
+		logger.Info("window has be hidden")
+	} else {
+		// 	If the window was previously hidden, the return value is zero.
+		logger.Info("window was previously hidden")
+	}
+
+	return nil
+}
+
+// DefaultServerOpts returns the set of default grpc ServerOption's that Agent
 // requires.
 func DefaultServerOpts() []grpc.ServerOption {
 	return []grpc.ServerOption{grpc.MaxRecvMsgSize(maxMsgSize),
@@ -336,7 +369,17 @@ func run(logger log.Logger, configFile string) error {
 		return err
 	}
 
+	// update the logger according to the config.
 	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", Version)
+
+	// the console window should be hidden in prod.
+	if c.HideConsoleWindow {
+		logger.Info("hiding console window")
+		err := hideConsoleWindow(logger)
+		if err != nil {
+			return err
+		}
+	}
 
 	// create a hasher.
 	hashsvc := hasher.New(sha256.New())
