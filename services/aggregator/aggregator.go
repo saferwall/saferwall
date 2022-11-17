@@ -135,6 +135,18 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			if err != nil {
 				logger.Errorf("failed to update db: %v", err)
 			}
+		case pb.Message_DBCREATE:
+			var jsonPayload interface{}
+			err = json.Unmarshal(payload.Body, &jsonPayload)
+			if err != nil {
+				logger.Errorf("failed to unmarshal json payload: %v", err)
+				continue
+			}
+			logger.Debugf("payload is %v", jsonPayload)
+			err = s.db.Create(ctx, key, jsonPayload)
+			if err != nil {
+				logger.Errorf("failed to create document key: %s in db: %v", key, err)
+			}
 		case pb.Message_UPLOAD:
 			obj := bytes.NewReader(payload.Body)
 			err = s.storage.Upload(ctx, s.cfg.Storage.Bucket, key, obj)

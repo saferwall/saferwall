@@ -13,7 +13,8 @@ message Message {
   // PayloadKind represents the kind of message.
   enum PayloadKind {
     DBUPDATE = 0;
-    UPLOAD = 1;
+    DBCREATE = 1;
+    UPLOAD = 2;
   }
 
   // SHA256 of the binary file.
