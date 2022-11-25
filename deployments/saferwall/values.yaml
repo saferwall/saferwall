@@ -605,5 +605,10 @@ sandbox:
       memory: 100Mi
       cpu: 100m
   logLevel: debug
-  virt_manager:
+  virtManager:
+    network: ssh
+    address: 192.168.1.11
+    user: sfw
+    port: 22
+    sshKeyPath: id_rsa
     snapshot_name: clean-state-1

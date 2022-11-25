@@ -22,5 +22,6 @@
         "*/**/main": true,
         "*/**/__debug_bin": true,
     },
-    "editor.rulers": [80,120]
+    "editor.rulers": [80,120],
+    "editor.renderWhitespace": "all",
 }

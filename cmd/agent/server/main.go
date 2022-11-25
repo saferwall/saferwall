@@ -10,12 +10,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"flag"
 	"html/template"
 	"io"
 	"net"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
@@ -33,6 +35,12 @@ import (
 const (
 	// grpc library default is 64MB.
 	maxMsgSize = 1024 * 1024 * 64
+
+	// default file scan timeout in seconds.
+	defaultFileScanTimeout = 30
+
+	// Hides the window and activates another window.
+	SW_HIDE = 0
 )
 
 // Version indicates the current version of the application.
@@ -45,7 +53,13 @@ var flagConfig = flag.String("config", "./../../configs/server",
 type Config struct {
 	// gRPC server address.
 	Address string `mapstructure:"address"`
-	// EnglishWords points to a text file contaning a list of english words.
+	// Log level. Defaults to info.
+	LogLevel string `mapstructure:"log_level"`
+	// Log file where to write logs.
+	LogFile string `mapstructure:"log_file"`
+	// Hide console window upon startup.
+	HideConsoleWindow bool `mapstructure:"hide_console_window"`
+	// EnglishWords points to a text file containing a list of english words.
 	EnglishWords string `mapstructure:"english_words"`
 	// The sandbox config file name to write inside the guest.
 	SandboxConfig string `mapstructure:"config_file_name"`
@@ -66,7 +80,7 @@ type server struct {
 	agentPath  string
 }
 
-// Deploy deloys the sandbox application in the guest.
+// Deploy the sandbox application in the guest.
 func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 	*pb.DeployReply, error) {
 
@@ -94,42 +108,45 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	logger.Info("start processing")
 
 	// The config comes from the client as a JSON file.
-	// This is explicitely left as map<string>interface{}
-	// as we don't want to cause any unmarshalling issues
+	// This is explicitly left as map<string>interface{}
+	// as we don't want to cause any un-marshalling issues
 	// when the scan config changes. All code in the server
 	// side has to be carefully written as updating the VMs
 	// is expensive.
 	var scanCfg map[string]interface{}
 	err := json.Unmarshal(in.Config, &scanCfg)
 	if err != nil {
-		s.logger.Errorf("failed to unmarshal json config: %v", err)
+		logger.Errorf("failed to unmarshal json config: %v", err)
 		return nil, err
 	}
+	logger.Infof("scan config: %v", scanCfg)
 
 	// Generates the sandbox config from the values from the client.
 	tomlConfig, err := s.genSandboxConfig(scanCfg)
 	if err != nil {
 		return nil, err
 	}
+	logger.Infof("generated scan config: %v", scanCfg)
+
 
 	// Write the sandbox TOML config to disk.
 	configPath := filepath.Join(s.agentPath, s.cfg.SandboxConfig)
 	_, err = utils.WriteBytesFile(configPath, tomlConfig)
 	if err != nil {
-		s.logger.Errorf("failed to write config file: %v", err)
+		logger.Errorf("failed to write config file: %v", err)
 		return nil, err
 	}
 
 	// Drop the sample to disk.
 	sampleData := bytes.NewBuffer(in.Binary)
-	samplePath := scanCfg["sample_dest_path"].(string)
+	samplePath := scanCfg["dest_path"].(string)
 	_, err = utils.WriteBytesFile(samplePath, sampleData)
 	if err != nil {
-		s.logger.Error("failed to write sample to disk, reason: :%v", err)
+		logger.Error("failed to write sample to disk, reason: :%v", err)
 		return nil, err
 	}
 
-	// Add a 5 seconds to thr timeout to account for bootstraping the
+	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
 	sampleTimeout := scanCfg["timeout"].(int) + 5
 	timeout := time.Duration(sampleTimeout) * time.Second
@@ -145,12 +162,12 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// was executed. In any case, we try to collect if they are any
 	// artifacts that was created during the analysis.
 	if ctx.Err() == context.DeadlineExceeded {
-		s.logger.Errorf("deadline exceeded: %v, output: %s", err, out)
+		logger.Errorf("deadline exceeded: %v, output: %s", err, out)
 	} else {
 		if err != nil {
-			s.logger.Errorf("controller failed: %v, output: %s", err, out)
+			logger.Errorf("controller failed: %v, output: %s", err, out)
 		} else {
-			s.logger.Info("controller success")
+			logger.Info("controller success")
 		}
 	}
 
@@ -158,9 +175,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// available on disk for collection.
 	apiTrace, err := utils.ReadAll(filepath.Join(s.agentPath, "apilog.jsonl"))
 	if err != nil {
-		s.logger.Error("failed to read api trace log, reason: %v", err)
+		logger.Error("failed to read api trace log, reason: %v", err)
 	} else {
-		s.logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
+		logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
 	}
 
 	// Collect screenshots.
@@ -169,14 +186,14 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	screenShotId := int32(0)
 	err = filepath.Walk(screenshotsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			s.logger.Errorf("walking screenshots directory failed: %v", err)
+			logger.Errorf("walking screenshots directory failed: %v", err)
 			return err
 		}
 		if !info.IsDir() {
-			s.logger.Infof("screenshot path: %s", path)
+			logger.Infof("screenshot path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
-				s.logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
+				logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
 			} else {
 				screenshots = append(screenshots,
 					&pb.AnalyzeFileReply_Screenshot{Id: screenShotId, Content: content})
@@ -197,7 +214,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	memdumpsPath := filepath.Join(s.agentPath, "dumps")
 	err = filepath.Walk(memdumpsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			s.logger.Errorf("walking memdumps directory failed: %v", err)
+			logger.Errorf("walking memdumps directory failed: %v", err)
 			return err
 		}
 
@@ -205,7 +222,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			s.logger.Infof("dump path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
-				s.logger.Errorf("failed reading memdump: %s, err: %v", path, err)
+				logger.Errorf("failed reading memdump: %s, err: %v", path, err)
 			} else {
 				memdumps = append(memdumps,
 					&pb.AnalyzeFileReply_Memdump{Name: info.Name(), Content: content})
@@ -215,9 +232,25 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to collect memdumps, reason: %v", err)
+		logger.Error("failed to collect memdumps, reason: %v", err)
 	} else {
-		s.logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
+		logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
+	}
+
+	// Collect the controller logs.
+	controllerLog, err := utils.ReadAll(filepath.Join(s.agentPath, "logs", "controller.log"))
+	if err != nil {
+		logger.Error("failed to read controller log, reason: %v", err)
+	} else {
+		logger.Infof("controller logs size is: %d bytes", len(controllerLog))
+	}
+
+	// Keep the agent log the last thing to read.
+	agentLog, err := utils.ReadAll(filepath.Join(s.agentPath, s.cfg.LogFile))
+	if err != nil {
+		logger.Error("failed to read agent log, reason: %v", err)
+	} else {
+		logger.Infof("agent logs size is: %d bytes", len(agentLog))
 	}
 
 	return &pb.AnalyzeFileReply{
@@ -225,8 +258,8 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		Screenshots:        screenshots,
 		CollectedArtifacts: nil,
 		Memdumps:           memdumps,
-		Serverlog:          nil,
-		Controllerlog:      nil,
+		Serverlog:          agentLog,
+		Controllerlog:      controllerLog,
 	}, nil
 }
 
@@ -236,17 +269,20 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	io.Reader, error) {
 
-	if scanCfg["timeout"] == 0 {
-		scanCfg["timeout"] = 60
+	_, ok := scanCfg["timeout"]
+	if !ok || scanCfg["timeout"] == 0 {
+		scanCfg["timeout"] = defaultFileScanTimeout
 	}
-	if scanCfg["sample_dest_path"] == "" {
+
+	_, ok = scanCfg["dest_path"]
+	if !ok || scanCfg["dest_path"] == "" {
 		randomFilename := s.randomizer.Random()
-		scanCfg["sample_dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+		scanCfg["dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
 	}
 
 	// For path expansion to work in Windows, we need to replace the
 	// `%` with `$`.
-	scanCfg["sample_dest_path"] = utils.Resolve(scanCfg["sample_dest_path"].(string))
+	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)
@@ -264,7 +300,31 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	return tomlConfig, nil
 }
 
-// DefaultServerOpts returns the set of default grpc ServerOption's that Tiller
+// Hide the current window console.
+func hideConsoleWindow(logger log.Logger) error {
+	getConsoleWindow := syscall.NewLazyDLL("kernel32.dll").NewProc("GetConsoleWindow")
+	hWindow, _, _ := getConsoleWindow.Call()
+
+	// NULL if there is no such associated console.
+	if hWindow == 0 {
+		return errors.New("no associated console with the current process")
+	}
+
+	showWindow := syscall.NewLazyDLL("user32.dll").NewProc("ShowWindow")
+	st, _, _ := showWindow.Call(hWindow, SW_HIDE)
+
+	if st != 0 {
+		// If the window was previously visible, the return value is nonzero.
+		logger.Info("window has be hidden")
+	} else {
+		// 	If the window was previously hidden, the return value is zero.
+		logger.Info("window was previously hidden")
+	}
+
+	return nil
+}
+
+// DefaultServerOpts returns the set of default grpc ServerOption's that Agent
 // requires.
 func DefaultServerOpts() []grpc.ServerOption {
 	return []grpc.ServerOption{grpc.MaxRecvMsgSize(maxMsgSize),
@@ -307,6 +367,18 @@ func run(logger log.Logger, configFile string) error {
 	err := config.Load(configFile, env, &c)
 	if err != nil {
 		return err
+	}
+
+	// update the logger according to the config.
+	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", Version)
+
+	// the console window should be hidden in prod.
+	if c.HideConsoleWindow {
+		logger.Info("hiding console window")
+		err := hideConsoleWindow(logger)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create a hasher.

@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -31,14 +31,14 @@ type Config struct {
 	// Duration in seconds for how long to run the file
 	SampleTimeout int `mapstructure:"sample_timeout"`
 	// Maximum timeout in seconds for the client to wait for the server
-	// to deply back during an anaysis request before it hang up.
+	// to reply back during an analysis request before it hang up.
 	Timeout int `mapstructure:"timeout"`
 }
 
 // Version indicates the current version of the application.
 var Version = "1.0.0"
 
-var flagConfig = flag.String("config", "./../../configs/client",
+var flagConfig = flag.String("config", "./../../../configs/agent/client",
 	"path to the config file")
 
 func main() {
@@ -68,7 +68,7 @@ func run(logger log.Logger) error {
 
 	zipPackage, err := utils.ReadAll(c.AgentSrcPath)
 	if err != nil {
-		logger.Errorf("could not greet: %v", err)
+		logger.Errorf("could not read package zip: %v", err)
 		return err
 	}
 
@@ -87,7 +87,7 @@ func run(logger log.Logger) error {
 		logger.Errorf("could not deploy sandbox: %v", err)
 		return err
 	}
-	logger.Infof("Version: %s", ver)
+	logger.Infof("Version: %s has been deployed with success", ver)
 
 	// Analyze sample binary request.
 	sampleData, err := utils.ReadAll(c.SampleSrcPath)
@@ -100,12 +100,17 @@ func run(logger log.Logger) error {
 		"timeout": c.SampleTimeout,
 	})
 
-	// Setting a hard timeout on the client side in case
+	// Setting a timeout on the client side in case
 	// the server never replied back.
-	timeout := (time.Duration(c.Timeout) + 10) * time.Second
+	timeout := (time.Duration(c.Timeout)) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	ac.Analyze(ctx, fileScanCfg, sampleData)
+	res, err := ac.Analyze(ctx, fileScanCfg, sampleData)
+	if err != nil {
+		logger.Errorf("could not analyze sample: %v", err)
+		return err
+	}
+	logger.Info(res)
 	return nil
 }

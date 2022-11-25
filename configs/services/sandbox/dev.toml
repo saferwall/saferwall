@@ -7,18 +7,20 @@ shared_volume = "/samples"
 # Destinary directory inside the guest where the agent is deployed.
 dest_dir = "C:\\saferwall\\"
 # The sandbox binary components.
-package_name = "package.zip"
+package_name = "/saferwall/package.zip"
 
 [virt_manager]
 # Specify whether a remote or local session.
 # Local session uses "unix" and ignore the fields below.
-network = "tcp"
+network = "ssh"
 # IP address of the host running libvirt RPC server.
-address = "192.168.10.2"
+address = "192.168.1.11"
 # Port number of the SSH server.
 port = "22"
-# The username used when connecting via a remote SSH conn.
-user = "foo"
+# The username used when connecting via a remote transport connection.
+user = "ayb"
+# File path of the SSH private key when using remote transport.
+ssh_key_path = "id_rsa"
 # Snapshot name to restore to to go back to a clean state.
 snapshot_name = "clean-state"
 
