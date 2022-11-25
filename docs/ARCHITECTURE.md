@@ -13,6 +13,5 @@ This document describes the high-level architecture of saferwall. If you want to
 ## Communication between services.
 
 - `webapis` -> json(fileScanConfig) -> `orchestrator`
-- `orchestrator` -> string(sha256) -> `multiav`, `pe`, `meta`, `post-processor` -> protobuf -> `aggregator`
+- `orchestrator` -> string(sha256) -> `multiav`, `pe`, `meta`, `post-processor`, `sandbox` -> protobuf -> `aggregator`
 - `post-processor` -> http -> `ml-classifier`.
-- `orchestrator` -> json(fileScanConfig) -> `sandbox`

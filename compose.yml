@@ -16,7 +16,7 @@ services:
 
   nsqlookupd:
     image: nsqio/nsq:v1.2.1
-    command: /nsqlookupd --log-level=info
+    command: /nsqlookupd --log-level=error
     ports:
       - 4160:4160
       - 4161:4161
@@ -24,8 +24,7 @@ services:
   nsqd:
     image: nsqio/nsq:v1.2.1
     command: >
-      /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=${EXTERNAL_IP} \
-       --max-msg-size=1413820683 --log-level=info
+      /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=${EXTERNAL_IP} --max-msg-size=1413820683 --log-level=error
     environment:
       - "EXTERNAL_IP=${EXTERNAL_IP}"
     depends_on:
@@ -121,7 +120,7 @@ services:
     volumes:
       - /samples:/samples
 
-  pe-svc:
+  pe:
     image: saferwall/pe:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
@@ -129,7 +128,7 @@ services:
     volumes:
       - /samples:/samples
 
-  meta-svc:
+  meta:
     image: saferwall/gometa:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
@@ -161,7 +160,7 @@ services:
     volumes:
       - /samples:/samples
 
-  sandbox-svc:
+  sandbox:
     image: saferwall/sandbox:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev

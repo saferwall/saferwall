@@ -1,6 +1,6 @@
-LIST_SERVICES = meta-svc pe-svc sandbox-svc aggregator orchestrator postprocessor avira comodo clamav ui webapis
-
 dc-pull: ## Make docker-compose retrieves the lastest images of all services.
-	docker-compose pull ${LIST_SERVICES}
+	docker-compose pull
 
-dc-up: ##  Start docker-compose
+dc-up: ##  Start docker-compose (args: SVC, name of the service to exclude)
+	@echo "${GREEN} [*] =============== Docker Compose UP =============== ${RESET}"
+	docker compose ps --services | grep -v $$SVC | grep -v ml | xargs docker-compose up
