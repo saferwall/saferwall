@@ -1,4 +1,6 @@
-```
+# Client-Server Communication
+
+```mermaid
 sequenceDiagram
 rect rgb(255, 150, 150)
 Client->>Server: /Deploy saferwall sandbox.zip
