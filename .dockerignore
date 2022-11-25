@@ -1,6 +1,11 @@
 ## Saferwall project specific files
 api
+build/k8s
+build/mk
+build/vagrant
+deployments
 docs
+hack
 private
 scripts
 test
