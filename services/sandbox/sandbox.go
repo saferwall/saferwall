@@ -160,6 +160,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	ctx := context.Background()
+
+	// Generate a unique ID for this detonation.
 	detonationID := generateGuid()
 
 	// Deserialize the msg sent from the web apis.
@@ -200,7 +202,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// Generate a unique ID for this detonation.
 	detRes := DetonationResult{}
 	detRes.ScanCfg = fileScanCfg.DynFileScanCfg
 
@@ -241,9 +242,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// If something went wrong during detonation, we still want to
 	// upload the results back to the backend.
-	detRes.APITrace = res.TraceLog
-	detRes.AgentLog = res.AgentLog
-	detRes.SandboxLog = res.SandboxLog
+	detRes.APITrace = s.jsonl2json(res.TraceLog)
+	detRes.AgentLog = s.jsonl2json(res.AgentLog)
+	detRes.SandboxLog = string(res.SandboxLog)
 	payloads = []*pb.Message_Payload{
 		{Key: detonationID, Body: toJSON(detRes), Kind: pb.Message_DBUPDATE},
 	}

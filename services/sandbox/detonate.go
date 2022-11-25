@@ -27,11 +27,11 @@ const (
 type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
-	APITrace []byte `json:"api_trace,omitempty"`
+	APITrace interface{} `json:"api_trace,omitempty"`
 	// The logs produced by the agent running inside the VM.
-	AgentLog []byte `json:"agent_log,omitempty"`
+	AgentLog interface{} `json:"agent_log,omitempty"`
 	// The logs produced by the sandbox.
-	SandboxLog []byte `json:"sandbox_log,omitempty"`
+	SandboxLog string `json:"sandbox_log,omitempty"`
 	// The config used to scan dynamically the sample.
 	ScanCfg config.DynFileScanCfg `json:"scan_config,omitempty"`
 	// Environment represents the environment used to scan the file.
