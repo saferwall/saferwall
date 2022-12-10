@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-func (s *Service) jsonl2json(data []byte) []interface{} {
+func (s *Service) jsonl2json(data []byte) []byte {
 
 	reader := bytes.NewReader(data)
 	d := json.NewDecoder(reader)
@@ -32,5 +32,5 @@ func (s *Service) jsonl2json(data []byte) []interface{} {
 		jsonData = append(jsonData, v)
 	}
 
-	return jsonData
+	return toJSON(jsonData)
 }

@@ -17,7 +17,7 @@ import (
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	"github.com/saferwall/saferwall/internal/utils"
 	"github.com/saferwall/saferwall/internal/vmmanager"
-	"github.com/saferwall/saferwall/services"
+	micro "github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
@@ -242,11 +242,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// If something went wrong during detonation, we still want to
 	// upload the results back to the backend.
-	detRes.APITrace = s.jsonl2json(res.TraceLog)
-	detRes.AgentLog = s.jsonl2json(res.AgentLog)
-	detRes.SandboxLog = string(res.SandboxLog)
+	apiTraceLog := s.jsonl2json(res.TraceLog)
+	agentLog := s.jsonl2json(res.AgentLog)
+	sandboxLog := res.SandboxLog
 	payloads = []*pb.Message_Payload{
-		{Key: detonationID, Body: toJSON(detRes), Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "api_trace", Body: apiTraceLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "agent_log", Body: agentLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "sandbox_log", Body: sandboxLog, Kind: pb.Message_DBUPDATE},
 	}
 
 	msg = &pb.Message{Sha256: sha256, Payload: payloads}
