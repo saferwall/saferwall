@@ -64,6 +64,7 @@ jobs:
         with:
           push: true
           file: build/docker/Dockerfile.${{ matrix.service }}
+          context: ${{ github.workspace }}
           build-args: |
             GITHUB_USER=${{ secrets.GIT_USERNAME }}
             GITHUB_TOKEN=${{ secrets.GIT_TOKEN }}
