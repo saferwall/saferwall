@@ -1,5 +1,5 @@
 KUBECTL_VER = 1.23.6
-kubectl-install:		## Install kubectl.
+kubectl-install: ## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
 			curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl; \
@@ -12,7 +12,7 @@ kubectl-install:		## Install kubectl.
 
 KUBECTX_VER = 0.9.4
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
-k8s-kubectx-install:		## Install kubectx
+k8s-kubectx-install: ## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
 	tar zxvf /tmp/kubectx.tar.gz -C /tmp
 	sudo mv /tmp/kubectx /usr/local/bin/
@@ -21,7 +21,7 @@ k8s-kubectx-install:		## Install kubectx
 
 KUBENS_VER = 0.9.4
 KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
-k8s-kubens-install:			## Install Kubens
+k8s-kubens-install: ## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
 	tar zxvf /tmp/kubens.tar.gz -C /tmp
 	sudo mv /tmp/kubens /usr/local/bin/
@@ -29,7 +29,7 @@ k8s-kubens-install:			## Install Kubens
 	kubens
 
 KUBE_CAPACITY_VER = 0.7.1
-k8s-kube-capacity: 	## Install kube-capacity
+k8s-kube-capacity: ## Install kube-capacity
 	wget https://github.com/robscott/kube-capacity/releases/download/$(KUBE_CAPACITY_VER)/kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz -P /tmp
 	cd /tmp \
 		&& tar zxvf kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz \
@@ -38,23 +38,23 @@ k8s-kube-capacity: 	## Install kube-capacity
 
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
-k8s-pf-kibana:			## Port fordward Kibana
+k8s-pf-kibana: ## Port fordward Kibana
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
 
-k8s-pf-nsq:				## Port fordward NSQ admin service.
+k8s-pf-nsq: ## Port fordward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
-k8s-pf-grafana:			## Port fordward grafana dashboard service.
+k8s-pf-grafana: ## Port fordward grafana dashboard service.
 	kubectl port-forward deployment/$(SAFERWALL_RELEASE_NAME)-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
-k8s-pf-couchbase:		## Port fordward couchbase ui service.
+k8s-pf-couchbase: ## Port fordward couchbase ui service.
 	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
-k8s-pf:					## Port forward all services.
+k8s-pf: ## Port forward all services.
 	make k8s-pf-nsq &
 	make k8s-pf-couchbase &
 	make k8s-pf-grafana &
@@ -87,7 +87,7 @@ k8s-init-cert-manager: ## Init cert-manager
 	--timeout=90s
 
 METALLB_VERSION=0.13.7
-k8s-install-metallb:
+k8s-install-metallb: ## Install Metallb helm chart.
 	# Create namespace.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/namespace.yaml
 	# Install the chart.
@@ -97,7 +97,7 @@ k8s-install-metallb:
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-k8s-install-couchbase-crds:
+k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml
 
 k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
@@ -111,5 +111,5 @@ k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 	for p in $$(kubectl get pods | grep Terminating | awk '{print $$1}'); \
 	 do kubectl delete pod $$p --grace-period=0 --force;done
 
-k8s-delete-evicted-pods:	## Clean up all evicted pods
+k8s-delete-evicted-pods: ## Clean up all evicted pods
 	kubectl get pods | grep Evicted | awk '{print $$1}' | xargs kubectl delete pod

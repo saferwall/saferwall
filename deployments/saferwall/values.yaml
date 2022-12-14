@@ -35,6 +35,10 @@ global:
 minio:
   enabled: true
 
+  ## Set default rootUser, rootPassword
+  rootUser: "minio"
+  rootPassword: "minio123"
+
   # We choose distributed for HA. This can be set to standalone in dev env.
   mode: standalone
   # mode: distributed
@@ -205,7 +209,7 @@ aws-efs-csi-driver:
     reclaimPolicy: Delete
     volumeBindingMode: Immediate
 
-########### NFS SERVER PROVISONNER ###########
+########### NFS SERVER PROVISIONER ###########
 nfs-server-provisioner:
   enabled: true
   persistence:

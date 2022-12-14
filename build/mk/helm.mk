@@ -1,4 +1,4 @@
-HELM_VERSION = 3.10.0
+HELM_VERSION = 3.10.2
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -44,7 +44,8 @@ helm-debug:		## Dry run install chart.
 			--debug --dry-run --namespace default . >> debug.yaml
 
 helm-upgrade:		## Upgrade a given release.
-	helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall
+	cd $(ROOT_DIR)/deployments/ \
+		&& helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall
 
 helm-update-dep: # Update Helm deployement dependecies
 	cd  $(ROOT_DIR)/deployments \

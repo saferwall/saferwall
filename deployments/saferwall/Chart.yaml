@@ -14,7 +14,7 @@ maintainers:
 dependencies:
     - name: minio
       repository: https://charts.min.io/
-      version: 3.6.4
+      version: 5.0.1
       condition: minio.enabled
     - name: couchbase-operator
       version: 2.32.2
