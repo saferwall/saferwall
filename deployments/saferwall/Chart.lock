@@ -1,7 +1,7 @@
 dependencies:
 - name: minio
   repository: https://charts.min.io/
-  version: 3.6.4
+  version: 5.0.1
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
   version: 2.32.2
@@ -29,5 +29,5 @@ dependencies:
 - name: nsq
   repository: https://beeinventor.github.io/charts
   version: 1.2.2
-digest: sha256:82a596987de2a99f3a2bb5fe5f895065af1de9a25e99fcc3713f23e6a0d5ad75
-generated: "2022-10-24T11:10:21.721366482+11:00"
+digest: sha256:5bc0855368c06d0859075a487f9a7c981ab06936b5dab271c8c78174254308c9
+generated: "2022-12-14T11:46:53.252199604+11:00"
