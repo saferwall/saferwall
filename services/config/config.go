@@ -60,13 +60,13 @@ type FileScanCfg struct {
 // DynFileScanCfg represents the config used to detonate a file.
 type DynFileScanCfg struct {
 	// Destination path where the sample will be located in the VM.
-	DestPath string `json:"dest_path,omitempty"`
+	DestPath string `json:"dest_path"`
 	// Arguments used to run the sample.
-	Arguments string `json:"args,omitempty"`
+	Arguments string `json:"args"`
 	// Timeout in seconds for how long to keep the VM running.
-	Timeout int `json:"timeout,omitempty"`
+	Timeout int `json:"timeout"`
 	// Country to route traffic through.
-	Country string `json:"country,omitempty"`
+	Country string `json:"country"`
 	// Operating System used to run the sample.
-	OS string `json:"os,omitempty"`
+	OS string `json:"os"`
 }
