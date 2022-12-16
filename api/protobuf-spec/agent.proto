@@ -3,6 +3,9 @@
 // license that can be found in the LICENSE file.
 
 syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
 package sandbox;
 
 option go_package = "github.com/saferwall/agent";
@@ -10,13 +13,27 @@ option go_package = "github.com/saferwall/agent";
 
 // The agent service definition.
 service Agent {
+
+  // Ping probes if the server is healthy and running saferwall analysis VM,
+  // some information about the guest are returned like OS name, ...
+  rpc Ping (google.protobuf.Empty) returns (PingReply) {}
+
   // Deploy installs all the malware sandbox component files.
-  // This include the dll to be injected, the driver, the loader, etc ...
+  // This include the dll to be injected, the driver, the controller, etc ...
   rpc Deploy (DeployRequest) returns (DeployReply) {}
 
   // Analyze executes the sample inside the virtual machine and monitor its
   // behavior.
   rpc Analyze (AnalyzeFileRequest) returns (AnalyzeFileReply) {}
+}
+
+// PingReply contains the version of the server running and some guest info.
+message PingReply {
+  // The server version.
+  string version = 1;
+
+  // JSON containing the guest system information like OS, hardware, ...
+  bytes sysinfo = 2;
 }
 
 // DeployRequest message contains a zip package that includes all
@@ -30,6 +47,7 @@ message DeployRequest {
 
 // DeployReply contains the version of the package that was deployed.
 message DeployReply {
+  // The sandbox version.
   string version = 1;
 }
 
