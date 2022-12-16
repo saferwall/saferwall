@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-// +build windows
+//go:build windows
 
 // Package server implements a server for AgentServer service.
 package main
@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	wapi "github.com/iamacarpet/go-win64api"
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 	"github.com/saferwall/saferwall/internal/archiver"
 	"github.com/saferwall/saferwall/internal/config"
@@ -46,7 +47,7 @@ const (
 )
 
 // Version indicates the current version of the application.
-var Version = "1.0.0"
+var Version = "0.3.0"
 
 var flagConfig = flag.String("config", "./../../configs/server",
 	"path to the config file")
@@ -82,11 +83,38 @@ type server struct {
 	agentPath  string
 }
 
+// Ping probes if the server is healthy and running saferwall analysis VM,
+// some information about the guest are returned like OS name, ...
+func (s *server) Ping(ctx context.Context, in *grpc.EmptyCallOption) (
+	*pb.PingReply, error) {
+
+	s.logger.Infof("received a ping request")
+
+	_, os, _, _, _, err := wapi.GetSystemProfile()
+	if err != nil {
+		s.logger.Error("getting system profile info failed, reason: :%v", err)
+		return nil, err
+	}
+
+	pingReply := pb.PingReply{Version: Version}
+
+	// Get system information.
+	sysInfo, err := json.Marshal(os)
+	if err != nil {
+		s.logger.Error("marshalling system profile info failed, reason: :%v", err)
+		return nil, err
+	}
+
+	pingReply.Sysinfo = sysInfo
+
+	return &pingReply, nil
+}
+
 // Deploy the sandbox application in the guest.
 func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 	*pb.DeployReply, error) {
 
-	s.logger.Infof("Received request to deploy package in dest: %s", in.Path)
+	s.logger.Infof("received request to deploy package in dest: %s", in.Path)
 	s.agentPath = in.Path
 
 	if err := archiver.Unarchive(in.Package, s.agentPath); err != nil {
@@ -94,10 +122,14 @@ func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 		return nil, err
 	}
 
-	verfile := filepath.Join(s.agentPath, "VERSION")
-	ver, err := utils.ReadAll(verfile)
+	verFile := filepath.Join(s.agentPath, "VERSION")
+	ver, err := utils.ReadAll(verFile)
+	if err != nil {
+		s.logger.Error("reading sandbox version file failed, reason: :%v", err)
+		return nil, err
+	}
 
-	return &pb.DeployReply{Version: string(ver)}, err
+	return &pb.DeployReply{Version: string(ver)}, nil
 }
 
 // Analyze performs the binary analysis.
@@ -129,7 +161,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		return nil, err
 	}
 	logger.Infof("generated scan config: %v", scanCfg)
-
 
 	// Write the sandbox TOML config to disk.
 	configPath := filepath.Join(s.agentPath, s.cfg.SandboxConfig)
