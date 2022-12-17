@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -85,7 +86,7 @@ type server struct {
 
 // Ping probes if the server is healthy and running saferwall analysis VM,
 // some information about the guest are returned like OS name, ...
-func (s *server) Ping(ctx context.Context, in *grpc.EmptyCallOption) (
+func (s *server) Ping(ctx context.Context, in *emptypb.Empty) (
 	*pb.PingReply, error) {
 
 	s.logger.Infof("received a ping request")
@@ -181,7 +182,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := scanCfg["timeout"].(int) + 5
+	sampleTimeout := int(scanCfg["timeout"].(float64) + 5 )
 	timeout := time.Duration(sampleTimeout) * time.Second
 
 	// Create a new context and add a timeout to it.
