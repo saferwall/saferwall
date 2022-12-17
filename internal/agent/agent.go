@@ -10,6 +10,7 @@ import (
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -26,12 +27,16 @@ type AgentClient struct {
 }
 
 type FileScanResult struct {
-	TraceLog       []byte
-	AgentLog       []byte
-	SandboxLog     []byte
-	SandboxVersion []byte
-	Screenshots    []*pb.AnalyzeFileReply_Screenshot
-	MemDumps       []*pb.AnalyzeFileReply_Memdump
+	TraceLog    []byte
+	AgentLog    []byte
+	SandboxLog  []byte
+	Screenshots []*pb.AnalyzeFileReply_Screenshot
+	MemDumps    []*pb.AnalyzeFileReply_Memdump
+}
+
+type PingResult struct {
+	ServerVersion string
+	SysInfo       []byte
 }
 
 func New(addr string) (AgentClient, error) {
@@ -42,6 +47,16 @@ func New(addr string) (AgentClient, error) {
 	}
 	client := pb.NewAgentClient(conn)
 	return AgentClient{client}, nil
+}
+
+func (ac AgentClient) Ping(ctx context.Context) (PingResult, error) {
+	r, err := ac.client.Ping(ctx, &emptypb.Empty{})
+	if err != nil {
+		return PingResult{}, err
+	}
+
+	res := PingResult{ServerVersion: r.GetVersion(), SysInfo: r.GetSysinfo()}
+	return res, nil
 }
 
 func (ac AgentClient) Deploy(ctx context.Context, dest string, pkg []byte) (
