@@ -50,7 +50,7 @@ func run(logger log.Logger) error {
 	}
 
 	scanner := clamav.Scanner{}
-	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", Version)
+	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", constants.Version)
 	s, err := multiav.New(c, logger, scanner)
 	if err != nil {
 		return err

@@ -43,7 +43,7 @@ func run(logger log.Logger) error {
 		return err
 	}
 
-	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", Version)
+	logger = log.NewCustom(c.LogLevel).With(context.TODO(), "version", constants.Version)
 	s, err := pp.New(c, logger)
 	if err != nil {
 		return err

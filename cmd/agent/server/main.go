@@ -26,6 +26,7 @@ import (
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 	"github.com/saferwall/saferwall/internal/archiver"
 	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/random"
@@ -182,7 +183,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := int(scanCfg["timeout"].(float64) + 5 )
+	sampleTimeout := int(scanCfg["timeout"].(float64) + 5)
 	timeout := time.Duration(sampleTimeout) * time.Second
 
 	// Create a new context and add a timeout to it.
@@ -381,7 +382,7 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New().With(context.TODO(), "version", Version)
+	logger := log.New().With(context.TODO(), "version", constants.Version)
 
 	if err := run(logger, *flagConfig); err != nil {
 		logger.Errorf("failed to run the server: %s", err)
@@ -404,7 +405,7 @@ func run(logger log.Logger, configFile string) error {
 	}
 
 	// update the logger according to the config.
-	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", Version)
+	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", constants.Version)
 
 	// the console window should be hidden in prod.
 	if c.HideConsoleWindow {
