@@ -25,8 +25,9 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 	kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
 kind-down:	## Delete Kind cluster.
-	kind delete clusters sfw
+	kind delete clusters ${KIND_CLUSTER_NAME}
 
 kind-up: ## Deploy Kind cluster and install requirements.
+	make kind-down || true
 	make kind-create-cluster
 	make kind-deploy-ingress-nginx
