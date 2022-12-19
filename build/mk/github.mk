@@ -1,5 +1,5 @@
 ACTION_RUNNER_ARCH = x64
-ACTION_RUNNER_VER = 2.289.1
+ACTION_RUNNER_VER = 2.299.1
 ACTION_RUNNER_ARCHIVE = actions-runner-linux-$(ACTION_RUNNER_ARCH)-$(ACTION_RUNNER_VER).tar.gz
 
 gh-action-runner:	## Install Github action custom runner.

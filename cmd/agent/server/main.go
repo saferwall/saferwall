@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
-// +build windows
+//go:build windows
 
 // Package server implements a server for AgentServer service.
 package main
@@ -22,9 +22,11 @@ import (
 	"syscall"
 	"time"
 
+	wapi "github.com/iamacarpet/go-win64api"
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 	"github.com/saferwall/saferwall/internal/archiver"
 	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/random"
@@ -32,6 +34,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -46,7 +49,7 @@ const (
 )
 
 // Version indicates the current version of the application.
-var Version = "1.0.0"
+var Version = "0.3.0"
 
 var flagConfig = flag.String("config", "./../../configs/server",
 	"path to the config file")
@@ -82,11 +85,38 @@ type server struct {
 	agentPath  string
 }
 
+// Ping probes if the server is healthy and running saferwall analysis VM,
+// some information about the guest are returned like OS name, ...
+func (s *server) Ping(ctx context.Context, in *emptypb.Empty) (
+	*pb.PingReply, error) {
+
+	s.logger.Infof("received a ping request")
+
+	_, os, _, _, _, err := wapi.GetSystemProfile()
+	if err != nil {
+		s.logger.Error("getting system profile info failed, reason: :%v", err)
+		return nil, err
+	}
+
+	pingReply := pb.PingReply{Version: Version}
+
+	// Get system information.
+	sysInfo, err := json.Marshal(os)
+	if err != nil {
+		s.logger.Error("marshalling system profile info failed, reason: :%v", err)
+		return nil, err
+	}
+
+	pingReply.Sysinfo = sysInfo
+
+	return &pingReply, nil
+}
+
 // Deploy the sandbox application in the guest.
 func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 	*pb.DeployReply, error) {
 
-	s.logger.Infof("Received request to deploy package in dest: %s", in.Path)
+	s.logger.Infof("received request to deploy package in dest: %s", in.Path)
 	s.agentPath = in.Path
 
 	if err := archiver.Unarchive(in.Package, s.agentPath); err != nil {
@@ -94,10 +124,14 @@ func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 		return nil, err
 	}
 
-	verfile := filepath.Join(s.agentPath, "VERSION")
-	ver, err := utils.ReadAll(verfile)
+	verFile := filepath.Join(s.agentPath, "VERSION")
+	ver, err := utils.ReadAll(verFile)
+	if err != nil {
+		s.logger.Error("reading sandbox version file failed, reason: :%v", err)
+		return nil, err
+	}
 
-	return &pb.DeployReply{Version: string(ver)}, err
+	return &pb.DeployReply{Version: string(ver)}, nil
 }
 
 // Analyze performs the binary analysis.
@@ -130,7 +164,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}
 	logger.Infof("generated scan config: %v", scanCfg)
 
-
 	// Write the sandbox TOML config to disk.
 	configPath := filepath.Join(s.agentPath, s.cfg.SandboxConfig)
 	_, err = utils.WriteBytesFile(configPath, tomlConfig)
@@ -150,7 +183,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Add a 5 seconds to thr timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := scanCfg["timeout"].(int) + 5
+	sampleTimeout := int(scanCfg["timeout"].(float64) + 5)
 	timeout := time.Duration(sampleTimeout) * time.Second
 
 	// Create a new context and add a timeout to it.
@@ -349,7 +382,7 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New().With(context.TODO(), "version", Version)
+	logger := log.New().With(context.TODO(), "version", constants.Version)
 
 	if err := run(logger, *flagConfig); err != nil {
 		logger.Errorf("failed to run the server: %s", err)
@@ -372,7 +405,7 @@ func run(logger log.Logger, configFile string) error {
 	}
 
 	// update the logger according to the config.
-	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", Version)
+	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", constants.Version)
 
 	// the console window should be hidden in prod.
 	if c.HideConsoleWindow {

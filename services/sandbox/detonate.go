@@ -20,18 +20,21 @@ import (
 )
 
 const (
-	defaultGRPCPort = ":50051"
+	defaultGRPCPort        = ":50051"
+	defaultFileScanTimeout = 30
+	defaultVPNCountry      = "USA"
+	defaultOS              = "Windows 7 64-bit"
 )
 
 // DetonationResults represents the results for a detonation.
 type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
-	APITrace interface{} `json:"api_trace,omitempty"`
+	APITrace []byte `json:"api_trace,omitempty"`
 	// The logs produced by the agent running inside the VM.
-	AgentLog interface{} `json:"agent_log,omitempty"`
+	AgentLog []byte `json:"agent_log,omitempty"`
 	// The logs produced by the sandbox.
-	SandboxLog string `json:"sandbox_log,omitempty"`
+	SandboxLog []byte `json:"sandbox_log,omitempty"`
 	// The config used to scan dynamically the sample.
 	ScanCfg config.DynFileScanCfg `json:"scan_config,omitempty"`
 	// Environment represents the environment used to scan the file.
@@ -48,8 +51,9 @@ type Environment struct {
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
-	cfg config.FileScanCfg, detRes *DetonationResult) (agent.FileScanResult, error) {
+	cfg config.FileScanCfg) (DetonationResult, error) {
 
+	detRes := DetonationResult{}
 	ctx := context.Background()
 
 	// Establish a gRPC connection to the agent server running
@@ -57,21 +61,23 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	client, err := agent.New(vm.IP + defaultGRPCPort)
 	if err != nil {
 		logger.Errorf("failed to establish connection to server: %v", err)
-		return agent.FileScanResult{}, err
+		return detRes, err
 	}
 
 	// Deploy the sandbox component files inside the guest.
 	ver, err := client.Deploy(ctx, s.cfg.Agent.AgentDestDir, s.sandbox)
 	if err != nil {
-		return agent.FileScanResult{}, err
+		return detRes, err
 	}
 	logger.Infof("sandbox version %s has been deployed", ver)
+
 	detRes.SandboxVersion = ver
+	detRes.AgentVersion = vm.AgentVersion
 
 	src := filepath.Join(s.cfg.SharedVolume, cfg.SHA256)
 	sampleContent, err := utils.ReadAll(src)
 	if err != nil {
-		return agent.FileScanResult{}, err
+		return detRes, err
 	}
 
 	// Analyze the sample. This call will block until results
@@ -79,10 +85,33 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	scanCfg := toJSON(cfg.DynFileScanCfg)
 	res, err := client.Analyze(ctx, scanCfg, sampleContent)
 	if err != nil {
-		return agent.FileScanResult{}, err
+		return detRes, err
 	}
 
-	return res, nil
+	var traceLog []interface{}
+	err = Decode(bytes.NewReader(res.TraceLog), &traceLog)
+	if err != nil {
+		return detRes, err
+	}
+
+	var sandboxLog []interface{}
+	err = Decode(bytes.NewReader(res.SandboxLog), &sandboxLog)
+	if err != nil {
+		return detRes, err
+	}
+
+	var agentLog []interface{}
+	err = Decode(bytes.NewReader(res.AgentLog), &agentLog)
+	if err != nil {
+		return detRes, err
+	}
+
+	detRes.ScanCfg = cfg.DynFileScanCfg
+	detRes.APITrace = toJSON(traceLog)
+	detRes.AgentLog = toJSON(agentLog)
+	detRes.SandboxLog = toJSON(sandboxLog)
+
+	return detRes, nil
 }
 
 // generate thumbnails for the sandbox desktop screenshots.

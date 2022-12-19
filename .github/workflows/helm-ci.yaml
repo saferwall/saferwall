@@ -3,13 +3,9 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
 jobs:
   deploy-on-kind:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v3

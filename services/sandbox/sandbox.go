@@ -8,13 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"sync"
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	"github.com/saferwall/saferwall/internal/random"
 	"github.com/saferwall/saferwall/internal/utils"
 	"github.com/saferwall/saferwall/internal/vmmanager"
 	micro "github.com/saferwall/saferwall/services"
@@ -33,6 +33,7 @@ var (
 type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
 	SharedVolume string             `mapstructure:"shared_volume"`
+	EnglishWords string             `mapstructure:"english_words"`
 	Agent        AgentCfg           `mapstructure:"agent"`
 	VirtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
 	Producer     config.ProducerCfg `mapstructure:"producer"`
@@ -62,14 +63,14 @@ type VirtManagerCfg struct {
 // interface. This allows us to define our own custom handlers for our messages.
 // Think of these handlers much like you would an http handler.
 type Service struct {
-	cfg     Config
-	mu      sync.Mutex
-	logger  log.Logger
-	pub     pubsub.Publisher
-	sub     pubsub.Subscriber
-	vms     []VM
-	vmm     vmmanager.VMManager
-	sandbox []byte
+	cfg        Config
+	logger     log.Logger
+	pub        pubsub.Publisher
+	sub        pubsub.Subscriber
+	vms        []VM
+	vmm        vmmanager.VMManager
+	randomizer random.Ramdomizer
+	sandbox    []byte
 }
 
 func toJSON(v interface{}) []byte {
@@ -88,7 +89,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	var err error
 	s := Service{}
 
-	// retrieve the list of active VMs.
+	// retrieve the list of active domains.
 	conn, err := vmmanager.New(cfg.VirtMgr.Network, cfg.VirtMgr.Address,
 		cfg.VirtMgr.Port, cfg.VirtMgr.User, cfg.VirtMgr.SSHKeyPath)
 	if err != nil {
@@ -99,9 +100,13 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
+	// TODO what happens when len(vms) is 0.
+	// Also, when we repair a broken VM, we want to refresh the list
+	// of domains, a potential solution is to fire a thread that sync
+	// the list of active domains every X minutes.
 	var vms []VM
 	for _, d := range dd {
-		vms = append(vms, VM{
+		vm := VM{
 			ID:        d.Dom.ID,
 			Name:      d.Dom.Name,
 			IP:        d.IP,
@@ -109,10 +114,18 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 			InUse:     false,
 			IsHealthy: true,
 			Dom:       d.Dom,
-		})
+		}
+
+		// Ping the server inside the VM and validate it is healthy.
+		err = vm.ping()
+		if err != nil {
+			return nil, err
+		}
+
+		vms = append(vms, vm)
 	}
 
-	// the number of concurrent workers have to match the number of
+	// The number of concurrent workers have to match the number of
 	// available virtual machines.
 	s.sub, err = nsq.NewSubscriber(
 		cfg.Consumer.Topic,
@@ -130,8 +143,14 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
-	// download the sandbox release package.
+	// Download the sandbox release package.
 	zipPackageData, err := utils.ReadAll(cfg.Agent.PackageName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a string randomizer.
+	randomSvc, err := random.New(cfg.EnglishWords)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +160,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	s.cfg = cfg
 	s.logger = logger
 	s.vmm = conn
+	s.randomizer = randomSvc
 	return &s, nil
 
 }
@@ -202,11 +222,26 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	detRes := DetonationResult{}
-	detRes.ScanCfg = fileScanCfg.DynFileScanCfg
+	// Set default values for the scan config.
+	if fileScanCfg.Timeout == 0 {
+		fileScanCfg.Timeout = defaultFileScanTimeout
+	}
+
+	if fileScanCfg.DestPath == "" {
+		randomFilename := s.randomizer.Random()
+		fileScanCfg.DestPath = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+	}
+
+	if fileScanCfg.Country == "" {
+		fileScanCfg.Country = defaultVPNCountry
+	}
+
+	if fileScanCfg.OS == "" {
+		fileScanCfg.OS = defaultOS
+	}
 
 	// Find a free VM to process this job.
-	vm := s.findFreeVM(fileScanCfg.OS)
+	vm := findFreeVM(s.vms, fileScanCfg.OS)
 	if vm == nil {
 		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources
@@ -215,7 +250,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger = logger.With(ctx, "VM", vm.Name)
 
 	// Perform the actual detonation.
-	res, errDetonation := s.detonate(logger, vm, fileScanCfg, &detRes)
+	res, errDetonation := s.detonate(logger, vm, fileScanCfg)
 	if errDetonation != nil {
 		logger.Errorf("detonation failed with: %v", errDetonation)
 	} else {
@@ -231,24 +266,23 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 		// mark the VM as non healthy so we can repair it.
 		logger.Infof("marking the VM as stale")
-		s.markStale(vm)
+		vm.markStale()
 
 	} else {
 		// Free the VM for next job now, then continue on processing
 		// sandbox results.
 		logger.Infof("freeing the VM")
-		s.freeVM(vm)
+		vm.freeVM()
 	}
 
 	// If something went wrong during detonation, we still want to
 	// upload the results back to the backend.
-	apiTraceLog := s.jsonl2json(res.TraceLog)
-	agentLog := s.jsonl2json(res.AgentLog)
-	sandboxLog := res.SandboxLog
+
 	payloads = []*pb.Message_Payload{
-		{Key: detonationID, Path: "api_trace", Body: apiTraceLog, Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "agent_log", Body: agentLog, Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "sandbox_log", Body: sandboxLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "agent_log", Body: res.AgentLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "sandbox_log", Body: res.SandboxLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 	}
 
 	msg = &pb.Message{Sha256: sha256, Payload: payloads}

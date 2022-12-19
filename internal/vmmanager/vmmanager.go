@@ -111,7 +111,8 @@ func New(transport, address, port, user, sshKeyPath string) (VMManager, error) {
 
 // Domains retrieves the list of domains.
 func (vmm *VMManager) Domains() ([]Domain, error) {
-	dd, _, err := vmm.Conn.ConnectListAllDomains(1, libvirt.ConnectListDomainsActive)
+	flags := libvirt.ConnectListDomainsActive
+	dd, _, err := vmm.Conn.ConnectListAllDomains(1,  flags)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +125,8 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 			return nil, err
 		}
 
-		names, err := vmm.Conn.DomainSnapshotListNames(d, maxSnapshotLen, 0)
+		flags := libvirt.DomainSnapshotListActive
+		names, err := vmm.Conn.DomainSnapshotListNames(d, maxSnapshotLen, uint32(flags))
 		if err != nil {
 			return nil, err
 		}

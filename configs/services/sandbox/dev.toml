@@ -2,6 +2,8 @@
 log_level = "debug"
 # Shared volume between all microservices.
 shared_volume = "/samples"
+# Text file contaning a list of english words.
+english_words = "words.txt"
 
 [agent]
 # Destinary directory inside the guest where the agent is deployed.

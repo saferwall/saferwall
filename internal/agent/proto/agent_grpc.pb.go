@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,8 +23,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentClient interface {
+	// Ping probes if the server is healthy and running saferwall analysis VM,
+	// some information about the guest are returned like OS name, ...
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingReply, error)
 	// Deploy installs all the malware sandbox component files.
-	// This include the dll to be injected, the driver, the loader, etc ...
+	// This include the dll to be injected, the driver, the controller, etc ...
 	Deploy(ctx context.Context, in *DeployRequest, opts ...grpc.CallOption) (*DeployReply, error)
 	// Analyze executes the sample inside the virtual machine and monitor its
 	// behavior.
@@ -36,6 +40,15 @@ type agentClient struct {
 
 func NewAgentClient(cc grpc.ClientConnInterface) AgentClient {
 	return &agentClient{cc}
+}
+
+func (c *agentClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingReply, error) {
+	out := new(PingReply)
+	err := c.cc.Invoke(ctx, "/sandbox.Agent/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *agentClient) Deploy(ctx context.Context, in *DeployRequest, opts ...grpc.CallOption) (*DeployReply, error) {
@@ -60,8 +73,11 @@ func (c *agentClient) Analyze(ctx context.Context, in *AnalyzeFileRequest, opts 
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
 type AgentServer interface {
+	// Ping probes if the server is healthy and running saferwall analysis VM,
+	// some information about the guest are returned like OS name, ...
+	Ping(context.Context, *emptypb.Empty) (*PingReply, error)
 	// Deploy installs all the malware sandbox component files.
-	// This include the dll to be injected, the driver, the loader, etc ...
+	// This include the dll to be injected, the driver, the controller, etc ...
 	Deploy(context.Context, *DeployRequest) (*DeployReply, error)
 	// Analyze executes the sample inside the virtual machine and monitor its
 	// behavior.
@@ -73,6 +89,9 @@ type AgentServer interface {
 type UnimplementedAgentServer struct {
 }
 
+func (UnimplementedAgentServer) Ping(context.Context, *emptypb.Empty) (*PingReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedAgentServer) Deploy(context.Context, *DeployRequest) (*DeployReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deploy not implemented")
 }
@@ -90,6 +109,24 @@ type UnsafeAgentServer interface {
 
 func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 	s.RegisterService(&Agent_ServiceDesc, srv)
+}
+
+func _Agent_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sandbox.Agent/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).Ping(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Agent_Deploy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -135,6 +172,10 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "sandbox.Agent",
 	HandlerType: (*AgentServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _Agent_Ping_Handler,
+		},
 		{
 			MethodName: "Deploy",
 			Handler:    _Agent_Deploy_Handler,

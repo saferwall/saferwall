@@ -63,6 +63,7 @@ ENV USER saferwall
 ENV GROUP saferwall
 ENV RELEASE_VERSION=v0.3.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
+ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
@@ -75,6 +76,9 @@ COPY --from=build-stage /go/bin/agent.exe .
 
 # Copy the sandbox zip package.
 COPY --from=build-stage ${ARTIFACT_NAME} package.zip
+
+# Download english dictionary
+ADD ${ENGLISH_DICT_URL} words.txt
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/

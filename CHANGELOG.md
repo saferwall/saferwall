@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sandbox agent health check + basic sysinfo and env data collection [##395](https://github.com/saferwall/saferwall/pull/395).
+- Push sandbox payload results to the aggregator [#391](https://github.com/saferwall/saferwall/pull/391).
 - MultiAV McAfee enable scan for potentially unwanted program [#387](https://github.com/saferwall/saferwall/pull/387).
 - Numerous updates to support different types of messages for the aggregator [#383](https://github.com/saferwall/saferwall/pull/383).
     - Add methods for the `storage` internal pkg to support bucket creation.
@@ -24,11 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Set k8s version to the same as prod k8s version and update default user/password values in minio helm chart [#392](https://github.com/saferwall/saferwall/pull/392).
 - Change protobuf message scheme to support uploading object to s3 [#383](https://github.com/saferwall/saferwall/pull/383).
 - Bind k8s port forwarding services to `0.0.0.0`.
 - Bump wait-for and golang docker images.
-- Bump `yara`, `helm`, `kuberneters`, `exiftool`, `kubens/kubectx` and `kube-capacity`.
-- Bump `aws-efs-csi-driver`, `ingress-nginx`, `couchbase-operator` helm chart dependencies.
+- Bump `yara`, `helm`, `kuberneters`, `exiftool`, `kind`, `kubens/kubectx` and `kube-capacity`.
+- Bump `aws-efs-csi-driver`, `ingress-nginx`, `couchbase-operator` and `minio` helm chart dependencies.
 
 ### Fixed
 
