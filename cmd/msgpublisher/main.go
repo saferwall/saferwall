@@ -6,12 +6,10 @@ import (
 	"os"
 
 	cfg "github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 )
-
-// Version indicates the current version of the application.
-var Version = "1.0.0"
 
 // Config represents our application config.
 type Config struct {
@@ -36,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger := log.New().With(context.TODO(), "version", Version, "sha256",
+	logger := log.New().With(context.TODO(), "version", constants.Version, "sha256",
 		*flagSHA256)
 
 	if err := run(logger, *flagConfig, *flagSHA256, *flagSvcName); err != nil {

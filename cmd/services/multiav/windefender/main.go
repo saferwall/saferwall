@@ -10,13 +10,11 @@ import (
 	"os"
 
 	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/multiav/windefender"
 	"github.com/saferwall/saferwall/services/multiav"
 )
-
-// Version indicates the current version of the application.
-var Version = "1.0.0"
 
 var flagConfig = flag.String(
 	"config", "./../../../../configs/services/multiav/windefender",
@@ -27,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	// Create root logger tagged with server version.
-	logger := log.New().With(context.TODO(), "version", Version)
+	logger := log.New().With(context.TODO(), "version", constants.Version)
 	if err := run(logger); err != nil {
 		logger.Errorf("failed to run the server: %s", err)
 		os.Exit(-1)

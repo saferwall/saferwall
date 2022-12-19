@@ -14,6 +14,7 @@ import (
 
 	client "github.com/saferwall/saferwall/internal/agent"
 	"github.com/saferwall/saferwall/internal/config"
+	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/utils"
 )
@@ -35,9 +36,6 @@ type Config struct {
 	Timeout int `mapstructure:"timeout"`
 }
 
-// Version indicates the current version of the application.
-var Version = "1.0.0"
-
 var flagConfig = flag.String("config", "./../../../configs/agent/client",
 	"path to the config file")
 
@@ -45,7 +43,7 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New().With(context.TODO(), "version", Version)
+	logger := log.New().With(context.TODO(), "version", constants.Version)
 
 	if err := run(logger); err != nil {
 		logger.Errorf("failed to run the server: %s", err)
