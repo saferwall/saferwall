@@ -7,7 +7,7 @@ FROM golang:1.17-alpine AS build-stage
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV RELEASE_VERSION=v0.3.0
+ENV RELEASE_VERSION=v0.4.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
 
@@ -61,7 +61,7 @@ LABEL description="Sandbox scan service"
 
 ENV USER saferwall
 ENV GROUP saferwall
-ENV RELEASE_VERSION=v0.3.0
+ENV RELEASE_VERSION=v0.4.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
