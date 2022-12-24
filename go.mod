@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.31
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.5.0
-	github.com/digitalocean/go-libvirt v0.0.0-20221109154340-e6e4fe625945
+	github.com/digitalocean/go-libvirt v0.0.0-20221205150000-2939327a8519
 	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.5.0
 	github.com/gabriel-vasile/mimetype v1.4.1

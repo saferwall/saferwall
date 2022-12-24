@@ -11,6 +11,7 @@ import (
 	"image/color"
 	"io"
 	"path/filepath"
+	"strconv"
 
 	"github.com/disintegration/imaging"
 	agent "github.com/saferwall/saferwall/internal/agent"
@@ -37,6 +38,10 @@ type DetonationResult struct {
 	SandboxLog []byte `json:"sandbox_log,omitempty"`
 	// The config used to scan dynamically the sample.
 	ScanCfg config.DynFileScanCfg `json:"scan_config,omitempty"`
+	// List of of desktop screenshots captured.
+	Screenshots []Screenshot `json:"screenshots,omitempty"`
+	// List of artifacts collected during detonation.
+	Artifacts []Artifact `json:"artifacts,omitempty"`
 	// Environment represents the environment used to scan the file.
 	Environment `json:"env,omitempty"`
 }
@@ -45,9 +50,45 @@ type DetonationResult struct {
 // This include OS versions, installed software, analyzer version.
 type Environment struct {
 	// The sandbox version.
-	SandboxVersion string `json:"sandbox_version,omitempty"`
+	SandboxVersion string `json:"sandbox_version"`
 	// The agent version.
-	AgentVersion string `json:"agent_version,omitempty"`
+	AgentVersion string `json:"agent_version"`
+}
+
+// Screenshots represents a capture of the desktop while the sample is running
+// in the VM.
+type Screenshot struct {
+	// The name of the filename for the screenshot. Format: <id>.jpeg.
+	// IDs are growing incrementally from index 1 to N according to the time
+	// they were taken.
+	Name string `json:"name"`
+	// The binary content of the image.
+	Content []byte `json:"-"`
+}
+
+// Artifact represents dumped memory buffers (during process injection, memory
+// decryption, or anything alike) and files dropped by the sample.
+type Artifact struct {
+	// File  name of the artifact.
+	// * Memory buffers are in this format: PID.TID-VA-BuffSize-API.membuff
+	//  -> 2E00.A60-0x1A46D880000-77824-Free.membuff
+	//  -> 2E00.A60-0x1A46D8A0000-12824-Crypto.membuff
+	//  -> 2E00.A60-0x1A46D9B0000-12824-WriteProcess.membuff
+	// * Files dropped are in this format: PID.TID-FilePath-Size.filecreate
+	//  -> 2E00.A60-C:\\Delete.vbs-9855.filecreate
+	// they were taken.
+	Name string `json:"name"`
+	// The binary content of the artifact.
+	Content []byte `json:"-"`
+	// The artifact kind.
+	Kind string `json:"kind"`
+	// The SHA256 hash of the artifact.
+	SHA256 string `json:"sha256"`
+	// Detection contains the family name of the malware if it is malicious,
+	// or clean otherwise.
+	Detection string `json:"detection"`
+	// The file type, i.e docx, dll, etc.
+	FileType string `json:"file_type"`
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
@@ -83,33 +124,45 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	// Analyze the sample. This call will block until results
 	// are ready.
 	scanCfg := toJSON(cfg.DynFileScanCfg)
+	detRes.ScanCfg = cfg.DynFileScanCfg
 	res, err := client.Analyze(ctx, scanCfg, sampleContent)
 	if err != nil {
 		return detRes, err
 	}
 
-	var traceLog []interface{}
-	err = Decode(bytes.NewReader(res.TraceLog), &traceLog)
-	if err != nil {
-		return detRes, err
-	}
-
-	var sandboxLog []interface{}
-	err = Decode(bytes.NewReader(res.SandboxLog), &sandboxLog)
-	if err != nil {
-		return detRes, err
-	}
-
+	// Convert the agent log from JSONL to JSON.
 	var agentLog []interface{}
 	err = Decode(bytes.NewReader(res.AgentLog), &agentLog)
 	if err != nil {
-		return detRes, err
+		logger.Errorf("failed to decode agent log: %v", err)
 	}
-
-	detRes.ScanCfg = cfg.DynFileScanCfg
-	detRes.APITrace = toJSON(traceLog)
 	detRes.AgentLog = toJSON(agentLog)
+
+	// Convert the APIs traces from JSONL to JSON.
+	var traceLog []interface{}
+	err = Decode(bytes.NewReader(res.TraceLog), &traceLog)
+	if err != nil {
+		logger.Errorf("failed to decode trace log: %v", err)
+	}
+	detRes.APITrace = toJSON(traceLog)
+
+	// Convert the sandbox log from JSONL to JSON.
+	var sandboxLog []interface{}
+	err = Decode(bytes.NewReader(res.SandboxLog), &sandboxLog)
+	if err != nil {
+		logger.Errorf("failed to decode sandbox log: %v", err)
+	}
 	detRes.SandboxLog = toJSON(sandboxLog)
+
+	// Collect screenshots.
+	screenshots := []Screenshot{}
+	for _, sc := range res.Screenshots {
+		screenshots = append(screenshots, Screenshot{
+			Name:    strconv.Itoa(int(sc.GetId())) + ".jpeg",
+			Content: sc.GetContent(),
+		})
+	}
+	detRes.Screenshots = screenshots
 
 	return detRes, nil
 }

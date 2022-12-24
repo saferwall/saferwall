@@ -277,12 +277,36 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// If something went wrong during detonation, we still want to
 	// upload the results back to the backend.
-
 	payloads = []*pb.Message_Payload{
 		{Key: detonationID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: detonationID, Path: "agent_log", Body: res.AgentLog, Kind: pb.Message_DBUPDATE},
 		{Key: detonationID, Path: "sandbox_log", Body: res.SandboxLog, Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
 		{Key: detonationID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
+		{Key: detonationID, Path: "screenshots", Body: toJSON(res.Screenshots), Kind: pb.Message_DBUPDATE},
+	}
+
+	// Screenshots are uploaded to file system storage like s3.
+	for _, sc := range res.Screenshots {
+		objKey := sha256 + "/" + detonationID + "/" + "screenshots" + "/" + sc.Name
+		payload := pb.Message_Payload{
+			Key:  objKey,
+			Body: sc.Content,
+			Kind: pb.Message_UPLOAD,
+		}
+		payloads = append(payloads, &payload)
+	}
+
+	// Artifacts like memory dumps and dropped files are also uploaded to
+	// file system storage like s3.
+	for _, artifact := range res.Artifacts {
+		objKey := sha256 + "/" + detonationID + "/" + "artifacts" + "/" + artifact.Name
+		payload := pb.Message_Payload{
+			Key:  objKey,
+			Body: artifact.Content,
+			Kind: pb.Message_UPLOAD,
+		}
+		payloads = append(payloads, &payload)
 	}
 
 	msg = &pb.Message{Sha256: sha256, Payload: payloads}

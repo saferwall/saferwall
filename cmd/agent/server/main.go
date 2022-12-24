@@ -177,17 +177,18 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	samplePath := scanCfg["dest_path"].(string)
 	_, err = utils.WriteBytesFile(samplePath, sampleData)
 	if err != nil {
-		logger.Error("failed to write sample to disk, reason: :%v", err)
+		logger.Error("failed to write sample to disk, reason: %v", err)
 		return nil, err
 	}
 
-	// Add a 5 seconds to thr timeout to account for bootstrapping the
+	// Add 10 seconds to the timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	sampleTimeout := int(scanCfg["timeout"].(float64) + 5)
-	timeout := time.Duration(sampleTimeout) * time.Second
+	timeout := time.Duration(scanCfg["timeout"].(float64) + 10)
+	deadline := time.Now().Add(timeout * time.Second)
+	logger.Infof("timeout for process to return back: %v seconds", timeout)
 
 	// Create a new context and add a timeout to it.
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
 	controllerPath := filepath.Join(s.agentPath, s.cfg.ControllerFilename)

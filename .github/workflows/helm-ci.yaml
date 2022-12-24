@@ -41,3 +41,8 @@ jobs:
               -H 'Content-Type: application/json' \
               -d '{"username":"mrrobot","password":"password", "email": "mrrobot@mysaferwall.com"}'
             curl -k -I -X GET https://api.mysaferwall.com/v1/users/mrrobot
+
+      - name: Cleanup
+        run: |
+          cd saferwall
+          make kind-down
