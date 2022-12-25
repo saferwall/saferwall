@@ -161,21 +161,43 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 			Name:    strconv.Itoa(int(sc.GetId())) + ".jpeg",
 			Content: sc.GetContent(),
 		})
+
+		// Generate thumbnails.
+		r := bytes.NewReader(sc.GetContent())
+		buf := new(bytes.Buffer)
+		err := s.generateThumbnail(r, buf)
+		if err != nil {
+			logger.Errorf("failed to generate thumbnail: %v", err)
+			continue
+		}
+
+		screenshots = append(screenshots, Screenshot{
+			Name:    strconv.Itoa(int(sc.GetId())) + ".min.jpeg",
+			Content: buf.Bytes(),
+		})
 	}
 	detRes.Screenshots = screenshots
+
+	// Collect artifacts.
+	artifacts := []Artifact{}
+	for _, artifact := range res.MemDumps {
+		artifacts = append(artifacts, Artifact{
+			Name:    artifact.GetName(),
+			Content: artifact.GetContent(),
+		})
+	}
+	detRes.Artifacts = artifacts
 
 	return detRes, nil
 }
 
 // generate thumbnails for the sandbox desktop screenshots.
-func (s *Service) generateThumbnail(r io.Reader) (io.Writer, error) {
+func (s *Service) generateThumbnail(r io.Reader, w io.Writer) error {
 
-	buf := new(bytes.Buffer)
-
-	// load images and make 100x100 thumbnails of them
-	img, err := imaging.Decode(r, nil)
+	// load images and make 100x100 thumbnails of them.
+	img, err := imaging.Decode(r, nil...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	x := 730
@@ -190,11 +212,10 @@ func (s *Service) generateThumbnail(r io.Reader) (io.Writer, error) {
 
 	// write the combined image to an io writer.
 	opts := imaging.JPEGQuality(80)
-	err = imaging.Encode(buf, dst, imaging.JPEG, opts)
+	err = imaging.Encode(w, dst, imaging.JPEG, opts)
 	if err != nil {
-		return nil, err
-
+		return err
 	}
 
-	return buf, nil
+	return nil
 }
