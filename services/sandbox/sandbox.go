@@ -184,7 +184,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Generate a unique ID for this detonation.
 	detonationID := generateGuid()
 
-	// Deserialize the msg sent from the web apis.
+	// Deserialize the scan config given by the user.
 	fileScanCfg := config.FileScanCfg{}
 	err := json.Unmarshal(m.Body, &fileScanCfg)
 	if err != nil {
@@ -196,13 +196,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger := s.logger.With(ctx, "sha256", sha256, "guid", detonationID)
 	logger.Info("start processing")
 
-	// Update the state of the job to processing
+	// Update the state of the job to `processing`.
 	status := make(map[string]interface{})
+	now := time.Now().Unix()
 	status["sha256"] = sha256
-	status["timestamp"] = time.Now().Unix()
-
-	// Type is only to state to that the document we are storing in the DB is of
-	// type `detonate`.
+	status["timestamp"] = now
 	status["type"] = "dynamic-scan"
 	status["status"] = micro.Processing
 
@@ -272,8 +270,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		// Free the VM for next job now, then continue on processing
 		// sandbox results.
 		logger.Infof("freeing the VM")
-		vm.freeVM()
+		vm.free()
 	}
+
+	// Append this detonation to the list of detonations for the file object.
+	dynamicReports := make(map[string]interface{})
+	dynamicReports["id"] = detonationID
+	dynamicReports["timestamp"] = now
+
+	// Merge `scanConfig` into `dynamicReports`.
+	var fileScanConfig map[string]interface{}
+	jsonFileScanConfig := toJSON(res.ScanCfg)
+	json.Unmarshal(jsonFileScanConfig, &fileScanConfig)
+	for k, v := range fileScanConfig {
+		dynamicReports[k] = v
+	}
+	dynamicReports["sandbox_ver"] = res.Environment.SandboxVersion
 
 	// If something went wrong during detonation, we still want to
 	// upload the results back to the backend.
@@ -291,6 +303,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.APITrace, Kind: pb.Message_UPLOAD},
+		{Key: sha256, Path: "dynamic_report_id", Body: toJSON(detonationID),
+			Kind: pb.Message_DBUPDATE},
+		{Key: sha256, Path: "dynamic_reports." + detonationID, Body: toJSON(dynamicReports),
+			Kind: pb.Message_DBUPDATE},
 	}
 
 	// Screenshots are uploaded to file system storage like s3.

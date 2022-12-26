@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 11/11/2022
+
+## [0.4.0] - Unreleased
 
 ### Added
 
-- Sandbox agent health check + basic sysinfo and env data collection [##395](https://github.com/saferwall/saferwall/pull/395).
+- Upload sandbox memdumps and screenshots thumbnails to obj storage [#398](https://github.com/saferwall/saferwall/pull/398).
+- Upload sandbox desktop screenshots to obj storage [#397](https://github.com/saferwall/saferwall/pull/397).
+- Sandbox agent health check + basic sysinfo and env data collection [#395](https://github.com/saferwall/saferwall/pull/395).
 - Push sandbox payload results to the aggregator [#391](https://github.com/saferwall/saferwall/pull/391).
 - MultiAV McAfee enable scan for potentially unwanted program [#387](https://github.com/saferwall/saferwall/pull/387).
 - Numerous updates to support different types of messages for the aggregator [#383](https://github.com/saferwall/saferwall/pull/383).

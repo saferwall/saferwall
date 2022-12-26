@@ -87,8 +87,8 @@ func (vm *VM) ping() error {
 	return nil
 }
 
-// freeVM makes the VM free for consumption.
-func (vm *VM) freeVM() {
+// free makes the VM free for consumption.
+func (vm *VM) free() {
 	vm.InUse = false
 }
 
