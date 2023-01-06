@@ -181,10 +181,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	ctx := context.Background()
 
-	// Generate a unique ID for this detonation.
-	detonationID := generateGuid()
+	// Generate a unique ID for this behavior scan report.
+	behaviorReportID := generateGuid()
 
-	// Deserialize the msg sent from the web apis.
+	// Deserialize the scan config given by the user.
 	fileScanCfg := config.FileScanCfg{}
 	err := json.Unmarshal(m.Body, &fileScanCfg)
 	if err != nil {
@@ -193,21 +193,19 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	sha256 := fileScanCfg.SHA256
-	logger := s.logger.With(ctx, "sha256", sha256, "guid", detonationID)
+	logger := s.logger.With(ctx, "sha256", sha256, "guid", behaviorReportID)
 	logger.Info("start processing")
 
-	// Update the state of the job to processing
+	// Update the state of the job to `processing`.
 	status := make(map[string]interface{})
+	now := time.Now().Unix()
 	status["sha256"] = sha256
-	status["timestamp"] = time.Now().Unix()
-
-	// Type is only to state to that the document we are storing in the DB is of
-	// type `detonate`.
+	status["timestamp"] = now
 	status["type"] = "dynamic-scan"
 	status["status"] = micro.Processing
 
 	payloads := []*pb.Message_Payload{
-		{Key: detonationID, Body: toJSON(status), Kind: pb.Message_DBCREATE},
+		{Key: behaviorReportID, Body: toJSON(status), Kind: pb.Message_DBCREATE},
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
@@ -249,12 +247,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Infof("VM [%s] with ID: %d was selected", vm.Name, vm.ID)
 	logger = logger.With(ctx, "VM", vm.Name)
 
-	// Perform the actual detonation.
+	// Perform the actual behavior scan.
 	res, errDetonation := s.detonate(logger, vm, fileScanCfg)
 	if errDetonation != nil {
-		logger.Errorf("detonation failed with: %v", errDetonation)
+		logger.Errorf("behavior analysis failed with: %v", errDetonation)
 	} else {
-		logger.Infof("detonation succeeded")
+		logger.Infof("behavior analysis succeeded")
 	}
 
 	// Reverting the VM to a clean state at the end of the analysis
@@ -272,23 +270,48 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		// Free the VM for next job now, then continue on processing
 		// sandbox results.
 		logger.Infof("freeing the VM")
-		vm.freeVM()
+		vm.free()
 	}
 
-	// If something went wrong during detonation, we still want to
+	// Append this behavior report to the list of behavior reports for the file object.
+	behaviorReport := make(map[string]interface{})
+	behaviorReport["id"] = behaviorReportID
+	behaviorReport["timestamp"] = now
+
+	// Merge `scanConfig` into `behaviorReport`.
+	var fileScanConfig map[string]interface{}
+	jsonFileScanConfig := toJSON(res.ScanCfg)
+	json.Unmarshal(jsonFileScanConfig, &fileScanConfig)
+	for k, v := range fileScanConfig {
+		behaviorReport[k] = v
+	}
+	behaviorReport["sandbox_ver"] = res.Environment.SandboxVersion
+
+	// If something went wrong during behavior analysis, we still want to
 	// upload the results back to the backend.
+	behaviorReportKey := sha256 + "/" + behaviorReportID + "/"
+	agentLogKey := behaviorReportKey + "agent_log.json"
+	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
+	apiTraceKey := behaviorReportKey + "api_trace.json"
 	payloads = []*pb.Message_Payload{
-		{Key: detonationID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "agent_log", Body: res.AgentLog, Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "sandbox_log", Body: res.SandboxLog, Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
-		{Key: detonationID, Path: "screenshots", Body: toJSON(res.Screenshots), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "agent_log", Body: res.AgentLog, Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "sandbox_log", Body: res.SandboxLog, Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "screenshots", Body: toJSON(res.Screenshots), Kind: pb.Message_DBUPDATE},
+		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
+		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
+		{Key: apiTraceKey, Body: res.APITrace, Kind: pb.Message_UPLOAD},
+		{Key: sha256, Path: "behavior_report_id", Body: toJSON(behaviorReportID),
+			Kind: pb.Message_DBUPDATE},
+		{Key: sha256, Path: "behavior_reports." + behaviorReportID, Body: toJSON(behaviorReport),
+			Kind: pb.Message_DBUPDATE},
 	}
 
 	// Screenshots are uploaded to file system storage like s3.
 	for _, sc := range res.Screenshots {
-		objKey := sha256 + "/" + detonationID + "/" + "screenshots" + "/" + sc.Name
+		objKey := behaviorReportKey + "screenshots" + "/" + sc.Name
 		payload := pb.Message_Payload{
 			Key:  objKey,
 			Body: sc.Content,
@@ -300,7 +323,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Artifacts like memory dumps and dropped files are also uploaded to
 	// file system storage like s3.
 	for _, artifact := range res.Artifacts {
-		objKey := sha256 + "/" + detonationID + "/" + "artifacts" + "/" + artifact.Name
+		objKey := behaviorReportKey + "artifacts" + "/" + artifact.Name
 		payload := pb.Message_Payload{
 			Key:  objKey,
 			Body: artifact.Content,
