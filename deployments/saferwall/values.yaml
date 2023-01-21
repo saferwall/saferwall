@@ -412,26 +412,6 @@ ml:
       memory: 100Mi
       cpu: 100m
 
-########### WEBSITE ###########
-website:
-  enabled: true
-  name: website
-  replicas: 1
-  containerPort: 4000
-  image:
-    repository: saferwall/website
-    tag: latest
-    pullPolicy: Always
-  service:
-    type: ClusterIP
-    port: 80
-    targetPort: 4000
-    nodePort:
-  resources:
-    requests:
-      memory: 100Mi
-      cpu: 100m
-
 ########### MULTIAV ###########
 multiav:
   enabled: true
