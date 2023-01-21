@@ -11,7 +11,7 @@ Ubuntu `18 or 20` users will benefit from `make` commands available for quickly 
   - If you don't want to run a VM, as it takes more resources and not ideal for a single developer machine, use [kind](https://kind.sigs.k8s.io/).
   - If you don't mind spinning a VM, or you want the most full-featured local Kubernetes solution, then you can go ahead with [minikube](https://minikube.sigs.k8s.io/docs/).
 
-It is __recommanded__ to go with `kind` if you don't know know which one to choose.
+It is __recommended__ to go with `kind` if you don't know know which one to choose.
 
 # Deploying in Kind or Minikube
 
@@ -44,7 +44,7 @@ It is __recommanded__ to go with `kind` if you don't know know which one to choo
 11. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
     - Kind: `echo "127.0.0.1 mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`
-12. Open the browser and naviguate to `mysaferwall.com` and `api.mysaferwall.com` and *add an certificate exception* for both domains.
+12. Open the browser and navigate to `mysaferwall.com` and `api.mysaferwall.com` and *add an certificate exception* for both domains.
 13. Create a user so you can start scanning files.
 
 

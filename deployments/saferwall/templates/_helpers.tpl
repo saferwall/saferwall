@@ -63,10 +63,6 @@ Create the name of the hostnames
 {{- define "saferwall.webapis-hostname" -}}
 {{ printf "api.%s" .Values.global.hostname }}
 {{- end -}}
-{{- define "saferwall.website-hostname" -}}
-{{ printf "about.%s" .Values.global.hostname }}
-{{- end -}}
-
 
 {{/*
 Create the docker private registry server token.
@@ -85,4 +81,3 @@ Our couchbase DB URI.
 {{- $server := index .Values "couchbase-operator" "cluster" "name" -}}
 {{- printf "couchbase://%s-srv" $server -}}
 {{- end -}}
-

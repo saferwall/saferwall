@@ -14,9 +14,6 @@ spec:
   - hosts:
     - {{ include "saferwall.ui-hostname" . }}
     - {{ include "saferwall.webapis-hostname" . }}
-    {{- if .Values.website.enabled }}
-    - {{ include "saferwall.website-hostname" . }}
-    {{- end }}
     secretName: {{ include "saferwall.fullname" . }}-tls
   rules:
   - host: {{ include "saferwall.ui-hostname" . }}
@@ -39,16 +36,3 @@ spec:
             name: {{ include "saferwall.fullname" . }}-webapis
             port:
               number: {{ .Values.webapis.service.port }}
-{{- if .Values.website.enabled }}
-  - host: {{ include "saferwall.website-hostname" . }}
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ include "saferwall.fullname" . }}-website
-            port:
-              number: {{ .Values.website.service.port }}
-{{- end }}
-
