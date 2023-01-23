@@ -16,18 +16,15 @@ dependencies:
   version: 4.3.0
 - name: filebeat
   repository: https://helm.elastic.co
-  version: 7.17.1
+  version: 8.5.1
 - name: elasticsearch
   repository: https://helm.elastic.co
-  version: 7.17.1
+  version: 8.5.1
 - name: kibana
   repository: https://helm.elastic.co
-  version: 7.17.1
-- name: kube-prometheus-stack
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 35.2.0
+  version: 8.5.1
 - name: nsq
   repository: https://beeinventor.github.io/charts
   version: 1.2.2
-digest: sha256:5bc0855368c06d0859075a487f9a7c981ab06936b5dab271c8c78174254308c9
-generated: "2022-12-14T11:46:53.252199604+11:00"
+digest: sha256:e731841006428d9c346b88500a7abcd3980ff06f3600d52e4c39c87ee80e7245
+generated: "2023-01-23T13:08:37.867223803+11:00"
