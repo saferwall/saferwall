@@ -47,7 +47,8 @@ k8s-pf-nsq: ## Port fordward NSQ admin service.
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
 k8s-pf-grafana: ## Port fordward grafana dashboard service.
-	kubectl port-forward deployment/$(SAFERWALL_RELEASE_NAME)-grafana 3000:3000 --address='0.0.0.0' &
+	kubectl port-forward --namespace prometheus \
+	deployment/prometheus-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
 k8s-pf-couchbase: ## Port fordward couchbase ui service.
@@ -96,6 +97,13 @@ k8s-install-metallb: ## Install Metallb helm chart.
 		--version v$(METALLB_VERSION) \
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
+
+KUBE_PROMETHEUS_STACK=44.2.1
+PROMETHEUS_URL=https://github.com/prometheus-community/helm-charts/releases/download/
+k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
+	kubectl create namespace prometheus
+	helm install prometheus prometheus-community/kube-prometheus-stack \
+		--namespace prometheus
 
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml
