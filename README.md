@@ -44,9 +44,9 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 - Dynamic Analysis:
 
   - Automated Malware Analysis using a Hypervisor based VM.
-  - Intercepting OS System Calls to build an exeuction trace of executable files.
+  - Intercepting OS System Calls to build an execution trace of executable files.
   - Generate detailed reports and gain insight into malware behavior.
-  - Choose which API's to trace, grab _screenshots_ and file changes aswell as memory dumps.
+  - Choose which API's to trace, grab _screenshots_ and file changes as well as memory dumps.
 
 - Multiple AV scanner supporting major vendors:
 
@@ -79,7 +79,7 @@ Here are the different deployment options available depending on how you are pla
 
 - _"I love it ! I want to run it in prod"_ : First get you a [kops](https://github.com/kubernetes/kops) and check [this guide](docs/DEPLOYING-PROD.md).
 
-The _production_ deployment using Kops automatically provisions a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only [AWS](https://aws.amazon.com/) is officially supported. A [helm](https://helm.sh/) chart is also provided for fast deployement. This setup works well for compagnies or small teams planning to scan a massive amounts of file.
+The _production_ deployment using Kops automatically provisions a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack and also on bare metal. For the time being, only [AWS](https://aws.amazon.com/) is officially supported. A [helm](https://helm.sh/) chart is also provided for fast deployment. This setup works well for companies or small teams planning to scan a massive amounts of file.
 
 ## Our Stack:
 
@@ -88,9 +88,10 @@ The _production_ deployment using Kops automatically provisions a Kubernetes clu
 - Frontend: [VueJS](https://vuejs.org/) + [Tailwind.css](https://tailwindcss.com/)
 - Messaging: [NSQ](https://nsq.io/)
 - Database: [Couchbase](https://www.couchbase.com/)
-- Logging: [FileBeat](https://www.elastic.co/beats/filebeat) + [ElasticSearch](https://www.elastic.co/) + [Kibanna](https://www.elastic.co/)
+- Logging: [Grafana Loki](https://grafana.com/oss/loki/)
 - Metrics: [Prometheus](https://prometheus.io/)
-- Minio: [Object storage](https://min.io/)
+- Visualization: [Grafana](https://grafana.com/grafana/)
+- MinIO: [Object storage](https://min.io/)
 - Deployment: [Helm](https://helm.sh/) + [Kubernetes](https://kubernetes.io/)
 
 ## Current architecture / Workflow:

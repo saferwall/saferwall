@@ -59,52 +59,6 @@ minio:
     requests:
       memory: 2Gi
 
-####### FILEBEAT #########
-filebeat:
-  enabled: false
-  filebeatConfig:
-    filebeat.yml: |-
-      filebeat.autodiscover:
-        providers:
-          - type: kubernetes
-            templates:
-              - condition:
-                  or:
-                    - equals:
-                        kubernetes.container.name: backend
-                    - equals:
-                        kubernetes.container.name: consumer
-                config:
-                  - type: container
-                    paths:
-                      - "/var/log/containers/*-${data.kubernetes.container.id}.log"
-                    json.add_error_key: true
-      processors:
-        - add_cloud_metadata: ~
-        - add_docker_metadata: ~
-      output.elasticsearch:
-        host: '${NODE_NAME}'
-        hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
-
-####### ELASTIC SEARCH #########
-elasticsearch:
-  enabled: false
-  replicas: 1
-  minimumMasterNodes: 1
-  tolerations:
-    - key: node-role.kubernetes.io/master
-      effect: NoSchedule
-  resources:
-    requests:
-      cpu: "500m"
-
-####### KIBANA #########
-kibana:
-  enabled: false
-  resources:
-    requests:
-      cpu: "500m"
-
 ####### COUCHBASE #########
 couchbase-operator:
   enabled: true
