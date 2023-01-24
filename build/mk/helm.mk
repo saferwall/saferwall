@@ -18,7 +18,6 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
 	helm repo add beeinventor https://beeinventor.github.io/charts
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
-	helm repo add elastic https://helm.elastic.co
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add kvaps https://kvaps.github.io/charts

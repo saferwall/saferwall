@@ -29,8 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Do not include `kube-prometheus-stack` in saferwall helm chart [#400](https://github.com/saferwall/saferwall/pull/400).
-- Hosting documentation/blog website in cloudflare [#399](https://github.com/saferwall/saferwall/pull/399).
+- [helm] Remove elastic stack that was used for logging [#404](https://github.com/saferwall/saferwall/pull/404).
+- [helm] Do not include `kube-prometheus-stack` in main chart & remove elastic stack for logging [#403](https://github.com/saferwall/saferwall/pull/403).
+- Hosting documentation/blog website in cloudflare [#402](https://github.com/saferwall/saferwall/pull/402).
 - Set k8s version to the same as prod k8s version and update default user/password values in minio helm chart [#392](https://github.com/saferwall/saferwall/pull/392).
 - Change protobuf message scheme to support uploading object to s3 [#383](https://github.com/saferwall/saferwall/pull/383).
 - Bind k8s port forwarding services to `0.0.0.0`.

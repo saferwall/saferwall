@@ -37,7 +37,6 @@ include build/mk/compose.mk
 include build/mk/couchbase.mk
 include build/mk/die.mk
 include build/mk/docker.mk
-include build/mk/elastic.mk
 include build/mk/exiftool.mk
 include build/mk/github.mk
 include build/mk/go.mk
