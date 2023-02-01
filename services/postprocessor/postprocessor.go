@@ -183,7 +183,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// if the file format is PE, run the ML classifier.
-	if file["fileformat"] == "pe" {
+	if file["file_format"] == "pe" {
 		if _, ok := file["pe"]; ok {
 			res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
 			if err != nil {

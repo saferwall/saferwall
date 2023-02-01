@@ -204,7 +204,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: sha256, Path: "strings", Kind: pb.Message_DBUPDATE, Body: toJSON(stringRes)},
 		{Key: sha256, Path: "histogram", Kind: pb.Message_DBUPDATE, Body: toJSON(bs.ByteHistogram(data))},
 		{Key: sha256, Path: "byte_entropy", Kind: pb.Message_DBUPDATE, Body: toJSON(bs.ByteEntropyHistogram(data))},
-		{Key: sha256, Path: "fileformat", Kind: pb.Message_DBUPDATE, Body: toJSON(fileFormat)},
+		{Key: sha256, Path: "file_format", Kind: pb.Message_DBUPDATE, Body: toJSON(fileFormat)},
 	}
 
 	if fileExt != "unknown" {
