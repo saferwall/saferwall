@@ -17,7 +17,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/saferwall/pe v1.3.3
+	github.com/saferwall/pe v1.3.6
 	github.com/spf13/viper v1.14.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/zap v1.21.0
