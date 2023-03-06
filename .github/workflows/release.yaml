@@ -53,6 +53,7 @@ jobs:
         run: |
           version=$(cat VERSION)
           echo "::set-output name=BUILD_VERSION::${version}"
+          echo "BUILD_VERSION=${version}" >>$GITHUB_OUTPUT
 
       - name: Decrypt secrets
         run: |
@@ -60,7 +61,7 @@ jobs:
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           push: true
           file: build/docker/Dockerfile.${{ matrix.service }}
