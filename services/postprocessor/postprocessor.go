@@ -150,9 +150,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Info("start processing")
 
-	// wait until all microservices finishes processing.
-	// as AVs are the slowest, by waiting for them to
-	// finish, we can make sure everything else also finished.
+	// Wait until all microservices finishes processing. As AVs are the slowest,
+	// by waiting for them to finish, we can make sure everything else also finished.
 	sleepRange := [6]time.Duration{6, 5, 4, 3, 2, 1}
 	for _, v := range sleepRange {
 		logger.Debugf("iteration: %d", v)
@@ -208,7 +207,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// update multiav first_scan if needed.
+	// Update multiav `first_scan` if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
@@ -230,7 +229,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// serialize the message using protobuf.
+	// Serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
@@ -238,7 +237,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// finally, produce the message to the right queue.
+	// Finally, produce the message to the right queue.
 	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
