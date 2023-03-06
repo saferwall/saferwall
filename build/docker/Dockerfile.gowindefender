@@ -34,9 +34,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # STEP 2 build a small image
 ############################
 
-FROM saferwall/windefender:0.0.3
+FROM saferwall/windefender:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.0.3"
+LABEL version="0.4.0"
 LABEL description="windows defender port + wine into linux with nsq consumer"
 
 # Environment variables.
@@ -70,7 +70,6 @@ RUN usermod -u 120 messagebus \
 	&& groupmod -g 102 saferwall \
 	&& chown -R saferwall:saferwall . \
 	&& chown -R saferwall:saferwall $WINDOWS_DEFENDER_INSTALL_DIR
-
 
 # Switch to our user.
 USER saferwall
