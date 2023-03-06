@@ -24,7 +24,7 @@ jobs:
         run: make helm-add-repos
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.1
+        uses: helm/chart-releaser-action@v1.5.0
         with:
           charts_dir: 'deployments'
         env:

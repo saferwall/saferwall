@@ -46,7 +46,7 @@ jobs:
         id: prep
         run: |
           version=$(cat VERSION)
-          echo "::set-output name=BUILD_VERSION::${version}"
+          echo "BUILD_VERSION=${version}" >>$GITHUB_OUTPUT
 
       - name: Build and push
         id: docker_build
