@@ -345,14 +345,14 @@ ml:
   enabled: false
   name: ml
   replicas: 1
-  containerPort: 8000
+  containerPort: 8001
   image:
     repository: saferwall/ml-pipeline
     tag: latest
     pullPolicy: Always
   service:
     port: 80
-    targetPort: 8000
+    targetPort: 8001
   resources:
     requests:
       memory: 100Mi

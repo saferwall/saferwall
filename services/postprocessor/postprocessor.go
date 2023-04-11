@@ -150,18 +150,18 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Info("start processing")
 
-	// wait until all microservices finishes processing.
-	// as AVs are the slowest, by waiting for them to
-	// finish, we can make sure everything else also finished.
-	sleeprange := [6]time.Duration{6, 5, 4, 3, 2, 1}
-	for _, v := range sleeprange {
-		logger.Debugf("Iteratation: %d", v)
+	// Wait until all microservices finishes processing. As AVs are the slowest,
+	// by waiting for them to finish, we can make sure everything else also finished.
+	sleepRange := [6]time.Duration{6, 5, 4, 3, 2, 1}
+	for _, v := range sleepRange {
+		logger.Debugf("iteration: %d", v)
 		time.Sleep(v * time.Second)
 		var multiav map[string]interface{}
 		err := s.db.Lookup(ctx, sha256, "multiav.last_scan", &multiav)
 		if err != nil {
 			logger.Errorf("failed to read document: %v", err)
 		}
+		// TODO: not everything deployment has 14 engines.
 		logger.Debugf("finish av scanners: %d", len(multiav))
 		if len(multiav) == 14 {
 			break
@@ -175,11 +175,23 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// set the file analysis status to `finished` and
-	// set the `last_scan` to now.
+	// Set the file analysis status to `finished` and set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
 		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE, Body: toJSON(2)},
 		{Key: sha256, Path: "last_scanned", Kind: pb.Message_DBUPDATE, Body: toJSON(time.Now().Unix())},
+	}
+
+	// Include fields that has been missing in previous versions of the documents.
+	if _, ok := file["first_seen"]; !ok {
+		if _, ok := file["submissions"]; ok {
+			submissions := file["submissions"].([]interface{})
+			if len(submissions) > 0 {
+				firstSubmission := submissions[0].(map[string]interface{})
+				first_seen := firstSubmission["timestamp"].(float64)
+				payloads = append(payloads, &pb.Message_Payload{
+					Key: sha256, Path: "first_seen", Kind: pb.Message_DBUPDATE, Body: toJSON(first_seen)})
+			}
+		}
 	}
 
 	// if the file format is PE, run the ML classifier.
@@ -195,7 +207,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// update multiav first_scan if needed.
+	// Update multiav `first_scan` if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
@@ -217,7 +229,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// serialize the message using protobuf.
+	// Serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err := proto.Marshal(msg)
 	if err != nil {
@@ -225,7 +237,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	// finally, produce the message to the right queue.
+	// Finally, produce the message to the right queue.
 	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
