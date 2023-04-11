@@ -87,7 +87,7 @@ services:
   ml:
     image: saferwall/ml-pipeline:latest
     ports:
-      - "8000:8000"
+      - "8001:8001"
 
   orchestrator:
     image: saferwall/orchestrator:latest
@@ -157,6 +157,14 @@ services:
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [ /saferwall/comodo-svc, -config, /saferwall/conf/ ]
+    volumes:
+      - /samples:/samples
+
+  windefender:
+    image: saferwall/gowindefender:latest
+    environment:
+      - SAFERWALL_DEPLOYMENT_KIND=dev
+    entrypoint: [ /saferwall/windefender-svc, -config, /saferwall/conf/ ]
     volumes:
       - /samples:/samples
 
