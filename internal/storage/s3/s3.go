@@ -65,6 +65,7 @@ func New(region, accessKey, secretKey string) (Service, error) {
 	// Create a downloader with S3 client and custom options
 	downloader := s3manager.NewDownloaderWithClient(s3Svc,
 		func(u *s3manager.Downloader) {
+			u.Concurrency = 1            // Guarantee sequential writes
 			u.PartSize = 5 * 1024 * 1024 // 5MB per part
 		})
 
