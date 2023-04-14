@@ -17,5 +17,8 @@ dependencies:
 - name: nsq
   repository: https://beeinventor.github.io/charts
   version: 1.2.2
-digest: sha256:304360ae9e68e8fc9d0aeb5c0a580cc9fcda13e8b5ba94b2e72715f806d36068
-generated: "2023-04-14T16:50:08.632332135+10:00"
+- name: loki-stack
+  repository: https://grafana.github.io/helm-charts/
+  version: 2.9.10
+digest: sha256:619b19b948fb3e06f6faa10f783f2f7940c5ffa97ddcef2e634f5ae10d57c68b
+generated: "2023-04-14T17:09:48.290621385+10:00"

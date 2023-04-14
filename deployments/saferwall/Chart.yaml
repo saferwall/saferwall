@@ -36,3 +36,7 @@ dependencies:
       version: 1.2.2
       repository: https://beeinventor.github.io/charts
       condition: nsq.enabled
+    - name: loki-stack
+      version: 2.9.10
+      repository: https://grafana.github.io/helm-charts/
+      condition: loki-stack.enabled
