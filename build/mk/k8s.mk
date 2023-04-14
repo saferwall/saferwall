@@ -98,12 +98,19 @@ k8s-install-metallb: ## Install Metallb helm chart.
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-KUBE_PROMETHEUS_STACK=44.2.1
-PROMETHEUS_URL=https://github.com/prometheus-community/helm-charts/releases/download/
+KUBE_PROMETHEUS_STACK=45.10.0
 k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
 	kubectl create namespace prometheus
 	helm install prometheus prometheus-community/kube-prometheus-stack \
+		--version v$(KUBE_PROMETHEUS_STACK)
 		--namespace prometheus
+
+LOKI_STACK=2.9.10
+k8s-install-loki-stack: ## Install Loki Stack
+	kubectl create namespace loki-stack
+	helm install loki-stack grafana/loki-stack \
+		--version v$(LOKI_STACK) \
+		--namespace loki-stack
 
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml
