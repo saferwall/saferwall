@@ -25,8 +25,8 @@ dependencies:
       repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
       condition: aws-efs-csi-driver.enabled
     - name: nfs-server-provisioner
-      version: 1.4.0
-      repository: https://kvaps.github.io/charts
+      version: 1.8.0
+      repository: https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
       condition: nfs-server-provisioner.enabled
     - name: ingress-nginx
       version: 4.4.2

@@ -20,10 +20,10 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add couchbase https://couchbase-partners.github.io/helm-charts/
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add jetstack https://charts.jetstack.io
-	helm repo add kvaps https://kvaps.github.io/charts
 	helm repo add metallb https://metallb.github.io/metallb
 	helm repo add minio https://charts.min.io/
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo add grafana https://grafana.github.io/helm-charts
 
 	# Update your local Helm chart repository cache.
 	helm repo update
