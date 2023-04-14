@@ -17,8 +17,11 @@ dependencies:
 - name: nsq
   repository: https://beeinventor.github.io/charts
   version: 1.2.2
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 45.10.0
 - name: loki-stack
   repository: https://grafana.github.io/helm-charts/
   version: 2.9.10
-digest: sha256:619b19b948fb3e06f6faa10f783f2f7940c5ffa97ddcef2e634f5ae10d57c68b
-generated: "2023-04-14T17:09:48.290621385+10:00"
+digest: sha256:f3cddf4bf524e4189a35fb190f5e5b17c763ccc506e3ba3237c2668bead754a2
+generated: "2023-04-14T17:44:07.339931554+10:00"

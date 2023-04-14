@@ -36,6 +36,10 @@ dependencies:
       version: 1.2.2
       repository: https://beeinventor.github.io/charts
       condition: nsq.enabled
+    - name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 45.10.0
+      condition: kube-prometheus-stack.enabled
     - name: loki-stack
       version: 2.9.10
       repository: https://grafana.github.io/helm-charts/
