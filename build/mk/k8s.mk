@@ -38,10 +38,6 @@ k8s-kube-capacity: ## Install kube-capacity
 
 k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
-k8s-pf-kibana: ## Port fordward Kibana
-	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-kibana 5601:5601 --address='0.0.0.0' &
-	while true ; do nc -vz 127.0.0.1 5601 ; sleep 5 ; done
-
 k8s-pf-nsq: ## Port fordward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
@@ -102,7 +98,7 @@ KUBE_PROMETHEUS_STACK=45.10.0
 k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
 	kubectl create namespace prometheus
 	helm install prometheus prometheus-community/kube-prometheus-stack \
-		--version v$(KUBE_PROMETHEUS_STACK)
+		--version v$(KUBE_PROMETHEUS_STACK) \
 		--namespace prometheus
 
 LOKI_STACK=2.9.10
