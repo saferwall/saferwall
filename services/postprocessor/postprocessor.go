@@ -152,7 +152,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// Wait until all microservices finishes processing. As AVs are the slowest,
 	// by waiting for them to finish, we can make sure everything else also finished.
-	sleepRange := [6]time.Duration{10, 6, 5, 4, 3, 2, 1}
+	sleepRange := [7]time.Duration{10, 6, 5, 4, 3, 2, 1}
 	for _, v := range sleepRange {
 		logger.Debugf("iteration: %d", v)
 		time.Sleep(v * time.Second)
