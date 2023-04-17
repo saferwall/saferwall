@@ -15,7 +15,7 @@ dependencies:
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.4.2
 - name: nsq
-  repository: https://beeinventor.github.io/charts
-  version: 1.2.2
-digest: sha256:304360ae9e68e8fc9d0aeb5c0a580cc9fcda13e8b5ba94b2e72715f806d36068
-generated: "2023-04-14T19:01:04.007720141+10:00"
+  repository: https://nsqio.github.io/helm-chart/
+  version: 0.0.8
+digest: sha256:8261a732710340004da6bfa211e34b6e2973498fd45e2817051630a77e407100
+generated: "2023-04-17T14:28:31.338260594+10:00"

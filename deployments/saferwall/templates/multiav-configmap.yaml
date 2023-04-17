@@ -37,7 +37,7 @@ data:
     # Channel name used in conjunction with topic name.
     channel = "chan-{{ $av }}"
     # The number of concurrent workers to process the jobs.
-    concurrency = {{ $value.replicas }}
+    concurrency = 1
 ---
 {{- end }}
 {{- end }}
