@@ -69,7 +69,7 @@ func NewSubscriber(topic, channel string, nsqlookupds []string, concurrency int,
 	nsqConfig.MaxAttempts = 2
 
 	// Maximum number of messages to allow in flight (concurrency knob).
-	nsqConfig.MaxInFlight = 10
+	nsqConfig.MaxInFlight = concurrency
 
 	// The server-side message timeout for messages delivered to this client.
 	nsqConfig.MsgTimeout = time.Duration(2 * time.Minute)

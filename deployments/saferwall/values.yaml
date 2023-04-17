@@ -295,7 +295,7 @@ meta:
 ########### AGGREGATOR ###########
 aggregator:
   enabled: true
-  name: meta
+  name: aggregator
   replicas: 1
   image:
     repository: saferwall/aggregator
