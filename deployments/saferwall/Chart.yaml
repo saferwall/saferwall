@@ -33,6 +33,6 @@ dependencies:
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: nsq
-      version: 1.2.2
-      repository: https://beeinventor.github.io/charts
+      version: 0.0.8
+      repository: https://nsqio.github.io/helm-chart/
       condition: nsq.enabled
