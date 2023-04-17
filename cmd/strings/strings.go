@@ -38,7 +38,7 @@ func main() {
 	data, err := ioutil.ReadFile(os.Args[1])
 	check(err)
 
-	// Mininum string length
+	// Minimum string length
 	n := 6
 
 	// Get the strings

@@ -140,6 +140,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to copy file, reason: %v", err)
 		return err
 	}
+	logger.Debug("file has been copied to /tmp")
 
 	r, err := s.av.ScanFile(dest)
 	if err != nil {
@@ -189,7 +190,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
+	err = s.pub.Publish(ctx, s.cfg.Producer.Topic, out)
+	if err != nil {
+		logger.Error("failed to publish message: %v", err)
+	}
 
 	return nil
 }
