@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	cmd      = "/opt/drweb.com/bin/drweb-ctl"
-	regexStr = "infected with (.*)"
-	configD  = "/opt/drweb.com/bin/drweb-configd"
+	cmd         = "/opt/drweb.com/bin/drweb-ctl"
+	regexStr    = "infected with (.*)"
+	configD     = "/opt/drweb.com/bin/drweb-configd"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -59,6 +60,11 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// # /opt/drweb.com/bin/drweb-ctl scan --help
 	// Scan file or directory
 	// Usage: drweb-ctl scan <path_to_scan> [options]
@@ -85,7 +91,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	//   --Stdin                           read '\n'-separated paths from stdin
 	//   --Stdin0                          read '\0'-separated paths from stdin
 	//   -d [ --Debug ]                    extended diagnostic output
-	res.Out, err = utils.ExecCmd(cmd, "scan", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "scan", filePath)
 
 	// # /opt/drweb.com/bin/drweb-ctl scan /eicar
 	// /eicar - infected with EICAR Test File (NOT a Virus!)

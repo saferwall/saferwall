@@ -5,9 +5,11 @@
 package windefender
 
 import (
+	"context"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -18,6 +20,7 @@ const (
 	loadlibraryPath = "/opt/windows-defender/"
 	mploader        = "./mploader.exe"
 	mpenginedll     = "/engine/mpengine.dll"
+	scanTimeout     = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -52,9 +55,14 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	}
 	defer os.Chdir(dir)
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
 	// main(): usage: ./mploader -f <filePath> -u
-	res.Out, err = utils.ExecCmd("wine", mploader, "-f", filePath, "-u")
+	res.Out, err = utils.ExecCmdWithContext(ctx, "wine", mploader, "-f", filePath, "-u")
 	if err != nil {
 		return res, err
 	}

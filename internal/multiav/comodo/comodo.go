@@ -1,19 +1,22 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package comodo
 
 import (
+	"context"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	cmdscan = "/opt/COMODO/cmdscan"
-	cavver  = "/opt/COMODO/cavver.dat"
+	cmdscan     = "/opt/COMODO/cmdscan"
+	cavver      = "/opt/COMODO/cavver.dat"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -37,7 +40,12 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
-	res.Out, err = utils.ExecCmd(cmdscan, "-v", "-s", filePath)
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmdscan, "-v", "-s", filePath)
 	// -s: scan a file or directory
 	// -v: verbose mode, display more detailed output
 	if err != nil {

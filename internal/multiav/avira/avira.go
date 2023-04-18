@@ -1,14 +1,16 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package avira
 
 import (
+	"context"
 	"errors"
 	"io"
 	"regexp"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -33,6 +35,8 @@ const (
 
 	// LicenseKeyPath points to the location of the license.
 	LicenseKeyPath = "/opt/avira/hbedv.key"
+
+	scanTimeout = 60 * time.Second
 )
 
 var (
@@ -93,12 +97,17 @@ func (Scanner) ScanFile(filepath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
 	// --nombr ................  do not check any master boot records
 	// --nostats ..............  do not display scan statistics
 	// --quarantine ...........  set the quarantine directory
 
-	res.Out, err = utils.ExecCmd(cmd, "--nombr", "--nostats",
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "--nombr", "--nostats",
 		"--quarantine=/tmp", filepath)
 
 	// 	List of return codes :

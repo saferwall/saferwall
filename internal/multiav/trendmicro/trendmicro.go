@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -18,10 +18,11 @@ import (
 )
 
 const (
-	splxmain = "/opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain"
-	logDir   = "/var/log/TrendMicro/SProtectLinux/"
-	tmsplx   = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
-	splx     = "/etc/init.d/splx"
+	splxmain    = "/opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain"
+	logDir      = "/var/log/TrendMicro/SProtectLinux/"
+	tmsplx      = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
+	splx        = "/etc/init.d/splx"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -101,8 +102,13 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 		return res, err
 	}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path.
-	out, err := utils.ExecCmd("sudo", splxmain, "-m", path.Dir(filePathCopy))
+	out, err := utils.ExecCmdWithContext(ctx, "sudo", splxmain, "-m", path.Dir(filePathCopy))
 	fmt.Printf("out: %s", out)
 	if err != nil {
 		return res, err

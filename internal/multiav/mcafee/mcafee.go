@@ -5,8 +5,10 @@
 package mcafee
 
 import (
+	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -14,6 +16,7 @@ import (
 
 const (
 	cmd          = "/opt/mcafee/uvscan"
+	scanTimeout  = 60 * time.Second
 	regVersion   = `Linux64 Version: ([\\d\\.]+)[\\s\\S]+Engine version: ([\\d\\.]+)[\\s\\S]+set version: ([\\d\\.]+)`
 	regDetection = `Found (the|potentially unwanted program|trojan or variant) (.*)( !!!|\.)`
 )
@@ -60,6 +63,11 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
 	// --ANALYZE                  : Turn on heuristic analysis for programs and macros
 	// --ASCII                    : Display filenames as ASCII text.
@@ -70,7 +78,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// --PROGRAM                  : Scan for potentially unwanted applications
 
 	// /opt/mcafee/uvscan --ANALYZE --ASCII --MANALYZE --MACRO-HEURISTICS --UNZIP sample
-	res.Out, err = utils.ExecCmd(cmd, "--ANALYZE", "--ASCII",
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "--ANALYZE", "--ASCII",
 		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filePath)
 
 	// Exit codes:

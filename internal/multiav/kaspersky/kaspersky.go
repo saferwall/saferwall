@@ -1,11 +1,13 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package kaspersky
 
 import (
+	"context"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -14,6 +16,7 @@ import (
 const (
 	kesl         = "/opt/kaspersky/kesl/bin/kesl-control"
 	keslLauncher = "/opt/kaspersky/kesl/libexec/kesl_launcher.sh"
+	scanTimeout  = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -82,6 +85,11 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Return codes
 	// 0 – command / task completed successfully.
 	// 1 – general error in command arguments.
@@ -95,7 +103,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// 65 – all other errors.
 
 	// Run now
-	res.Out, err = utils.ExecCmd("sudo", kesl, "--scan-file",
+	res.Out, err = utils.ExecCmdWithContext(ctx, "sudo", kesl, "--scan-file",
 		filePath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip
 	// Scanned objects                     : 1

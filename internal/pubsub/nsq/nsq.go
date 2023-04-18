@@ -72,7 +72,7 @@ func NewSubscriber(topic, channel string, nsqlookupds []string, concurrency int,
 	nsqConfig.MaxInFlight = concurrency
 
 	// The server-side message timeout for messages delivered to this client.
-	nsqConfig.MsgTimeout = time.Duration(2 * time.Minute)
+	nsqConfig.MsgTimeout = time.Duration(5 * time.Minute)
 
 	cons, err := gonsq.NewConsumer(topic, channel, nsqConfig)
 
