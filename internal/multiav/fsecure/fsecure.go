@@ -1,19 +1,22 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package fsecure
 
 import (
+	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	fsav = "/opt/f-secure/fsav/bin/fsav"
+	fsav        = "/opt/f-secure/fsav/bin/fsav"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -35,7 +38,12 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
-	res.Out, err = utils.ExecCmd(fsav, "--virus-action1=report",
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
+	res.Out, err = utils.ExecCmdWithContext(ctx, fsav, "--virus-action1=report",
 		"--suspected-action1=report", filePath)
 
 	// FSAV has the following exit codes:

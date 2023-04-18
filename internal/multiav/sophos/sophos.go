@@ -1,18 +1,21 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package sophos
 
 import (
+	"context"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	savscan = "/opt/sophos/bin/savscan"
+	scanTimeout = 60 * time.Second
+	savscan     = "/opt/sophos/bin/savscan"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -32,6 +35,11 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	//  Scan parameters
 	// -f  		: Full Scan
 	// -c  		: Ask for confirmation before disinfection/deletion
@@ -44,7 +52,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// tnef 	: Scan inside TNEF files
 	// pua : Scan for adware/potentially unwanted applications (PUAs).
 
-	res.Out, err = utils.ExecCmd(savscan, "-f", "-nc", "-nb", "-ss",
+	res.Out, err = utils.ExecCmdWithContext(ctx, savscan, "-f", "-nc", "-nb", "-ss",
 		"-archive", "-loopback", "-mime", "-oe", "-tnef", "-pua", filePath)
 	if err != nil && err.Error() != "exit status 3" {
 		return res, err

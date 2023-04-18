@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -16,10 +16,11 @@ import (
 )
 
 const (
-	cmd      = "/opt/Symantec/symantec_antivirus/sav"
-	logsDir  = "/var/symantec/sep/Logs/"
-	symcfgd  = "/opt/Symantec/symantec_antivirus/symcfgd"
-	rtvscand = "/opt/Symantec/symantec_antivirus/rtvscand"
+	cmd         = "/opt/Symantec/symantec_antivirus/sav"
+	scanTimeout = 60 * time.Second
+	logsDir     = "/var/symantec/sep/Logs/"
+	symcfgd     = "/opt/Symantec/symantec_antivirus/symcfgd"
+	rtvscand    = "/opt/Symantec/symantec_antivirus/rtvscand"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -64,8 +65,13 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 		return res, err
 	}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
-	_, err = utils.ExecCmd("sudo", cmd, "manualscan", "--clscan", filePath)
+	_, err = utils.ExecCmdWithContext(ctx, "sudo", cmd, "manualscan", "--clscan", filePath)
 	if err != nil {
 		return res, err
 	}

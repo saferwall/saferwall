@@ -1,19 +1,22 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package eset
 
 import (
+	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	cls = "/opt/eset/efs/sbin/cls/cls"
+	cls         = "/opt/eset/efs/sbin/cls/cls"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -25,6 +28,11 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
 	// --unsafe                  scan for potentially unsafe applications
 	// --unwanted                scan for potentially unwanted applications
@@ -33,7 +41,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// 							 strict, rigorous, delete
 	// --no-quarantine           do not copy detected files to Quarantine
 
-	res.Out, err = utils.ExecCmd(cls, "--unsafe", "--unwanted",
+	res.Out, err = utils.ExecCmdWithContext(ctx, cls, "--unsafe", "--unwanted",
 		"--clean-mode=NONE", "--no-quarantine", filePath)
 
 	// Exit codes:

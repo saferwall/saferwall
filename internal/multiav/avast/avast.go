@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -21,7 +21,7 @@ const (
 	avastDaemon = "/usr/bin/avast"
 	licenseFile = "/etc/avast/license.avastlic"
 	vpsUpdate   = "/usr/lib/avast/avast.setup"
-	scanTimeout = 10 * time.Second
+	scanTimeout = 30 * time.Second
 	tmpFilename = "tmpFile"
 )
 

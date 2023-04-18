@@ -1,19 +1,22 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
 package bitdefender
 
 import (
+	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	bdscan = "/opt/BitDefender-scanner/bin/bdscan"
+	bdscan      = "/opt/BitDefender-scanner/bin/bdscan"
+	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -46,7 +49,12 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
-	res.Out, err = utils.ExecCmd(bdscan, "--action=ignore", filePath)
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
+	res.Out, err = utils.ExecCmdWithContext(ctx, bdscan, "--action=ignore", filePath)
 	// --action=[disinfect|quarantine|delete|ignore]
 
 	// Exit status codes:

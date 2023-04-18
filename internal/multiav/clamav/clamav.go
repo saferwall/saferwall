@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	clamdscan = "/usr/bin/clamdscan"
-	clamd     = "clamd"
-	timeout   = 60
+	clamdscan     = "/usr/bin/clamdscan"
+	clamd         = "clamd"
+	daemonTimeout = 60 * time.Second
+	scanTimeout   = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -29,9 +30,14 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	var err error
 	res := multiav.Result{}
 
+	// Create a new context and add a timeout to it.
+	ctx, cancel := context.WithTimeout(
+		context.Background(), time.Duration(scanTimeout))
+	defer cancel()
+
 	// Execute the scanner with the given file path
 	// --no-summary   Disable summary at end of scanning
-	res.Out, err = utils.ExecCmd(clamdscan, "--no-summary", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, clamdscan, "--no-summary", filePath)
 
 	// clamscan return values (documented from man clamscan)
 	//   0 : No virus found.
@@ -92,7 +98,7 @@ func Version() (string, error) {
 
 // StartDaemon starts the clamd daemon.
 func StartDaemon() error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), daemonTimeout)
 	defer cancel()
 	out, err := utils.ExecCmdWithContext(ctx, clamd)
 	if err != nil {
