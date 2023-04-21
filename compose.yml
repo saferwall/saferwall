@@ -119,6 +119,7 @@ services:
       ]
     volumes:
       - /samples:/samples
+    restart: always
 
   pe:
     image: saferwall/pe:latest
