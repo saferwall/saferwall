@@ -83,15 +83,14 @@ func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
 	s.sub.Start()
 
-	// start a background job that deletes samples from
-	// the nfs share that has not been accessed since
-	// more than a day.
+	// Start a background job that deletes samples from the NFS share that has
+	// not been accessed since more than a day.
 	scheduler := periodic.NewScheduler()
 	cleanupStorage, _ := periodic.NewTask(deleteOldSamples, s.cfg.SharedVolume)
 	scheduler.RegisterTask("cleanupStorageTask", time.Hour*24, cleanupStorage)
 	scheduler.Run()
 
-	//Stop tasks before program is shutting down
+	// Stop tasks before program is shutting down.
 	defer func() {
 		scheduler.Stop()
 		s.logger.Info("every task is stopped")
