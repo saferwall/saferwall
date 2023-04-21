@@ -71,7 +71,8 @@ func NewSubscriber(topic, channel string, nsqlookupds []string, concurrency int,
 	// Maximum number of messages to allow in flight (concurrency knob).
 	nsqConfig.MaxInFlight = concurrency
 
-	// The server-side message timeout for messages delivered to this client.
+	// Timeout duration to wait before auto-requeing a message.
+	// We can TOUCH before the timeout repeatedly, up to the max-msg-timeout.
 	nsqConfig.MsgTimeout = time.Duration(5 * time.Minute)
 
 	cons, err := gonsq.NewConsumer(topic, channel, nsqConfig)
