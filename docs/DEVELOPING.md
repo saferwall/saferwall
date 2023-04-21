@@ -6,3 +6,5 @@
     - Create a new cluster named saferwall (default settings).
     - Create a bucket named `sfw` with default settings.
 - As root: `chmod 777 -R /samples`
+- Install a browser extension that disables CORS.
+- Now you can sign up in: http://localhost:8000/
