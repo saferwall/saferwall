@@ -97,8 +97,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	detRes := DetonationResult{}
 	ctx := context.Background()
 
-	// Establish a gRPC connection to the agent server running
-	// inside the guest.
+	// Establish a gRPC connection to the agent server running inside the guest.
 	client, err := agent.New(vm.IP + defaultGRPCPort)
 	if err != nil {
 		logger.Errorf("failed to establish connection to server: %v", err)

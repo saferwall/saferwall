@@ -17,6 +17,8 @@ data:
     shared_volume = "{{ $root.Values.global.storage.sharedVolume }}"
     # Name of the antivirus.
     engine_name = "{{ $av }}"
+    # Scan timeout in seconds.
+    scan_timeout = "{{ $value.scanTimeout }}"
 
     [producer]
     # The data source name (DSN) for connecting to the broker server (NSQD)
