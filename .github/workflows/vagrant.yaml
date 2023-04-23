@@ -9,11 +9,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Decrypt Secret
-        run: ./scripts/decrypt_secret.sh
-        env:
-          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
-
       - name: Install VirtualBox|Vagrant
         run: |
           make vbox-install
