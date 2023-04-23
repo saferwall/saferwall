@@ -378,6 +378,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     avira:
       enabled: true
       replicas: 1
@@ -389,6 +391,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     bitdefender:
       enabled: false
       replicas: 1
@@ -400,6 +404,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     clamav:
       enabled: true
       replicas: 1
@@ -411,6 +417,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     comodo:
       enabled: true
       replicas: 1
@@ -422,6 +430,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     eset:
       enabled: false
       replicas: 1
@@ -433,6 +443,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     drweb:
       enabled: false
       replicas: 1
@@ -444,6 +456,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     fsecure:
       enabled: false
       replicas: 1
@@ -455,6 +469,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     kaspersky:
       enabled: false
       replicas: 1
@@ -466,6 +482,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     mcafee:
       enabled: false
       replicas: 1
@@ -477,6 +495,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     sophos:
       enabled: false
       replicas: 1
@@ -488,6 +508,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     symantec:
       enabled: false
       replicas: 1
@@ -499,6 +521,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     trendmicro:
       enabled: false
       replicas: 1
@@ -510,6 +534,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
     windefender:
       enabled: true
       replicas: 1
@@ -521,6 +547,8 @@ multiav:
       service:
         port: 50051
         targetPort: 50051
+      logLevel: info
+      scanTimeout: 60
   resources:
     requests:
       memory: 100Mi
