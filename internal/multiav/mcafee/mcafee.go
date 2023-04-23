@@ -8,7 +8,6 @@ import (
 	"context"
 	"regexp"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -16,7 +15,6 @@ import (
 
 const (
 	cmd          = "/opt/mcafee/uvscan"
-	scanTimeout  = 60 * time.Second
 	regVersion   = `Linux64 Version: ([\\d\\.]+)[\\s\\S]+Engine version: ([\\d\\.]+)[\\s\\S]+set version: ([\\d\\.]+)`
 	regDetection = `Found (the|potentially unwanted program|trojan or variant) (.*)( !!!|\.)`
 )
@@ -58,14 +56,18 @@ func GetVersion() (Version, error) {
 }
 
 // ScanFile scans a given file.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path
@@ -79,7 +81,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 
 	// /opt/mcafee/uvscan --ANALYZE --ASCII --MANALYZE --MACRO-HEURISTICS --UNZIP sample
 	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "--ANALYZE", "--ASCII",
-		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filePath)
+		"--MANALYZE", "--MACRO-HEURISTICS", "--UNZIP", filepath)
 
 	// Exit codes:
 	//  0 The scanner found no viruses or other potentially unwanted software,

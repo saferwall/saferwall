@@ -8,7 +8,6 @@ import (
 	"context"
 	"regexp"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -16,21 +15,24 @@ import (
 
 const (
 	cls         = "/opt/eset/efs/sbin/cls/cls"
-	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
 type Scanner struct{}
 
 // ScanFile performs antivirus scan.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path
@@ -42,7 +44,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// --no-quarantine           do not copy detected files to Quarantine
 
 	res.Out, err = utils.ExecCmdWithContext(ctx, cls, "--unsafe", "--unwanted",
-		"--clean-mode=NONE", "--no-quarantine", filePath)
+		"--clean-mode=NONE", "--no-quarantine", filepath)
 
 	// Exit codes:
 	//  0    no threat found

@@ -10,7 +10,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -21,7 +20,6 @@ const (
 	avastDaemon = "/usr/bin/avast"
 	licenseFile = "/etc/avast/license.avastlic"
 	vpsUpdate   = "/usr/lib/avast/avast.setup"
-	scanTimeout = 30 * time.Second
 	tmpFilename = "tmpFile"
 )
 
@@ -55,7 +53,7 @@ func ProgramVersion() (string, error) {
 }
 
 // ScanFile scans from a filepath.
-func (Scanner) ScanFile(filepath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
@@ -64,16 +62,20 @@ func (Scanner) ScanFile(filepath string) (multiav.Result, error) {
 		return res, err
 	}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path
 	//  -a         Print all scanned files/URLs, not only infected.
 	//  -b         Report decompression bombs as infections.
 	//  -f         Scan full files.
-	//  -u         Report potentionally unwanted programs (PUP).
+	//  -u         Report potentially unwanted programs (PUP).
 	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "-abfu", filepath)
 
 	// Exit status:
@@ -107,7 +109,7 @@ func (avast Scanner) ScanReader(r io.Reader) (multiav.Result, error) {
 		return multiav.Result{Output: ""}, err
 	}
 
-	return avast.ScanFile(tmpFilename)
+	return avast.ScanFile(tmpFilename, multiav.Options{})
 }
 
 // ScanURL scans a given URL.

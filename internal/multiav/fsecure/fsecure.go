@@ -8,7 +8,6 @@ import (
 	"context"
 	"regexp"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -16,7 +15,6 @@ import (
 
 const (
 	fsav        = "/opt/f-secure/fsav/bin/fsav"
-	scanTimeout = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -33,18 +31,22 @@ type Version struct {
 }
 
 // ScanFile a file with FSecure scanner
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	res.Out, err = utils.ExecCmdWithContext(ctx, fsav, "--virus-action1=report",
-		"--suspected-action1=report", filePath)
+		"--suspected-action1=report", filepath)
 
 	// FSAV has the following exit codes:
 	// 0 - Normal exit; no viruses or suspicious files found.

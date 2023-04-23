@@ -10,7 +10,6 @@ import (
 	"io"
 	"regexp"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -35,8 +34,6 @@ const (
 
 	// LicenseKeyPath points to the location of the license.
 	LicenseKeyPath = "/opt/avira/hbedv.key"
-
-	scanTimeout = 60 * time.Second
 )
 
 var (
@@ -92,14 +89,18 @@ func GetVersion() (Version, error) {
 }
 
 // ScanFile scans a given file
-func (Scanner) ScanFile(filepath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path

@@ -15,29 +15,31 @@ import (
 )
 
 const (
-	clamdscan     = "/usr/bin/clamdscan"
+	clamdScan     = "/usr/bin/clamdscan"
 	clamd         = "clamd"
 	daemonTimeout = 60 * time.Second
-	scanTimeout   = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
 type Scanner struct{}
 
 // ScanFile performs antivirus scan.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
-
 	// Execute the scanner with the given file path
 	// --no-summary   Disable summary at end of scanning
-	res.Out, err = utils.ExecCmdWithContext(ctx, clamdscan, "--no-summary", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, clamdScan, "--no-summary", filepath)
 
 	// clamscan return values (documented from man clamscan)
 	//   0 : No virus found.
@@ -84,7 +86,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 func Version() (string, error) {
 
 	// Execute the scanner with the given file path
-	out, err := utils.ExecCmd(clamdscan, "--version")
+	out, err := utils.ExecCmd(clamdScan, "--version")
 	if err != nil {
 		return "", err
 	}

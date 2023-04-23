@@ -16,11 +16,10 @@ import (
 )
 
 const (
-	cmd         = "/opt/Symantec/symantec_antivirus/sav"
-	scanTimeout = 60 * time.Second
-	logsDir     = "/var/symantec/sep/Logs/"
-	symcfgd     = "/opt/Symantec/symantec_antivirus/symcfgd"
-	rtvscand    = "/opt/Symantec/symantec_antivirus/rtvscand"
+	cmd = "/opt/Symantec/symantec_antivirus/sav"
+	logsDir  = "/var/symantec/sep/Logs/"
+	symcfgd  = "/opt/Symantec/symantec_antivirus/symcfgd"
+	rtvscand = "/opt/Symantec/symantec_antivirus/rtvscand"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -38,7 +37,7 @@ func GetProgramVersion() (string, error) {
 }
 
 // ScanFile scans a given file
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
@@ -65,13 +64,17 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 		return res, err
 	}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path
-	_, err = utils.ExecCmdWithContext(ctx, "sudo", cmd, "manualscan", "--clscan", filePath)
+	_, err = utils.ExecCmdWithContext(ctx, "sudo", cmd, "manualscan", "--clscan", filepath)
 	if err != nil {
 		return res, err
 	}
