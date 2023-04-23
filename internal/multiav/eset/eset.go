@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	cls         = "/opt/eset/efs/sbin/cls/cls"
+	cls = "/opt/eset/efs/sbin/cls/cls"
 )
 
 // Scanner represents an empty struct that can be used to a method received.

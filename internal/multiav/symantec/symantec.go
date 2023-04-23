@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	cmd = "/opt/Symantec/symantec_antivirus/sav"
+	cmd      = "/opt/Symantec/symantec_antivirus/sav"
 	logsDir  = "/var/symantec/sep/Logs/"
 	symcfgd  = "/opt/Symantec/symantec_antivirus/symcfgd"
 	rtvscand = "/opt/Symantec/symantec_antivirus/rtvscand"

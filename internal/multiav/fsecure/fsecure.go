@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	fsav        = "/opt/f-secure/fsav/bin/fsav"
+	fsav = "/opt/f-secure/fsav/bin/fsav"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
