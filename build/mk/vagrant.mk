@@ -1,5 +1,5 @@
 
-VAGRANT_VERSION = 2.2.19
+VAGRANT_VERSION = 2.3.4
 VAGRANT_ZIP_FILE = vagrant_$(VAGRANT_VERSION)_linux_amd64.zip
 VAGRANT_DOWNLOAD_URL = https://releases.hashicorp.com/vagrant/$(VAGRANT_VERSION)/$(VAGRANT_ZIP_FILE)
 
