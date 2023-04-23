@@ -33,7 +33,7 @@ const (
 )
 
 type Scanner interface {
-	ScanFile(string) (m.Result, error)
+	ScanFile(string, m.Options) (m.Result, error)
 }
 
 // ScanResult av result
