@@ -7,16 +7,14 @@ package comodo
 import (
 	"context"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	cmdscan     = "/opt/COMODO/cmdscan"
-	cavver      = "/opt/COMODO/cavver.dat"
-	scanTimeout = 60 * time.Second
+	cmdScan = "/opt/COMODO/cmdscan"
+	cavVer  = "/opt/COMODO/cavver.dat"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -26,7 +24,7 @@ type Scanner struct{}
 func ProgramVersion() (string, error) {
 
 	// Read the content of the file to grab the version
-	version, err := utils.ReadAll(cavver)
+	version, err := utils.ReadAll(cavVer)
 	if err != nil {
 		return "", err
 	}
@@ -35,17 +33,21 @@ func ProgramVersion() (string, error) {
 }
 
 // ScanFile a file with COMODO scanner.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
-	res.Out, err = utils.ExecCmdWithContext(ctx, cmdscan, "-v", "-s", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmdScan, "-v", "-s", filepath)
 	// -s: scan a file or directory
 	// -v: verbose mode, display more detailed output
 	if err != nil {

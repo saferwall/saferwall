@@ -7,6 +7,7 @@ package multiav
 import (
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"context"
 	"encoding/json"
@@ -21,7 +22,7 @@ import (
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	"github.com/saferwall/saferwall/pkg/avlabel"
 
-	m "github.com/saferwall/saferwall/internal/multiav"
+	mav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 )
@@ -33,7 +34,7 @@ const (
 )
 
 type Scanner interface {
-	ScanFile(string) (m.Result, error)
+	ScanFile(string, mav.Options) (mav.Result, error)
 }
 
 // ScanResult av result
@@ -48,6 +49,7 @@ type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
 	SharedVolume string             `mapstructure:"shared_volume"`
 	EngineName   string             `mapstructure:"engine_name"`
+	ScanTimeout  time.Duration      `mapstructure:"scan_timeout"`
 	Producer     config.ProducerCfg `mapstructure:"producer"`
 	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
 }
@@ -140,9 +142,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to copy file, reason: %v", err)
 		return err
 	}
+
 	logger.Debug("file has been copied to /tmp")
 
-	r, err := s.av.ScanFile(dest)
+	scanOptions := mav.Options{ScanTimeout: s.cfg.ScanTimeout}
+	r, err := s.av.ScanFile(dest, scanOptions)
 	if err != nil {
 		logger.Errorf("failed to scan file, reason: %v", err)
 	}

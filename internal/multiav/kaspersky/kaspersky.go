@@ -7,7 +7,6 @@ package kaspersky
 import (
 	"context"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
@@ -16,7 +15,6 @@ import (
 const (
 	kesl         = "/opt/kaspersky/kesl/bin/kesl-control"
 	keslLauncher = "/opt/kaspersky/kesl/libexec/kesl_launcher.sh"
-	scanTimeout  = 60 * time.Second
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -80,14 +78,18 @@ func GetDatabaseVersion() (Version, error) {
 }
 
 // ScanFile a file with Kaspersky scanner
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Return codes
@@ -104,7 +106,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 
 	// Run now
 	res.Out, err = utils.ExecCmdWithContext(ctx, "sudo", kesl, "--scan-file",
-		filePath, "--action", "Skip")
+		filepath, "--action", "Skip")
 	// root@404e0cc38216:/# /opt/kaspersky/kesl/bin/kesl-control --scan-file eicar.com.txt --action Skip
 	// Scanned objects                     : 1
 	// Total detected objects              : 1

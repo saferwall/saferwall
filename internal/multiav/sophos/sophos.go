@@ -7,15 +7,13 @@ package sophos
 import (
 	"context"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	scanTimeout = 60 * time.Second
-	savscan     = "/opt/sophos/bin/savscan"
+	savscan = "/opt/sophos/bin/savscan"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -30,14 +28,18 @@ type Version struct {
 }
 
 // ScanFile a file with Sophos scanner
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	//  Scan parameters
@@ -53,7 +55,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	// pua : Scan for adware/potentially unwanted applications (PUAs).
 
 	res.Out, err = utils.ExecCmdWithContext(ctx, savscan, "-f", "-nc", "-nb", "-ss",
-		"-archive", "-loopback", "-mime", "-oe", "-tnef", "-pua", filePath)
+		"-archive", "-loopback", "-mime", "-oe", "-tnef", "-pua", filepath)
 	if err != nil && err.Error() != "exit status 3" {
 		return res, err
 	}

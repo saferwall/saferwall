@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package gib metrics.go implements accuracy metrics for rating detection on
-//several test cases.
+// several test cases.
 package gib
 
 // Labels : positive class is gibberish and negative class is correct string

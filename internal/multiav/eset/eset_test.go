@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -39,7 +39,7 @@ func TestScanFilePath(t *testing.T) {
 	s := Scanner{}
 	for _, tt := range filepathScanTest {
 		t.Run(tt.filepath, func(t *testing.T) {
-			got, err := s.ScanFile(tt.filepath)
+			got, err := s.ScanFile(tt.filepath, multiav.Options{})
 			if err != nil {
 				t.Fatalf("TestScanFilePath(%s) failed, err: %s",
 					tt.filepath, err)

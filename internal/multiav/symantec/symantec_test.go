@@ -24,7 +24,7 @@ func TestScanFile(t *testing.T) {
 	s := Scanner{}
 	for _, tt := range filepathScanTest {
 		t.Run(tt.filepath, func(t *testing.T) {
-			got, err := s.ScanFile(tt.filepath)
+			got, err := s.ScanFile(tt.filepath, multiav.Options{})
 			if err != nil {
 				t.Fatalf("TestScanFile(%s) failed, err: %s",
 					tt.filepath, err)

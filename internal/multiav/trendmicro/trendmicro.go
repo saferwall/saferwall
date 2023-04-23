@@ -18,11 +18,10 @@ import (
 )
 
 const (
-	splxmain    = "/opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain"
-	logDir      = "/var/log/TrendMicro/SProtectLinux/"
-	tmsplx      = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
-	splx        = "/etc/init.d/splx"
-	scanTimeout = 60 * time.Second
+	splxmain = "/opt/TrendMicro/SProtectLinux/SPLX.vsapiapp/splxmain"
+	logDir   = "/var/log/TrendMicro/SProtectLinux/"
+	tmsplx   = "/opt/TrendMicro/SProtectLinux/tmsplx.xml"
+	splx     = "/etc/init.d/splx"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -74,7 +73,7 @@ func GetVersion() (Version, error) {
 }
 
 // ScanFile scans a given file.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
@@ -95,16 +94,20 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 		return res, err
 	}
 
-	filename := path.Base(filePath)
+	filename := path.Base(filepath)
 	filePathCopy := path.Join(tempDir, filename)
-	err = utils.CopyFile(filePath, filePathCopy)
+	err = utils.CopyFile(filepath, filePathCopy)
 	if err != nil {
 		return res, err
 	}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// Execute the scanner with the given file path.

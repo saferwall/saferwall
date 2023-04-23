@@ -8,15 +8,13 @@ import (
 	"context"
 	"regexp"
 	"strings"
-	"time"
 
 	multiav "github.com/saferwall/saferwall/internal/multiav"
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
 const (
-	bdscan      = "/opt/BitDefender-scanner/bin/bdscan"
-	scanTimeout = 60 * time.Second
+	bdscan = "/opt/BitDefender-scanner/bin/bdscan"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -44,17 +42,21 @@ func ProgramVersion() (string, error) {
 }
 
 // ScanFile a file with Bitdefender scanner.
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
-	res.Out, err = utils.ExecCmdWithContext(ctx, bdscan, "--action=ignore", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, bdscan, "--action=ignore", filepath)
 	// --action=[disinfect|quarantine|delete|ignore]
 
 	// Exit status codes:

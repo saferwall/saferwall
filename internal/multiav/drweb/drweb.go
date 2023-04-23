@@ -16,10 +16,9 @@ import (
 )
 
 const (
-	cmd         = "/opt/drweb.com/bin/drweb-ctl"
-	regexStr    = "infected with (.*)"
-	configD     = "/opt/drweb.com/bin/drweb-configd"
-	scanTimeout = 60 * time.Second
+	cmd      = "/opt/drweb.com/bin/drweb-ctl"
+	regexStr = "infected with (.*)"
+	configD  = "/opt/drweb.com/bin/drweb-configd"
 )
 
 // Scanner represents an empty struct that can be used to a method received.
@@ -55,14 +54,18 @@ func Version() (string, error) {
 }
 
 // ScanFile scans a given file
-func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
+func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, error) {
 
 	var err error
 	res := multiav.Result{}
 
+	if opts.ScanTimeout == 0 {
+		opts.ScanTimeout = multiav.DefaultScanTimeout
+	}
+
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(scanTimeout))
+		context.Background(), opts.ScanTimeout)
 	defer cancel()
 
 	// # /opt/drweb.com/bin/drweb-ctl scan --help
@@ -91,7 +94,7 @@ func (Scanner) ScanFile(filePath string) (multiav.Result, error) {
 	//   --Stdin                           read '\n'-separated paths from stdin
 	//   --Stdin0                          read '\0'-separated paths from stdin
 	//   -d [ --Debug ]                    extended diagnostic output
-	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "scan", filePath)
+	res.Out, err = utils.ExecCmdWithContext(ctx, cmd, "scan", filepath)
 
 	// # /opt/drweb.com/bin/drweb-ctl scan /eicar
 	// /eicar - infected with EICAR Test File (NOT a Virus!)
