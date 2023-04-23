@@ -11,7 +11,11 @@ global:
   # set to true when using a private docker registry.
   privateRegistryServer:
     enabled: false
-    token: ""
+    imageCredentials:
+      registry: quay.io
+      username: mr-robot
+      password: its-not-real
+
   # Host name to use.
   hostname: mysaferwall.com
   # Storage configuration.

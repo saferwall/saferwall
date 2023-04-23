@@ -65,11 +65,11 @@ Create the name of the hostnames
 {{- end -}}
 
 {{/*
-Create the docker private registry server token.
+Create the JSON config to authenticate to private container registry servers.
 */}}
-{{- define "saferwall.private-registry.token" -}}
+{{- define "saferwall.imagePullSecret" -}}
 {{- if .Values.global.privateRegistryServer.enabled -}}
-{{ printf "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"%s\"}}}" .Values.global.privateRegistryServer.token }}
+{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.global.imageCredentials.registry (printf "%s:%s" .Values.global.imageCredentials.username .Values.global.imageCredentials.password | b64enc) | b64enc }}
 {{- end -}}
 {{- end -}}
 
