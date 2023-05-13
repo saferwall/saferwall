@@ -4,8 +4,8 @@ log_level = "debug"
 shared_volume = "/samples"
 # Name of the antivirus.
 engine_name = "symantec"
-# Scan timeout in seconds.
-scan_timeout = 60
+# Scan timeout duration.
+scan_timeout = "60s"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD)

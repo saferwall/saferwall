@@ -33,6 +33,6 @@ type Result struct {
 
 // Options represents the scan configuration options.
 type Options struct {
-	// Scan timeout in seconds.
+	// Scan timeout.
 	ScanTimeout time.Duration
 }

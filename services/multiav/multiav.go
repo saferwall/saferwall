@@ -143,7 +143,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		return err
 	}
 
-	logger.Debug("file has been copied to /tmp")
+	logger.Debugf("file has been copied to: ", dest)
 
 	scanOptions := mav.Options{ScanTimeout: s.cfg.ScanTimeout}
 	r, err := s.av.ScanFile(dest, scanOptions)

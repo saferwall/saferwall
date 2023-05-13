@@ -17,6 +17,7 @@ const (
 	gRPCMaxMsgSize = 1 * 1024 * 1024 * 1024 // 1GB
 )
 
+// Sandbox abstract a sandbox analyzer.
 type Sandbox interface {
 	Deploy(ctx context.Context, dest string, pkg []byte) (string, error)
 	Analyze(config string, binary []byte) (FileScanResult, error)
@@ -26,6 +27,7 @@ type AgentClient struct {
 	client pb.AgentClient
 }
 
+// FileScanResult represents the results of a file scan within the sandbox.
 type FileScanResult struct {
 	TraceLog    []byte
 	AgentLog    []byte
