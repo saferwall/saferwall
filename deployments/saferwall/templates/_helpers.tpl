@@ -69,10 +69,10 @@ Create the JSON config to authenticate to private container registry servers.
 */}}
 {{- define "saferwall.imagePullSecret" -}}
 {{- if .Values.global.privateRegistryServer.enabled -}}
-{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.global.imageCredentials.registry (printf "%s:%s" .Values.global.imageCredentials.username .Values.global.imageCredentials.password | b64enc) | b64enc }}
+{{- $credentials := .Values.global.privateRegistryServer.imageCredentials -}}
+{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" $credentials.registry (printf "%s:%s" $credentials.username $credentials.password | b64enc) | b64enc }}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Our couchbase DB URI.
