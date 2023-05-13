@@ -17,7 +17,7 @@ data:
     shared_volume = "{{ $root.Values.global.storage.sharedVolume }}"
     # Name of the antivirus.
     engine_name = "{{ $av }}"
-    # Scan timeout in seconds.
+    # Scan timeout duration.
     scan_timeout = "{{ $value.scanTimeout }}"
 
     [producer]
