@@ -7,8 +7,9 @@ disable_cors = false # Disable CORS policy.
 jwt_signkey = "{{ .Values.webapis.jwt.signKey }}" # JWT sign key secret.
 jwt_expiration = {{ .Values.webapis.jwt.expiration }} # JWT expiration in hours. Defaults to 72 hours (3 days)
 reset_pwd_token_expiration = {{ .Values.webapis.token.expiration }} # represents the token expiration for reset password and email confirmation requests in minutes.
-max_file_size = 64 # Maximum file size to allow for samples in MB.
-max_avatar_file_size = 1 # Maximum avatar size to allow for user profile picture in MB.
+max_file_size = {{ .Values.webapis.max_file_size }} # Maximum file size to allow for samples in MB.
+max_avatar_file_size = {{ .Values.webapis.max_avatar_file_size }} # Maximum avatar size to allow for user profile picture in KB.
+samples_zip_password = "{{ .Values.webapis.samples_zip_password }}" # Password used to zip the samples during file download.
 
 [ui]
 address = '{{ printf "https://%s" .Values.global.hostname }}' # DSN for the frontend.
