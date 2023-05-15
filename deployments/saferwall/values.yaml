@@ -220,6 +220,9 @@ webapis:
       cpu: 100m
   debug: false
   logLevel: info
+  max_file_size: 64 # in MegaBytes.
+  max_avatar_file_size: 1000 # in KiloBytes.
+  samples_zip_password: "infected"
   storage:
     filesContainer: sfw-samples
     avatarContainer: sfw-images
