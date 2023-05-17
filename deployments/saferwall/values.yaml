@@ -20,8 +20,10 @@ global:
   hostname: mysaferwall.com
   # Storage configuration.
   storage:
-    # Shared volume between all microservices.
+    # Shared volume between all services.
     sharedVolume: "/samples"
+    # Shared volume size.
+    sharedVolumeSize: 5Gi
     # Deployment kind, possible values: aws, minio, local.
     deploymentKind: "minio"
   # Couchbase.
