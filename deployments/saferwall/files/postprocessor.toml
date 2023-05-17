@@ -3,7 +3,7 @@ log_level = "{{ .Values.postprocessor.logLevel }}"
 # Address ofthe server that host the machine learning pipeline.
 ml_address = 'http://{{ template  "saferwall.fullname" . }}-ml'
 # Shared volume between all microservices.
-shared_volume = "{{ .Values.global.storage.sharedVolume }}"
+shared_volume = "{{ .Values.saferwall.storage.sharedVolume }}"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).
@@ -34,4 +34,4 @@ username = '{{ index .Values "couchbase-operator" "cluster" "security" "username
 # Password used to access the db.
 password = '{{ index .Values "couchbase-operator" "cluster" "security" "password" }}'
 # Name of the couchbase bucket.
-bucket_name = "{{ .Values.global.couchbase.bucketName }}"
+bucket_name = "{{ .Values.saferwall.couchbase.bucketName }}"

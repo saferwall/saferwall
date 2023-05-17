@@ -5,7 +5,7 @@
 
 ## Global project configuration
 ##
-global:
+saferwall:
   # email used to generate let's encrypt ssl cert.
   email: admin@mysaferwall.com
   # set to true when using a private docker registry.
@@ -20,8 +20,10 @@ global:
   hostname: mysaferwall.com
   # Storage configuration.
   storage:
-    # Shared volume between all microservices.
+    # Shared volume between all services.
     sharedVolume: "/samples"
+    # Shared volume size.
+    sharedVolumeSize: 5Gi
     # Deployment kind, possible values: aws, minio, local.
     deploymentKind: "minio"
   # Couchbase.
@@ -33,7 +35,7 @@ global:
     region: us-east-1
     accessKey: minio
     secretKey: minio123
-  s3:
+  s3: {}
 
 ########### MINIO ###########
 minio:
@@ -220,6 +222,10 @@ webapis:
       cpu: 100m
   debug: false
   logLevel: info
+  cors_allowed_origins: []
+  max_file_size: 64 # in MegaBytes.
+  max_avatar_file_size: 1000 # in KiloBytes.
+  samples_zip_password: "infected"
   storage:
     filesContainer: sfw-samples
     avatarContainer: sfw-images

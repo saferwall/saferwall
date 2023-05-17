@@ -58,18 +58,18 @@ Create the name of the service account to use
 Create the name of the hostnames
 */}}
 {{- define "saferwall.ui-hostname" -}}
-{{ .Values.global.hostname }}
+{{ .Values.saferwall.hostname }}
 {{- end -}}
 {{- define "saferwall.webapis-hostname" -}}
-{{ printf "api.%s" .Values.global.hostname }}
+{{ printf "api.%s" .Values.saferwall.hostname }}
 {{- end -}}
 
 {{/*
 Create the JSON config to authenticate to private container registry servers.
 */}}
 {{- define "saferwall.imagePullSecret" -}}
-{{- if .Values.global.privateRegistryServer.enabled -}}
-{{- $credentials := .Values.global.privateRegistryServer.imageCredentials -}}
+{{- if .Values.saferwall.privateRegistryServer.enabled -}}
+{{- $credentials := .Values.saferwall.privateRegistryServer.imageCredentials -}}
 {{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" $credentials.registry (printf "%s:%s" $credentials.username $credentials.password | b64enc) | b64enc }}
 {{- end -}}
 {{- end -}}

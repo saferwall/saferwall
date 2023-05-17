@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: {{ template "saferwall.name" . }}-orchestrator
 {{ include "saferwall.labels" . | indent 8 }}
     spec:
-      {{ if eq .Values.global.privateRegistryServer.enabled true }}
+      {{ if eq .Values.saferwall.privateRegistryServer.enabled true }}
       imagePullSecrets:
         - name: regcred
       {{- end }}
