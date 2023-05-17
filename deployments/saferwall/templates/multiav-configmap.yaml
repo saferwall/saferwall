@@ -14,7 +14,7 @@ data:
     # Log level verbosity.
     log_level = "{{ $value.logLevel }}"
     # Shared volume between all microservices.
-    shared_volume = "{{ $root.Values.global.storage.sharedVolume }}"
+    shared_volume = "{{ $root.Values.saferwall.storage.sharedVolume }}"
     # Name of the antivirus.
     engine_name = "{{ $av }}"
     # Scan timeout duration.

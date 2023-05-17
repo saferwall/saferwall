@@ -13,5 +13,5 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: {{ .Values.global.storage.sharedVolumeSize }}
+      storage: {{ .Values.saferwall.storage.sharedVolumeSize }}
 {{- end }}

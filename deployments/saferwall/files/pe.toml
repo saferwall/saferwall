@@ -1,7 +1,7 @@
 # Log level verbosity.
 log_level = "{{ .Values.pe.logLevel }}"
 # Shared volume between all microservices.
-shared_volume = "{{ .Values.global.storage.sharedVolume }}"
+shared_volume = "{{ .Values.saferwall.storage.sharedVolume }}"
 
 [producer]
 # The data source name (DSN) for connecting to the broker server (NSQD).

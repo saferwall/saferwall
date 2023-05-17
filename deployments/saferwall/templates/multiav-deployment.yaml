@@ -21,7 +21,7 @@ spec:
         app.kubernetes.io/name: {{ template "saferwall.name" $root }}-multiav-{{ $av }}
 {{ include "saferwall.labels" $root | indent 8 }}
     spec:
-      {{ if eq $root.Values.global.privateRegistryServer.enabled true }}
+      {{ if eq $root.Values.saferwall.privateRegistryServer.enabled true }}
       imagePullSecrets:
         - name: regcred
       {{- end }}
