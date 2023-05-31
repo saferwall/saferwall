@@ -24,4 +24,8 @@
     },
     "editor.rulers": [80,120],
     "editor.renderWhitespace": "all",
+    "cSpell.words": [
+        "DBUPDATE",
+        "postprocessor"
+    ],
 }
