@@ -20,6 +20,7 @@ import (
 	"github.com/saferwall/saferwall/internal/ml"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
+	micro "github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
 	"google.golang.org/protobuf/proto"
@@ -176,8 +177,10 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	// Set the file analysis status to `finished` and set the `last_scan` to now.
 	payloads := []*pb.Message_Payload{
-		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE, Body: toJSON(2)},
-		{Key: sha256, Path: "last_scanned", Kind: pb.Message_DBUPDATE, Body: toJSON(time.Now().Unix())},
+		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE,
+			Body: toJSON(micro.Finished)},
+		{Key: sha256, Path: "last_scanned", Kind: pb.Message_DBUPDATE,
+			Body: toJSON(time.Now().Unix())},
 	}
 
 	// Include fields that has been missing in previous versions of the documents.

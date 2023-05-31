@@ -12,14 +12,16 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/saferwall/saferwall/internal/log"
-
 	"github.com/gabriel-vasile/mimetype"
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	s "github.com/saferwall/saferwall/internal/storage"
+	micro "github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
+	pb "github.com/saferwall/saferwall/services/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // Config represents our application config.
@@ -42,13 +44,6 @@ type Service struct {
 	sub     pubsub.Subscriber
 	storage s.Storage
 }
-
-// Progress of a file scan.
-const (
-	queued     = iota
-	processing = iota
-	finished   = iota
-)
 
 // New create a new PE scanner service.
 func New(cfg Config, logger log.Logger) (Service, error) {
@@ -120,7 +115,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Deserialize the msg sent from the web apis.
 	err := json.Unmarshal(m.Body, &fileScanCfg)
 	if err != nil {
-		s.logger.Errorf("failed unmarshalling json messge body: %v", err)
+		s.logger.Errorf("failed un-marshalling json message body: %v", err)
 		return err
 	}
 
@@ -153,7 +148,26 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Debugf("file downloaded to %s", filePath)
 
-	// always run the multi-av scanner and the metadata
+	// Set the file analysis status to `processing`.
+	payloads := []*pb.Message_Payload{
+		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE,
+			Body: toJSON(micro.Processing)},
+	}
+	// Serialize the message using protobuf.
+	msg := &pb.Message{Sha256: sha256, Payload: payloads}
+	out, err := proto.Marshal(msg)
+	if err != nil {
+		logger.Error("failed to pb marshal: %v", err)
+		return err
+	}
+	// Finally, produce the message to the right queue.
+	err = s.pub.Publish(ctx, "topic-aggregator", out)
+	if err != nil {
+		logger.Errorf("failed to publish message: %v", err)
+		return err
+	}
+
+	// Always run the multi-av scanner and the metadata
 	// extractor no matter what the file format is.
 	err = s.pub.Publish(ctx, "topic-multiav", []byte(sha256))
 	if err != nil {
@@ -169,7 +183,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 	logger.Debug("published messaged to topic-meta")
 
-	// depending on what the file format is,
+	// Depending on what the file format is,
 	// we produce events to different consumers.
 	mtype, err := mimetype.DetectFile(filePath)
 	if err != nil {
@@ -193,7 +207,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Debug("published messaged to topic-sandbox")
 	}
 
-	// Always queue to the post processor.
+	// Always queue to the post-processor.
 	err = s.pub.Publish(ctx, "topic-postprocessor", []byte(sha256))
 	if err != nil {
 		logger.Errorf("failed to publish message: %v", err)
@@ -202,4 +216,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Debug("published messaged to topic-postprocessor")
 	return nil
+}
+
+func toJSON(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
 }

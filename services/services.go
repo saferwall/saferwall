@@ -6,7 +6,7 @@ package micro
 
 // Progress of a file scan.
 const (
-	Queued     = iota
-	Processing = iota
-	Finished   = iota
+	Queued     = iota + 1
+	Processing
+	Finished
 )
