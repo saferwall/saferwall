@@ -261,12 +261,10 @@ ui:
       memory: 50Mi
       cpu: 50m
   env:
-    - name: VUE_APP_BASE_URI
-      value: "https://mysaferwall.com/"
-    - name: VUE_APP_API_BASE_URL
+    - name: PUBLIC_API_URL
       value: "https://api.mysaferwall.com/v1/"
-    - name: VUE_APP_AVATAR_BASE_URL
-      value: "https://avatar.mysaferwall.com/"
+    - name: PUBLIC_AVATAR_API_URL
+      value: "https://avatar.mysaferwall.com/{username}"
     - name: VUE_APP_ANALYTICS_GOOGLE_TAG
       value:
 
