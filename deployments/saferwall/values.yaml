@@ -246,7 +246,7 @@ ui:
   enabled: true
   name: ui
   replicas: 1
-  containerPort: 80
+  containerPort: 3000
   image:
     repository: saferwall/ui
     tag: latest
@@ -254,7 +254,7 @@ ui:
   service:
     type: ClusterIP
     port: 80
-    targetPort: 80
+    targetPort: 3000
     nodePort:
   resources:
     requests:
