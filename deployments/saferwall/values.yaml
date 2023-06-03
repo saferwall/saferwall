@@ -265,7 +265,7 @@ ui:
       value: "https://api.mysaferwall.com/v1/"
     - name: PUBLIC_AVATAR_API_URL
       value: "https://avatar.mysaferwall.com/{username}"
-    - name: VUE_APP_ANALYTICS_GOOGLE_TAG
+    - name: GOOGLE_ANALYTICS_TAG
       value:
 
 ########### ORCHESTRATOR ###########
