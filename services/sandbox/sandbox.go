@@ -78,8 +78,8 @@ func toJSON(v interface{}) []byte {
 	return b
 }
 
-// generateGuid returns a unique ID to identify a document.
-func generateGuid() string {
+// generateGUID returns a unique ID to identify a document.
+func generateGUID() string {
 	id := uuid.New()
 	return id.String()
 }
@@ -182,7 +182,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	ctx := context.Background()
 
 	// Generate a unique ID for this behavior scan report.
-	behaviorReportID := generateGuid()
+	behaviorReportID := generateGUID()
 
 	// Deserialize the scan config given by the user.
 	fileScanCfg := config.FileScanCfg{}

@@ -189,9 +189,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 			submissions := file["submissions"].([]interface{})
 			if len(submissions) > 0 {
 				firstSubmission := submissions[0].(map[string]interface{})
-				first_seen := firstSubmission["timestamp"].(float64)
+				firstSeen := firstSubmission["timestamp"].(float64)
 				payloads = append(payloads, &pb.Message_Payload{
-					Key: sha256, Path: "first_seen", Kind: pb.Message_DBUPDATE, Body: toJSON(first_seen)})
+					Key: sha256, Path: "first_seen", Kind: pb.Message_DBUPDATE, Body: toJSON(firstSeen)})
 			}
 		}
 	}

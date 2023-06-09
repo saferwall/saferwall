@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -214,7 +214,7 @@ func guessFileExtension(data []byte, magic string, format string, trid []string)
 
 		// HTML or HTA
 		if strings.Contains(magic, "HTML document") {
-			if IsHtmlApp(data) {
+			if IsHTMLApp(data) {
 				return "hta"
 			}
 
@@ -238,7 +238,7 @@ func guessFileExtension(data []byte, magic string, format string, trid []string)
 	return "unknown"
 }
 
-func IsHtmlApp(data []byte) bool {
+func IsHTMLApp(data []byte) bool {
 
 	content := strings.ToLower(string(data))
 	content = strings.Join(strings.Fields(content), " ")
