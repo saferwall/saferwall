@@ -48,9 +48,6 @@ const (
 	SW_HIDE = 0
 )
 
-// Version indicates the current version of the application.
-var Version = "0.3.0"
-
 var flagConfig = flag.String("config", "./../../configs/server",
 	"path to the config file")
 
@@ -98,7 +95,7 @@ func (s *server) Ping(ctx context.Context, in *emptypb.Empty) (
 		return nil, err
 	}
 
-	pingReply := pb.PingReply{Version: Version}
+	pingReply := pb.PingReply{Version: constants.Version}
 
 	// Get system information.
 	sysInfo, err := json.Marshal(os)
