@@ -44,7 +44,7 @@ jobs:
 
       - name: Go vet
         run: |
-          go vet .
+          go vet -v ./...
 
       - name: Staticcheck
         uses: dominikh/staticcheck-action@v1.3.0
