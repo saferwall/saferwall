@@ -261,6 +261,9 @@ func (s *Service) summarizeEvents(w32apis []Win32API) (
 		if utils.StringInSlice(w32api.Name, regAPIs) {
 			event := summarizeRegAPI(w32api)
 			events[RegistryEventType] = append(events[RegistryEventType], event)
+		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
+			event := summarizeFileAPI(w32api)
+			events[FileEventType] = append(events[FileEventType], event)
 		}
 	}
 

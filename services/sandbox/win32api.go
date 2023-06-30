@@ -34,6 +34,7 @@ type Win32API struct {
 	ReturnValue string `json:"ret"`
 }
 
+// Registry APIs
 var (
 	regCreateAPIs      = []string{"RegCreateKeyA", "RegCreateKeyW", "RegCreateKeyExA", "RegCreateKeyExW"}
 	regOpenAPIs        = []string{"RegOpenKeyA", "RegOpenKeyW", "RegOpenKeyExA", "RegOpenKeyExW"}
@@ -44,6 +45,19 @@ var (
 		"RegDeleteValueA", "RegDeleteValueW"}
 	regAPIs          = utils.ConcatMultipleSlices([][]string{regCreateAPIs, regOpenAPIs, regSetAPIs, regDeleteAPIs})
 	regKeyHandlesMap = make(map[string]string)
+)
+
+// File APIs
+var (
+	fileCreateAPIs = []string{"CreateFileA", "CreateFileW", "CreateDirectory", "CreateDirectoryExA", "CreateDirectoryExW"}
+	fileOpenAPIs   = []string{"OpenFile"}
+	fileDeleteAPIS = []string{"DeleteFileA", "DeleteFileW"}
+	fileWriteAPIs  = []string{"WriteFile", "WriteFileEx"}
+	fileReadAPIs   = []string{"ReadFile", "ReadFileEx"}
+	fileCopyAPIS   = []string{"CopyFileA", "CopyFileW", "CopyFileExA", "CopyFileExW"}
+	fileMoveAPIs   = []string{"MoveFileA", "MoveFileW", "MoveFileWithProgressA", "MoveFileWithProgressW"}
+	fileAPIs       = utils.ConcatMultipleSlices([][]string{fileCreateAPIs, fileOpenAPIs, fileDeleteAPIS, fileWriteAPIs, fileReadAPIs})
+	fileHandlesMap = make(map[string]string)
 )
 
 // Reserved registry key handles.
@@ -156,4 +170,91 @@ func regKeyHandleToStr(hKey string) string {
 		return regKey
 	}
 	return ""
+}
+
+func fileHandleToStr(hFile string) string {
+
+	filePath, ok := fileHandlesMap[hFile]
+	if ok {
+		return filePath
+	}
+	return ""
+}
+
+func summarizeFileAPI(w32api Win32API) Event {
+	event := Event{}
+
+	// lpFileName points to the name of the file or device to be created or opened. Yo
+	lpFileName := w32api.getParamValueByName("lpFileName").(string)
+
+	// hFile represents a handle to the file or I/O device.
+	hFile := w32api.getParamValueByName("hFile").(string)
+
+	// lpPathName points to the path of the directory to be created.
+	lpPathName := w32api.getParamValueByName("lpPathName").(string)
+
+	// lpNewDirectory points to the path of the directory to be created.
+	lpNewDirectory := w32api.getParamValueByName("lpNewDirectory").(string)
+
+	// lpExistingFileName points to the name of an existing file.
+	lpExistingFileName := w32api.getParamValueByName("lpExistingFileName").(string)
+
+	// lpNewFileName points to the name of the new file.
+	lpNewFileName := w32api.getParamValueByName("lpNewFileName").(string)
+
+	// Th return value of the API, which is a handle in the case of file APIs.
+	returnedHandle := w32api.ReturnValue
+
+	if utils.StringInSlice(w32api.Name, fileCreateAPIs) {
+
+		event.Operation = "create"
+
+		// Either a file or a directory creation.
+		if lpFileName != "" {
+			event.Path = lpFileName
+		} else {
+			// The Ex version of create directory have a different param name.
+			if lpPathName != "" {
+				event.Path = lpPathName
+			} else {
+				event.Path = lpNewDirectory
+			}
+		}
+
+		// Save the mapping between the handle and its equivalent path.
+		fileHandlesMap[returnedHandle] = event.Path
+
+	} else if utils.StringInSlice(w32api.Name, fileOpenAPIs) {
+
+		event.Operation = "open"
+		event.Path = lpFileName
+
+		// Save the mapping between the handle and its equivalent path.
+		fileHandlesMap[returnedHandle] = event.Path
+
+	} else if utils.StringInSlice(w32api.Name, fileReadAPIs) {
+
+		event.Operation = "read"
+		event.Path = fileHandleToStr(hFile)
+
+	} else if utils.StringInSlice(w32api.Name, fileWriteAPIs) {
+
+		event.Operation = "write"
+		event.Path = fileHandleToStr(hFile)
+
+	} else if utils.StringInSlice(w32api.Name, fileDeleteAPIS) {
+
+		event.Operation = "delete"
+		event.Path = lpFileName
+
+	} else if utils.StringInSlice(w32api.Name, fileCopyAPIS) {
+		event.Operation = "copy"
+		event.Path = lpExistingFileName + "->" + lpNewFileName
+
+	} else if utils.StringInSlice(w32api.Name, fileMoveAPIs) {
+		event.Operation = "move"
+		event.Path = lpExistingFileName + "->" + lpNewFileName
+
+	}
+	return event
 }
