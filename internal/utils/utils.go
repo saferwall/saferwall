@@ -71,6 +71,25 @@ func UniqueSlice(slice []string) []string {
 	return cleaned
 }
 
+// ConcatMultipleSlices concatenates multiple slices.
+func ConcatMultipleSlices[T any](slices [][]T) []T {
+	var totalLen int
+
+	for _, s := range slices {
+		totalLen += len(s)
+	}
+
+	result := make([]T, totalLen)
+
+	var i int
+
+	for _, s := range slices {
+		i += copy(result[i:], s)
+	}
+
+	return result
+}
+
 // ExecCmdWithContext runs cmd on file.
 func ExecCmdWithContext(ctx context.Context, name string, args ...string) (string, error) {
 

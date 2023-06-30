@@ -27,7 +27,17 @@ const (
 	defaultOS              = "Windows 7 64-bit"
 )
 
-// DetonationResults represents the results for a detonation.
+// EventType is the type of the system event. A type can be either:
+// `registry`, `network` or `file`.
+type EventType string
+
+const (
+	FileEventType     = "file"
+	RegistryEventType = "registry"
+	NetworkEventType  = "network"
+)
+
+// DetonationResult represents the results for a detonation.
 type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
@@ -44,6 +54,8 @@ type DetonationResult struct {
 	Artifacts []Artifact `json:"artifacts,omitempty"`
 	// Environment represents the environment used to scan the file.
 	Environment `json:"env,omitempty"`
+	// Summary of system events.
+	Events map[EventType][]Event `json:"events"`
 }
 
 // Environment represents the environment used to scan the file.
@@ -55,7 +67,7 @@ type Environment struct {
 	AgentVersion string `json:"agent_version"`
 }
 
-// Screenshots represents a capture of the desktop while the sample is running
+// Screenshot represents a capture of the desktop while the sample is running
 // in the VM.
 type Screenshot struct {
 	// The name of the filename for the screenshot. Format: <id>.jpeg.
@@ -91,6 +103,21 @@ type Artifact struct {
 	FileType string `json:"file_type"`
 }
 
+// Event represents a system event: a registry, network or file event.
+type Event struct {
+	// Path of the system event. For instance, when the event is of type:
+	// `registry`, the path represents the registry key being used. For a
+	// `network` event type, the path is the IP or domain used.
+	Path string `json:"path"`
+	// Th operation requested over the above `Path` field. This field means
+	// different things according to the type of the system event.
+	// - For file system events: can be either: create, read, delete, rename,
+	// - For registry events: can be either: create, rename, set, delete.
+	// - For network events: can be either an HTTP verb is the network is based
+	// of HTTP or connect, send, receive if communication happens over plain sockets.
+	Operation string `json:"op"`
+}
+
 func (s *Service) detonate(logger log.Logger, vm *VM,
 	cfg config.FileScanCfg) (DetonationResult, error) {
 
@@ -120,8 +147,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		return detRes, err
 	}
 
-	// Analyze the sample. This call will block until results
-	// are ready.
+	// Analyze the sample. This call will block until results are ready.
 	scanCfg := toJSON(cfg.DynFileScanCfg)
 	detRes.ScanCfg = cfg.DynFileScanCfg
 	res, err := client.Analyze(ctx, scanCfg, sampleContent)
@@ -138,7 +164,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	detRes.AgentLog = toJSON(agentLog)
 
 	// Convert the APIs traces from JSONL to JSON.
-	var traceLog []interface{}
+	var traceLog []Win32API
 	err = Decode(bytes.NewReader(res.TraceLog), &traceLog)
 	if err != nil {
 		logger.Errorf("failed to decode trace log: %v", err)
@@ -152,6 +178,9 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		logger.Errorf("failed to decode sandbox log: %v", err)
 	}
 	detRes.SandboxLog = toJSON(sandboxLog)
+
+	// Create a summary of system events.
+	s.summarizeEvents(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
@@ -217,4 +246,20 @@ func (s *Service) generateThumbnail(r io.Reader, w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (s *Service) summarizeEvents(w32apis []Win32API) (
+	map[EventType][]Event, error) {
+
+	events := make(map[EventType][]Event)
+
+	for _, w32api := range w32apis {
+		// Registry events
+		if utils.StringInSlice(w32api.Name, regAPIs) {
+			event := summarizeRegAPI(w32api)
+			events[RegistryEventType] = append(events[RegistryEventType], event)
+		}
+	}
+
+	return events, nil
 }
