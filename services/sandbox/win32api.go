@@ -5,8 +5,6 @@
 package sandbox
 
 import (
-	"strconv"
-
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
@@ -45,46 +43,42 @@ var (
 	regDeleteAPIs      = []string{"RegDeleteKeyA", "RegDeleteKeyW", "RegDeleteKeyExA", "RegDeleteKeyExW",
 		"RegDeleteValueA", "RegDeleteValueW"}
 	regAPIs          = utils.ConcatMultipleSlices([][]string{regCreateAPIs, regOpenAPIs, regSetAPIs, regDeleteAPIs})
-	regKeyHandlesMap = make(map[uint32]string)
+	regKeyHandlesMap = make(map[string]string)
 )
-
-// ReservedRegKeyHandleType represents the type of a reserved registry key handle.
-type ReservedRegKeyHandleType uint32
 
 // Reserved registry key handles.
-const (
-	HKeyClassesRoot              = 0x80000000
-	HKeyCurrentUser              = 0x80000001
-	HKeyLocalMachine             = 0x80000002
-	HKeyUsers                    = 0x80000003
-	HKeyPerformanceData          = 0x80000004
-	HKeyCurrentConfig            = 0x80000005
-	HKeyDynData                  = 0x80000006
-	HKeyCurrentUserLocalSettings = 0x80000007
-	HKeyPerformanceText          = 0x80000050
-	HKeyPerformanceNlsText       = 0x80000060
-)
+func init() {
 
-// String returns the string representation of a reserved registry key handle.
-func (regKeyHandle ReservedRegKeyHandleType) String() string {
-	regHandlesMap := map[ReservedRegKeyHandleType]string{
-		HKeyClassesRoot:              "HKEY_CLASSES_ROOT",
-		HKeyCurrentUser:              "HKEY_CURRENT_USER",
-		HKeyLocalMachine:             "HKEY_LOCAL_MACHINE",
-		HKeyUsers:                    "HKEY_USERS",
-		HKeyPerformanceData:          "HKEY_PERFORMANCE_DATA",
-		HKeyCurrentConfig:            "HKEY_CURRENT_CONFIG",
-		HKeyDynData:                  "HKEY_DYN_DATA",
-		HKeyCurrentUserLocalSettings: "HKEY_CURRENT_USER_LOCAL_SETTINGS",
-		HKeyPerformanceText:          "HKEY_PERFORMANCE_TEXT",
-		HKeyPerformanceNlsText:       "HKEY_PERFORMANCE_NLSTEXT",
-	}
+	// We fill in both x86 and x64 reserved registry key handles.
+	regKeyHandlesMap["0x80000000"] = "HKEY_CLASSES_ROOT"
+	regKeyHandlesMap["0xffffffff80000000"] = "HKEY_CLASSES_ROOT"
 
-	if val, ok := regHandlesMap[regKeyHandle]; ok {
-		return val
-	}
+	regKeyHandlesMap["0x80000001"] = "HKEY_CURRENT_USER"
+	regKeyHandlesMap["0xffffffff80000001"] = "HKEY_CURRENT_USER"
 
-	return ""
+	regKeyHandlesMap["0x80000002"] = "HKEY_LOCAL_MACHINE"
+	regKeyHandlesMap["0xffffffff80000002"] = "HKEY_LOCAL_MACHINE"
+
+	regKeyHandlesMap["0x800000003"] = "HKEY_USERS"
+	regKeyHandlesMap["0xffffffff80000003"] = "HKEY_USERS"
+
+	regKeyHandlesMap["0x800000004"] = "HKEY_PERFORMANCE_DATA"
+	regKeyHandlesMap["0xffffffff80000004"] = "HKEY_PERFORMANCE_DATA"
+
+	regKeyHandlesMap["0x800000005"] = "HKEY_CURRENT_CONFIG"
+	regKeyHandlesMap["0xffffffff80000005"] = "HKEY_CURRENT_CONFIG"
+
+	regKeyHandlesMap["0x800000006"] = "HKEY_DYN_DATA"
+	regKeyHandlesMap["0xffffffff80000006"] = "HKEY_DYN_DATA"
+
+	regKeyHandlesMap["0x800000007"] = "HKEY_CURRENT_USER_LOCAL_SETTINGS"
+	regKeyHandlesMap["0xffffffff80000007"] = "HKEY_CURRENT_USER_LOCAL_SETTINGS"
+
+	regKeyHandlesMap["0x800000050"] = "HKEY_PERFORMANCE_TEXT"
+	regKeyHandlesMap["0xffffffff80000050"] = "HKEY_PERFORMANCE_TEXT"
+
+	regKeyHandlesMap["0x800000060"] = "HKEY_PERFORMANCE_NLSTEXT"
+	regKeyHandlesMap["0xffffffff80000060"] = "HKEY_PERFORMANCE_NLSTEXT"
 }
 
 func (w32api Win32API) getParamValueByName(paramName string) interface{} {
@@ -113,13 +107,13 @@ func summarizeRegAPI(w32api Win32API) Event {
 
 	// phkResult is a pointer to a variable that receives a handle to the
 	// opened or created key.
-	phkResult := w32api.getParamValueByName("phkResult").(uint32)
+	phkResult := w32api.getParamValueByName("phkResult").(string)
 
 	if utils.StringInSlice(w32api.Name, regCreateAPIs) {
 
 		event.Operation = "create"
 
-		event.Path = regKeyHandleToStr(hKeyStr) + "/" + lpSubKey
+		event.Path = regKeyHandleToStr(hKeyStr) + "\\" + lpSubKey
 
 		// Save the mapping between the handle and its equivalent path.
 		regKeyHandlesMap[phkResult] = event.Path
@@ -128,7 +122,7 @@ func summarizeRegAPI(w32api Win32API) Event {
 
 		event.Operation = "open"
 
-		event.Path = regKeyHandleToStr(hKeyStr) + "/" + lpSubKey
+		event.Path = regKeyHandleToStr(hKeyStr) + "\\" + lpSubKey
 
 		// Save the mapping between the handle and its equivalent path.
 		regKeyHandlesMap[phkResult] = event.Path
@@ -138,40 +132,28 @@ func summarizeRegAPI(w32api Win32API) Event {
 		event.Operation = "write"
 
 		if utils.StringInSlice(w32api.Name, regSetKeyValueAPIs) {
-			event.Path = regKeyHandleToStr(hKeyStr) + "/" + lpSubKey + "//" + lpValueName
+			event.Path = regKeyHandleToStr(hKeyStr) + "\\" + lpSubKey + "\\\\" + lpValueName
 		} else if utils.StringInSlice(w32api.Name, regSetValueAPIs) {
-			event.Path = regKeyHandleToStr(hKeyStr) + "//" + lpValueName
+			event.Path = regKeyHandleToStr(hKeyStr) + "\\\\" + lpValueName
 		}
 	} else if utils.StringInSlice(w32api.Name, regDeleteAPIs) {
 
 		event.Operation = "delete"
 
-		event.Path = regKeyHandleToStr(hKeyStr) + "/" + lpSubKey
+		event.Path = regKeyHandleToStr(hKeyStr) + "\\" + lpSubKey
 		if lpValueName != "" {
-			event.Path += "//" + lpValueName
+			event.Path += "\\\\" + lpValueName
 		}
 
-		// Save the mapping between the handle and its equivalent path.
-		regKeyHandlesMap[phkResult] = event.Path
 	}
 	return event
 }
 
 func regKeyHandleToStr(hKey string) string {
-	// Convert it to an integer.
-	hKeyInt, _ := strconv.Atoi(hKey)
 
-	// Try to see if we are dealing with a pre-defined registry key handle.
-	hKeyStr := ReservedRegKeyHandleType(hKeyInt).String()
-	if hKeyStr != "" {
-		return hKeyStr
+	regKey, ok := regKeyHandlesMap[hKey]
+	if ok {
+		return regKey
 	}
-
-	// hKey should be resolved.
-	regKey, ok := regKeyHandlesMap[uint32(hKeyInt)]
-	if !ok {
-		return ""
-	}
-
-	return regKey
+	return ""
 }

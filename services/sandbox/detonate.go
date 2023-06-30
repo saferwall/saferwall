@@ -180,7 +180,10 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	detRes.SandboxLog = toJSON(sandboxLog)
 
 	// Create a summary of system events.
-	s.summarizeEvents(traceLog)
+	detRes.Events, err = s.summarizeEvents(traceLog)
+	if err != nil {
+		logger.Errorf("failed to summarize behavior events: %v", err)
+	}
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}

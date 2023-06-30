@@ -300,6 +300,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "screenshots", Body: toJSON(res.Screenshots), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.APITrace, Kind: pb.Message_UPLOAD},
