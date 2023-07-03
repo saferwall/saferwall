@@ -26,6 +26,8 @@
     "editor.renderWhitespace": "all",
     "cSpell.words": [
         "DBUPDATE",
-        "postprocessor"
+        "NLSTEXT",
+        "postprocessor",
+        "subkey"
     ],
 }
