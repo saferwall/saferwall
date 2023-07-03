@@ -5,6 +5,8 @@
 package sandbox
 
 import (
+	"strconv"
+
 	"github.com/saferwall/saferwall/internal/utils"
 )
 
@@ -58,6 +60,25 @@ var (
 	fileMoveAPIs   = []string{"MoveFileA", "MoveFileW", "MoveFileWithProgressA", "MoveFileWithProgressW"}
 	fileAPIs       = utils.ConcatMultipleSlices([][]string{fileCreateAPIs, fileOpenAPIs, fileDeleteAPIS, fileWriteAPIs, fileReadAPIs})
 	fileHandlesMap = make(map[string]string)
+)
+
+// Networking APIs
+var (
+	netWinHttpAPIs = []string{"WinHttpConnect"}
+	netWinINetAPIs = []string{"InternetConnectA", "InternetConnectW"}
+	netWinsockAPIs = []string{"getaddrinfo", "GetAddrInfoW", "GetAddrInfoExA", "GetAddrInfoExW"}
+	netAPIs        = utils.ConcatMultipleSlices([][]string{netWinINetAPIs, netWinHttpAPIs, netWinsockAPIs})
+	netHandlesMap  = make(map[string]string)
+)
+
+// Default port numbers for WinINet.
+const (
+	InvalidPortNumber = 0
+	DefaultFtpPort    = 21
+	DefaultGopherPort = 70
+	DefaultHttpPort   = 80
+	DefaultHttpsPort  = 443
+	DefaultSocksPort  = 1080
 )
 
 // Reserved registry key handles.
@@ -184,7 +205,7 @@ func fileHandleToStr(hFile string) string {
 func summarizeFileAPI(w32api Win32API) Event {
 	event := Event{}
 
-	// lpFileName points to the name of the file or device to be created or opened. Yo
+	// lpFileName points to the name of the file or device to be created or opened.
 	lpFileName := w32api.getParamValueByName("lpFileName").(string)
 
 	// hFile represents a handle to the file or I/O device.
@@ -256,5 +277,83 @@ func summarizeFileAPI(w32api Win32API) Event {
 		event.Path = lpExistingFileName + "->" + lpNewFileName
 
 	}
+	return event
+}
+
+func summarizeNetworkAPI(w32api Win32API) Event {
+	event := Event{}
+
+	if utils.StringInSlice(w32api.Name, netWinsockAPIs) {
+		// pNodeName contains a host (node) name or a numeric host address string.
+		pNodeName := w32api.getParamValueByName("pNodeName").(string)
+
+		// pName contains a host (node) name or a numeric host address string.
+		pName := w32api.getParamValueByName("pName").(string)
+
+		// pServiceName contains either a service name or port number represented as a string.
+		pServiceName := w32api.getParamValueByName("pServiceName").(string)
+
+		if pNodeName != "" {
+			event.Path = pNodeName
+		} else {
+			event.Path = pName
+		}
+
+		event.Path += ":" + pServiceName
+		event.Operation = "socket"
+	} else {
+
+		// lpszServerName specifies the host name of an Internet server.
+		lpszServerName := w32api.getParamValueByName("lpszServerName").(string)
+
+		// nServerPort represents the TCP/IP port on the server.
+		nServerPort := w32api.getParamValueByName("nServerPort").(string)
+
+		// pswzServerName contains the host name of an HTTP server.
+		pswzServerName := w32api.getParamValueByName("pswzServerName").(string)
+
+		// The return value of the API, which is a handle in the case of network APIs.
+		returnedHandle := w32api.ReturnValue
+
+		serverPort, _ := strconv.ParseInt(nServerPort, 0, 64)
+
+		if utils.StringInSlice(w32api.Name, netWinHttpAPIs) {
+			event.Path = pswzServerName
+		} else if utils.StringInSlice(w32api.Name, netWinINetAPIs) {
+			event.Path = lpszServerName
+		}
+
+		switch serverPort {
+		case InvalidPortNumber:
+			// Uses the default port for the service specified by dwService.
+			dwService := w32api.getParamValueByName("dwService").(string)
+			svcPort, _ := strconv.ParseInt(dwService, 0, 64)
+			switch svcPort {
+			case 0x1:
+				event.Operation = "ftp"
+				serverPort = 21
+			case 0x2:
+				event.Operation = "gopher"
+				serverPort = 70
+			case 0x3:
+				event.Operation = "http"
+				serverPort = 80
+			}
+		case DefaultFtpPort:
+			event.Operation = "ftp"
+		case DefaultHttpPort:
+			event.Operation = "http"
+		case DefaultHttpsPort:
+			event.Operation = "https"
+		case DefaultSocksPort:
+			event.Operation = "socks"
+		}
+
+		event.Path += ":" + strconv.Itoa(int(serverPort))
+
+		// Save the mapping between the handle and its equivalent path.
+		netHandlesMap[returnedHandle] = event.Path
+	}
+
 	return event
 }

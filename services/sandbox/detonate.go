@@ -111,10 +111,10 @@ type Event struct {
 	Path string `json:"path"`
 	// Th operation requested over the above `Path` field. This field means
 	// different things according to the type of the system event.
-	// - For file system events: can be either: create, read, delete, rename,
+	// - For file system events: can be either: create, read, write, delete, rename, ..
 	// - For registry events: can be either: create, rename, set, delete.
-	// - For network events: can be either an HTTP verb is the network is based
-	// of HTTP or connect, send, receive if communication happens over plain sockets.
+	// - For network events: this represents the protocol of the communication, can
+	// be either HTTP, HTTPS, FTP, FTP
 	Operation string `json:"op"`
 }
 
@@ -264,6 +264,9 @@ func (s *Service) summarizeEvents(w32apis []Win32API) (
 		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
 			event := summarizeFileAPI(w32api)
 			events[FileEventType] = append(events[FileEventType], event)
+		} else if utils.StringInSlice(w32api.Name, netAPIs) {
+			event := summarizeNetworkAPI(w32api)
+			events[NetworkEventType] = append(events[NetworkEventType], event)
 		}
 	}
 
