@@ -32,9 +32,9 @@ const (
 type EventType string
 
 const (
-	FileEventType     = "file"
-	RegistryEventType = "registry"
-	NetworkEventType  = "network"
+	fileEventType     = "file"
+	registryEventType = "registry"
+	networkEventType  = "network"
 )
 
 // DetonationResult represents the results for a detonation.
@@ -55,7 +55,7 @@ type DetonationResult struct {
 	// Environment represents the environment used to scan the file.
 	Environment `json:"env,omitempty"`
 	// Summary of system events.
-	Events map[EventType][]Event `json:"events"`
+	Events []Event `json:"events"`
 }
 
 // Environment represents the environment used to scan the file.
@@ -116,6 +116,8 @@ type Event struct {
 	// - For network events: this represents the protocol of the communication, can
 	// be either HTTP, HTTPS, FTP, FTP
 	Operation string `json:"op"`
+	// Type of the system event.
+	Type EventType `json:"type"`
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
@@ -251,22 +253,20 @@ func (s *Service) generateThumbnail(r io.Reader, w io.Writer) error {
 	return nil
 }
 
-func (s *Service) summarizeEvents(w32apis []Win32API) (
-	map[EventType][]Event, error) {
+func (s *Service) summarizeEvents(w32apis []Win32API) ([]Event, error) {
 
-	events := make(map[EventType][]Event)
+	var events []Event
 
 	for _, w32api := range w32apis {
-		// Registry events
 		if utils.StringInSlice(w32api.Name, regAPIs) {
 			event := summarizeRegAPI(w32api)
-			events[RegistryEventType] = append(events[RegistryEventType], event)
+			events = append(events, event)
 		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
 			event := summarizeFileAPI(w32api)
-			events[FileEventType] = append(events[FileEventType], event)
+			events = append(events, event)
 		} else if utils.StringInSlice(w32api.Name, netAPIs) {
 			event := summarizeNetworkAPI(w32api)
-			events[NetworkEventType] = append(events[NetworkEventType], event)
+			events = append(events, event)
 		}
 	}
 
