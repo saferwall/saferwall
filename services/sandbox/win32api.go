@@ -128,7 +128,7 @@ func (w32api Win32API) getParamValueByName(paramName string) interface{} {
 }
 
 func summarizeRegAPI(w32api Win32API) Event {
-	event := Event{Type: registryEventType}
+	event := Event{Type: registryEventType, ProcessID: w32api.ProcessID}
 
 	// hKey is either a handle returned by on of registry creation APIs;
 	// or it can be one of the predefined keys.
@@ -203,7 +203,7 @@ func fileHandleToStr(hFile string) string {
 }
 
 func summarizeFileAPI(w32api Win32API) Event {
-	event := Event{Type: fileEventType}
+	event := Event{Type: fileEventType, ProcessID: w32api.ProcessID}
 
 	// lpFileName points to the name of the file or device to be created or opened.
 	lpFileName := w32api.getParamValueByName("lpFileName").(string)
@@ -281,7 +281,7 @@ func summarizeFileAPI(w32api Win32API) Event {
 }
 
 func summarizeNetworkAPI(w32api Win32API) Event {
-	event := Event{Type: networkEventType}
+	event := Event{Type: networkEventType, ProcessID: w32api.ProcessID}
 
 	if utils.StringInSlice(w32api.Name, netWinsockAPIs) {
 		// pNodeName contains a host (node) name or a numeric host address string.

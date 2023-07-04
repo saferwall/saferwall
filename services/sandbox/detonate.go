@@ -105,6 +105,10 @@ type Artifact struct {
 
 // Event represents a system event: a registry, network or file event.
 type Event struct {
+	// Process identifier responsible for generating the event.
+	ProcessID string `json:"pid"`
+	// Type of the system event.
+	Type EventType `json:"type"`
 	// Path of the system event. For instance, when the event is of type:
 	// `registry`, the path represents the registry key being used. For a
 	// `network` event type, the path is the IP or domain used.
@@ -116,8 +120,6 @@ type Event struct {
 	// - For network events: this represents the protocol of the communication, can
 	// be either HTTP, HTTPS, FTP, FTP
 	Operation string `json:"op"`
-	// Type of the system event.
-	Type EventType `json:"type"`
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
