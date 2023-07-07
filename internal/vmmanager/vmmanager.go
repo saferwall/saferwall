@@ -2,6 +2,9 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
+// Terraform provider for libvirt contains nice usage of the go-libvirt library.
+// https://github.com/dmacvicar/terraform-provider-libvirt.git
+
 package vmmanager
 
 import (
@@ -15,6 +18,7 @@ import (
 	"github.com/digitalocean/go-libvirt/socket/dialers"
 	"golang.org/x/crypto/ssh"
 )
+
 
 const (
 	// Timeout used to connect to the libvirt server.
