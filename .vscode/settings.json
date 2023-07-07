@@ -26,8 +26,12 @@
     "editor.renderWhitespace": "all",
     "cSpell.words": [
         "DBUPDATE",
+        "HTTPAPIs",
+        "iocs",
         "NLSTEXT",
+        "nsqio",
         "postprocessor",
+        "sandboxsvc",
         "subkey"
     ],
 }

@@ -64,10 +64,10 @@ var (
 
 // Networking APIs
 var (
-	netWinHttpAPIs = []string{"WinHttpConnect"}
+	netWinHTTPAPIs = []string{"WinHttpConnect"}
 	netWinINetAPIs = []string{"InternetConnectA", "InternetConnectW"}
 	netWinsockAPIs = []string{"getaddrinfo", "GetAddrInfoW", "GetAddrInfoExA", "GetAddrInfoExW"}
-	netAPIs        = utils.ConcatMultipleSlices([][]string{netWinINetAPIs, netWinHttpAPIs, netWinsockAPIs})
+	netAPIs        = utils.ConcatMultipleSlices([][]string{netWinINetAPIs, netWinHTTPAPIs, netWinsockAPIs})
 	netHandlesMap  = make(map[string]string)
 )
 
@@ -76,8 +76,8 @@ const (
 	InvalidPortNumber = 0
 	DefaultFtpPort    = 21
 	DefaultGopherPort = 70
-	DefaultHttpPort   = 80
-	DefaultHttpsPort  = 443
+	DefaultHTTPPort   = 80
+	DefaultHTTPSPort  = 443
 	DefaultSocksPort  = 1080
 )
 
@@ -128,7 +128,7 @@ func (w32api Win32API) getParamValueByName(paramName string) interface{} {
 }
 
 func summarizeRegAPI(w32api Win32API) Event {
-	event := Event{}
+	event := Event{Type: registryEventType, ProcessID: w32api.ProcessID}
 
 	// hKey is either a handle returned by on of registry creation APIs;
 	// or it can be one of the predefined keys.
@@ -203,7 +203,7 @@ func fileHandleToStr(hFile string) string {
 }
 
 func summarizeFileAPI(w32api Win32API) Event {
-	event := Event{}
+	event := Event{Type: fileEventType, ProcessID: w32api.ProcessID}
 
 	// lpFileName points to the name of the file or device to be created or opened.
 	lpFileName := w32api.getParamValueByName("lpFileName").(string)
@@ -281,7 +281,7 @@ func summarizeFileAPI(w32api Win32API) Event {
 }
 
 func summarizeNetworkAPI(w32api Win32API) Event {
-	event := Event{}
+	event := Event{Type: networkEventType, ProcessID: w32api.ProcessID}
 
 	if utils.StringInSlice(w32api.Name, netWinsockAPIs) {
 		// pNodeName contains a host (node) name or a numeric host address string.
@@ -317,7 +317,7 @@ func summarizeNetworkAPI(w32api Win32API) Event {
 
 		serverPort, _ := strconv.ParseInt(nServerPort, 0, 64)
 
-		if utils.StringInSlice(w32api.Name, netWinHttpAPIs) {
+		if utils.StringInSlice(w32api.Name, netWinHTTPAPIs) {
 			event.Path = pswzServerName
 		} else if utils.StringInSlice(w32api.Name, netWinINetAPIs) {
 			event.Path = lpszServerName
@@ -341,9 +341,9 @@ func summarizeNetworkAPI(w32api Win32API) Event {
 			}
 		case DefaultFtpPort:
 			event.Operation = "ftp"
-		case DefaultHttpPort:
+		case DefaultHTTPPort:
 			event.Operation = "http"
-		case DefaultHttpsPort:
+		case DefaultHTTPSPort:
 			event.Operation = "https"
 		case DefaultSocksPort:
 			event.Operation = "socks"

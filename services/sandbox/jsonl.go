@@ -2,6 +2,8 @@
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
+// Inspired by: https://github.com/kylegrantlucas/jsonlines/blob/master/jsonlines.go
+
 package sandbox
 
 import (
