@@ -93,7 +93,7 @@ message AnalyzeFileReply {
       // content represents the binary data of the artifact.
       bytes content = 2;
     }
-    repeated Artifact collected_artifacts = 3;
+    repeated Artifact artifacts = 3;
 
     // gRPC server logs.
     bytes serverlog = 5;

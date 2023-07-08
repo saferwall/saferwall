@@ -242,32 +242,32 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
 	}
 
-	// Collect memory dumps.
-	memdumps := []*pb.AnalyzeFileReply_Memdump{}
-	memdumpsPath := filepath.Join(s.agentPath, "dumps")
-	err = filepath.Walk(memdumpsPath, func(path string, info os.FileInfo, err error) error {
+	// Collect artifacts.
+	artifacts := []*pb.AnalyzeFileReply_Artifact{}
+	artifactsPath := filepath.Join(s.agentPath, "artifacts")
+	err = filepath.Walk(artifactsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			logger.Errorf("walking memdumps directory failed: %v", err)
+			logger.Errorf("walking artifacts directory failed: %v", err)
 			return err
 		}
 
 		if !info.IsDir() {
-			s.logger.Infof("dump path: %s", path)
+			s.logger.Infof("artifact path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
-				logger.Errorf("failed reading memdump: %s, err: %v", path, err)
+				logger.Errorf("failed reading artifact: %s, err: %v", path, err)
 			} else {
-				memdumps = append(memdumps,
-					&pb.AnalyzeFileReply_Memdump{Name: info.Name(), Content: content})
+				artifacts = append(artifacts,
+					&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
 			}
 		}
 
 		return nil
 	})
 	if err != nil {
-		logger.Error("failed to collect memdumps, reason: %v", err)
+		logger.Error("failed to collect artifacts, reason: %v", err)
 	} else {
-		logger.Infof("memdumps collection terminated: %d dumps acquired", len(screenshots))
+		logger.Infof("artifacts collection terminated: %d artifact acquired", len(screenshots))
 	}
 
 	// Collect the controller logs.
@@ -287,12 +287,11 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}
 
 	return &pb.AnalyzeFileReply{
-		Apitrace:           apiTrace,
-		Screenshots:        screenshots,
-		CollectedArtifacts: nil,
-		Memdumps:           memdumps,
-		Serverlog:          agentLog,
-		Controllerlog:      controllerLog,
+		Apitrace:      apiTrace,
+		Screenshots:   screenshots,
+		Artifacts:     artifacts,
+		Serverlog:     agentLog,
+		Controllerlog: controllerLog,
 	}, nil
 }
 

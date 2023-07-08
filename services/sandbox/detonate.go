@@ -78,31 +78,6 @@ type Screenshot struct {
 	Content []byte `json:"-"`
 }
 
-// Artifact represents dumped memory buffers (during process injection, memory
-// decryption, or anything alike) and files dropped by the sample.
-type Artifact struct {
-	// File  name of the artifact.
-	// * Memory buffers are in this format: PID.TID-VA-BuffSize-API.membuff
-	//  -> 2E00.A60-0x1A46D880000-77824-Free.membuff
-	//  -> 2E00.A60-0x1A46D8A0000-12824-Crypto.membuff
-	//  -> 2E00.A60-0x1A46D9B0000-12824-WriteProcess.membuff
-	// * Files dropped are in this format: PID.TID-FilePath-Size.filecreate
-	//  -> 2E00.A60-C:\\Delete.vbs-9855.filecreate
-	// they were taken.
-	Name string `json:"name"`
-	// The binary content of the artifact.
-	Content []byte `json:"-"`
-	// The artifact kind.
-	Kind string `json:"kind"`
-	// The SHA256 hash of the artifact.
-	SHA256 string `json:"sha256"`
-	// Detection contains the family name of the malware if it is malicious,
-	// or clean otherwise.
-	Detection string `json:"detection"`
-	// The file type, i.e docx, dll, etc.
-	FileType string `json:"file_type"`
-}
-
 // Event represents a system event: a registry, network or file event.
 type Event struct {
 	// Process identifier responsible for generating the event.
@@ -213,7 +188,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Screenshots = screenshots
 
-	// Collect artifacts.
+	// Collect artifacts like memory buffer, process dumps, deleted files, etc..
 	artifacts := []Artifact{}
 	for _, artifact := range res.MemDumps {
 		artifacts = append(artifacts, Artifact{
