@@ -287,11 +287,11 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}
 
 	return &pb.AnalyzeFileReply{
-		Apitrace:      apiTrace,
+		APITrace:      apiTrace,
 		Screenshots:   screenshots,
 		Artifacts:     artifacts,
-		Serverlog:     agentLog,
-		Controllerlog: controllerLog,
+		ServerLog:     agentLog,
+		ControllerLog: controllerLog,
 	}, nil
 }
 
