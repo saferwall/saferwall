@@ -86,25 +86,14 @@ message AnalyzeFileReply {
     }
     repeated Screenshot screenshots = 2;
 
-    // (Optional) memory dumps taken during the analysis.
-    message Memdump {
-      // string represents metadata about the dump:
-      // i.e = 8DC.memory.400000.mshta.exe.inet
-      string name = 1;
-      // content contains the memory dump data.
-      bytes content = 2;
-    }
-    repeated Memdump memdumps = 3;
-
-    // (Optional) arfifacts like created files during the analysis.
+    // (Optional) artifacts like created files or memory dumps.
     message Artifact {
-      // string represents metadata about the artifact:
-      // i.e = deleted-file-%appdata%/explorer.exe
+      // name represents metadata about the artifact:
       string name = 1;
-      // content contains the memory dump data.
+      // content represents the binary data of the artifact.
       bytes content = 2;
     }
-    repeated Artifact collected_artifacts = 4;
+    repeated Artifact collected_artifacts = 3;
 
     // gRPC server logs.
     bytes serverlog = 5;
