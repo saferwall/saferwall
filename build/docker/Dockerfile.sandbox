@@ -10,6 +10,7 @@ ARG GITHUB_TOKEN
 ENV RELEASE_VERSION=v0.4.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
+ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules.git
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -50,6 +51,9 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--tag="${RELEASE_VERSION}" \
 	--release-asset="${ARTIFACT_NAME}" /
 
+# Clone the Yara rules repo.
+RUN git clone ${YARA_RULES_REPO} /rules
+
 ############################
 # STEP 2 build a small image
 ############################
@@ -76,6 +80,9 @@ COPY --from=build-stage /go/bin/agent.exe .
 
 # Copy the sandbox zip package.
 COPY --from=build-stage ${ARTIFACT_NAME} package.zip
+
+# Copy the yara rules.
+COPY --from=build-stage /rules rules/
 
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt
