@@ -96,8 +96,8 @@ message AnalyzeFileReply {
     repeated Artifact artifacts = 3;
 
     // gRPC server logs.
-    bytes serverlog = 5;
+    bytes server_log = 5;
 
     // controller.exe logs.
-    bytes controllerlog = 6;
+    bytes controller_log = 6;
 }

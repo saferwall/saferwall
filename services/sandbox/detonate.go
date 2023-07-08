@@ -190,7 +190,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 
 	// Collect artifacts like memory buffer, process dumps, deleted files, etc..
 	artifacts := []Artifact{}
-	for _, artifact := range res.MemDumps {
+	for _, artifact := range res.Artifacts {
 		artifacts = append(artifacts, Artifact{
 			Name:    artifact.GetName(),
 			Content: artifact.GetContent(),
