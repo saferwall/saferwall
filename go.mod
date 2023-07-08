@@ -13,7 +13,7 @@ require (
 	github.com/glaslos/ssdeep v0.3.3
 	github.com/go-enry/go-enry/v2 v2.8.2
 	github.com/google/uuid v1.3.0
-	github.com/hillu/go-yara/v4 v4.2.4
+	github.com/hillu/go-yara/v4 v4.3.2
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/nsqio/go-nsq v1.0.8
