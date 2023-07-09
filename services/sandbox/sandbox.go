@@ -6,11 +6,13 @@ package sandbox
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
@@ -70,6 +72,7 @@ type Service struct {
 	vms        []VM
 	vmm        vmmanager.VMManager
 	randomizer random.Ramdomizer
+	hasher     hasher.Hasher
 	sandbox    []byte
 }
 
@@ -154,6 +157,9 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Create a new hasher.
+	s.hasher = hasher.New(sha256.New())
 
 	s.sandbox = zipPackageData
 	s.vms = vms
