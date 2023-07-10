@@ -33,7 +33,7 @@ type FileScanResult struct {
 	AgentLog    []byte
 	SandboxLog  []byte
 	Screenshots []*pb.AnalyzeFileReply_Screenshot
-	MemDumps    []*pb.AnalyzeFileReply_Memdump
+	Artifacts   []*pb.AnalyzeFileReply_Artifact
 }
 
 type PingResult struct {
@@ -89,10 +89,10 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 	}
 
 	scanRes := FileScanResult{
-		TraceLog:    r.GetApitrace(),
-		AgentLog:    r.GetServerlog(),
-		SandboxLog:  r.GetControllerlog(),
-		MemDumps:    r.GetMemdumps(),
+		TraceLog:    r.GetAPITrace(),
+		AgentLog:    r.GetServerLog(),
+		SandboxLog:  r.GetControllerLog(),
+		Artifacts:   r.GetArtifacts(),
 		Screenshots: r.GetScreenshots(),
 	}
 

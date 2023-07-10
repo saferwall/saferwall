@@ -1,8 +1,8 @@
-YARA_VERSION = 4.2.3
+YARA_VERSION = 4.3.2
 YARA_ARCHIVE = ${YARA_VERSION}.tar.gz
 YARA_DOWNLOAD_URL = https://github.com/VirusTotal/yara/archive/v${YARA_ARCHIVE}
-YARA_REPO_REPO  = https://github.com/Yara-Rules/rules.git
-YARA_RULES_DIR  = /opt/yararules
+YARA_REPO_REPO  = https://github.com/saferwall/yara-rules.git
+YARA_RULES_DIR  = /opt/yara-rules
 
 yara-install:	# Install yara
 	sudo apt-get install automake libtool make gcc pkg-config -y

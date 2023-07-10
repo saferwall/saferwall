@@ -26,6 +26,8 @@
     "editor.renderWhitespace": "all",
     "cSpell.words": [
         "DBUPDATE",
+        "goyara",
+        "hasher",
         "HTTPAPIs",
         "iocs",
         "NLSTEXT",

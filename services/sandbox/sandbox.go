@@ -6,17 +6,20 @@ package sandbox
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
 	"github.com/saferwall/saferwall/internal/pubsub/nsq"
 	"github.com/saferwall/saferwall/internal/random"
 	"github.com/saferwall/saferwall/internal/utils"
 	"github.com/saferwall/saferwall/internal/vmmanager"
+	goyara "github.com/saferwall/saferwall/internal/yara"
 	micro "github.com/saferwall/saferwall/services"
 	"github.com/saferwall/saferwall/services/config"
 	pb "github.com/saferwall/saferwall/services/proto"
@@ -34,6 +37,7 @@ type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
 	SharedVolume string             `mapstructure:"shared_volume"`
 	EnglishWords string             `mapstructure:"english_words"`
+	YaraRules    string             `mapstructure:"yara_rules"`
 	Agent        AgentCfg           `mapstructure:"agent"`
 	VirtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
 	Producer     config.ProducerCfg `mapstructure:"producer"`
@@ -63,14 +67,16 @@ type VirtManagerCfg struct {
 // interface. This allows us to define our own custom handlers for our messages.
 // Think of these handlers much like you would an http handler.
 type Service struct {
-	cfg        Config
-	logger     log.Logger
-	pub        pubsub.Publisher
-	sub        pubsub.Subscriber
-	vms        []VM
-	vmm        vmmanager.VMManager
-	randomizer random.Ramdomizer
-	sandbox    []byte
+	cfg         Config
+	logger      log.Logger
+	pub         pubsub.Publisher
+	sub         pubsub.Subscriber
+	vms         []VM
+	vmm         vmmanager.VMManager
+	randomizer  random.Ramdomizer
+	hasher      hasher.Hasher
+	yaraScanner goyara.Scanner
+	sandbox     []byte
 }
 
 func toJSON(v interface{}) []byte {
@@ -151,6 +157,15 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 
 	// Create a string randomizer.
 	randomSvc, err := random.New(cfg.EnglishWords)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new hasher.
+	s.hasher = hasher.New(sha256.New())
+
+	// Create a new yara scanner.
+	s.yaraScanner, err = goyara.New(cfg.YaraRules)
 	if err != nil {
 		return nil, err
 	}

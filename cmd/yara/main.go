@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -84,23 +84,21 @@ func main() {
 		}
 	}
 
-	r, err := goyara.Load(rules)
+	s, err := goyara.NewFromRules(rules)
 	if err != nil {
 		log.Fatalf("Could not parse %s ad number", err)
 	}
 
 	if processScan {
-		s, _ := yara.NewScanner(r)
 		for _, pid := range pids {
 			log.Printf("Scanning process %d...", pid)
-			var m yara.MatchRules
-			err := s.SetCallback(&m).ScanProc(pid)
+			m, err := s.ScanProc(pid)
 			printMatches(m, err)
 		}
 	} else {
 		for _, filename := range args {
 			log.Printf("Scanning file %s... ", filename)
-			m, err := goyara.ScanFile(r, filename)
+			m, err := s.ScanFile(filename)
 			printMatches(m, err)
 		}
 	}
