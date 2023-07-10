@@ -45,6 +45,22 @@ func New(rulesPath string) (Scanner, error) {
 
 }
 
+func NewFromRules(rules []Rule) (Scanner, error) {
+	r, err := Load(rules)
+	if err != nil {
+		return Scanner{}, err
+	}
+
+	s, err := yara.NewScanner(r)
+	if err != nil {
+		return Scanner{}, err
+	}
+
+	scanner := Scanner{scanner: s}
+	return scanner, nil
+
+}
+
 // Load and compile yara rules.
 func Load(rules []Rule) (*yara.Rules, error) {
 
@@ -99,6 +115,16 @@ func (s Scanner) ScanBytes(buff []byte) ([]yara.MatchRule, error) {
 	var m yara.MatchRules
 
 	err := s.scanner.SetCallback(&m).ScanMem(buff)
+
+	return m, err
+}
+
+// ScanProc performs a process scan.
+func (s Scanner) ScanProc(pid int) ([]yara.MatchRule, error) {
+
+	var m yara.MatchRules
+
+	err := s.scanner.SetCallback(&m).ScanProc(pid)
 
 	return m, err
 }
