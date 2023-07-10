@@ -63,6 +63,16 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 
 		artifact.SHA256 = s.hasher.Hash(artifact.Content)
 
+		matches, err := s.yaraScanner.ScanBytes(artifact.Content)
+		if err != nil {
+			s.logger.Errorf("failed to scan artifact with yara: %s", artifact.Name)
+			continue
+		}
+
+		for _, match := range matches {
+			s.logger.Infof("yara rules matches: %v", match.Rule)
+		}
+
 		artifacts = append(artifacts, artifact)
 	}
 	return artifacts, nil

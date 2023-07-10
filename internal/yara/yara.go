@@ -92,3 +92,13 @@ func (s Scanner) ScanFile(filepath string) ([]yara.MatchRule, error) {
 
 	return m, err
 }
+
+// ScanBytes performs a scan over a byte stream.
+func (s Scanner) ScanBytes(buff []byte) ([]yara.MatchRule, error) {
+
+	var m yara.MatchRules
+
+	err := s.scanner.SetCallback(&m).ScanMem(buff)
+
+	return m, err
+}
