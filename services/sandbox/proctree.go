@@ -4,7 +4,13 @@
 
 package sandbox
 
-type ProcessTree struct {
+// ProcessTree represents an array of processes, each process contains a process
+// ID that can helps us track the parent/children relationship.
+type ProcessTree []Process
+
+// Process represents a process object within the detonation context.
+// This structure help us build the process tree.
+type Process struct {
 	// Process image's path.
 	ImagePath string `json:"path"`
 	// Process identifier.
@@ -16,6 +22,8 @@ type ProcessTree struct {
 	// Detection contains the family name of the malware if it is malicious,
 	// or clean otherwise.
 	Detection string `json:"detection"`
-	// The children of the process.
-	Children *ProcessTree `json:"children"`
+	// The parent process ID.
+	ParentPID string `json:"parent_pid"`
+	// True indicates that this is the root node of the tree.
+	IsRoot bool `json:"is_root"`
 }

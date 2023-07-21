@@ -75,7 +75,7 @@ message AnalyzeFileRequest {
 message AnalyzeFileReply {
 
     // APIs log produced by the sandbox in JSON Lines;
-    bytes apitrace = 1;
+    bytes api_trace = 1;
 
     // Screenshots collected during the analysis.
     message Screenshot {
@@ -95,9 +95,12 @@ message AnalyzeFileReply {
     }
     repeated Artifact artifacts = 3;
 
-    // gRPC server logs.
-    bytes server_log = 5;
+    // gRPC server log.
+    bytes server_log = 4;
 
-    // controller.exe logs.
-    bytes controller_log = 6;
+    // Controller log.
+    bytes controller_log = 5;
+
+    // Process tree data.
+    bytes process_tree = 6;
 }

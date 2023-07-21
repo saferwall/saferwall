@@ -278,6 +278,14 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		logger.Infof("controller logs size is: %d bytes", len(controllerLog))
 	}
 
+	// Collect the process tree data.
+	procTreeLog, err := utils.ReadAll(filepath.Join(s.agentPath, "proc_tree.jsonl"))
+	if err != nil {
+		logger.Error("failed to read process tree data, reason: %v", err)
+	} else {
+		logger.Infof("process tree data size is: %d bytes", len(procTreeLog))
+	}
+
 	// Keep the agent log the last thing to read.
 	agentLog, err := utils.ReadAll(filepath.Join(s.agentPath, s.cfg.LogFile))
 	if err != nil {
@@ -287,11 +295,12 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}
 
 	return &pb.AnalyzeFileReply{
-		APITrace:      apiTrace,
+		ApiTrace:      apiTrace,
 		Screenshots:   screenshots,
 		Artifacts:     artifacts,
 		ServerLog:     agentLog,
 		ControllerLog: controllerLog,
+		ProcessTree:   procTreeLog,
 	}, nil
 }
 

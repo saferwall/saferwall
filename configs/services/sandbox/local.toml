@@ -6,7 +6,7 @@ shared_volume = "/samples"
 english_words = "../../../hack/words.txt"
 # Path to the yara rules directory. The content of the directory
 # should include an index.yara that include all other yara rules.
-yara_rules = "./rules"
+yara_rules = "/opt/yara-rules"
 
 [agent]
 # Destinary directory inside the guest where the agent is deployed.
