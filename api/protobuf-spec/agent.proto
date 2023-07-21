@@ -86,16 +86,16 @@ message AnalyzeFileReply {
     }
     repeated Screenshot screenshots = 2;
 
-    // (Optional) artifacts like created files or memory dumps.
+    // Artifacts created files or memory dumps.
     message Artifact {
-      // name represents metadata about the artifact:
+      // The name of the artifact.
       string name = 1;
-      // content represents the binary data of the artifact.
+      // The binary content of the artifact.
       bytes content = 2;
     }
     repeated Artifact artifacts = 3;
 
-    // gRPC server log.
+    // Agent server log.
     bytes server_log = 4;
 
     // Controller log.

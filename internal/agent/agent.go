@@ -90,7 +90,7 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 	}
 
 	scanRes := FileScanResult{
-		TraceLog:    r.GetApiTrace(),
+		TraceLog:    r.GetAPITrace(),
 		AgentLog:    r.GetServerLog(),
 		SandboxLog:  r.GetControllerLog(),
 		Artifacts:   r.GetArtifacts(),

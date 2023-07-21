@@ -266,10 +266,10 @@ type AnalyzeFileReply struct {
 	unknownFields protoimpl.UnknownFields
 
 	// APIs log produced by the sandbox in JSON Lines;
-	ApiTrace    []byte                         `protobuf:"bytes,1,opt,name=api_trace,json=apiTrace,proto3" json:"api_trace,omitempty"`
+	APITrace    []byte                         `protobuf:"bytes,1,opt,name=api_trace,json=apiTrace,proto3" json:"api_trace,omitempty"`
 	Screenshots []*AnalyzeFileReply_Screenshot `protobuf:"bytes,2,rep,name=screenshots,proto3" json:"screenshots,omitempty"`
 	Artifacts   []*AnalyzeFileReply_Artifact   `protobuf:"bytes,3,rep,name=artifacts,proto3" json:"artifacts,omitempty"`
-	// gRPC server log.
+	// Agent server log.
 	ServerLog []byte `protobuf:"bytes,4,opt,name=server_log,json=serverLog,proto3" json:"server_log,omitempty"`
 	// Controller log.
 	ControllerLog []byte `protobuf:"bytes,5,opt,name=controller_log,json=controllerLog,proto3" json:"controller_log,omitempty"`
@@ -309,9 +309,9 @@ func (*AnalyzeFileReply) Descriptor() ([]byte, []int) {
 	return file_agent_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *AnalyzeFileReply) GetApiTrace() []byte {
+func (x *AnalyzeFileReply) GetAPITrace() []byte {
 	if x != nil {
-		return x.ApiTrace
+		return x.APITrace
 	}
 	return nil
 }
@@ -409,15 +409,15 @@ func (x *AnalyzeFileReply_Screenshot) GetContent() []byte {
 	return nil
 }
 
-// (Optional) artifacts like created files or memory dumps.
+// Artifacts created files or memory dumps.
 type AnalyzeFileReply_Artifact struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// name represents metadata about the artifact:
+	// The name of the artifact.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// content represents the binary data of the artifact.
+	// The binary content of the artifact.
 	Content []byte `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 }
 
