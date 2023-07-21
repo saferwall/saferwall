@@ -24,6 +24,8 @@ type Process struct {
 	Detection string `json:"detection"`
 	// The parent process ID.
 	ParentPID string `json:"parent_pid"`
+	// The relationship between this process and its parent.
+	ParentLink string `json:"parent_link"`
 	// True indicates that this is the root node of the tree.
-	IsRoot bool `json:"is_root"`
+	IsRoot bool
 }
