@@ -14,7 +14,11 @@ type Process struct {
 	// Process image's path.
 	ImagePath string `json:"path"`
 	// Process identifier.
-	ProcessID string `json:"pid"`
+	PID string `json:"pid"`
+	// The parent process ID.
+	ParentPID string `json:"parent_pid"`
+	// The relationship between this process and its parent.
+	ParentLink string `json:"parent_link"`
 	// The name of the process.
 	ProcessName string `json:"proc_name"`
 	// The file type: doc, exe, etc.
@@ -22,10 +26,4 @@ type Process struct {
 	// Detection contains the family name of the malware if it is malicious,
 	// or clean otherwise.
 	Detection string `json:"detection"`
-	// The parent process ID.
-	ParentPID string `json:"parent_pid"`
-	// The relationship between this process and its parent.
-	ParentLink string `json:"parent_link"`
-	// True indicates that this is the root node of the tree.
-	IsRoot bool
 }
