@@ -4,6 +4,11 @@
 
 package sandbox
 
+import (
+	"path/filepath"
+	"strings"
+)
+
 // ProcessTree represents an array of processes, each process contains a process
 // ID that can helps us track the parent/children relationship.
 type ProcessTree []Process
@@ -26,4 +31,15 @@ type Process struct {
 	// Detection contains the family name of the malware if it is malicious,
 	// or clean otherwise.
 	Detection string `json:"detection"`
+}
+
+func enrichProcTree(procTree ProcessTree) ProcessTree {
+	var enrichedProcTree ProcessTree
+	for _, p := range procTree {
+		p.ProcessName = filepath.Base(p.ImagePath)
+		fileExt := filepath.Ext(p.ImagePath)
+		p.FileType = strings.Replace(fileExt, ".", "", -1)
+		enrichedProcTree = append(enrichedProcTree, p)
+	}
+	return enrichedProcTree
 }

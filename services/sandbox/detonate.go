@@ -166,6 +166,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to decode process tree: %v", err)
 	}
+	detRes.ProcessTree = enrichProcTree(processes)
 
 	// Create a summary of system events.
 	detRes.Events, err = s.summarizeEvents(traceLog)
