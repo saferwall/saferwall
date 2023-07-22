@@ -32,6 +32,7 @@ type FileScanResult struct {
 	TraceLog    []byte
 	AgentLog    []byte
 	SandboxLog  []byte
+	ProcessTree []byte
 	Screenshots []*pb.AnalyzeFileReply_Screenshot
 	Artifacts   []*pb.AnalyzeFileReply_Artifact
 }
@@ -94,6 +95,7 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 		SandboxLog:  r.GetControllerLog(),
 		Artifacts:   r.GetArtifacts(),
 		Screenshots: r.GetScreenshots(),
+		ProcessTree: r.GetProcessTree(),
 	}
 
 	return scanRes, nil

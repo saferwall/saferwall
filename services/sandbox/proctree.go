@@ -4,11 +4,26 @@
 
 package sandbox
 
-type ProcessTree struct {
+import (
+	"path/filepath"
+	"strings"
+)
+
+// ProcessTree represents an array of processes, each process contains a process
+// ID that can helps us track the parent/children relationship.
+type ProcessTree []Process
+
+// Process represents a process object within the detonation context.
+// This structure help us build the process tree.
+type Process struct {
 	// Process image's path.
 	ImagePath string `json:"path"`
 	// Process identifier.
-	ProcessID string `json:"pid"`
+	PID string `json:"pid"`
+	// The parent process ID.
+	ParentPID string `json:"parent_pid"`
+	// The relationship between this process and its parent.
+	ParentLink string `json:"parent_link"`
 	// The name of the process.
 	ProcessName string `json:"proc_name"`
 	// The file type: doc, exe, etc.
@@ -16,6 +31,15 @@ type ProcessTree struct {
 	// Detection contains the family name of the malware if it is malicious,
 	// or clean otherwise.
 	Detection string `json:"detection"`
-	// The children of the process.
-	Children *ProcessTree `json:"children"`
+}
+
+func enrichProcTree(procTree ProcessTree) ProcessTree {
+	var enrichedProcTree ProcessTree
+	for _, p := range procTree {
+		p.ProcessName = filepath.Base(p.ImagePath)
+		fileExt := filepath.Ext(p.ImagePath)
+		p.FileType = strings.Replace(fileExt, ".", "", -1)
+		enrichedProcTree = append(enrichedProcTree, p)
+	}
+	return enrichedProcTree
 }

@@ -56,6 +56,8 @@ type DetonationResult struct {
 	Environment `json:"env,omitempty"`
 	// Summary of system events.
 	Events []Event `json:"events"`
+	// The process execution tree.
+	ProcessTree ProcessTree
 }
 
 // Environment represents the environment used to scan the file.
@@ -157,6 +159,14 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		logger.Errorf("failed to decode sandbox log: %v", err)
 	}
 	detRes.SandboxLog = toJSON(sandboxLog)
+
+	// Create the process tree structure.
+	var processes []Process
+	err = Decode(bytes.NewReader(res.ProcessTree), &processes)
+	if err != nil {
+		logger.Errorf("failed to decode process tree: %v", err)
+	}
+	detRes.ProcessTree = enrichProcTree(processes)
 
 	// Create a summary of system events.
 	detRes.Events, err = s.summarizeEvents(traceLog)
