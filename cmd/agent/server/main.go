@@ -38,8 +38,8 @@ import (
 )
 
 const (
-	// grpc library default is 64MB.
-	maxMsgSize = 1024 * 1024 * 64
+	// grpc library default is 1GB.
+	maxMsgSize = 1024 * 1024 * 1024
 
 	// default file scan timeout in seconds.
 	defaultFileScanTimeout = 30
@@ -180,9 +180,9 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Add 10 seconds to the timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	timeout := time.Duration(scanCfg["timeout"].(float64) + 10)
-	deadline := time.Now().Add(timeout * time.Second)
-	logger.Infof("timeout for process to return back: %v seconds", timeout)
+	timeout := time.Duration(scanCfg["timeout"].(float64)+10) * time.Second
+	deadline := time.Now().Add(timeout)
+	logger.Infof("timeout for process to return back: %v", timeout)
 
 	// Create a new context and add a timeout to it.
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -252,11 +252,11 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		}
 
 		if !info.IsDir() {
-			s.logger.Infof("artifact path: %s", path)
 			content, e := utils.ReadAll(path)
 			if e != nil {
 				logger.Errorf("failed reading artifact: %s, err: %v", path, err)
 			} else {
+				s.logger.Infof("artifact path: %s", path)
 				artifacts = append(artifacts,
 					&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
 			}
@@ -267,7 +267,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	if err != nil {
 		logger.Error("failed to collect artifacts, reason: %v", err)
 	} else {
-		logger.Infof("artifacts collection terminated: %d artifact acquired", len(screenshots))
+		logger.Infof("artifacts collection terminated: %d artifact acquired", len(artifacts))
 	}
 
 	// Collect the controller logs.
