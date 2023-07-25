@@ -14,6 +14,10 @@ import (
 	"reflect"
 )
 
+const (
+	maxScanTokenSize = 1024 * 1024 * 512
+)
+
 func getOriginalSlice(ptrToSlice interface{}) (slice reflect.Value, err error) {
 	ptr2sl := reflect.TypeOf(ptrToSlice)
 	if ptr2sl.Kind() != reflect.Ptr {
@@ -39,6 +43,11 @@ func Decode(r io.Reader, ptrToSlice interface{}) error {
 	slElem := originalSlice.Type().Elem()
 	//originalSlice := reflect.Indirect(reflect.ValueOf(ptrToSlice))
 	scanner := bufio.NewScanner(r)
+
+	// Allocate large enough buffer.
+	buffer := make([]byte, maxScanTokenSize)
+	scanner.Buffer(buffer, maxScanTokenSize)
+
 	for scanner.Scan() {
 		//create new object
 		newObj := reflect.New(slElem).Interface()
