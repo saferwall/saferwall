@@ -242,6 +242,33 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
 	}
 
+	// Collect API buffers.
+	apiBuffers := []*pb.AnalyzeFileReply_APIBuffer{}
+	apiBuffersPath := filepath.Join(s.agentPath, "api-buffers")
+	err = filepath.Walk(apiBuffersPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logger.Errorf("walking api buffers directory failed: %v", err)
+			return err
+		}
+
+		if !info.IsDir() {
+			content, e := utils.ReadAll(path)
+			if e != nil {
+				logger.Errorf("failed reading api buffer: %s, err: %v", path, err)
+			} else {
+				s.logger.Infof("api buffer path: %s", path)
+				apiBuffers = append(apiBuffers,
+					&pb.AnalyzeFileReply_APIBuffer{Name: info.Name(), Content: content})
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		logger.Error("failed to collect api buffers, reason: %v", err)
+	} else {
+		logger.Infof("api buffers collection terminated: %d api buffers acquired", len(apiBuffers))
+	}
+
 	// Collect artifacts.
 	artifacts := []*pb.AnalyzeFileReply_Artifact{}
 	artifactsPath := filepath.Join(s.agentPath, "artifacts")
@@ -261,7 +288,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 					&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
 			}
 		}
-
 		return nil
 	})
 	if err != nil {
