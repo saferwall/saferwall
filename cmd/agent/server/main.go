@@ -217,25 +217,27 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	screenshots := []*pb.AnalyzeFileReply_Screenshot{}
 	screenshotsPath := filepath.Join(s.agentPath, "screenshots")
 	screenShotId := int32(0)
-	err = filepath.Walk(screenshotsPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			logger.Errorf("walking screenshots directory failed: %v", err)
-			return err
-		}
-		if !info.IsDir() {
-			logger.Infof("screenshot path: %s", path)
-			content, e := utils.ReadAll(path)
-			if e != nil {
-				logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
-			} else {
-				screenshots = append(screenshots,
-					&pb.AnalyzeFileReply_Screenshot{Id: screenShotId, Content: content})
-				screenShotId++
+	err = filepath.Walk(screenshotsPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				logger.Errorf("walking screenshots directory failed: %v", err)
+				return err
 			}
-		}
+			if !info.IsDir() {
+				logger.Infof("screenshot path: %s", path)
+				content, e := utils.ReadAll(path)
+				if e != nil {
+					logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
+				} else {
+					screenshots = append(screenshots,
+						&pb.AnalyzeFileReply_Screenshot{
+							Id: screenShotId, Content: content})
+					screenShotId++
+				}
+			}
 
-		return nil
-	})
+			return nil
+		})
 	if err != nil {
 		s.logger.Error("failed to collect screenshots, reason: %v", err)
 	} else {
@@ -245,51 +247,55 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// Collect API buffers.
 	apiBuffers := []*pb.AnalyzeFileReply_APIBuffer{}
 	apiBuffersPath := filepath.Join(s.agentPath, "api-buffers")
-	err = filepath.Walk(apiBuffersPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			logger.Errorf("walking api buffers directory failed: %v", err)
-			return err
-		}
-
-		if !info.IsDir() {
-			content, e := utils.ReadAll(path)
-			if e != nil {
-				logger.Errorf("failed reading api buffer: %s, err: %v", path, err)
-			} else {
-				s.logger.Infof("api buffer path: %s", path)
-				apiBuffers = append(apiBuffers,
-					&pb.AnalyzeFileReply_APIBuffer{Name: info.Name(), Content: content})
+	err = filepath.Walk(apiBuffersPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				logger.Errorf("walking api buffers directory failed: %v", err)
+				return err
 			}
-		}
-		return nil
-	})
+
+			if !info.IsDir() {
+				content, e := utils.ReadAll(path)
+				if e != nil {
+					logger.Errorf("failed reading api buffer: %s, err: %v", path, err)
+				} else {
+					s.logger.Infof("api buffer path: %s", path)
+					apiBuffers = append(apiBuffers,
+						&pb.AnalyzeFileReply_APIBuffer{
+							Name: info.Name(), Content: content})
+				}
+			}
+			return nil
+		})
 	if err != nil {
 		logger.Error("failed to collect api buffers, reason: %v", err)
 	} else {
-		logger.Infof("api buffers collection terminated: %d api buffers acquired", len(apiBuffers))
+		logger.Infof("api buffers collection terminated: %d api buffers acquired",
+			len(apiBuffers))
 	}
 
 	// Collect artifacts.
 	artifacts := []*pb.AnalyzeFileReply_Artifact{}
 	artifactsPath := filepath.Join(s.agentPath, "artifacts")
-	err = filepath.Walk(artifactsPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			logger.Errorf("walking artifacts directory failed: %v", err)
-			return err
-		}
-
-		if !info.IsDir() {
-			content, e := utils.ReadAll(path)
-			if e != nil {
-				logger.Errorf("failed reading artifact: %s, err: %v", path, err)
-			} else {
-				s.logger.Infof("artifact path: %s", path)
-				artifacts = append(artifacts,
-					&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
+	err = filepath.Walk(artifactsPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				logger.Errorf("walking artifacts directory failed: %v", err)
+				return err
 			}
-		}
-		return nil
-	})
+
+			if !info.IsDir() {
+				content, e := utils.ReadAll(path)
+				if e != nil {
+					logger.Errorf("failed reading artifact: %s, err: %v", path, err)
+				} else {
+					s.logger.Infof("artifact path: %s", path)
+					artifacts = append(artifacts,
+						&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
+				}
+			}
+			return nil
+		})
 	if err != nil {
 		logger.Error("failed to collect artifacts, reason: %v", err)
 	} else {
@@ -330,9 +336,8 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	}, nil
 }
 
-// Build sandbox config by taking the values from from the
-// `FileScanCfg` and generates a TOML config on the fly using
-// go templates.
+// Build sandbox config by taking the values from from the `FileScanCfg` and
+// generates a TOML config on the fly using go templates.
 func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	io.Reader, error) {
 
