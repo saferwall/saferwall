@@ -46,6 +46,8 @@ type DetonationResult struct {
 	// Same as APITrace, but this is not capped to any threshold.
 	// The full trace is uploaded to the object storage,
 	FullAPITrace []byte `json:"-"`
+	// The buffer of large byte* for some Win32 APIs.
+	APIBuffers []Win32APIBuffer `JSON:"-"`
 	// The logs produced by the agent running inside the VM.
 	AgentLog []byte `json:"agent_log,omitempty"`
 	// The logs produced by the sandbox.
@@ -154,12 +156,21 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to decode trace log: %v", err)
 	}
+
 	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
 	detRes.FullAPITrace = toJSON(traceLog)
 	if len(traceLog) > maxTraceLog {
 		traceLog = traceLog[:maxTraceLog]
 	}
 	detRes.APITrace = toJSON(traceLog)
+
+	// Collect API buffers.
+	for _, apiBuff := range res.APIBuffers {
+		detRes.APIBuffers = append(detRes.APIBuffers, Win32APIBuffer{
+			Name:    apiBuff.GetName(),
+			Content: apiBuff.GetContent(),
+		})
+	}
 
 	// Convert the sandbox log from JSONL to JSON.
 	var sandboxLog []interface{}

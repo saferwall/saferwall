@@ -50,6 +50,14 @@ type Win32API struct {
 	ReturnValue string `json:"ret"`
 }
 
+// Win32APIBuffer represents a Win32 API large buffer of parameter of type BYTE*.
+type Win32APIBuffer struct {
+	// Name of the buffer.
+	Name string
+	// Content of the buffer.
+	Content []byte
+}
+
 // Registry APIs
 var (
 	regCreateAPIs      = []string{"RegCreateKeyA", "RegCreateKeyW", "RegCreateKeyExA", "RegCreateKeyExW"}

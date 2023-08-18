@@ -349,6 +349,17 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		payloads = append(payloads, &payload)
 	}
 
+	// API Buffers are also uploaded to file system storage like s3.
+	for _, apiBuff := range res.APIBuffers {
+		objKey := behaviorReportKey + "api-buffers" + "/" + apiBuff.Name
+		payload := pb.Message_Payload{
+			Key:  objKey,
+			Body: apiBuff.Content,
+			Kind: pb.Message_UPLOAD,
+		}
+		payloads = append(payloads, &payload)
+	}
+
 	msg = &pb.Message{Sha256: sha256, Payload: payloads}
 	out, err = proto.Marshal(msg)
 	if err != nil {

@@ -35,6 +35,7 @@ type FileScanResult struct {
 	ProcessTree []byte
 	Screenshots []*pb.AnalyzeFileReply_Screenshot
 	Artifacts   []*pb.AnalyzeFileReply_Artifact
+	APIBuffers  []*pb.AnalyzeFileReply_APIBuffer
 }
 
 type PingResult struct {
@@ -96,6 +97,7 @@ func (ac AgentClient) Analyze(ctx context.Context, config, binary []byte) (
 		Artifacts:   r.GetArtifacts(),
 		Screenshots: r.GetScreenshots(),
 		ProcessTree: r.GetProcessTree(),
+		APIBuffers:  r.GetAPIBuffers(),
 	}
 
 	return scanRes, nil

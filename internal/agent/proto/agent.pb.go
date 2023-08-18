@@ -310,7 +310,7 @@ func (*AnalyzeFileReply) Descriptor() ([]byte, []int) {
 	return file_agent_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *AnalyzeFileReply) GetApiTrace() []byte {
+func (x *AnalyzeFileReply) GetAPITrace() []byte {
 	if x != nil {
 		return x.APITrace
 	}
@@ -331,7 +331,7 @@ func (x *AnalyzeFileReply) GetArtifacts() []*AnalyzeFileReply_Artifact {
 	return nil
 }
 
-func (x *AnalyzeFileReply) GetApiBuffers() []*AnalyzeFileReply_APIBuffer {
+func (x *AnalyzeFileReply) GetAPIBuffers() []*AnalyzeFileReply_APIBuffer {
 	if x != nil {
 		return x.APIBuffers
 	}
