@@ -19,7 +19,19 @@ type Win32APIParam struct {
 	// Name of the parameter.
 	Name string `json:"name"`
 	// Value of the parameter. This can be either a string or a slice of bytes.
-	Value interface{} `json:"value"`
+	// This field is mutually exclusive with the In and Out values.
+	Value interface{} `json:"value,omitempty"`
+	// Win32 API sometimes uses IN and OUT annotations, so instead of having
+	// one `value`, we separate the `in` and `out`. Occasionally, a function can
+	// both reads from and writes to buffer, so ValueIn and ValueOut are filled.
+	// The function reads from the buffer.
+	ValueIn interface{} `json:"in,omitempty"`
+	// The function writes to the buffer.
+	ValueOut interface{} `json:"out,omitempty"`
+
+	// An ID is attributed to track BYTE* parameters that spans over 4KB of data.
+	BuffIDIn  interface{} `json:"in_buff_id,omitempty"`
+	BuffIDOut interface{} `json:"out_buff_id,omitempty"`
 }
 
 // Win32API represents a Win32 API event.
