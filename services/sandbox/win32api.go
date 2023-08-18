@@ -5,7 +5,9 @@
 package sandbox
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/saferwall/saferwall/internal/utils"
 )
@@ -79,6 +81,11 @@ const (
 	DefaultHTTPPort   = 80
 	DefaultHTTPSPort  = 443
 	DefaultSocksPort  = 1080
+)
+
+// Track unique system events.
+var (
+	uniqueEvents = make(map[string]bool)
 )
 
 // Reserved registry key handles.
@@ -356,4 +363,16 @@ func summarizeNetworkAPI(w32api Win32API) Event {
 	}
 
 	return event
+}
+
+func (s *Service) isNewEvent(event Event) bool {
+	eventKey := fmt.Sprintf("%s-%s-%s", event.ProcessID,
+		strings.ToLower(event.Path), event.Operation)
+	_, ok := uniqueEvents[eventKey]
+	if ok {
+		return false
+	} else {
+		uniqueEvents[eventKey] = true
+		return true
+	}
 }
