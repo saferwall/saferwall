@@ -25,6 +25,7 @@ const (
 	defaultFileScanTimeout = 30
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
+	maxTraceLog            = 10000
 )
 
 // EventType is the type of the system event. A type can be either:
@@ -42,6 +43,9 @@ type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
 	APITrace []byte `json:"api_trace,omitempty"`
+	// Same as APITrace, but this is not capped to any threshold.
+	// The full trace is uploaded to the object storage,
+	FullAPITrace []byte `json:"-"`
 	// The logs produced by the agent running inside the VM.
 	AgentLog []byte `json:"agent_log,omitempty"`
 	// The logs produced by the sandbox.
@@ -150,6 +154,11 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to decode trace log: %v", err)
 	}
+	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
+	detRes.FullAPITrace = toJSON(traceLog)
+	if len(traceLog) > maxTraceLog {
+		traceLog = traceLog[:maxTraceLog]
+	}
 	detRes.APITrace = toJSON(traceLog)
 
 	// Convert the sandbox log from JSONL to JSON.
@@ -241,15 +250,19 @@ func (s *Service) summarizeEvents(w32apis []Win32API) ([]Event, error) {
 	var events []Event
 
 	for _, w32api := range w32apis {
+		var event Event
 		if utils.StringInSlice(w32api.Name, regAPIs) {
-			event := summarizeRegAPI(w32api)
-			events = append(events, event)
+			event = summarizeRegAPI(w32api)
 		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
-			event := summarizeFileAPI(w32api)
-			events = append(events, event)
+			event = summarizeFileAPI(w32api)
 		} else if utils.StringInSlice(w32api.Name, netAPIs) {
-			event := summarizeNetworkAPI(w32api)
-			events = append(events, event)
+			event = summarizeNetworkAPI(w32api)
+		}
+
+		if event != (Event{}) {
+			if s.isNewEvent(event) {
+				events = append(events, event)
+			}
 		}
 	}
 

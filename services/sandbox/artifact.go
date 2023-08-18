@@ -55,7 +55,7 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 
 		artifact.Kind, err = deduceKindFromName(artifact.Name)
 		if err != nil {
-			s.logger.Errorf("failed to deduce artifact kind from %s", artifact.Name)
+			s.logger.Debugf("failed to deduce artifact kind from %s", artifact.Name)
 			continue
 		}
 
