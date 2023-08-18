@@ -11,8 +11,8 @@ import (
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 )
 
-// Artifact represents dumped memory buffers (during process injection, memory
-// decryption, or anything alike) and files dropped by the sample.
+// Artifact represents an extracted artifact during the dynamic analysis
+// like a memory dumps or written files
 type Artifact struct {
 	// File  name of the artifact.
 	// * Memory buffers are in this format: ProcessName__PID__TID__VA__BuffSize.memfree
@@ -55,7 +55,7 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 
 		artifact.Kind, err = deduceKindFromName(artifact.Name)
 		if err != nil {
-			s.logger.Debugf("failed to deduce artifact kind from %s", artifact.Name)
+			s.logger.Errorf("failed to deduce artifact kind from %s", artifact.Name)
 			continue
 		}
 
