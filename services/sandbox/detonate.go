@@ -157,12 +157,8 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		logger.Errorf("failed to decode trace log: %v", err)
 	}
 
-	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
-	detRes.FullAPITrace = toJSON(traceLog)
-	if len(traceLog) > maxTraceLog {
-		traceLog = traceLog[:maxTraceLog]
-	}
-	detRes.APITrace = toJSON(traceLog)
+	// Create a optimized version of the API trace for storage in DB.
+	//s.curateAPIEvents(traceLog)
 
 	// Collect API buffers.
 	for _, apiBuff := range res.APIBuffers {
@@ -193,6 +189,13 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to summarize behavior events: %v", err)
 	}
+
+	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
+	detRes.FullAPITrace = toJSON(traceLog)
+	if len(traceLog) > maxTraceLog {
+		traceLog = traceLog[:maxTraceLog]
+	}
+	detRes.APITrace = toJSON(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
