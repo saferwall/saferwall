@@ -429,9 +429,12 @@ func (s *Service) curateAPIEvents(w32apis []Win32API) []byte {
 		for i, w32Param := range w32api.Parameters {
 			if w32Param.Annotation == APIParamAnnotationIn ||
 				w32Param.Annotation == APIParamAnnotationOut {
+				curatedAPIArgs[i] = make(map[string]interface{})
 				curatedAPIArgs[i]["value"] = w32Param.Value
+				if w32Param.BuffID != "" {
+					curatedAPIArgs[i]["buff_id"] = w32Param.BuffID
+				}
 			}
-
 		}
 		curatedAPI["ret"] = w32api.ReturnValue
 		curatedAPI["args"] = curatedAPIArgs

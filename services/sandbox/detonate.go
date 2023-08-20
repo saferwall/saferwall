@@ -26,6 +26,7 @@ const (
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
 	maxTraceLog            = 10000
+	maxArtifactCount       = 30
 )
 
 // EventType is the type of the system event. A type can be either:
@@ -42,26 +43,26 @@ const (
 type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
-	APITrace []byte `json:"api_trace,omitempty"`
+	APITrace []byte
 	// Same as APITrace, but this is not capped to any threshold.
 	// The full trace is uploaded to the object storage,
-	FullAPITrace []byte `json:"-"`
+	FullAPITrace []byte
 	// The buffer of large byte* for some Win32 APIs.
-	APIBuffers []Win32APIBuffer `JSON:"-"`
+	APIBuffers []Win32APIBuffer
 	// The logs produced by the agent running inside the VM.
-	AgentLog []byte `json:"agent_log,omitempty"`
+	AgentLog []byte
 	// The logs produced by the sandbox.
-	SandboxLog []byte `json:"sandbox_log,omitempty"`
+	SandboxLog []byte
 	// The config used to scan dynamically the sample.
-	ScanCfg config.DynFileScanCfg `json:"scan_config,omitempty"`
+	ScanCfg config.DynFileScanCfg
 	// List of of desktop screenshots captured.
-	Screenshots []Screenshot `json:"screenshots,omitempty"`
+	Screenshots []Screenshot
 	// List of artifacts collected during detonation.
-	Artifacts []Artifact `json:"artifacts,omitempty"`
+	Artifacts []Artifact
 	// Environment represents the environment used to scan the file.
-	Environment `json:"env,omitempty"`
+	Environment
 	// Summary of system events.
-	Events []Event `json:"events"`
+	Events []Event
 	// The process execution tree.
 	ProcessTree ProcessTree
 }
@@ -157,9 +158,6 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		logger.Errorf("failed to decode trace log: %v", err)
 	}
 
-	// Create a optimized version of the API trace for storage in DB.
-	//s.curateAPIEvents(traceLog)
-
 	// Collect API buffers.
 	for _, apiBuff := range res.APIBuffers {
 		detRes.APIBuffers = append(detRes.APIBuffers, Win32APIBuffer{
@@ -195,7 +193,9 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if len(traceLog) > maxTraceLog {
 		traceLog = traceLog[:maxTraceLog]
 	}
-	detRes.APITrace = toJSON(traceLog)
+
+	// Create a optimized version of the API trace for storage in DB.
+	detRes.APITrace = s.curateAPIEvents(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
@@ -222,9 +222,14 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	detRes.Screenshots = screenshots
 
 	// Generate artifacts metadata like memory buffer, process dumps, deleted files, etc..
-	detRes.Artifacts, err = s.generateArtifacts(res.Artifacts)
+	artifacts, err := s.generateArtifacts(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to generate artifacts metadata: %v", err)
+	}
+	if len(artifacts) > maxArtifactCount {
+		detRes.Artifacts = artifacts[:maxArtifactCount]
+	} else {
+		detRes.Artifacts = artifacts
 	}
 
 	return detRes, nil
