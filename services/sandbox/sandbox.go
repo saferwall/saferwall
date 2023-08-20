@@ -315,11 +315,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "proc_tree", Body: toJSON(res.ProcessTree), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
-		{Key: behaviorReportID, Path: "screenshots", Body: toJSON(res.Screenshots), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
-		{Key: apiTraceKey, Body: res.APITrace, Kind: pb.Message_UPLOAD},
+		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
 		{Key: sha256, Path: "behavior_report_id", Body: toJSON(behaviorReportID),
 			Kind: pb.Message_DBUPDATE},
 		{Key: sha256, Path: "behavior_reports." + behaviorReportID, Body: toJSON(behaviorReport),
@@ -344,6 +345,17 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		payload := pb.Message_Payload{
 			Key:  objKey,
 			Body: artifact.Content,
+			Kind: pb.Message_UPLOAD,
+		}
+		payloads = append(payloads, &payload)
+	}
+
+	// API Buffers are also uploaded to file system storage like s3.
+	for _, apiBuff := range res.APIBuffers {
+		objKey := behaviorReportKey + "api-buffers" + "/" + apiBuff.Name
+		payload := pb.Message_Payload{
+			Key:  objKey,
+			Body: apiBuff.Content,
 			Kind: pb.Message_UPLOAD,
 		}
 		payloads = append(payloads, &payload)

@@ -11,20 +11,18 @@ import (
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 )
 
-// Artifact represents dumped memory buffers (during process injection, memory
-// decryption, or anything alike) and files dropped by the sample.
+// Artifact represents an extracted artifact during the dynamic analysis
+// like a memory dumps or written files
 type Artifact struct {
 	// File  name of the artifact.
-	// * Memory buffers are in this format: PID.TID-VA-BuffSize-API.membuff
-	//  -> 2E00.A60-0x1A46D880000-77824-Free.membuff
-	//  -> 2E00.A60-0x1A46D8A0000-12824-Crypto.membuff
-	//  -> 2E00.A60-0x1A46D9B0000-12824-WriteProcess.membuff
-	// * Files dropped are in this format: FilePath-Size.filecreate
-	//  -> C##ProgramData##Delete.vbs-9855.filecreate
+	// * Memory buffers are in this format: ProcessName__PID__TID__VA__BuffSize.memfree
+	// *** svchost.exe__0x2E00__0xA60__0x1A46D880000__0x77824.memfree
+	// * Files dropped are in this format: ProcessName_PID_TID_FilePath__FileSize.filecreate
+	// *** explorer.exe__0x2E00__0xA60__C##ProgramData##Delete.vbs__0x9855.filecreate
 	Name string `json:"name"`
 	// The binary content of the artifact.
 	Content []byte `json:"-"`
-	// The artifact kind: membuff, filecreate, ..
+	// The artifact kind: memfree, filecreate, ..
 	Kind string `json:"kind"`
 	// The SHA256 hash of the artifact.
 	SHA256 string `json:"sha256"`
@@ -37,8 +35,8 @@ type Artifact struct {
 
 // extract the kind of the artifact from the artifact name.
 func deduceKindFromName(name string) (string, error) {
-	parts := strings.Split(name, ",")
-	if len(parts) < 5 {
+	parts := strings.Split(name, ".")
+	if len(parts) < 2 {
 		return "", errors.New("invalid artifact name")
 	}
 	return parts[len(parts)-1], nil

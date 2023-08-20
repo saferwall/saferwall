@@ -5,7 +5,9 @@
 package sandbox
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/saferwall/saferwall/internal/utils"
 )
@@ -17,11 +19,28 @@ type Win32APIParam struct {
 	// Name of the parameter.
 	Name string `json:"name"`
 	// Value of the parameter. This can be either a string or a slice of bytes.
-	Value interface{} `json:"value"`
+	// This field is mutually exclusive with the In and Out values.
+	Value interface{} `json:"value,omitempty"`
+	// Win32 API sometimes uses IN and OUT annotations, so instead of having
+	// one `value`, we separate the `in` and `out`. Occasionally, a function can
+	// both reads from and writes to buffer, so ValueIn and ValueOut are filled.
+	// The function reads from the buffer.
+	ValueIn interface{} `json:"value_in,omitempty"`
+	// The function writes to the buffer.
+	ValueOut interface{} `json:"value_out,omitempty"`
+
+	// An ID is attributed to track BYTE* parameters that spans over 4KB of data.
+	// If the buffer is either IN or OUT, the ID will be on `BuffID`, otherwise:
+	// BuffIDIn and BufferIdOut
+	BuffID    string `json:"buff_id,omitempty"`
+	BuffIDIn  string `json:"buff_id_in,omitempty"`
+	BuffIDOut string `json:"buff_out,omitempty"`
 }
 
 // Win32API represents a Win32 API event.
 type Win32API struct {
+	// Timestamp of the trace.
+	Timestamp int64 `json:"ts"`
 	// Name of the API.
 	Name string `json:"api"`
 	// List of its parameters.
@@ -35,6 +54,20 @@ type Win32API struct {
 	// Return value of the API.
 	ReturnValue string `json:"ret"`
 }
+
+// Win32APIBuffer represents a Win32 API large buffer of parameter of type BYTE*.
+type Win32APIBuffer struct {
+	// Name of the buffer.
+	Name string
+	// Content of the buffer.
+	Content []byte
+}
+
+// SAL Win32 API annotation for function parameters.
+const (
+	APIParamAnnotationIn  = "in"
+	APIParamAnnotationOut = "out"
+)
 
 // Registry APIs
 var (
@@ -81,6 +114,11 @@ const (
 	DefaultSocksPort  = 1080
 )
 
+// Track unique system events.
+var (
+	uniqueEvents = make(map[string]bool)
+)
+
 // Reserved registry key handles.
 func init() {
 
@@ -120,7 +158,15 @@ func (w32api Win32API) getParamValueByName(paramName string) interface{} {
 
 	for _, param := range w32api.Parameters {
 		if param.Name == paramName {
-			return param.Value
+			if param.Annotation == APIParamAnnotationIn ||
+				param.Annotation == APIParamAnnotationOut {
+				return param.Value
+			} else {
+				// TODO:  Do we want to always return the OUT value,
+				// or we can be flexible and add an argument in the function
+				// that influence the decision.
+				return param.ValueOut
+			}
 		}
 	}
 
@@ -356,4 +402,44 @@ func summarizeNetworkAPI(w32api Win32API) Event {
 	}
 
 	return event
+}
+
+func (s *Service) isNewEvent(event Event) bool {
+	eventKey := fmt.Sprintf("%s-%s-%s", event.ProcessID,
+		strings.ToLower(event.Path), event.Operation)
+	_, ok := uniqueEvents[eventKey]
+	if ok {
+		return false
+	} else {
+		uniqueEvents[eventKey] = true
+		return true
+	}
+}
+
+func (s *Service) curateAPIEvents(w32apis []Win32API) []byte {
+	var curatedAPIs []interface{}
+	for _, w32api := range w32apis {
+		curatedAPI := make(map[string]interface{})
+		curatedAPI["ts"] = w32api.Timestamp
+		curatedAPI["pid"] = w32api.ProcessID
+		curatedAPI["tid"] = w32api.ThreadID
+		curatedAPI["name"] = w32api.Name
+
+		curatedAPIArgs := make([]map[string]interface{}, len(w32api.Parameters))
+		for i, w32Param := range w32api.Parameters {
+			if w32Param.Annotation == APIParamAnnotationIn ||
+				w32Param.Annotation == APIParamAnnotationOut {
+				curatedAPIArgs[i] = make(map[string]interface{})
+				curatedAPIArgs[i]["value"] = w32Param.Value
+				if w32Param.BuffID != "" {
+					curatedAPIArgs[i]["buff_id"] = w32Param.BuffID
+				}
+			}
+		}
+		curatedAPI["ret"] = w32api.ReturnValue
+		curatedAPI["args"] = curatedAPIArgs
+		curatedAPIs = append(curatedAPIs, curatedAPI)
+	}
+
+	return toJSON(curatedAPIs)
 }

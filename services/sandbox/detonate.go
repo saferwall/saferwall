@@ -25,6 +25,8 @@ const (
 	defaultFileScanTimeout = 30
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
+	maxTraceLog            = 10000
+	maxArtifactCount       = 30
 )
 
 // EventType is the type of the system event. A type can be either:
@@ -41,21 +43,26 @@ const (
 type DetonationResult struct {
 	// The API trace results. This consists of a list of all API calls made by
 	// the sample.
-	APITrace []byte `json:"api_trace,omitempty"`
+	APITrace []byte
+	// Same as APITrace, but this is not capped to any threshold.
+	// The full trace is uploaded to the object storage,
+	FullAPITrace []byte
+	// The buffer of large byte* for some Win32 APIs.
+	APIBuffers []Win32APIBuffer
 	// The logs produced by the agent running inside the VM.
-	AgentLog []byte `json:"agent_log,omitempty"`
+	AgentLog []byte
 	// The logs produced by the sandbox.
-	SandboxLog []byte `json:"sandbox_log,omitempty"`
+	SandboxLog []byte
 	// The config used to scan dynamically the sample.
-	ScanCfg config.DynFileScanCfg `json:"scan_config,omitempty"`
+	ScanCfg config.DynFileScanCfg
 	// List of of desktop screenshots captured.
-	Screenshots []Screenshot `json:"screenshots,omitempty"`
+	Screenshots []Screenshot
 	// List of artifacts collected during detonation.
-	Artifacts []Artifact `json:"artifacts,omitempty"`
+	Artifacts []Artifact
 	// Environment represents the environment used to scan the file.
-	Environment `json:"env,omitempty"`
+	Environment
 	// Summary of system events.
-	Events []Event `json:"events"`
+	Events []Event
 	// The process execution tree.
 	ProcessTree ProcessTree
 }
@@ -150,7 +157,14 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to decode trace log: %v", err)
 	}
-	detRes.APITrace = toJSON(traceLog)
+
+	// Collect API buffers.
+	for _, apiBuff := range res.APIBuffers {
+		detRes.APIBuffers = append(detRes.APIBuffers, Win32APIBuffer{
+			Name:    apiBuff.GetName(),
+			Content: apiBuff.GetContent(),
+		})
+	}
 
 	// Convert the sandbox log from JSONL to JSON.
 	var sandboxLog []interface{}
@@ -173,6 +187,15 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to summarize behavior events: %v", err)
 	}
+
+	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
+	detRes.FullAPITrace = toJSON(traceLog)
+	if len(traceLog) > maxTraceLog {
+		traceLog = traceLog[:maxTraceLog]
+	}
+
+	// Create a optimized version of the API trace for storage in DB.
+	detRes.APITrace = s.curateAPIEvents(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
@@ -199,9 +222,14 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	detRes.Screenshots = screenshots
 
 	// Generate artifacts metadata like memory buffer, process dumps, deleted files, etc..
-	detRes.Artifacts, err = s.generateArtifacts(res.Artifacts)
+	artifacts, err := s.generateArtifacts(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to generate artifacts metadata: %v", err)
+	}
+	if len(artifacts) > maxArtifactCount {
+		detRes.Artifacts = artifacts[:maxArtifactCount]
+	} else {
+		detRes.Artifacts = artifacts
 	}
 
 	return detRes, nil
@@ -241,15 +269,19 @@ func (s *Service) summarizeEvents(w32apis []Win32API) ([]Event, error) {
 	var events []Event
 
 	for _, w32api := range w32apis {
+		var event Event
 		if utils.StringInSlice(w32api.Name, regAPIs) {
-			event := summarizeRegAPI(w32api)
-			events = append(events, event)
+			event = summarizeRegAPI(w32api)
 		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
-			event := summarizeFileAPI(w32api)
-			events = append(events, event)
+			event = summarizeFileAPI(w32api)
 		} else if utils.StringInSlice(w32api.Name, netAPIs) {
-			event := summarizeNetworkAPI(w32api)
-			events = append(events, event)
+			event = summarizeNetworkAPI(w32api)
+		}
+
+		if event != (Event{}) {
+			if s.isNewEvent(event) {
+				events = append(events, event)
+			}
 		}
 	}
 

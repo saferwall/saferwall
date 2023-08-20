@@ -95,12 +95,22 @@ message AnalyzeFileReply {
     }
     repeated Artifact artifacts = 3;
 
+    // API Buffers represents the buffers for parameters of type BYTE*
+    // that are larger than 4KB.
+    message APIBuffer {
+      // The name of the API buffer file.
+      string name = 1;
+      // The binary content of the buffer.
+      bytes content = 2;
+    }
+    repeated APIBuffer api_buffers = 4;
+
     // Agent server log.
-    bytes server_log = 4;
+    bytes server_log = 5;
 
     // Controller log.
-    bytes controller_log = 5;
+    bytes controller_log = 6;
 
     // Process tree data.
-    bytes process_tree = 6;
+    bytes process_tree = 7;
 }
