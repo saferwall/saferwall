@@ -224,7 +224,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 				return err
 			}
 			if !info.IsDir() {
-				logger.Infof("screenshot path: %s", path)
 				content, e := utils.ReadAll(path)
 				if e != nil {
 					logger.Errorf("failed reading screenshot: %s, err: %v", path, err)
@@ -259,7 +258,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 				if e != nil {
 					logger.Errorf("failed reading api buffer: %s, err: %v", path, err)
 				} else {
-					s.logger.Infof("api buffer path: %s", path)
 					apiBuffers = append(apiBuffers,
 						&pb.AnalyzeFileReply_APIBuffer{
 							Name: info.Name(), Content: content})
@@ -289,7 +287,6 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 				if e != nil {
 					logger.Errorf("failed reading artifact: %s, err: %v", path, err)
 				} else {
-					s.logger.Infof("artifact path: %s", path)
 					artifacts = append(artifacts,
 						&pb.AnalyzeFileReply_Artifact{Name: info.Name(), Content: content})
 				}
