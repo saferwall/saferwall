@@ -57,8 +57,6 @@ RUN echo "Installing DiE..." \
 ENV YARA_VERSION        4.3.2
 ENV YARA_ARCHIVE        $YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL   https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
-ENV YARA_REPO_REPO      https://github.com/Yara-Rules/rules.git
-ENV YARA_RULES_DIR      /opt/yararules
 
 RUN echo "Installing Yara..." \
     && apt-get install libssl-dev libglib2.0-0 -y \
@@ -70,8 +68,7 @@ RUN echo "Installing Yara..." \
     && make \
     && make install \
     && rm -rf ./yara-$YARA_VERSION \
-    && rm -f $YARA_ARCHIVE \
-    && git clone $YARA_REPO_REPO $YARA_RULES_DIR
+    && rm -f $YARA_ARCHIVE
 
 ####### Installing Capstone #######
 RUN echo "Installing Capstone..." \
