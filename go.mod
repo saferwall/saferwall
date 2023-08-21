@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/aws/aws-sdk-go v1.44.234
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
-	github.com/couchbase/gocb/v2 v2.5.0
+	github.com/couchbase/gocb/v2 v2.6.3
 	github.com/digitalocean/go-libvirt v0.0.0-20221205150000-2939327a8519
 	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.5.0
@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	github.com/couchbase/gocbcore/v10 v10.1.2 // indirect
+	github.com/couchbase/gocbcore/v10 v10.2.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
