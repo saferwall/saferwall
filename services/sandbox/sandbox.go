@@ -216,11 +216,25 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	now := time.Now().Unix()
 	status["sha256"] = sha256
 	status["timestamp"] = now
-	status["type"] = "dynamic-scan"
+	status["type"] = "behavior"
 	status["status"] = micro.Processing
+
+	// Create also a new doc for api trace.
+	apiTraceDoc := make(map[string]interface{})
+	apiTraceDoc["type"] = "api-trace"
+	apiTraceDoc["sha256"] = sha256
+	apiTraceDocID := behaviorReportID + "::" + "apis"
+
+	// Create a new doc for system events.
+	sysEventsDoc := make(map[string]interface{})
+	sysEventsDoc["type"] = "sys-events"
+	sysEventsDoc["sha256"] = sha256
+	sysEventsDocID := behaviorReportID + "::" + "events"
 
 	payloads := []*pb.Message_Payload{
 		{Key: behaviorReportID, Body: toJSON(status), Kind: pb.Message_DBCREATE},
+		{Key: apiTraceDocID, Body: toJSON(apiTraceDoc), Kind: pb.Message_DBCREATE},
+		{Key: sysEventsDocID, Body: toJSON(sysEventsDoc), Kind: pb.Message_DBCREATE},
 	}
 
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
@@ -309,7 +323,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
 	payloads = []*pb.Message_Payload{
-		{Key: behaviorReportID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
+		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
+		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "agent_log", Body: res.AgentLog, Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "sandbox_log", Body: res.SandboxLog, Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "proc_tree", Body: toJSON(res.ProcessTree), Kind: pb.Message_DBUPDATE},
@@ -317,7 +332,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
-		{Key: behaviorReportID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},

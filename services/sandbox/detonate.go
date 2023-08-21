@@ -82,9 +82,9 @@ type Screenshot struct {
 	// The name of the filename for the screenshot. Format: <id>.jpeg.
 	// IDs are growing incrementally from index 1 to N according to the time
 	// they were taken.
-	Name string `json:"name"`
+	Name string
 	// The binary content of the image.
-	Content []byte `json:"-"`
+	Content []byte
 }
 
 // Event represents a system event: a registry, network or file event.
