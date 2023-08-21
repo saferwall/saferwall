@@ -23,13 +23,13 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 
 # Install Yara as sandbox service depends on it.
 RUN apk add --no-cache libressl-dev glib-dev autoconf automake libtool build-base \
-    && wget $YARA_DOWNLOAD_URL \
-    && tar zxvf v$YARA_ARCHIVE \
-    && cd ./yara-$YARA_VERSION \
-    && ./bootstrap.sh \
-    && ./configure \
-    && make \
-    && make install \
+	&& wget $YARA_DOWNLOAD_URL \
+	&& tar zxvf v$YARA_ARCHIVE \
+	&& cd ./yara-$YARA_VERSION \
+	&& ./bootstrap.sh \
+	&& ./configure \
+	&& make \
+	&& make install \
 	&& git clone ${YARA_RULES_REPO} /rules
 
 # Set the Current Working Directory inside the container.
