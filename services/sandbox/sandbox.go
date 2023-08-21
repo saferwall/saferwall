@@ -256,7 +256,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	if fileScanCfg.DestPath == "" {
 		randomFilename := s.randomizer.Random()
-		fileScanCfg.DestPath = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+		fileScanCfg.DestPath = "%USERPROFILE%/Downloads/" + randomFilename + ".exe"
 	}
 
 	if fileScanCfg.Country == "" {

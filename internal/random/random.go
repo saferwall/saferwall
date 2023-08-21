@@ -3,13 +3,13 @@
 // license that can be found in the LICENSE file.
 
 // package random generate a random file name. The random
-// generator use the english disctionary words instead of
+// generator use the english dictionary words instead of
 // gibberish strings as the malware could detect high
 // gibberish strings.
 package random
 
 import (
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"os"
 	"strings"
@@ -24,25 +24,26 @@ type Ramdomizer interface {
 
 type Service struct {
 	words []string
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
+	r     *rand.Rand
 }
 
 // New creates a new service.
 func New(wordsPath string) (Service, error) {
 
+	seed := time.Now().UnixNano()
+	r := rand.New(rand.NewSource(seed))
+
 	words, err := readAvailableDictionary(wordsPath)
 	if err != nil {
 		return Service{}, err
 	}
-	return Service{words}, nil
+	return Service{words, r}, nil
 }
 
 // Random picks a random strings from the list of english words.
 func (s Service) Random() string {
-	return s.words[rand.Int()%len(s.words)]
+	randomWord := s.words[s.r.Int()%len(s.words)]
+	return strings.TrimSuffix(randomWord, "\r")
 }
 
 func readAvailableDictionary(wordsPath string) ([]string, error) {
@@ -52,7 +53,7 @@ func readAvailableDictionary(wordsPath string) ([]string, error) {
 		return nil, err
 	}
 
-	bytes, err := ioutil.ReadAll(file)
+	bytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
