@@ -7,9 +7,12 @@ FROM golang:1.18-alpine AS build-stage
 ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV RELEASE_VERSION=v0.4.0
+ENV RELEASE_VERSION=v0.6.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
+ENV YARA_VERSION=4.3.2
+ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
+ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules.git
 
 # Install git + SSL ca certificates.
@@ -17,6 +20,17 @@ ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules.git
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
+
+# Install Yara as sandbox service depends on it.
+RUN apk add --no-cache libressl-dev glib-dev autoconf automake libtool build-base \
+    && wget $YARA_DOWNLOAD_URL \
+    && tar zxvf v$YARA_ARCHIVE \
+    && cd ./yara-$YARA_VERSION \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make \
+    && make install \
+	&& git clone ${YARA_RULES_REPO} /rules
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/sandbox/
@@ -32,9 +46,10 @@ RUN go mod download
 COPY . .
 
 # Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+RUN export YARA_SRC=$PWD/yara-$YARA_VERSION \
+	&& GOOS=linux GOARCH=amd64 \
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
+	-tags yara_static -o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
 # Build the agent binary.
 RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
@@ -42,7 +57,7 @@ RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
 	-o /go/bin/agent.exe cmd/agent/server/main.go
 
 # Download fetch.
-ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.5/fetch_linux_amd64 fetch
+ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64 fetch
 RUN chmod +x fetch
 
 # Download the sandbox components files.
@@ -50,9 +65,6 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${REPO_URL}" \
 	--tag="${RELEASE_VERSION}" \
 	--release-asset="${ARTIFACT_NAME}" /
-
-# Clone the Yara rules repo.
-RUN git clone ${YARA_RULES_REPO} /rules
 
 ############################
 # STEP 2 build a small image
@@ -65,7 +77,7 @@ LABEL description="Sandbox scan service"
 
 ENV USER saferwall
 ENV GROUP saferwall
-ENV RELEASE_VERSION=v0.4.0
+ENV RELEASE_VERSION=v0.6.0
 ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
