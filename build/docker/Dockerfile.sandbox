@@ -60,7 +60,7 @@ RUN git clone ${YARA_RULES_REPO} /rules
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.4.0"
+LABEL version="0.5.0"
 LABEL description="Sandbox scan service"
 
 ENV USER saferwall
