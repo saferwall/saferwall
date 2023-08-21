@@ -420,11 +420,10 @@ func (s *Service) curateAPIEvents(w32apis []Win32API) []byte {
 	var curatedAPIs []interface{}
 	for _, w32api := range w32apis {
 		curatedAPI := make(map[string]interface{})
+		curatedAPI["name"] = w32api.Name
 		curatedAPI["ts"] = w32api.Timestamp
 		curatedAPI["pid"] = w32api.ProcessID
 		curatedAPI["tid"] = w32api.ThreadID
-		curatedAPI["name"] = w32api.Name
-
 		curatedAPIArgs := make([]map[string]interface{}, len(w32api.Parameters))
 		for i, w32Param := range w32api.Parameters {
 			if w32Param.Annotation == APIParamAnnotationIn ||
