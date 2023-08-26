@@ -7,7 +7,6 @@ package trendmicro
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -89,7 +88,7 @@ func (Scanner) ScanFile(filepath string, opts multiav.Options) (multiav.Result, 
 	// splxmain does not seem to be able to scan a file directly,
 	// it only take a directory as argument.
 	// So we create a tmp dir and we make a copy of the file.
-	tempDir, err := ioutil.TempDir("/tmp", "trendmicro")
+	tempDir, err := os.MkdirTemp("/tmp", "trendmicro")
 	if err != nil {
 		return res, err
 	}
