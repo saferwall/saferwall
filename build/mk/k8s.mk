@@ -94,7 +94,7 @@ k8s-install-metallb: ## Install Metallb helm chart.
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-KUBE_PROMETHEUS_STACK=45.10.0
+KUBE_PROMETHEUS_STACK=45.29.0
 k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
 	kubectl create namespace prometheus
 	helm install prometheus prometheus-community/kube-prometheus-stack \
