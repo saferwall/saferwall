@@ -1,4 +1,4 @@
-// Copyright 2022 Saferwall. All rights reserved.
+// Copyright 2018 Saferwall. All rights reserved.
 // Use of this source code is governed by Apache v2 license
 // license that can be found in the LICENSE file.
 
@@ -43,7 +43,7 @@ func TestNGrams(t *testing.T) {
 
 		for i, s := range tt.output {
 			if s != res[i] {
-				t.Errorf("bad ngram exepceted %s got %s", s, res[i])
+				t.Errorf("bad ngram expected %s got %s", s, res[i])
 			}
 		}
 	}
@@ -193,7 +193,7 @@ func TestScorer(t *testing.T) {
 	if err != nil {
 		t.Fatal("failed to create new score function with error :", err)
 	}
-	nonsense, err := NewScorer(&Options{dataset: Dataset})
+	nonsense, err := NewScorer(&Options{Dataset: Dataset})
 	if err != nil {
 		t.Fatal("failed to create new score function with error :", err)
 	}

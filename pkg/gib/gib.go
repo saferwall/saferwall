@@ -22,7 +22,7 @@ const (
 
 // Options provides different option to create a new scorer.
 type Options struct {
-	dataset string
+	Dataset string
 }
 
 var (
@@ -199,7 +199,7 @@ func NewScorer(opts *Options) (func(string) (bool, error), error) {
 	var err error
 
 	if opts != nil {
-		ngramFreq, err = loadDataset(opts.dataset)
+		ngramFreq, err = loadDataset(opts.Dataset)
 		if err != nil {
 			return nil, errors.New("failed to load dataset with error " +
 				err.Error())
