@@ -1,3 +1,7 @@
+// Copyright 2018 Saferwall. All rights reserved.
+// Use of this source code is governed by Apache v2 license
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -14,9 +18,8 @@ func main() {
 	nonRandomString := "CreateNewUser"
 
 	// Create a new gibberish detector.
-	// You can always provide your own
-	// dataset by passing a &gib.Options{Dataset: /path/to/dataset.json}
-	isGibberish, err := gib.NewScorer(nil)
+	opts := gib.Options{Dataset: "./pkg/gib/data/ngram.json"}
+	isGibberish, err := gib.NewScorer(&opts)
 	if err != nil {
 		log.Fatalf("NewScorer() failed with: %v", err)
 	}

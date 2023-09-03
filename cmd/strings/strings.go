@@ -7,18 +7,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/saferwall/saferwall/internal/utils"
+	"github.com/saferwall/saferwall/pkg/gib"
 	s "github.com/saferwall/saferwall/pkg/strings"
 )
 
 // Result return the results
 type Result struct {
-	Encoding string
-	Value    string
+	Encoding    string
+	Value       string
+	IsGibberish bool
 }
 
 func check(e error) {
@@ -34,12 +35,18 @@ func main() {
 		return
 	}
 
-	// Read the file
-	data, err := ioutil.ReadFile(os.Args[1])
+	data, err := utils.ReadAll(os.Args[1])
 	check(err)
 
+	// Create a new gibberish detector.
+	opts := gib.Options{Dataset: "./pkg/gib/data/ngram.json"}
+	isGibberish, err := gib.NewScorer(&opts)
+	if err != nil {
+		log.Fatalf("NewScorer() failed with: %v", err)
+	}
+
 	// Minimum string length
-	n := 6
+	n := 8
 
 	// Get the strings
 	asciiStrings := s.GetASCIIStrings(&data, n)
@@ -51,20 +58,31 @@ func main() {
 	uniqueASCII := utils.UniqueSlice(asciiStrings)
 	uniqueWide := utils.UniqueSlice(wideStrings)
 	uniqueAsm := utils.UniqueSlice(asmStrings)
-	fmt.Printf("Unique Ascii: %d, Wide: %d", len(uniqueASCII), len(uniqueWide))
+	fmt.Printf("Unique Ascii: %d, Wide: %d\n", len(uniqueASCII), len(uniqueWide))
 
 	var results []Result
 
 	for _, str := range uniqueASCII {
-		results = append(results, Result{"ascii", str})
+		isGib, err := isGibberish(str)
+		if err != nil {
+			fmt.Println(str)
+			isGib = true
+		}
+		results = append(results, Result{"ascii", str, isGib})
 	}
 
 	for _, str := range uniqueWide {
-		results = append(results, Result{"wide", str})
+		isGib, _ := isGibberish(str)
+		if err != nil {
+			fmt.Println(str)
+			isGib = true
+		}
+		results = append(results, Result{"wide", str, isGib})
 	}
 
 	for _, str := range uniqueAsm {
-		results = append(results, Result{"asm", str})
+		isGib, _ := isGibberish(str)
+		results = append(results, Result{"asm", str, isGib})
 	}
 
 	b, err := json.MarshalIndent(results, "", "  ")
