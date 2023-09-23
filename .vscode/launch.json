@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${file}"
+            "program": "./cmd/services/sandbox/main.go"
         }
     ]
 }
