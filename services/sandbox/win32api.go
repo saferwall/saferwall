@@ -418,7 +418,7 @@ func (s *Service) isNewEvent(event Event) bool {
 	}
 }
 
-func (s *Service) curateAPIEvents(w32apis []Win32API) []byte {
+func curateAPIEvents(w32apis []Win32API) []byte {
 	var curatedAPIs []interface{}
 	for _, w32api := range w32apis {
 		curatedAPI := make(map[string]interface{})

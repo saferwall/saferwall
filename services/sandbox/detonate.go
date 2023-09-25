@@ -195,7 +195,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 
 	// Create a optimized version of the API trace for storage in DB.
-	detRes.APITrace = s.curateAPIEvents(traceLog)
+	detRes.APITrace = curateAPIEvents(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}

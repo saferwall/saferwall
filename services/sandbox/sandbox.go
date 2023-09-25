@@ -322,6 +322,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	agentLogKey := behaviorReportKey + "agent_log.json"
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
+	procTreeKey := behaviorReportKey + "proc_tree.json"
 	payloads = []*pb.Message_Payload{
 		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
@@ -334,6 +335,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
+		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
 		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
 			Kind: pb.Message_DBUPDATE},
