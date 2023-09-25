@@ -59,3 +59,4 @@ include build/mk/vagrant.mk
 include build/mk/vbox.mk
 include build/mk/yara.mk
 include build/mk/yarn.mk
+include build/mk/lua.mk
