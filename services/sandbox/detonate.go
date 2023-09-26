@@ -221,7 +221,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Screenshots = screenshots
 
-	// Generate artifacts metadata like memory buffer, process dumps, deleted files, etc..
+	// Generate artifacts metadata like process dumps, dropped files, etc..
 	artifacts, err := s.generateArtifacts(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to generate artifacts metadata: %v", err)
