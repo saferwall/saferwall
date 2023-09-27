@@ -39,14 +39,14 @@ local M = {
     FILE_APIS = {},
     NETWORK_APIS = {},
 
-    --- Predefined registry key handles.
-    pre_reg_key_handles = {},
-
     --- Handle types constants.
     HANDLE_TYPE = {REGISTRY = 1, FILE = 2, NETWORK = 3},
 
     --- SAL annotations.
-    ANNOTATION = {IN = 'in', OUT = 'out', RESERVED = 'reserved'}
+    ANNOTATION = {IN = 'in', OUT = 'out', RESERVED = 'reserved'},
+
+    --- Predefined registry key handles.
+    pre_reg_key_handles = {}
 
 }
 
