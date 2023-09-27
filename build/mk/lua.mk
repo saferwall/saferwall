@@ -31,3 +31,4 @@ install-lua-deps: ## Install lua dependencies
 	luarocks install --tree ${LUAROCKS_DIR} luafilesystem
 	luarocks install --tree ${LUAROCKS_DIR} dumbluaparser
 	luarocks install --tree ${LUAROCKS_DIR} luacov-console
+	luarocks install --tree ${LUAROCKS_DIR} luaformatter
