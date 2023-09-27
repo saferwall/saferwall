@@ -1,4 +1,5 @@
 local utils = require 'utils'
+local rules = require 'rules.init'
 
 local M = {
     -- Registry APIs.
@@ -11,7 +12,13 @@ local M = {
     },
 
     -- File APIs.
-    FILE_CREATE_APIs = {'CreateFileA', 'CreateFileW', 'CreateDirectory', 'CreateDirectoryExA', 'CreateDirectoryExW'},
+    FILE_CREATE_FILE_APIs = {
+        'CreateFileA', 'CreateFileW', 'CreateFile2', 'CreateFileTransactedA', 'CreateFileTransactedW'
+    },
+    FILE_CREATE_DIR_APIS = {
+        'CreateDirectory', 'CreateDirectoryExA', 'CreateDirectoryExW', 'CreateDirectoryTransactedA',
+        'CreateDirectoryTransactedW'
+    },
     FILE_OPEN_APIs = {'OpenFile'},
     FILE_READ_APIs = {'ReadFile', 'ReadFileEx'},
     FILE_WRITE_APIs = {'WriteFile', 'WriteFileEx'},
@@ -29,6 +36,7 @@ local M = {
 
     REG_SET_APIS = {},
     REGISTRY_APIS = {},
+    FILE_CREATE_APIS = {},
     FILE_APIS = {},
     NETWORK_APIS = {},
 
@@ -59,6 +67,7 @@ local M = {
 
 utils.table_merge(M.REG_SET_APIS, M.REG_SET_VALUE_APIS, M.REG_SET_KEY_VALUE_APIS)
 utils.table_merge(M.REGISTRY_APIS, M.REG_CREATE_APIS, M.REG_OPEN_APIS, M.REG_SET_APIS, M.REG_DELETE_APIS)
+utils.table_merge(M.FILE_CREATE_APIs, M.FILE_CREATE_FILE_APIs, M.FILE_CREATE_DIR_APIS)
 utils.table_merge(M.FILE_APIS, M.FILE_CREATE_APIs, M.FILE_OPEN_APIs, M.FILE_READ_APIs, M.FILE_WRITE_APIs,
                   M.File_COPY_APIS, M.File_MOVE_APIs, M.FILE_DELETE_APIS)
 utils.table_merge(M.NETWORK_APIS, M.NET_WIN_INET_APIS, M.NET_WIN_HTTP_APIS, M.NET_WINSOCK_APIS)
@@ -117,208 +126,213 @@ function M:eval(w32apis)
             table.insert(APINamesTable[w32api.name], w32api)
         end
 
-        local event = {proc_id = w32api.process_id}
+        -- Extract system events.
+        local event = self:system_event(w32api)
+    end
+
+    return nil
+end
+
+---@param w32api Win32API Timestamp when the API was executed
+function M:system_event(w32api)
+    local event = {proc_id = w32api.process_id}
+
+    if utils.table_contains(self.REGISTRY_APIS, w32api.name) then
+        -- hKey is either a handle returned by on of registry creation APIs;
+        -- or it can be one of the predefined keys.
+        local hKeyStr = w32api:param_value_from_name('hKey')
+
+        -- lpSubKey is subkey of the key identified by the hKey parameter.
+        local lpSubKey = w32api:param_value_from_name('lpSubKey')
+
+        -- lpValueName is the name of the registry value whose data is to be updated.
+        local lpValueName = w32api:param_value_from_name('lpValueName')
+
+        -- phkResult is a pointer to a variable that receives a handle to the
+        -- opened or created key.
+        local phkResult = w32api:param_value_from_name('phkResult')
+
+        event.type = 'registry'
+
+        if utils.table_contains(self.REG_CREATE_APIS, w32api.name) then
+            event.operation = 'create'
+            event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey
+
+            -- Save the mapping between the handle and its equivalent path.
+            self.ctx.reg_key_handles[phkResult] = event.path
+        elseif utils.table_contains(self.REG_OPEN_APIS, w32api.name) then
+            event.operation = 'open'
+            event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey
+
+            -- Save the mapping between the handle and its equivalent path.
+            self.ctx.reg_key_handles[phkResult] = event.path
+        elseif utils.table_contains(self.REG_SET_APIS, w32api.name) then
+            event.operation = 'write'
+
+            if utils.table_contains(self.REG_SET_KEY_VALUE_APIS, w32api.name) then
+                event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey .. '\\\\' .. lpValueName
+            else
+                event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\\\' .. lpValueName
+            end
+        elseif utils.table_contains(self.REG_DELETE_APIS, w32api.name) then
+            event.operation = 'delete'
+            event.path = self.ctx.reg_key_handles[hKeyStr]
+
+            if lpSubKey ~= nil then
+                event.path = event.path .. '\\' .. lpSubKey
+            end
+
+            if lpValueName ~= nil then
+                event.path = event.path .. '\\\\' .. lpValueName
+            end
+        end
 
         -- Summarize all registry operations.
-        if utils.table_contains(self.REGISTRY_APIS, w32api.name) then
-            -- hKey is either a handle returned by on of registry creation APIs;
-            -- or it can be one of the predefined keys.
-            local hKeyStr = w32api:param_value_from_name('hKey')
+    elseif utils.table_contains(self.FILE_APIS, w32api.name) then
+        -- lpFileName points to the name of the file or device to be created or opened.
+        local lpFileName = w32api:param_value_from_name('lpFileName')
 
-            -- lpSubKey is subkey of the key identified by the hKey parameter.
-            local lpSubKey = w32api:param_value_from_name('lpSubKey')
+        -- hFile represents a handle to the file or I/O device.
+        local hFile = w32api:param_value_from_name('hFile')
 
-            -- lpValueName is the name of the registry value whose data is to be updated.
-            local lpValueName = w32api:param_value_from_name('lpValueName')
+        -- lpPathName points to the path of the directory to be created.
+        local lpPathName = w32api:param_value_from_name('lpPathName')
 
-            -- phkResult is a pointer to a variable that receives a handle to the
-            -- opened or created key.
-            local phkResult = w32api:param_value_from_name('phkResult')
+        -- lpNewDirectory points to the path of the directory to be created.
+        local lpNewDirectory = w32api:param_value_from_name('lpNewDirectory')
 
-            event.type = 'registry'
+        -- lpExistingFileName points to the name of an existing file.
+        local lpExistingFileName = w32api:param_value_from_name('lpExistingFileName')
 
-            if utils.table_contains(self.REG_CREATE_APIS, w32api.name) then
-                event.operation = 'create'
-                event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey
+        -- lpNewFileName points to the name of the new file.
+        local lpNewFileName = w32api:param_value_from_name('lpNewFileName')
 
-                -- Save the mapping between the handle and its equivalent path.
-                self.ctx.reg_key_handles[phkResult] = event.path
-            elseif utils.table_contains(self.REG_OPEN_APIS, w32api.name) then
-                event.operation = 'open'
-                event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey
+        -- Th return value of the API, which is a handle in the case of file APIs.
+        local returnedHandle = w32api.return_value
 
-                -- Save the mapping between the handle and its equivalent path.
-                self.ctx.reg_key_handles[phkResult] = event.path
-            elseif utils.table_contains(self.REG_SET_APIS, w32api.name) then
-                event.operation = 'write'
+        event.type = 'file'
 
-                if utils.table_contains(self.REG_SET_KEY_VALUE_APIS, w32api.name) then
-                    event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\' .. lpSubKey .. '\\\\' .. lpValueName
+        if utils.table_contains(self.FILE_CREATE_APIs, w32api.name) then
+            event.operation = 'create'
+
+            -- Either a file or a directory creation.
+            if lpFileName ~= '' then
+                event.path = lpFileName
+            else
+                -- The Ex version of create directory have a different param name.
+                if lpPathName ~= '' then
+                    event.path = lpPathName
                 else
-                    event.path = self.ctx.reg_key_handles[hKeyStr] .. '\\\\' .. lpValueName
-                end
-            elseif utils.table_contains(self.REG_DELETE_APIS, w32api.name) then
-                event.operation = 'delete'
-                event.path = self.ctx.reg_key_handles[hKeyStr]
-
-                if lpSubKey ~= nil then
-                    event.path = event.path .. '\\' .. lpSubKey
-                end
-
-                if lpValueName ~= nil then
-                    event.path = event.path .. '\\\\' .. lpValueName
+                    event.path = lpNewDirectory
                 end
             end
 
-            -- Summarize all registry operations.
-        elseif utils.table_contains(self.FILE_APIS, w32api.name) then
-            -- lpFileName points to the name of the file or device to be created or opened.
-            local lpFileName = w32api:param_value_from_name('lpFileName')
+            -- Save the mapping between the handle and its equivalent path.
+            self.ctx.file_handles[returnedHandle] = event.path
 
-            -- hFile represents a handle to the file or I/O device.
-            local hFile = w32api:param_value_from_name('hFile')
+        elseif utils.table_contains(self.FILE_OPEN_APIs, w32api.name) then
+            event.operation = 'open'
+            event.path = lpFileName
 
-            -- lpPathName points to the path of the directory to be created.
-            local lpPathName = w32api:param_value_from_name('lpPathName')
+            -- Save the mapping between the handle and its equivalent path.
+            self.ctx.file_handles[returnedHandle] = event.path
+        elseif utils.table_contains(self.FILE_READ_APIs, w32api.name) then
+            event.operation = 'read'
+            event.path = self:handle_to_object_name(hFile, self.HANDLE_TYPE.FILE)
+        elseif utils.table_contains(self.FILE_WRITE_APIs, w32api.name) then
+            event.operation = 'write'
+            event.path = self:handle_to_object_name(hFile, self.HANDLE_TYPE.FILE)
+        elseif utils.table_contains(self.FILE_DELETE_APIS, w32api.name) then
+            event.operation = 'delete'
+            event.path = lpFileName
+        elseif utils.table_contains(self.File_COPY_APIS, w32api.name) then
+            event.operation = 'copy'
+            event.path = lpExistingFileName .. '->' .. lpNewFileName
+        elseif utils.table_contains(self.File_MOVE_APIs, w32api.name) then
+            event.operation = 'move'
+            event.path = lpExistingFileName .. '->' .. lpNewFileName
+        end
+    elseif utils.table_contains(self.NETWORK_APIS, w32api.name) then
+        event.type = 'network'
+        if utils.table_contains(self.NET_WINSOCK_APIS, w32api.name) then
+            -- pNodeName contains a host (node) name or a numeric host address string.
+            local pNodeName = w32api:param_value_from_name('pNodeName')
 
-            -- lpNewDirectory points to the path of the directory to be created.
-            local lpNewDirectory = w32api:param_value_from_name('lpNewDirectory')
+            -- pName contains a host (node) name or a numeric host address string.
+            local pName = w32api:param_value_from_name('pName')
 
-            -- lpExistingFileName points to the name of an existing file.
-            local lpExistingFileName = w32api:param_value_from_name('lpExistingFileName')
+            -- pServiceName contains either a service name or port number represented as a string.
+            local pServiceName = w32api:param_value_from_name('pServiceName')
+            if pNodeName ~= nil then
+                event.path = pNodeName
+            else
+                event.path = pName
+            end
 
-            -- lpNewFileName points to the name of the new file.
-            local lpNewFileName = w32api:param_value_from_name('lpNewFileName')
+            event.path = event.path .. ':' .. pServiceName
+            event.operation = 'socket'
+        else
+            -- lpszServerName specifies the host name of an Internet server.
+            local lpszServerName = w32api:param_value_from_name('lpszServerName')
 
-            -- Th return value of the API, which is a handle in the case of file APIs.
+            -- nServerPort represents the TCP/IP port on the server.
+            local nServerPort = w32api:param_value_from_name('nServerPort')
+
+            -- pswzServerName contains the host name of an HTTP server.
+            local pswzServerName = w32api:param_value_from_name('pswzServerName')
+
+            -- The return value of the API, which is a handle in the case of network APIs.
             local returnedHandle = w32api.return_value
 
-            event.type = 'file'
-
-            if utils.table_contains(self.FILE_CREATE_APIs, w32api.name) then
-                event.operation = 'create'
-
-                -- Either a file or a directory creation.
-                if lpFileName ~= '' then
-                    event.path = lpFileName
-                else
-                    -- The Ex version of create directory have a different param name.
-                    if lpPathName ~= '' then
-                        event.path = lpPathName
-                    else
-                        event.path = lpNewDirectory
-                    end
-                end
-
-                -- Save the mapping between the handle and its equivalent path.
-                self.ctx.file_handles[returnedHandle] = event.path
-
-            elseif utils.table_contains(self.FILE_OPEN_APIs, w32api.name) then
-                event.operation = 'open'
-                event.path = lpFileName
-
-                -- Save the mapping between the handle and its equivalent path.
-                self.ctx.file_handles[returnedHandle] = event.path
-            elseif utils.table_contains(self.FILE_READ_APIs, w32api.name) then
-                event.operation = 'read'
-                event.path = self:handle_to_object_name(hFile, self.HANDLE_TYPE.FILE)
-            elseif utils.table_contains(self.FILE_WRITE_APIs, w32api.name) then
-                event.operation = 'write'
-                event.path = self:handle_to_object_name(hFile, self.HANDLE_TYPE.FILE)
-            elseif utils.table_contains(self.FILE_DELETE_APIS, w32api.name) then
-                event.operation = 'delete'
-                event.path = lpFileName
-            elseif utils.table_contains(self.File_COPY_APIS, w32api.name) then
-                event.operation = 'copy'
-                event.path = lpExistingFileName .. '->' .. lpNewFileName
-            elseif utils.table_contains(self.File_MOVE_APIs, w32api.name) then
-                event.operation = 'move'
-                event.path = lpExistingFileName .. '->' .. lpNewFileName
+            if utils.table_contains(self.NET_WIN_HTTP_APIS, w32api.name) then
+                event.path = pswzServerName
+            elseif utils.table_contains(self.NET_WIN_INET_APIS, w32api.name) then
+                event.path = lpszServerName
             end
-        elseif utils.table_contains(self.NETWORK_APIS, w32api.name) then
-            event.type = 'network'
-            if utils.table_contains(self.NET_WINSOCK_APIS, w32api.name) then
-                -- pNodeName contains a host (node) name or a numeric host address string.
-                local pNodeName = w32api:param_value_from_name('pNodeName')
 
-                -- pName contains a host (node) name or a numeric host address string.
-                local pName = w32api:param_value_from_name('pName')
-
-                -- pServiceName contains either a service name or port number represented as a string.
-                local pServiceName = w32api:param_value_from_name('pServiceName')
-                if pNodeName ~= nil then
-                    event.path = pNodeName
-                else
-                    event.path = pName
-                end
-
-                event.path = event.path .. ':' .. pServiceName
-                event.operation = 'socket'
-            else
-                -- lpszServerName specifies the host name of an Internet server.
-                local lpszServerName = w32api:param_value_from_name('lpszServerName')
-
-                -- nServerPort represents the TCP/IP port on the server.
-                local nServerPort = w32api:param_value_from_name('nServerPort')
-
-                -- pswzServerName contains the host name of an HTTP server.
-                local pswzServerName = w32api:param_value_from_name('pswzServerName')
-
-                -- The return value of the API, which is a handle in the case of network APIs.
-                local returnedHandle = w32api.return_value
-
-                if utils.table_contains(self.NET_WIN_HTTP_APIS, w32api.name) then
-                    event.path = pswzServerName
-                elseif utils.table_contains(self.NET_WIN_INET_APIS, w32api.name) then
-                    event.path = lpszServerName
-                end
-
-                local server_port = tonumber(nServerPort)
-                if server_port == self.DEFAULT_PORT.INVALID then
-                    -- Uses the default port for the service specified by dwService.
-                    local dwService = w32api:param_value_from_name('dwService')
-                    local svc_port = tonumber(dwService)
-                    if svc_port == 0x1 then
-                        event.operation = 'ftp'
-                        server_port = 21
-                    elseif svc_port == 0x2 then
-                        event.operation = 'gopher'
-                        server_port = 70
-                    elseif svc_port == 0x3 then
-                        event.operation = 'http'
-                        server_port = 80
-                    end
-                elseif server_port == self.DEFAULT_PORT.FTP then
+            local server_port = tonumber(nServerPort)
+            if server_port == self.DEFAULT_PORT.INVALID then
+                -- Uses the default port for the service specified by dwService.
+                local dwService = w32api:param_value_from_name('dwService')
+                local svc_port = tonumber(dwService)
+                if svc_port == 0x1 then
                     event.operation = 'ftp'
-                elseif server_port == self.DEFAULT_PORT.HTTP then
+                    server_port = 21
+                elseif svc_port == 0x2 then
+                    event.operation = 'gopher'
+                    server_port = 70
+                elseif svc_port == 0x3 then
                     event.operation = 'http'
-                elseif server_port == self.DEFAULT_PORT.HTTPS then
-                    event.operation = 'https'
-                elseif server_port == self.DEFAULT_PORT.SOCKS then
-                    event.operation = 'socks'
+                    server_port = 80
                 end
-
-                event.path = event.path .. ':' .. server_port
-
-                -- Save the mapping between the handle and its equivalent path.
-                self.ctx.network_handles[returnedHandle] = event.path
-            end
-        end
-
-        if event.path ~= nil then
-            local key = event.proc_id .. event.path .. event.operation
-            if self.ctx.seen_events[key] == nil then
-                table.insert(self.ctx.events, event)
-                self.ctx.seen_events[key] = true
+            elseif server_port == self.DEFAULT_PORT.FTP then
+                event.operation = 'ftp'
+            elseif server_port == self.DEFAULT_PORT.HTTP then
+                event.operation = 'http'
+            elseif server_port == self.DEFAULT_PORT.HTTPS then
+                event.operation = 'https'
+            elseif server_port == self.DEFAULT_PORT.SOCKS then
+                event.operation = 'socks'
             end
 
-        end
+            event.path = event.path .. ':' .. server_port
 
+            -- Save the mapping between the handle and its equivalent path.
+            self.ctx.network_handles[returnedHandle] = event.path
+        end
+    end
+
+    if event.path ~= nil then
+        local key = event.proc_id .. event.path .. event.operation
+        if self.ctx.seen_events[key] == nil then
+            table.insert(self.ctx.events, event)
+            self.ctx.seen_events[key] = true
+            return event
+        end
     end
 
     return nil
 
-    -- create a table that holdes all creates files.
 end
 
 function M:handle_to_object_name(handle, type)
