@@ -8,7 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
+	"strings"
 
 	yara "github.com/hillu/go-yara/v4"
 )
@@ -24,11 +25,19 @@ type Scanner struct {
 }
 
 func New(rulesPath string) (Scanner, error) {
-	rules := []Rule{
-		{
-			Namespace: "default",
-			Filename:  path.Join(rulesPath, "index.yara"),
-		}}
+	rules := []Rule{}
+
+	files, err := os.ReadDir(rulesPath)
+	if err != nil {
+		return Scanner{}, err
+	}
+
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".yar") || strings.HasSuffix(file.Name(), ".yara") {
+			filePath := filepath.Join(rulesPath, file.Name())
+			rules = append(rules, Rule{Namespace: file.Name(), Filename: filePath})
+		}
+	}
 
 	r, err := Load(rules)
 	if err != nil {
