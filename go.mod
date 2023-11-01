@@ -20,7 +20,6 @@ require (
 	github.com/saferwall/pe v1.3.6
 	github.com/spf13/viper v1.15.0
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
-	github.com/yuin/gopher-lua v1.1.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.14.0
 	golang.org/x/net v0.17.0

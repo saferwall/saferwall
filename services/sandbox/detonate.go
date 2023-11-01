@@ -143,6 +143,9 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		return detRes, err
 	}
 
+	// TODO: After the analysis is finish, we can immediately start reverting
+	// the snapshot in a goroutine and get the result later.
+
 	// Convert the agent log from JSONL to JSON.
 	var agentLog []interface{}
 	err = Decode(bytes.NewReader(res.AgentLog), &agentLog)
