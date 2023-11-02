@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/utils"
 	"github.com/saferwall/saferwall/services/sandbox"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const (
@@ -45,16 +47,35 @@ func run(logger log.Logger) error {
 	sha256 := parts[len(parts)-3]
 	logger.Infof("processing behavior report for %s : %s", sha256, guid)
 
+	L := lua.NewState()
+	defer L.Close()
+
+	if err := L.DoFile("load.lua"); err != nil {
+		panic(err)
+	}
+
 	// Parse the API Trace JSON file.
 	JSONAPITrace, err := utils.ReadAll(filepath.Join(*flagBhvReportPath, APITraceFilename))
 	if err != nil {
 		return err
 	}
 
+	if err := L.CallByParam(lua.P{
+		Fn:      L.GetGlobal("Eval"),
+		NRet:    1,
+		Protect: true,
+	}, lua.LString(JSONAPITrace)); err != nil {
+		panic(err)
+	}
+	ret := L.Get(-1) // returned value
+	L.Pop(1)         // remove received value
+	fmt.Print(ret)
+
 	var w32APIs []sandbox.Win32API
 	err = json.Unmarshal(JSONAPITrace, &w32APIs)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
