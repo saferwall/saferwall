@@ -24,7 +24,7 @@ ENV BEHAVIOR_RULES_ARTIFACT_NAME=${BEHAVIOR_RULES_VERSION}.tar.gz
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates tzdata  \
+RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Install Lua as behavior rule evaluation depends on it.
@@ -86,8 +86,8 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 
 # Download behavior rules.
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
-	--repo="${BEHAVIOR_RULES_REPO}}" \
-	--tag="${BEHAVIOR_RULES_VERSION}}}" \
+	--repo="${BEHAVIOR_RULES_REPO}" \
+	--tag="${BEHAVIOR_RULES_VERSION}" \
 	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /
 
 # Download yara rules.
