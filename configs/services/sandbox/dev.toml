@@ -5,7 +5,9 @@ shared_volume = "/samples"
 # Text file contaning a list of english words.
 english_words = "words.txt"
 # Path to the yara rules directory.
-yara_rules = "./rules"
+yara_rules = "./rules/yara"
+# Path to the behavior rules directory
+behavior_rules = "./rules/behavior"
 
 [agent]
 # Destinary directory inside the guest where the agent is deployed.

@@ -235,6 +235,12 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		detRes.Artifacts = artifacts
 	}
 
+	behavior, err := s.bhvScanner.Scan(detRes.FullAPITrace)
+	if err != nil {
+		logger.Errorf("failed to scan with behavior with: %v", err)
+	}
+	s.logger.Info(behavior)
+
 	return detRes, nil
 }
 

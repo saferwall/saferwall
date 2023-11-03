@@ -12,6 +12,7 @@ import (
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/behavior"
 	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
@@ -34,14 +35,15 @@ var (
 
 // Config represents our application config.
 type Config struct {
-	LogLevel     string             `mapstructure:"log_level"`
-	SharedVolume string             `mapstructure:"shared_volume"`
-	EnglishWords string             `mapstructure:"english_words"`
-	YaraRules    string             `mapstructure:"yara_rules"`
-	Agent        AgentCfg           `mapstructure:"agent"`
-	VirtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
-	Producer     config.ProducerCfg `mapstructure:"producer"`
-	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
+	LogLevel      string             `mapstructure:"log_level"`
+	SharedVolume  string             `mapstructure:"shared_volume"`
+	EnglishWords  string             `mapstructure:"english_words"`
+	YaraRules     string             `mapstructure:"yara_rules"`
+	BehaviorRules string             `mapstructure:"behavior_rules"`
+	Agent         AgentCfg           `mapstructure:"agent"`
+	VirtMgr       VirtManagerCfg     `mapstructure:"virt_manager"`
+	Producer      config.ProducerCfg `mapstructure:"producer"`
+	Consumer      config.ConsumerCfg `mapstructure:"consumer"`
 }
 
 // AgentCfg represents the guest agent config.
@@ -76,6 +78,7 @@ type Service struct {
 	randomizer  random.Ramdomizer
 	hasher      hasher.Hasher
 	yaraScanner goyara.Scanner
+	bhvScanner  behavior.Scanner
 	sandbox     []byte
 }
 
@@ -166,6 +169,12 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 
 	// Create a new yara scanner.
 	s.yaraScanner, err = goyara.New(cfg.YaraRules)
+	if err != nil {
+		return nil, err
+	}
+
+	// Init the lua state.
+	s.bhvScanner, err = behavior.New(cfg.BehaviorRules)
 	if err != nil {
 		return nil, err
 	}

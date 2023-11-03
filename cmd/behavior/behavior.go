@@ -7,14 +7,15 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/saferwall/saferwall/internal/behavior"
 	"github.com/saferwall/saferwall/internal/constants"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/utils"
-	"github.com/stevedonovan/luar"
 )
 
 const (
@@ -50,34 +51,19 @@ func run(logger log.Logger) error {
 		return err
 	}
 
-	// Init the lua state.
-	L := luar.Init()
-	defer L.Close()
-
-	// Append the lua dependencies CPATH.
-	L.DoString("package.cpath = package.cpath .. ';./lib/?.so'")
-
-	// Execute our behavior lua code.
-	err = L.DoFile("behavior.lua")
+	// Create the behavior scanner.
+	scanner, err := behavior.New("lua")
 	if err != nil {
-		logger.Errorf("DoFile failed with: %v", err)
+		return err
+	}
+	defer scanner.Close()
+
+	// Run the scanner.
+	res, err := scanner.Scan(JSONAPITrace)
+	if err != nil {
 		return err
 	}
 
-	// Run the rule matching.
-	eval := luar.NewLuaObjectFromName(L, "Eval")
-	defer eval.Close()
-
-	// Using `Call` we would get a generic `[]interface{}`, which is awkward to
-	// work with. But the return type can be specified:
-	results := make([]interface{}, 1)
-	err = eval.Call(&results, string(JSONAPITrace))
-	if err != nil {
-		logger.Errorf("eval.Call failed with: %v", err)
-		return err
-	}
-
-	logger.Info(results[0])
-
+	fmt.Print(res)
 	return nil
 }
