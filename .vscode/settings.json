@@ -24,6 +24,7 @@
     },
     "editor.rulers": [80,120],
     "editor.renderWhitespace": "all",
+    "go.buildTags": "lua54",
     "cSpell.words": [
         "DBCREATE",
         "DBUPDATE",

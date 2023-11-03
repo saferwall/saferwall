@@ -13,13 +13,17 @@ ENV SANDBOX_REPO_URL=https://github.com/saferwall/saferwall-sandbox
 ENV YARA_VERSION=4.3.2
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
-ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules.git
+ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
 ENV YARA_RULES_VERSION=v0.0.1
 ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 
 ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
-ENV BEHAVIOR_RULES_VERSION=v0.0.1
-ENV BEHAVIOR_RULES_ARTIFACT_NAME=${BEHAVIOR_RULES_VERSION}.tar.gz
+ENV BEHAVIOR_RULES_VERSION=v0.0.2
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
+
+ENV LUA_VERSION=5.4.6
+ENV LUA_DOWNLOAD_URL=https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
+ENV LUA_DOWNLOAD_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -31,8 +35,8 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 RUN set -ex \
       && apk add --no-cache --virtual .lua-builddeps ca-certificates curl \
 	  gcc libc-dev make readline-dev \
-	  && curl -fsSL -o /tmp/lua.tar.gz "https://www.lua.org/ftp/lua-5.4.6.tar.gz" \
-	  && cd /tmp && echo "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88 *lua.tar.gz" | sha256sum -c - \
+	  && curl -fsSL -o /tmp/lua.tar.gz ${LUA_DOWNLOAD_URL} \
+	  && cd /tmp && echo "${LUA_DOWNLOAD_HASH} *lua.tar.gz" | sha256sum -c - \
 	  && mkdir /tmp/lua && tar -xf /tmp/lua.tar.gz -C /tmp/lua --strip-components=1 \
 	  && cd /tmp/lua && make linux && make install && cd / \
       && apk add --no-network --no-cache --virtual .lua-rundeps readline \
@@ -115,8 +119,8 @@ ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 ENV YARA_RULES_VERSION=v0.0.1
 ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 
-ENV BEHAVIOR_RULES_VERSION=v0.0.1
-ENV BEHAVIOR_RULES_ARTIFACT_NAME=${BEHAVIOR_RULES_VERSION}.tar.gz
+ENV BEHAVIOR_RULES_VERSION=v0.0.2
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
@@ -131,11 +135,15 @@ COPY --from=build-stage /go/bin/agent.exe .
 COPY --from=build-stage ${SANDBOX_ARTIFACT_NAME} package.zip
 
 # Copy the behavior rules zip files.
-COPY --from=build-stage ${BEHAVIOR_RULES_ARTIFACT_NAME} rules/
-RUN cs rules/ && tar zxvf ${BEHAVIOR_RULES_ARTIFACT_NAME}
+RUN mkdir -p rules/behavior
+COPY --from=build-stage ${BEHAVIOR_RULES_ARTIFACT_NAME} rules/behavior
+RUN cd rules/behavior \
+	&& tar zxvf ${BEHAVIOR_RULES_ARTIFACT_NAME} \
+	&& rm ${BEHAVIOR_RULES_ARTIFACT_NAME}
 
 # Copy the yara rules.
-COPY --from=build-stage {YARA_RELEASE_ARTIFACT_NAME} rules/
+RUN mkdir -p rules/yara/
+COPY --from=build-stage ${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
 
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt

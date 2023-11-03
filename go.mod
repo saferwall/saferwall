@@ -19,6 +19,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/pe v1.3.6
 	github.com/spf13/viper v1.15.0
+	github.com/stevedonovan/luar v0.0.0-20170518170841-22d247e53660
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.14.0
@@ -28,6 +29,7 @@ require (
 )
 
 require (
+	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765 // indirect
 	github.com/couchbase/gocbcore/v10 v10.2.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
