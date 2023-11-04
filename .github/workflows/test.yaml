@@ -37,7 +37,7 @@ jobs:
       - name: Test With Coverage
         run: |
           export LC_ALL=C
-          go test $(go list ./... | grep -v /multiav/) -race -coverprofile=coverage.out -covermode=atomic
+          go test -tags lua54 $(go list ./... | grep -v /multiav/) -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
