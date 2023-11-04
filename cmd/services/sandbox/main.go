@@ -50,6 +50,6 @@ func run(logger log.Logger) error {
 		return err
 	}
 
-	s.Start()
-	return nil
+	return s.Start()
+
 }

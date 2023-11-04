@@ -22,11 +22,17 @@ const (
 	APITraceFilename = "api_trace.json"
 )
 
-var flagBhvReportPath = flag.String("bhv-path", "",
-	"File path of the behavior report scan results")
+var (
+	flagBhvReportPath *string
+	flagBhvLuaPath    *string
+)
 
 func main() {
 
+	flagBhvReportPath = flag.String("path", "",
+		"File path of the behavior report scan results")
+	flagBhvLuaPath = flag.String("lua", "",
+		"File path of the behavior lua module")
 	flag.Parse()
 
 	// Create root logger tagged with server version.
@@ -46,13 +52,14 @@ func run(logger log.Logger) error {
 	logger.Infof("processing behavior report for %s : %s", sha256, guid)
 
 	// Parse the API Trace JSON file.
-	JSONAPITrace, err := utils.ReadAll(filepath.Join(*flagBhvReportPath, APITraceFilename))
+	APITraceFile := filepath.Join(*flagBhvReportPath, APITraceFilename)
+	JSONAPITrace, err := utils.ReadAll(APITraceFile)
 	if err != nil {
 		return err
 	}
 
 	// Create the behavior scanner.
-	scanner, err := behavior.New("lua")
+	scanner, err := behavior.New(*flagBhvLuaPath)
 	if err != nil {
 		return err
 	}

@@ -55,8 +55,10 @@ type DetonationResult struct {
 	SandboxLog []byte
 	// The config used to scan dynamically the sample.
 	ScanCfg config.DynFileScanCfg
-	// List of of desktop screenshots captured.
+	// List of desktop screenshots captured.
 	Screenshots []Screenshot
+	// List of the sample capabilities.
+	Capabilities []Capability
 	// List of artifacts collected during detonation.
 	Artifacts []Artifact
 	// Environment represents the environment used to scan the file.
@@ -235,11 +237,11 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		detRes.Artifacts = artifacts
 	}
 
-	behavior, err := s.bhvScanner.Scan(detRes.FullAPITrace)
+	bhvRulesMatch, err := s.bhvScanner.Scan(detRes.FullAPITrace)
 	if err != nil {
 		logger.Errorf("failed to scan with behavior with: %v", err)
 	}
-	s.logger.Info(behavior)
+	detRes.Capabilities = generateCapabilities(bhvRulesMatch)
 
 	return detRes, nil
 }
