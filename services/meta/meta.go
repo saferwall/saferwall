@@ -32,6 +32,10 @@ const (
 	maxStrLength = 8
 )
 
+var (
+	emptyStringSlice =  make([]string, 0)
+)
+
 // Config represents our application config.
 type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
@@ -116,12 +120,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	exif, err := exiftool.Scan(filePath)
 	if err != nil {
 		logger.Errorf("exiftool scan failed with: %v", err)
+		exif = map[string]string{}
 	}
 
 	// Get TriD file identifier results.
 	tridRes, err := trid.Scan(filePath)
 	if err != nil {
 		logger.Errorf("trid scan failed with: %v", err)
+		tridRes = emptyStringSlice
 	}
 
 	// Get lib magic scan results.
@@ -134,6 +140,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	packerRes, err := packer.Scan(filePath)
 	if err != nil {
 		logger.Errorf("packer scan failed with: %v", err)
+		packerRes = emptyStringSlice
 	}
 
 	// Determine file format.
@@ -170,7 +177,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Info("file metadata extraction success")
 
-	var tags []string
+	tags :=  make([]string, 0)
 	for _, out := range packerRes {
 		if strings.Contains(out, "packer") ||
 			strings.Contains(out, "protector") ||

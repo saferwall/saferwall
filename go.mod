@@ -3,6 +3,7 @@ module github.com/saferwall/saferwall
 go 1.18
 
 require (
+	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765
 	github.com/aws/aws-sdk-go v1.44.234
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.6.3
@@ -19,6 +20,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/pe v1.3.6
 	github.com/spf13/viper v1.15.0
+	github.com/stevedonovan/luar v0.0.0-20170518170841-22d247e53660
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.14.0

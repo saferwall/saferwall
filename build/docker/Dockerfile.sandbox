@@ -4,22 +4,45 @@
 
 FROM golang:1.18-alpine AS build-stage
 
-ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV RELEASE_VERSION=v0.6.0
-ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
-ENV REPO_URL=https://github.com/saferwall/saferwall-sandbox
+ENV SANDBOX_RELEASE_VERSION=v0.7.0
+ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
+ENV SANDBOX_REPO_URL=https://github.com/saferwall/saferwall-sandbox
+
 ENV YARA_VERSION=4.3.2
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
-ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules.git
+ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
+ENV YARA_RULES_VERSION=v0.0.1
+ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
+
+ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
+ENV BEHAVIOR_RULES_VERSION=v0.0.2
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
+
+ENV LUA_VERSION=5.4.6
+ENV LUA_DOWNLOAD_URL=https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
+ENV LUA_DOWNLOAD_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
+
+# Install Lua as behavior rule evaluation depends on it.
+RUN set -ex \
+      && apk add --no-cache --virtual .lua-builddeps ca-certificates curl \
+	  gcc libc-dev make readline-dev \
+	  && curl -fsSL -o /tmp/lua.tar.gz ${LUA_DOWNLOAD_URL} \
+	  && cd /tmp && echo "${LUA_DOWNLOAD_HASH} *lua.tar.gz" | sha256sum -c - \
+	  && mkdir /tmp/lua && tar -xf /tmp/lua.tar.gz -C /tmp/lua --strip-components=1 \
+	  && cd /tmp/lua && make linux && make install && cd / \
+      && apk add --no-network --no-cache --virtual .lua-rundeps readline \
+      && apk del --no-network .lua-builddeps \
+	  && rm -rf /tmp/lua /tmp/lua.tar.gz \
+	  && lua -v
 
 # Install Yara as sandbox service depends on it.
 RUN apk add --no-cache libressl-dev glib-dev autoconf automake libtool build-base \
@@ -29,8 +52,7 @@ RUN apk add --no-cache libressl-dev glib-dev autoconf automake libtool build-bas
 	&& ./bootstrap.sh \
 	&& ./configure \
 	&& make \
-	&& make install \
-	&& git clone ${YARA_RULES_REPO} /rules
+	&& make install
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/sandbox/
@@ -62,9 +84,21 @@ RUN chmod +x fetch
 
 # Download the sandbox components files.
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
-	--repo="${REPO_URL}" \
-	--tag="${RELEASE_VERSION}" \
-	--release-asset="${ARTIFACT_NAME}" /
+	--repo="${SANDBOX_REPO_URL}" \
+	--tag="${SANDBOX_RELEASE_VERSION}" \
+	--release-asset="${SANDBOX_ARTIFACT_NAME}" /
+
+# Download behavior rules.
+RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
+	--repo="${BEHAVIOR_RULES_REPO}" \
+	--tag="${BEHAVIOR_RULES_VERSION}" \
+	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /
+
+# Download yara rules.
+RUN ./fetch \
+	--repo="${YARA_RULES_REPO}" \
+	--tag="${YARA_RULES_VERSION}" \
+	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /
 
 ############################
 # STEP 2 build a small image
@@ -77,9 +111,16 @@ LABEL description="Sandbox scan service"
 
 ENV USER saferwall
 ENV GROUP saferwall
-ENV RELEASE_VERSION=v0.6.0
-ENV ARTIFACT_NAME=sandbox-${RELEASE_VERSION}.zip
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
+
+ENV SANDBOX_RELEASE_VERSION=v0.7.0
+ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
+
+ENV YARA_RULES_VERSION=v0.0.1
+ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
+
+ENV BEHAVIOR_RULES_VERSION=v0.0.2
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
@@ -91,10 +132,18 @@ COPY --from=build-stage /go/bin/sandbox-svc .
 COPY --from=build-stage /go/bin/agent.exe .
 
 # Copy the sandbox zip package.
-COPY --from=build-stage ${ARTIFACT_NAME} package.zip
+COPY --from=build-stage ${SANDBOX_ARTIFACT_NAME} package.zip
+
+# Copy the behavior rules zip files.
+RUN mkdir -p rules/behavior
+COPY --from=build-stage ${BEHAVIOR_RULES_ARTIFACT_NAME} rules/behavior
+RUN cd rules/behavior \
+	&& tar zxvf ${BEHAVIOR_RULES_ARTIFACT_NAME} \
+	&& rm ${BEHAVIOR_RULES_ARTIFACT_NAME}
 
 # Copy the yara rules.
-COPY --from=build-stage /rules rules/
+RUN mkdir -p rules/yara/
+COPY --from=build-stage ${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
 
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt

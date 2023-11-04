@@ -12,6 +12,7 @@ import (
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
+	"github.com/saferwall/saferwall/internal/behavior"
 	"github.com/saferwall/saferwall/internal/hasher"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/pubsub"
@@ -34,14 +35,15 @@ var (
 
 // Config represents our application config.
 type Config struct {
-	LogLevel     string             `mapstructure:"log_level"`
-	SharedVolume string             `mapstructure:"shared_volume"`
-	EnglishWords string             `mapstructure:"english_words"`
-	YaraRules    string             `mapstructure:"yara_rules"`
-	Agent        AgentCfg           `mapstructure:"agent"`
-	VirtMgr      VirtManagerCfg     `mapstructure:"virt_manager"`
-	Producer     config.ProducerCfg `mapstructure:"producer"`
-	Consumer     config.ConsumerCfg `mapstructure:"consumer"`
+	LogLevel      string             `mapstructure:"log_level"`
+	SharedVolume  string             `mapstructure:"shared_volume"`
+	EnglishWords  string             `mapstructure:"english_words"`
+	YaraRules     string             `mapstructure:"yara_rules"`
+	BehaviorRules string             `mapstructure:"behavior_rules"`
+	Agent         AgentCfg           `mapstructure:"agent"`
+	VirtMgr       VirtManagerCfg     `mapstructure:"virt_manager"`
+	Producer      config.ProducerCfg `mapstructure:"producer"`
+	Consumer      config.ConsumerCfg `mapstructure:"consumer"`
 }
 
 // AgentCfg represents the guest agent config.
@@ -76,6 +78,7 @@ type Service struct {
 	randomizer  random.Ramdomizer
 	hasher      hasher.Hasher
 	yaraScanner goyara.Scanner
+	bhvScanner  behavior.Scanner
 	sandbox     []byte
 }
 
@@ -170,6 +173,12 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
+	// Init the lua state.
+	s.bhvScanner, err = behavior.New(cfg.BehaviorRules)
+	if err != nil {
+		return nil, err
+	}
+
 	s.sandbox = zipPackageData
 	s.vms = vms
 	s.cfg = cfg
@@ -183,9 +192,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 // Start kicks in the service to start consuming events.
 func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
-	s.sub.Start()
-
-	return nil
+	return s.sub.Start()
 }
 
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
@@ -322,6 +329,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	agentLogKey := behaviorReportKey + "agent_log.json"
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
+	procTreeKey := behaviorReportKey + "proc_tree.json"
 	payloads = []*pb.Message_Payload{
 		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
@@ -331,9 +339,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "capabilities", Body: toJSON(res.Capabilities), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
+		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
 		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
 			Kind: pb.Message_DBUPDATE},

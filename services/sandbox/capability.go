@@ -4,17 +4,36 @@
 
 package sandbox
 
+import (
+	"github.com/saferwall/saferwall/internal/behavior"
+)
+
 // Capability represents any capability found in executable files.
 // An example of a capability is: Exfiltration over C2 server.
 type Capability struct {
-	// Process identifier responsible for generating the capability..
-	ProcessID string `json:"pid"`
 	// Description describes in a few words the capability.
 	Description string `json:"description"`
-	// The severity of the capability: informative, suspicious, malicious, etc.
+	// The severity of the capability: low, suspicious, high, etc.
 	Severity string `json:"severity"`
-	// Category of the capability: Persistence, anti-analysis, etc.
+	// Category of the capability: persistence, anti-analysis, etc.
 	Category string `json:"category"`
-	// The module that generated the capability: yara, behavior, etc.
+	// The module that generated the capability: yara, behavior.
 	Module string `json:"module"`
+	// Rule ID which matched.
+	RuleID string `json:"rule_id"`
+}
+
+func generateCapabilities(rules []behavior.Rule) []Capability {
+	capabilities := make([]Capability, 0)
+	for _, rule := range rules {
+		capabilities = append(capabilities, Capability{
+			Description: rule.Description,
+			Severity:    rule.Severity,
+			Category:    rule.Category,
+			RuleID:      rule.ID,
+			Module:      "behavior",
+		})
+	}
+
+	return capabilities
 }

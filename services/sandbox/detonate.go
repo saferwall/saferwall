@@ -55,8 +55,10 @@ type DetonationResult struct {
 	SandboxLog []byte
 	// The config used to scan dynamically the sample.
 	ScanCfg config.DynFileScanCfg
-	// List of of desktop screenshots captured.
+	// List of desktop screenshots captured.
 	Screenshots []Screenshot
+	// List of the sample capabilities.
+	Capabilities []Capability
 	// List of artifacts collected during detonation.
 	Artifacts []Artifact
 	// Environment represents the environment used to scan the file.
@@ -143,6 +145,9 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		return detRes, err
 	}
 
+	// TODO: After the analysis is finish, we can immediately start reverting
+	// the snapshot in a goroutine and get the result later.
+
 	// Convert the agent log from JSONL to JSON.
 	var agentLog []interface{}
 	err = Decode(bytes.NewReader(res.AgentLog), &agentLog)
@@ -195,7 +200,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 
 	// Create a optimized version of the API trace for storage in DB.
-	detRes.APITrace = s.curateAPIEvents(traceLog)
+	detRes.APITrace = curateAPIEvents(traceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
@@ -221,7 +226,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Screenshots = screenshots
 
-	// Generate artifacts metadata like memory buffer, process dumps, deleted files, etc..
+	// Generate artifacts metadata like process dumps, dropped files, etc..
 	artifacts, err := s.generateArtifacts(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to generate artifacts metadata: %v", err)
@@ -231,6 +236,12 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	} else {
 		detRes.Artifacts = artifacts
 	}
+
+	bhvRulesMatch, err := s.bhvScanner.Scan(detRes.FullAPITrace)
+	if err != nil {
+		logger.Errorf("failed to scan with behavior with: %v", err)
+	}
+	detRes.Capabilities = generateCapabilities(bhvRulesMatch)
 
 	return detRes, nil
 }

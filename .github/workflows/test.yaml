@@ -27,24 +27,24 @@ jobs:
           make die-install
           make trid-install
           make yara-install
-          sudo apt install -qq wamerican
+          sudo apt install -qq wamerican liblua5.4-dev
 
       - name: Build
         run: |
           go env -w GOFLAGS=-mod=mod
-          go build -v ./...
+          go build -v -tags lua54 ./...
 
       - name: Test With Coverage
         run: |
           export LC_ALL=C
-          go test $(go list ./... | grep -v /multiav/) -race -coverprofile=coverage.out -covermode=atomic
+          go test -tags lua54 $(go list ./... | grep -v /multiav/) -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
 
       - name: Go vet
         run: |
-          go vet -v ./...
+          go vet -tags lua54 -v ./...
 
       - name: Staticcheck
         uses: dominikh/staticcheck-action@v1.3.0
@@ -52,3 +52,4 @@ jobs:
           version: "2022.1"
           install-go: false
           cache-key: ${{ matrix.go }}
+          build-tags: lua54
