@@ -192,9 +192,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 // Start kicks in the service to start consuming events.
 func (s *Service) Start() error {
 	s.logger.Infof("start consuming from topic: %s ...", s.cfg.Consumer.Topic)
-	s.sub.Start()
-
-	return nil
+	return s.sub.Start()
 }
 
 // HandleMessage is the only requirement needed to fulfill the nsq.Handler.
@@ -341,6 +339,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "env", Body: toJSON(res.Environment), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "capabilities", Body: toJSON(res.Capabilities), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
