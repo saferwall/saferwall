@@ -3,6 +3,7 @@ module github.com/saferwall/saferwall
 go 1.18
 
 require (
+	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765
 	github.com/aws/aws-sdk-go v1.44.234
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.6.3
@@ -29,7 +30,6 @@ require (
 )
 
 require (
-	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765 // indirect
 	github.com/couchbase/gocbcore/v10 v10.2.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
