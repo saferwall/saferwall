@@ -52,3 +52,4 @@ jobs:
           version: "2022.1"
           install-go: false
           cache-key: ${{ matrix.go }}
+          build-tags: lua54
