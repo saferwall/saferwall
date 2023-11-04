@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: |
           go env -w GOFLAGS=-mod=mod
-          go build -v ./...
+          go build -v -tags lua54 ./...
 
       - name: Test With Coverage
         run: |
