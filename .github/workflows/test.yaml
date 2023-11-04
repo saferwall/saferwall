@@ -27,6 +27,7 @@ jobs:
           make die-install
           make trid-install
           make yara-install
+          make lua-install
           sudo apt install -qq wamerican
 
       - name: Build
