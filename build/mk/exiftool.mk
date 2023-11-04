@@ -1,4 +1,4 @@
-EXIF_VER = 12.62
+EXIF_VER = 12.69
 exiftool-install: # Install ExifTool
 	wget https://exiftool.org/Image-ExifTool-$(EXIF_VER).tar.gz
 	gzip -dc Image-ExifTool-$(EXIF_VER).tar.gz | tar -xf -
