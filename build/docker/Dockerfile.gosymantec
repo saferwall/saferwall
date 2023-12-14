@@ -50,7 +50,7 @@ RUN apt-get update \
 	&& apt-get install -qq sudo
 
 # Download EICAR Anti-Virus Test File.
-ADD http://www.eicar.org/download/eicar.com.txt /eicar
+ADD https://secure.eicar.org/eicar.com.txt  /eicar
 
 # Update virus definition file.
 RUN /etc/init.d/symcfgd start \
