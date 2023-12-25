@@ -6,11 +6,18 @@ package goyara
 
 import (
 	"path"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
-const (
-	yaraRulesPath = "/opt/yara-rules/"
+func getAbsoluteFilePath(testfile string) string {
+	_, p, _, _ := runtime.Caller(0)
+	return path.Join(filepath.Dir(p), "..", "..", testfile)
+}
+
+var (
+	yaraRulesPath = getAbsoluteFilePath("testdata/yara-rules/")
 )
 
 func TestYara(t *testing.T) {
