@@ -95,7 +95,7 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /
 
 # Download yara rules.
-RUN ./fetch \
+RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${YARA_RULES_REPO}" \
 	--tag="${YARA_RULES_VERSION}" \
 	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /
@@ -113,7 +113,7 @@ ENV USER saferwall
 ENV GROUP saferwall
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
-ENV SANDBOX_RELEASE_VERSION=v0.7.0
+ENV SANDBOX_RELEASE_VERSION=v0.8.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 
 ENV YARA_RULES_VERSION=v0.0.1

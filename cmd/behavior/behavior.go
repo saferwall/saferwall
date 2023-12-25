@@ -47,8 +47,8 @@ func run(logger log.Logger) error {
 
 	// Extract the GUID and the SHA256 from the file path.
 	parts := strings.Split(*flagBhvReportPath, string(os.PathSeparator))
-	guid := parts[len(parts)-2]
-	sha256 := parts[len(parts)-3]
+	guid := parts[len(parts)-1]
+	sha256 := parts[len(parts)-2]
 	logger.Infof("processing behavior report for %s : %s", sha256, guid)
 
 	// Parse the API Trace JSON file.
@@ -71,6 +71,6 @@ func run(logger log.Logger) error {
 		return err
 	}
 
-	fmt.Print(res)
+	fmt.Print(res.Rules)
 	return nil
 }
