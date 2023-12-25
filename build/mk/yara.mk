@@ -15,7 +15,7 @@ yara-install:	# Install yara
 	cd ./yara-${YARA_VERSION} \
 		&& ./bootstrap.sh \
 		&& ./configure \
-		&& make \
+		&& make -j $(shell nproc)\
 		&& sudo make install \
 		&& sudo ldconfig
 	rm -rf ./yara-$(YARA_VERSION)

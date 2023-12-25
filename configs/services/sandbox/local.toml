@@ -20,11 +20,11 @@ package_name = "../../../hack/package.zip"
 # Local session uses "unix" and ignore the fields below.
 network = "ssh"
 # IP address of the host running libvirt RPC server.
-address = "192.168.1.11"
+address = "192.168.1.16"
 # Port number of the SSH server.
 port = "22"
 # The username used when connecting via a remote transport connection.
-user = "ayb"
+user = "sfw"
 # File path of the SSH private key when using remote transport.
 ssh_key_path = "../../../hack/id_rsa"
 # Snapshot name to restore to to go back to a clean state.

@@ -17,6 +17,7 @@ type Scanner struct {
 	L *lua.State
 }
 
+// Rule describes a behavior rule.
 type Rule struct {
 	// Description describes the purpose of the rule.
 	Description string `json:"description"`
@@ -28,6 +29,31 @@ type Rule struct {
 	// Severity indicates how confident the rule is to classify
 	// the threat as malicious.
 	Severity string `json:"severity"`
+}
+
+// Event represents a system event: a registry, network or file event.
+type Event struct {
+	// Process identifier responsible for generating the event.
+	ProcessID string `json:"proc_id"`
+	// Type of the system event.
+	Type string `json:"type"`
+	// Path of the system event. For instance, when the event is of type:
+	// `registry`, the path represents the registry key being used. For a
+	// `network` event type, the path is the IP or domain used.
+	Path string `json:"path"`
+	// Th operation requested over the above `Path` field. This field means
+	// different things according to the type of the system event.
+	// - For file system events: can be either: create, read, write, delete, rename, ..
+	// - For registry events: can be either: create, rename, set, delete.
+	// - For network events: this represents the protocol of the communication, can
+	// be either HTTP, HTTPS, FTP, FTP
+	Operation string `json:"operation"`
+}
+
+// ScanResult represents the behavior rules scan results.
+type ScanResult struct {
+	Rules  []Rule  `json:"matches"`
+	Events []Event `json:"events"`
 }
 
 const (
@@ -57,8 +83,8 @@ func New(behaviorRules string) (Scanner, error) {
 
 }
 
-// Scan a behavior report and extract matching rules.
-func (s Scanner) Scan(apiTrace []byte) ([]Rule, error) {
+// Scan a behavior report and extract system events and matching rules.
+func (s Scanner) Scan(apiTrace []byte) (ScanResult, error) {
 
 	// Run the rule matching.
 	eval := luar.NewLuaObjectFromName(s.L, "Eval")
@@ -69,21 +95,23 @@ func (s Scanner) Scan(apiTrace []byte) ([]Rule, error) {
 	results := make([]interface{}, 1)
 	err := eval.Call(&results, string(apiTrace))
 	if err != nil {
-		return nil, err
+		return ScanResult{}, err
 	}
 
 	v, err := json.Marshal(results[0])
 	if err != nil {
-		return nil, err
+		return ScanResult{}, err
 	}
 
-	rules := make([]Rule, 0)
-	err = json.Unmarshal(v, &rules)
+	scanResult := ScanResult{}
+
+	err = json.Unmarshal(v, &scanResult)
 	if err != nil {
-		return nil, err
+		return ScanResult{}, err
 	}
 
-	return rules, nil
+	return scanResult, nil
+
 }
 
 // Close the lua state object.

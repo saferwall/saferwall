@@ -29,10 +29,6 @@ const (
 	maxArtifactCount       = 30
 )
 
-// EventType is the type of the system event. A type can be either:
-// `registry`, `network` or `file`.
-type EventType string
-
 const (
 	fileEventType     = "file"
 	registryEventType = "registry"
@@ -87,25 +83,6 @@ type Screenshot struct {
 	Name string
 	// The binary content of the image.
 	Content []byte
-}
-
-// Event represents a system event: a registry, network or file event.
-type Event struct {
-	// Process identifier responsible for generating the event.
-	ProcessID string `json:"pid"`
-	// Type of the system event.
-	Type EventType `json:"type"`
-	// Path of the system event. For instance, when the event is of type:
-	// `registry`, the path represents the registry key being used. For a
-	// `network` event type, the path is the IP or domain used.
-	Path string `json:"path"`
-	// Th operation requested over the above `Path` field. This field means
-	// different things according to the type of the system event.
-	// - For file system events: can be either: create, read, write, delete, rename, ..
-	// - For registry events: can be either: create, rename, set, delete.
-	// - For network events: this represents the protocol of the communication, can
-	// be either HTTP, HTTPS, FTP, FTP
-	Operation string `json:"op"`
 }
 
 func (s *Service) detonate(logger log.Logger, vm *VM,
@@ -187,20 +164,15 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.ProcessTree = enrichProcTree(processes)
 
-	// Create a summary of system events.
-	detRes.Events, err = s.summarizeEvents(traceLog)
-	if err != nil {
-		logger.Errorf("failed to summarize behavior events: %v", err)
-	}
-
 	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
+	var minTraceLog []Win32API
 	detRes.FullAPITrace = toJSON(traceLog)
 	if len(traceLog) > maxTraceLog {
-		traceLog = traceLog[:maxTraceLog]
+		minTraceLog = traceLog[:maxTraceLog]
 	}
 
 	// Create a optimized version of the API trace for storage in DB.
-	detRes.APITrace = curateAPIEvents(traceLog)
+	detRes.APITrace = curateAPIEvents(minTraceLog)
 
 	// Collect screenshots.
 	screenshots := []Screenshot{}
@@ -241,7 +213,8 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to scan with behavior with: %v", err)
 	}
-	detRes.Capabilities = generateCapabilities(bhvRulesMatch)
+	detRes.Capabilities = generateCapabilities(bhvRulesMatch.Rules)
+	detRes.Events = generateEvents(bhvRulesMatch.Events)
 
 	return detRes, nil
 }
@@ -273,28 +246,4 @@ func (s *Service) generateThumbnail(r io.Reader, w io.Writer) error {
 	}
 
 	return nil
-}
-
-func (s *Service) summarizeEvents(w32apis []Win32API) ([]Event, error) {
-
-	var events []Event
-
-	for _, w32api := range w32apis {
-		var event Event
-		if utils.StringInSlice(w32api.Name, regAPIs) {
-			event = summarizeRegAPI(w32api)
-		} else if utils.StringInSlice(w32api.Name, fileAPIs) {
-			event = summarizeFileAPI(w32api)
-		} else if utils.StringInSlice(w32api.Name, netAPIs) {
-			event = summarizeNetworkAPI(w32api)
-		}
-
-		if event != (Event{}) {
-			if s.isNewEvent(event) {
-				events = append(events, event)
-			}
-		}
-	}
-
-	return events, nil
 }

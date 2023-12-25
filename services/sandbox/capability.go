@@ -4,9 +4,7 @@
 
 package sandbox
 
-import (
-	"github.com/saferwall/saferwall/internal/behavior"
-)
+import "github.com/saferwall/saferwall/internal/behavior"
 
 // Capability represents any capability found in executable files.
 // An example of a capability is: Exfiltration over C2 server.

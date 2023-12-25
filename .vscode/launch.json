@@ -10,14 +10,18 @@
             "request": "launch",
             "mode": "debug",
             "program": "./cmd/services/sandbox/main.go",
-            //"program": "./cmd/behavior/behavior.go",
+            // "program": "./cmd/behavior/behavior.go",
             // "args": [
             //     "-path",
             //     "../../hack/bhv-reports/b102ed1018de0b7faea37ca86f27ba3025c0c70f28417ac3e9ef09d32617f801/18c612a2-9805-48a4-b38e-40465d4f17ab",
             //     "-lua",
             //     "../../hack/rules/behavior"
             // ],
-            "buildFlags": "-tags lua54"
+            "buildFlags": "-tags lua54",
+            "dlvFlags": ["--check-go-version=false"],
+            "env": {
+                "SAFERWALL_DEPLOYMENT_KIND": "local"
+              },
         }
     ]
 }
