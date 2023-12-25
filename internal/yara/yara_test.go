@@ -25,7 +25,7 @@ func TestYara(t *testing.T) {
 		rules := []Rule{
 			{
 				Namespace: "default",
-				Filename:  path.Join(yaraRulesPath, "index.yara"),
+				Filename:  path.Join(yaraRulesPath, "rules.yar"),
 			},
 		}
 		_, err := Load(rules)
