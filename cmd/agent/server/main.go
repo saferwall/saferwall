@@ -180,7 +180,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	// Add 10 seconds to the timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
-	timeout := time.Duration(scanCfg["timeout"].(float64)+10) * time.Second
+	timeout := time.Duration(scanCfg["timeout"].(float64)+20) * time.Second
 	deadline := time.Now().Add(timeout)
 	logger.Infof("timeout for process to return back: %v", timeout)
 

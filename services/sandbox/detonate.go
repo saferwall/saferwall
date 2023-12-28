@@ -22,7 +22,7 @@ import (
 
 const (
 	defaultGRPCPort        = ":50051"
-	defaultFileScanTimeout = 30
+	defaultFileScanTimeout = 10
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
 	maxTraceLog            = 10000
@@ -198,7 +198,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Screenshots = screenshots
 
-	// Generate artifacts metadata like process dumps, dropped files, etc..
+	// Generate artifacts.
 	artifacts, err := s.generateArtifacts(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to generate artifacts metadata: %v", err)
@@ -209,6 +209,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 		detRes.Artifacts = artifacts
 	}
 
+	// Run behavior rule scan & extract system events.
 	bhvRulesMatch, err := s.bhvScanner.Scan(detRes.FullAPITrace)
 	if err != nil {
 		logger.Errorf("failed to scan with behavior with: %v", err)
