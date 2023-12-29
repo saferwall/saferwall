@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
+	"github.com/saferwall/saferwall/internal/magic"
 )
 
 // ArtifactType represents the type of the artifact.
@@ -19,17 +20,21 @@ const (
 	// example: svchost.exe__0x2E00__0xA60__0x1A46D880000__5a0a1add.memfree
 	MemFree ArtifactType = "memfree"
 
-	// Files created: ProcessName__PID__TID__FilePath.filecreate
-	// example: explorer.exe__0x2E00__0xA60__C##ProgramData##Delete.vbs.filecreate
+	// Files created: ProcessName__PID__FilePath.filecreate
+	// example: explorer.exe__0x2E00__C##ProgramData##Delete.vbs.filecreate
 	FileCreate ArtifactType = "filecreate"
 
-	// Code injection: ProcessName__PID__TID__VA__ID.codeinject
-	// example: explorer.exe__0x2E00__0xA60__C##ProgramData##Delete.vbs.codeinject
+	// Code injection: ProcessName__PID__RemoteProcessName__RemotePID.codeinject
+	// example: emotet.exe__0x2E00__svchost.exe__0x3004.codeinject
 	CodeInjection ArtifactType = "codeinject"
 
 	// Memory dumps: ProcessName__PID__TID__VA.memdmp
 	// example: explorer.exe__0x2E00__0x400000__.memdmp
 	MemDmp ArtifactType = "memdmp"
+)
+
+const (
+	maxArtifactCount = 10
 )
 
 // Artifact represents an extracted artifact during the dynamic analysis.
@@ -45,6 +50,8 @@ type Artifact struct {
 	// Detection contains the family name of the malware if it is malicious,
 	// or clean otherwise.
 	Detection string `json:"detection"`
+	// List of all matched rules.
+	MatchedRules []string `json:"matched_rules"`
 	// The file type, i.e docx, dll, etc.
 	FileType string `json:"file_type"`
 }
@@ -59,7 +66,7 @@ func deduceKindFromName(name string) (ArtifactType, error) {
 	return ArtifactType(kind), nil
 }
 
-// generate artifacts metadata.
+// Generate artifacts metadata.
 func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact) ([]Artifact, error) {
 	artifacts := []Artifact{}
 	var err error
@@ -78,18 +85,44 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 
 		artifact.SHA256 = s.hasher.Hash(artifact.Content)
 
+		// Yara scan.
 		matches, err := s.yaraScanner.ScanBytes(artifact.Content)
 		if err != nil {
 			s.logger.Errorf("failed to scan artifact with yara: %s", artifact.Name)
-			continue
+		}
+		if len(matches) > 0 {
+			artifact.MatchedRules = s.yaraScanner.StringifyMatches(matches)
+			s.logger.Infof("yara rules matches: %v", artifact.MatchedRules)
+		} else {
+			artifact.MatchedRules = make([]string, 0)
 		}
 
+		// File type.
+		artifact.FileType, err = magic.ScanBytes(artifact.Content)
+		if err != nil {
+			s.logger.Errorf("failed to detect file type from %s", artifact.Name)
+		}
+
+		// Pick the most representative detection name.
 		for _, match := range matches {
-			s.logger.Infof("yara rules matches: %v", match.Rule)
 			artifact.Detection = match.Rule
+			break
 		}
 
 		artifacts = append(artifacts, artifact)
 	}
-	return artifacts, nil
+
+	s.logger.Infof("artifact count is %d, max: %d",
+		len(artifacts), maxArtifactCount)
+	var curatedArtifacts []Artifact
+	if len(artifacts) >= maxArtifactCount {
+		for c, artifact := range artifacts {
+			if c >= maxArtifactCount && len(artifact.MatchedRules) == 0 {
+				continue
+			}
+			curatedArtifacts = append(curatedArtifacts, artifact)
+		}
+	}
+
+	return curatedArtifacts, nil
 }
