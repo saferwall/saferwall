@@ -28,6 +28,26 @@ func Scan(FilePath string) (string, error) {
 	return ParseOutput(output), nil
 }
 
+// ScanBytes a memory buffer using linux `file` tool.
+func ScanBytes(data []byte) (string, error) {
+
+	filePath, err := utils.CreateTempFile(data)
+	if err != nil {
+		return "", err
+	}
+
+	args := []string{filePath}
+	output, err := utils.ExecCommand(Command, args...)
+	if err != nil {
+		return "", err
+	}
+
+	res := ParseOutput(output)
+	defer utils.DeleteFile(filePath)
+	return res, nil
+
+}
+
 // ParseOutput convert exiftool output into map of string|string.
 func ParseOutput(fileout string) string {
 	lines := strings.Split(fileout, ": ")

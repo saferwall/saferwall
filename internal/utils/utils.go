@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -355,6 +356,21 @@ func CreateFile(path string) error {
 	}
 
 	return nil
+}
+
+// CreateTempFile create a temporary file.
+func CreateTempFile(data []byte) (string, error) {
+	file, err := ioutil.TempFile("", "temp-*.bin")
+	if err != nil {
+		return "", nil
+	}
+
+	// Write bytes to disk.
+	_, err = file.Write(data)
+	if err != nil {
+		return "", nil
+	}
+	return file.Name(), nil
 }
 
 // DeleteFile delete a file.
