@@ -19,7 +19,6 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-
 const (
 	// Timeout used to connect to the libvirt server.
 	dialTimeout = 20 * time.Second
@@ -84,9 +83,9 @@ func dialSSH(hostname, username, port, sshKeyPath string) (net.Conn, error) {
 	return c, nil
 }
 
-// New creates a new libvirt RPC connection.  It dials libvirt
-// either on the local machine or the remote one depending on
-// the transport parameter "unix" for local and "ssh" for remote connections.
+// New creates a new libvirt RPC connection.  It dials libvirt either on the
+// local machine or the remote one depending on the transport parameter "unix"
+// for local and "ssh" for remote connections.
 func New(transport, address, port, user, sshKeyPath string) (VMManager, error) {
 
 	var err error
@@ -124,7 +123,7 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 	var domains []Domain
 	for _, d := range dd {
 		addresses, err := vmm.Conn.DomainInterfaceAddresses(
-			d, uint32(libvirt.DomainInterfaceAddressesSrcLease), flagsUnused)
+			d, uint32(libvirt.DomainInterfaceAddressesSrcAgent), flagsUnused)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +136,7 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 
 		domains = append(domains, Domain{
 			Dom:       &d,
-			IP:        addresses[0].Addrs[0].Addr,
+			IP:        addresses[0].Addrs[1].Addr,
 			Snapshots: names,
 		})
 	}

@@ -26,7 +26,6 @@ const (
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
 	maxTraceLog            = 10000
-	maxArtifactCount       = 30
 )
 
 const (
@@ -162,7 +161,6 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	if err != nil {
 		logger.Errorf("failed to decode process tree: %v", err)
 	}
-	detRes.ProcessTree = enrichProcTree(processes)
 
 	// TODO: Detect API calls in loops ! The JSON log is capped to 20MB.
 	var minTraceLog []Win32API
@@ -198,24 +196,29 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Screenshots = screenshots
 
-	// Generate artifacts.
-	artifacts, err := s.generateArtifacts(res.Artifacts)
-	if err != nil {
-		logger.Errorf("failed to generate artifacts metadata: %v", err)
-	}
-	if len(artifacts) > maxArtifactCount {
-		detRes.Artifacts = artifacts[:maxArtifactCount]
-	} else {
-		detRes.Artifacts = artifacts
-	}
-
 	// Run behavior rule scan & extract system events.
 	bhvRulesMatch, err := s.bhvScanner.Scan(detRes.FullAPITrace)
 	if err != nil {
 		logger.Errorf("failed to scan with behavior with: %v", err)
 	}
-	detRes.Capabilities = generateCapabilities(bhvRulesMatch.Rules)
 	detRes.Events = generateEvents(bhvRulesMatch.Events)
+
+	// Run yara scan over the artifacts.
+	yaraRulesMatch, err := s.scanArtifactsWithYara(res.Artifacts)
+	if err != nil {
+		logger.Errorf("failed to scan with artifacts with yara: %v", err)
+	}
+	// Generate artifacts.
+	detRes.Artifacts, err = s.generateArtifacts(res.Artifacts)
+	if err != nil {
+		logger.Errorf("failed to generate artifacts metadata: %v", err)
+	}
+
+	// Generate capabilities.
+	detRes.Capabilities = generateCapabilities(bhvRulesMatch.Rules, yaraRulesMatch)
+
+	// This has to run last, by the time all rules / behavior are extarcted.
+	detRes.ProcessTree = enrichProcTree(processes, detRes.Capabilities)
 
 	return detRes, nil
 }

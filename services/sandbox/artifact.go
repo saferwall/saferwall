@@ -83,6 +83,7 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 			continue
 		}
 
+		// SHA256.
 		artifact.SHA256 = s.hasher.Hash(artifact.Content)
 
 		// Yara scan.

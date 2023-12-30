@@ -298,7 +298,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
 
-		// mark the VM as non healthy so we can repair it.
+		// Mark the VM as non healthy so we can repair it.
 		logger.Infof("marking the VM as stale")
 		vm.markStale()
 
