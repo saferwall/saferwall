@@ -17,8 +17,8 @@ type Scanner struct {
 	L *lua.State
 }
 
-// Rule describes a behavior rule.
-type Rule struct {
+// MatchRule describes a matched behavior rule.
+type MatchRule struct {
 	// Description describes the purpose of the rule.
 	Description string `json:"description"`
 	// ID uniquely identify the rule.
@@ -29,6 +29,10 @@ type Rule struct {
 	// Severity indicates how confident the rule is to classify
 	// the threat as malicious.
 	Severity string `json:"severity"`
+	// Process identifier responsible for matching the rule.
+	// This field is not always available as some behavior rules matches over
+	// multiple processes.
+	ProcessID string `json:"proc_id"`
 }
 
 // Event represents a system event: a registry, network or file event.
@@ -52,7 +56,7 @@ type Event struct {
 
 // ScanResult represents the behavior rules scan results.
 type ScanResult struct {
-	Rules  []Rule  `json:"matches"`
+	Rules  []MatchRule  `json:"matches"`
 	Events []Event `json:"events"`
 }
 

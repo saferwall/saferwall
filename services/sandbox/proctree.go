@@ -33,13 +33,24 @@ type Process struct {
 	Detection string `json:"detection"`
 }
 
-func enrichProcTree(procTree ProcessTree) ProcessTree {
+func enrichProcTree(procTree ProcessTree, capabilities []Capability) ProcessTree {
 	var enrichedProcTree ProcessTree
 	for _, p := range procTree {
 		p.ProcessName = filepath.Base(p.ImagePath)
 		fileExt := filepath.Ext(p.ImagePath)
 		p.FileType = strings.Replace(fileExt, ".", "", -1)
+
+		// Walk through the list of capabilities, if have a `malware`
+		// detection that matches the given PID, we choose that as the
+		// detection name of the process.
+		for _, cap := range capabilities {
+			if cap.ProcessID == p.PID && cap.Category == "malware" {
+				p.Detection = cap.Description
+				break
+			}
+		}
 		enrichedProcTree = append(enrichedProcTree, p)
+
 	}
 	return enrichedProcTree
 }

@@ -19,17 +19,31 @@ type Capability struct {
 	Module string `json:"module"`
 	// Rule ID which matched.
 	RuleID string `json:"rule_id"`
+	// Process identifier responsible for generating this capability.
+	ProcessID string `json:"-"`
 }
 
-func generateCapabilities(rules []behavior.Rule) []Capability {
+func generateCapabilities(bhvRules []behavior.MatchRule, yaraRules []MatchRule) []Capability {
 	capabilities := make([]Capability, 0)
-	for _, rule := range rules {
+	for _, rule := range bhvRules {
 		capabilities = append(capabilities, Capability{
 			Description: rule.Description,
 			Severity:    rule.Severity,
 			Category:    rule.Category,
 			RuleID:      rule.ID,
+			ProcessID:   rule.ProcessID,
 			Module:      "behavior",
+		})
+	}
+
+	for _, rule := range yaraRules {
+		capabilities = append(capabilities, Capability{
+			Description: rule.Description,
+			Severity:    rule.Severity,
+			Category:    rule.Category,
+			RuleID:      rule.ID,
+			ProcessID:   rule.ProcessID,
+			Module:      "yara",
 		})
 	}
 

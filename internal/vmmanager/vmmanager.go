@@ -8,6 +8,7 @@
 package vmmanager
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -18,7 +19,6 @@ import (
 	"github.com/digitalocean/go-libvirt/socket/dialers"
 	"golang.org/x/crypto/ssh"
 )
-
 
 const (
 	// Timeout used to connect to the libvirt server.
@@ -84,9 +84,9 @@ func dialSSH(hostname, username, port, sshKeyPath string) (net.Conn, error) {
 	return c, nil
 }
 
-// New creates a new libvirt RPC connection.  It dials libvirt
-// either on the local machine or the remote one depending on
-// the transport parameter "unix" for local and "ssh" for remote connections.
+// New creates a new libvirt RPC connection.  It dials libvirt either on the
+// local machine or the remote one depending on the transport parameter "unix"
+// for local and "ssh" for remote connections.
 func New(transport, address, port, user, sshKeyPath string) (VMManager, error) {
 
 	var err error
@@ -123,21 +123,37 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 
 	var domains []Domain
 	for _, d := range dd {
-		addresses, err := vmm.Conn.DomainInterfaceAddresses(
-			d, uint32(libvirt.DomainInterfaceAddressesSrcLease), flagsUnused)
-		if err != nil {
-			return nil, err
-		}
-
+		// Get the list of snapshots.
 		flags := libvirt.DomainSnapshotListActive
 		names, err := vmm.Conn.DomainSnapshotListNames(d, maxSnapshotLen, uint32(flags))
 		if err != nil {
 			return nil, err
 		}
 
+		// Get the guest IP address.
+		// Attempt first using DHCP leases.
+		addresses, err := vmm.Conn.DomainInterfaceAddresses(
+			d, uint32(libvirt.DomainInterfaceAddressesSrcLease), flagsUnused)
+		if err != nil {
+			return nil, err
+		}
+		// If that fails, try aquiring the IP via the guest agent, only appliable
+		// during dev.
+		if len(addresses) == 0 {
+			addresses, err = vmm.Conn.DomainInterfaceAddresses(
+				d, uint32(libvirt.DomainInterfaceAddressesSrcAgent), flagsUnused)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if len(addresses) == 0 {
+			return nil, errors.New("could not retrieve guest IP address")
+		}
+
+		// TODO: remove hardcoded indexes.
 		domains = append(domains, Domain{
 			Dom:       &d,
-			IP:        addresses[0].Addrs[0].Addr,
+			IP:        addresses[0].Addrs[1].Addr,
 			Snapshots: names,
 		})
 	}

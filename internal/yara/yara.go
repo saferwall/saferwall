@@ -137,3 +137,15 @@ func (s Scanner) ScanProc(pid int) ([]yara.MatchRule, error) {
 
 	return m, err
 }
+
+// StringifyMatches return the list of matched yar rule names.
+func (s Scanner) StringifyMatches(matches []yara.MatchRule) []string {
+
+	var rules []string
+
+	for _, match := range matches {
+		rules = append(rules, match.Rule)
+	}
+
+	return rules
+}

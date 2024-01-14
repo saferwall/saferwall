@@ -148,6 +148,9 @@ COPY --from=build-stage ${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt
 
+# Install file utility.
+RUN apk update && apk add --no-cache file 2>/dev/null || true
+
 # Copy the config files.
 COPY configs/services/sandbox/ conf/
 

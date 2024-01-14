@@ -33,7 +33,7 @@ const (
 )
 
 var (
-	emptyStringSlice =  make([]string, 0)
+	emptyStringSlice = make([]string, 0)
 )
 
 // Config represents our application config.
@@ -130,7 +130,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		tridRes = emptyStringSlice
 	}
 
-	// Get lib magic scan results.
+	// Get libmagic scan results.
 	magicRes, err := magic.Scan(filePath)
 	if err != nil {
 		logger.Errorf("magic scan failed with: %v", err)
@@ -177,7 +177,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	logger.Info("file metadata extraction success")
 
-	tags :=  make([]string, 0)
+	tags := make([]string, 0)
 	for _, out := range packerRes {
 		if strings.Contains(out, "packer") ||
 			strings.Contains(out, "protector") ||
