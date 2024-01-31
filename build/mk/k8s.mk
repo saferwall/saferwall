@@ -113,8 +113,9 @@ k8s-install-loki-stack: ## Install Loki Stack
 		--version v$(LOKI_STACK) \
 		--namespace loki-stack
 
+COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
-	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/master/charts/couchbase-operator/crds/couchbase.crds.yaml
+	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
 
 k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
