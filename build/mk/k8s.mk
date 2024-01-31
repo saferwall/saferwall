@@ -69,7 +69,7 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
-CERT_MANAGER_VER=1.10.0
+CERT_MANAGER_VER=1.13.3
 k8s-init-cert-manager: ## Init cert-manager
 	# Install the chart.
 	helm install cert-manager jetstack/cert-manager \
@@ -83,22 +83,27 @@ k8s-init-cert-manager: ## Init cert-manager
 	--selector=app.kubernetes.io/instance=cert-manager \
 	--timeout=90s
 
-METALLB_VERSION=0.13.7
+METALLB_VERSION=0.13.12
 k8s-install-metallb: ## Install Metallb helm chart.
 	# Create namespace.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/namespace.yaml
 	# Install the chart.
 	helm install metallb metallb/metallb \
 		--namespace metallb-system
-		--version v$(METALLB_VERSION) \
+		--version v$(METALLB_VERSION)
+	# Verify the installation.
+	kubectl wait --namespace metallb-system \
+	--for=condition=ready pod \
+	--selector=app.kubernetes.io/instance=metallb \
+	--timeout=60s
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-KUBE_PROMETHEUS_STACK=45.29.0
+KUBE_PROMETHEUS_STACK=56.2.0
 k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
-	kubectl create namespace prometheus
 	helm install prometheus prometheus-community/kube-prometheus-stack \
 		--version v$(KUBE_PROMETHEUS_STACK) \
+		--create-namespace \
 		--namespace prometheus
 
 LOKI_STACK=2.9.10
