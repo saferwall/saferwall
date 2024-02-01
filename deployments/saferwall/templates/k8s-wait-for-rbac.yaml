@@ -22,4 +22,3 @@ roleRef:
   kind: ClusterRole
   name: {{ .Release.Name }}-k8s-wait-for
   apiGroup: rbac.authorization.k8s.io
-
