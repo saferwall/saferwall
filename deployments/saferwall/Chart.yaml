@@ -14,14 +14,14 @@ maintainers:
 dependencies:
     - name: minio
       repository: https://charts.min.io/
-      version: 5.0.1
+      version: 5.0.15
       condition: minio.enabled
     - name: couchbase-operator
-      version: 2.32.2
+      version: 2.60.0
       repository: https://couchbase-partners.github.io/helm-charts/
       condition: couchbase-operator.enabled
     - name: aws-efs-csi-driver
-      version: 2.2.6
+      version: 2.5.4
       repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
       condition: aws-efs-csi-driver.enabled
     - name: nfs-server-provisioner
@@ -29,10 +29,10 @@ dependencies:
       repository: https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
       condition: nfs-server-provisioner.enabled
     - name: ingress-nginx
-      version: 4.4.2
+      version: 4.9.1
       repository: https://kubernetes.github.io/ingress-nginx/
       condition: ingress-nginx.enabled
     - name: nsq
-      version: 0.0.8
+      version: 0.0.10
       repository: https://nsqio.github.io/helm-chart/
       condition: nsq.enabled
