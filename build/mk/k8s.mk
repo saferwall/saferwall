@@ -117,9 +117,12 @@ COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
 
-k8s-cert-manager-rm-crd: ## Delete cert-manager crd objects.
+k8s-rm-cert-manager-crds: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
 	kubectl delete namespace cert-manager
+
+k8s-rm-couchbase-crds: ## Delete couchbase crd objects.
+	kubectl get crd | grep couchbase | xargs --no-run-if-empty kubectl delete crd
 
 k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'
