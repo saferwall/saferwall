@@ -1,4 +1,4 @@
-KUBECTL_VER = 1.23.6
+KUBECTL_VER = 1.28.6
 kubectl-install: ## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
@@ -10,18 +10,18 @@ kubectl-install: ## Install kubectl.
 			echo "${GREEN} [*] Kubectl already installed ${RESET}"; \
 		fi
 
-KUBECTX_VER = 0.9.4
+KUBECTX_VER = 0.9.5
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
-k8s-kubectx-install: ## Install kubectx
+kubectx-install: ## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
 	tar zxvf /tmp/kubectx.tar.gz -C /tmp
 	sudo mv /tmp/kubectx /usr/local/bin/
 	chmod +x /usr/local/bin/kubectx
 	kubectx
 
-KUBENS_VER = 0.9.4
+KUBENS_VER = 0.9.5
 KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
-k8s-kubens-install: ## Install Kubens
+kubens-install: ## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
 	tar zxvf /tmp/kubens.tar.gz -C /tmp
 	sudo mv /tmp/kubens /usr/local/bin/
@@ -49,6 +49,10 @@ k8s-pf-grafana: ## Port fordward grafana dashboard service.
 
 k8s-pf-couchbase: ## Port fordward couchbase ui service.
 	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
+	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
+
+k8s-pf-hubble: ## Port fordward hubble ui service.
+	kubectl port-forward -n kube-system svc/hubble-ui 12000:80 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
 k8s-pf: ## Port forward all services.
@@ -106,12 +110,11 @@ k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
 		--create-namespace \
 		--namespace prometheus
 
-LOKI_STACK=2.9.10
+LOKI_STACK=2.10.1
 k8s-install-loki-stack: ## Install Loki Stack
-	kubectl create namespace loki-stack
-	helm install loki-stack grafana/loki-stack \
+	helm install loki grafana/loki-stack \
 		--version v$(LOKI_STACK) \
-		--namespace loki-stack
+		--namespace prometheus
 
 COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
