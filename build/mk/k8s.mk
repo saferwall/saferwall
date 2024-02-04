@@ -110,11 +110,19 @@ k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
 		--create-namespace \
 		--namespace prometheus
 
-LOKI_STACK=2.10.1
-k8s-install-loki-stack: ## Install Loki Stack
-	helm install loki grafana/loki-stack \
-		--version v$(LOKI_STACK) \
-		--namespace prometheus
+LOKI= 5.42.1
+k8s-install-loki: ## Install Loki.
+	helm install loki grafana/loki \
+		--version v$(LOKI) \
+		-f $(ROOT_DIR)/build/k8s/loki-values.yaml \
+		--namespace monitoring \
+		--create-namespace
+
+PROMTAIL= 6.15.5
+k8s-install-promtail: ## Install Loki Distributed.
+	helm install promtail grafana/promtail \
+		--version v$(PROMTAIL) \
+		--namespace monitoring
 
 COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
@@ -132,6 +140,10 @@ k8s-events: ## Get Kubernetes cluster events.
 
 k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 	for p in $$(kubectl get pods | grep Terminating | awk '{print $$1}'); \
+	 do kubectl delete pod $$p --grace-period=0 --force;done
+
+k8s-delete-erroring-pods: ## Force delete pods stuck at `Error` status
+	for p in $$(kubectl get pods | grep Error | awk '{print $$1}'); \
 	 do kubectl delete pod $$p --grace-period=0 --force;done
 
 k8s-delete-evicted-pods: ## Clean up all evicted pods

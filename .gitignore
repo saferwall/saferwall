@@ -49,3 +49,5 @@ externals/
 
 # Helm
 **/charts/*.tgz
+
+hack/
