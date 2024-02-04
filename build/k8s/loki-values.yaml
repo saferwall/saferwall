@@ -1,0 +1,20 @@
+global:
+  clusterDomain: "saferwall.local"
+  dnsService: "coredns"
+loki:
+  commonConfig:
+    replication_factor: 3
+  auth_enabled: false
+storage:
+  type: 'filesystem'
+test:
+  enabled: false
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+    lokiCanary:
+      enabled: false
+minio:
+  enabled: true
