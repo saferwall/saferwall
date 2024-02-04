@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.5.0"
+LABEL version="0.6.0"
 LABEL description="saferwall static metadata extractor"
 
 ##### Install Prerequisites #####

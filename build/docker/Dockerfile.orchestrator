@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.18-alpine AS build-stage
+FROM golang:1.20-alpine AS build-stage
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -34,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.5.0"
+LABEL version="0.6.0"
 LABEL description="orchestrator service"
 
 ENV USER saferwall
