@@ -44,7 +44,7 @@ spec:
               path: prod.toml
       initContainers:
         - name: wait-for-couchbase
-          image: groundnuty/k8s-wait-for:v1.5.1
+          image: groundnuty/k8s-wait-for:v2.0
           imagePullPolicy: Always
           args:
             - "pod"

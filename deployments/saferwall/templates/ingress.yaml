@@ -12,10 +12,13 @@ metadata:
 spec:
   tls:
   - hosts:
+{{- if .Values.ui.enabled }}
     - {{ include "saferwall.ui-hostname" . }}
+{{- end }}
     - {{ include "saferwall.webapis-hostname" . }}
     secretName: {{ include "saferwall.fullname" . }}-tls
   rules:
+{{- if .Values.ui.enabled }}
   - host: {{ include "saferwall.ui-hostname" . }}
     http:
       paths:
@@ -26,6 +29,7 @@ spec:
             name: {{ include "saferwall.fullname" . }}-ui
             port:
               number: {{ .Values.ui.service.port }}
+{{- end }}
   - host: {{ include "saferwall.webapis-hostname" . }}
     http:
       paths:

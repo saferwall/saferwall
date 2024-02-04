@@ -1,21 +1,21 @@
 dependencies:
 - name: minio
   repository: https://charts.min.io/
-  version: 5.0.1
+  version: 5.0.15
 - name: couchbase-operator
   repository: https://couchbase-partners.github.io/helm-charts/
-  version: 2.32.2
+  version: 2.60.0
 - name: aws-efs-csi-driver
   repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-  version: 2.2.6
+  version: 2.5.4
 - name: nfs-server-provisioner
   repository: https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
   version: 1.8.0
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 4.4.2
+  version: 4.9.1
 - name: nsq
   repository: https://nsqio.github.io/helm-chart/
-  version: 0.0.8
-digest: sha256:8261a732710340004da6bfa211e34b6e2973498fd45e2817051630a77e407100
-generated: "2023-04-17T14:28:31.338260594+10:00"
+  version: 0.0.10
+digest: sha256:930050746c6f980f0f2fb287ae9120e5b2ab4a31c13da8149f3440234c405d7e
+generated: "2024-02-01T14:58:27.461188581+11:00"

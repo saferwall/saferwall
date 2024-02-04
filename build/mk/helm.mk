@@ -1,4 +1,4 @@
-HELM_VERSION = 3.10.2
+HELM_VERSION = 3.14.0
 HELM_ZIP = helm-v$(HELM_VERSION)-linux-amd64.tar.gz
 HELM_URL = https://get.helm.sh/$(HELM_ZIP)
 
@@ -24,6 +24,7 @@ helm-add-repos:	## Add the required Helm Charts repositories.
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo add nsqio https://nsqio.github.io/helm-chart
+	helm repo add nfs-ganesha-server-and-external-provisioner https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
 
 	# Update your local Helm chart repository cache.
 	helm repo update
