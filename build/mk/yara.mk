@@ -9,7 +9,7 @@ yara-install:	# Install yara
 	tar zxvf v${YARA_ARCHIVE}
 	cd ./yara-${YARA_VERSION} \
 		&& ./bootstrap.sh \
-		&& ./configure \
+		&& ./configure --enable-magic --enable-dotnet \
 		&& make -j $(shell nproc)\
 		&& sudo make install \
 		&& sudo ldconfig

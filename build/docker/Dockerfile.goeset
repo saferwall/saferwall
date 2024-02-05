@@ -2,7 +2,7 @@
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.18-alpine AS build-stage
+FROM golang:1.20-alpine AS build-stage
 
 ENV VENDOR eset
 
@@ -36,7 +36,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM saferwall/eset:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.5.0"
+LABEL version="0.6.0"
 LABEL description="eset file server security for linux with nsq consumer"
 
 # Environment variables.

@@ -148,3 +148,6 @@ k8s-delete-erroring-pods: ## Force delete pods stuck at `Error` status
 
 k8s-delete-evicted-pods: ## Clean up all evicted pods
 	kubectl get pods | grep Evicted | awk '{print $$1}' | xargs kubectl delete pod
+
+k8s-restart-deployment: ## Fetch new container images by restarting all `saferwall` pods.
+	kubectl get deployments | grep saferwall | awk '{ print $#1}' | xargs kubectl rollout restart deployments
