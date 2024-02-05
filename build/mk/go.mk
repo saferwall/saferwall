@@ -17,6 +17,9 @@ go-build:	## Compile packages and dependencies
 go-test:	## Test packages
 	go test -v $(GOPKG)
 
+go-lint:	## Test packages
+	staticcheck ./...
+
 GO_VERSION = 1.21.5
 go-setup:	## Download and install go
 	curl -O https://dl.google.com/go/go$(GO_VERSION).linux-amd64.tar.gz
@@ -26,3 +29,6 @@ go-setup:	## Download and install go
 	mkdir -p ~/go
 	rm go$(GO_VERSION).linux-amd64.tar.gz
 	export PATH=$(PATH):/usr/local/go/bin && go version
+
+go-install-staticcheck: ## Install staticheck.
+	go install honnef.co/go/tools/cmd/staticcheck@latest
