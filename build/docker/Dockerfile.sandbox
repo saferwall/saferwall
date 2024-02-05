@@ -1,12 +1,12 @@
-################################
+ ###############################
 # STEP 1 build executable binary
 ################################
 
-FROM golang:1.18-alpine AS build-stage
+FROM golang:1.20-alpine AS build-stage
 
 ARG GITHUB_TOKEN
 
-ENV SANDBOX_RELEASE_VERSION=v0.7.0
+ENV SANDBOX_RELEASE_VERSION=v0.8.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 ENV SANDBOX_REPO_URL=https://github.com/saferwall/saferwall-sandbox
 
@@ -14,7 +14,7 @@ ENV YARA_VERSION=4.3.2
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
-ENV YARA_RULES_VERSION=v0.0.1
+ENV YARA_RULES_VERSION=v0.0.2
 ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 
 ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
@@ -25,16 +25,29 @@ ENV LUA_VERSION=5.4.6
 ENV LUA_DOWNLOAD_URL=https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
 ENV LUA_DOWNLOAD_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
 
+ENV FETCH_URL=https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64
+
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
+# Install Yara as sandbox service depends on it.
+RUN apk add --no-cache glib-dev autoconf automake libtool build-base \
+		linux-headers openssl-dev openssl-libs-static libmagic libmagic-static file-dev \
+	&& wget $YARA_DOWNLOAD_URL \
+	&& tar zxvf v$YARA_ARCHIVE \
+	&& cd ./yara-$YARA_VERSION \
+	&& ./bootstrap.sh \
+	&& ./configure --enable-magic --enable-dotnet \
+	&& make \
+	&& make install
+
 # Install Lua as behavior rule evaluation depends on it.
 RUN set -ex \
-      && apk add --no-cache --virtual .lua-builddeps ca-certificates curl \
-	  gcc libc-dev make readline-dev \
+      && apk add --no-cache --virtual .lua-builddeps ca-certificates curl gcc \
+	  	libc-dev make readline-dev \
 	  && curl -fsSL -o /tmp/lua.tar.gz ${LUA_DOWNLOAD_URL} \
 	  && cd /tmp && echo "${LUA_DOWNLOAD_HASH} *lua.tar.gz" | sha256sum -c - \
 	  && mkdir /tmp/lua && tar -xf /tmp/lua.tar.gz -C /tmp/lua --strip-components=1 \
@@ -43,16 +56,6 @@ RUN set -ex \
       && apk del --no-network .lua-builddeps \
 	  && rm -rf /tmp/lua /tmp/lua.tar.gz \
 	  && lua -v
-
-# Install Yara as sandbox service depends on it.
-RUN apk add --no-cache libressl-dev glib-dev autoconf automake libtool build-base \
-	&& wget $YARA_DOWNLOAD_URL \
-	&& tar zxvf v$YARA_ARCHIVE \
-	&& cd ./yara-$YARA_VERSION \
-	&& ./bootstrap.sh \
-	&& ./configure \
-	&& make \
-	&& make install
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/sandbox/
@@ -67,20 +70,18 @@ RUN go mod download
 # Copy our go files.
 COPY . .
 
-# Build the binary.
-RUN export YARA_SRC=$PWD/yara-$YARA_VERSION \
-	&& GOOS=linux GOARCH=amd64 \
-	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-	-tags yara_static -o /go/bin/sandbox-svc cmd/services/sandbox/main.go
-
-# Build the agent binary.
-RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
-	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' \
-	-o /go/bin/agent.exe cmd/agent/server/main.go
-
 # Download fetch.
-ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64 fetch
+ADD ${FETCH_URL} fetch
 RUN chmod +x fetch
+
+# Build the binary.
+RUN go build -ldflags '-extldflags "-static"' -tags "luaa lua54 yara_static" \
+	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
+
+# Build the binary.
+RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
+	go build -ldflags '-extldflags "-static"' \
+	-o /go/bin/agent.exe cmd/agent/server/main.go
 
 # Download the sandbox components files.
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
@@ -101,12 +102,12 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /
 
 ############################
-# STEP 2 build a small image
+# STEP 3 build a small image
 ############################
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.5.0"
+LABEL version="0.6.0"
 LABEL description="Sandbox scan service"
 
 ENV USER saferwall
@@ -116,7 +117,7 @@ ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master
 ENV SANDBOX_RELEASE_VERSION=v0.8.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 
-ENV YARA_RULES_VERSION=v0.0.1
+ENV YARA_RULES_VERSION=v0.0.2
 ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 
 ENV BEHAVIOR_RULES_VERSION=v0.0.2
@@ -153,9 +154,6 @@ RUN apk update && apk add --no-cache file 2>/dev/null || true
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/
-
-# Copy the SSH private key used for accessing the remote  libvirt RPC server.
-COPY build/data/id_rsa .
 
 # Create an app user so our program doesn't run as root.
 RUN addgroup -g 102 -S $GROUP \
