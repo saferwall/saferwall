@@ -2,6 +2,48 @@ apiVersion: v1
 entries:
   saferwall:
   - apiVersion: v2
+    appVersion: 0.5.0
+    created: "2024-02-22T23:23:25.54349889Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.0.15
+    - condition: couchbase-operator.enabled
+      name: couchbase-operator
+      repository: https://couchbase-partners.github.io/helm-charts/
+      version: 2.60.0
+    - condition: aws-efs-csi-driver.enabled
+      name: aws-efs-csi-driver
+      repository: https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+      version: 2.5.4
+    - condition: nfs-server-provisioner.enabled
+      name: nfs-server-provisioner
+      repository: https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+      version: 1.8.0
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.9.1
+    - condition: nsq.enabled
+      name: nsq
+      repository: https://nsqio.github.io/helm-chart/
+      version: 0.0.10
+    description: A hackable malware sandbox for the 21st Century
+    digest: e9b47de5a3474d7f4d26a7280cbe24f15e024b79ccf60f5beb49eda3389305c2
+    home: https://saferwall.com
+    icon: https://saferwall.com/favicon.png
+    maintainers:
+    - email: contact@saferwall.com
+      name: saferwall
+    name: saferwall
+    sources:
+    - https://github.com/saferwall/saferwall
+    type: application
+    urls:
+    - https://github.com/saferwall/saferwall/releases/download/saferwall-0.5.0/saferwall-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
     appVersion: 0.4.0
     created: "2023-03-06T04:07:41.70255707Z"
     dependencies:
@@ -225,4 +267,4 @@ entries:
     urls:
     - https://github.com/saferwall/saferwall/releases/download/saferwall-0.2.0/saferwall-0.2.0.tgz
     version: 0.2.0
-generated: "2023-03-06T04:07:41.702579372Z"
+generated: "2024-02-22T23:23:25.543524117Z"
