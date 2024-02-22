@@ -18,7 +18,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/saferwall/pe v1.4.8
+	github.com/saferwall/pe v1.5.2
 	github.com/spf13/viper v1.18.2
 	github.com/stevedonovan/luar v0.0.0-20170518170841-22d247e53660
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
@@ -66,7 +66,7 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/image v0.10.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
