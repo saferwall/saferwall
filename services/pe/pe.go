@@ -255,7 +255,7 @@ func curate(file *pe.File) []byte {
 		fields = append(fields, "clr")
 	}
 
-	if file.HasSecurity {
+	if file.HasCertificate {
 		m["security"] = file.Certificates
 		if file.IsSigned {
 			if file.Certificates.Verified {

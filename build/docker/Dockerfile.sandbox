@@ -102,7 +102,7 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /
 
 ############################
-# STEP 3 build a small image
+# STEP 2 build a small image
 ############################
 
 FROM alpine:latest
