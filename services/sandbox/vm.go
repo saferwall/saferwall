@@ -47,11 +47,19 @@ func findFreeVM(vms []*VM, preferredOS string) *VM {
 	var freeVM *VM
 	mu.Lock()
 	for _, vm := range vms {
-		if !vm.InUse && vm.IsHealthy && preferredOS == vm.OS {
-			vm.InUse = true
-			freeVM = vm
-			break
+		// Kepp looking if the VM is in use or unhealthy.
+		if vm.InUse || !vm.IsHealthy {
+			continue
 		}
+
+		// Keep looking if preferred OS is given and current VM OS <> preferred OS.
+		if preferredOS != "" && preferredOS != vm.OS {
+			continue
+		}
+
+		vm.InUse = true
+		freeVM = vm
+		break
 	}
 	mu.Unlock()
 	return freeVM
