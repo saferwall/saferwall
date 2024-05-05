@@ -268,6 +268,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// Find a free VM to process this job.
+	// Normally, we start as many concurent worker as the number of VM we have, however
+	// it's possible that clients requests a the same preferred OS multiple times.
 	var vm *VM
 	for _, i := range [10]time.Duration{5, 4, 3, 2, 1} {
 		vm = findFreeVM(s.vms, fileScanCfg.OS)

@@ -54,6 +54,8 @@ type Artifact struct {
 	MatchedRules []string `json:"matched_rules"`
 	// The file type, i.e docx, dll, etc.
 	FileType string `json:"file_type"`
+	// The arifact size in bytes.
+	Size uint64 `json:"size"`
 }
 
 // Extract the kind of the artifact from the artifact name.
@@ -86,14 +88,14 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 		// SHA256.
 		artifact.SHA256 = s.hasher.Hash(artifact.Content)
 
-		// Yara scan.
+		// Yara scan again for the artifact.
 		matches, err := s.yaraScanner.ScanBytes(artifact.Content)
 		if err != nil {
 			s.logger.Errorf("failed to scan artifact with yara: %s", artifact.Name)
 		}
 		if len(matches) > 0 {
 			artifact.MatchedRules = s.yaraScanner.StringifyMatches(matches)
-			s.logger.Infof("yara rules matches: %v", artifact.MatchedRules)
+			s.logger.Infof("yara rules matches: %v on %v", artifact.MatchedRules, artifact.Name)
 		} else {
 			artifact.MatchedRules = make([]string, 0)
 		}
@@ -104,6 +106,9 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 			s.logger.Errorf("failed to detect file type from %s", artifact.Name)
 		}
 
+		// File Size
+		artifact.Size = uint64(len(artifact.Content))
+
 		// Pick the most representative detection name.
 		for _, match := range matches {
 			artifact.Detection = match.Rule
@@ -113,8 +118,9 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 		artifacts = append(artifacts, artifact)
 	}
 
-	s.logger.Infof("artifact count is %d, max: %d",
-		len(artifacts), maxArtifactCount)
+	s.logger.Infof("artifact count is %d, max: %d", len(artifacts), maxArtifactCount)
+
+	// TODO: Cap each artifact kind to a max value & favor ones which raises a match.
 	var curatedArtifacts []Artifact
 	if len(artifacts) >= maxArtifactCount {
 		for c, artifact := range artifacts {
@@ -123,7 +129,8 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 			}
 			curatedArtifacts = append(curatedArtifacts, artifact)
 		}
+		return curatedArtifacts, nil
 	}
+	return artifacts, nil
 
-	return curatedArtifacts, nil
 }
