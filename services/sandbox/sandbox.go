@@ -267,20 +267,20 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		fileScanCfg.DestPath = "%USERPROFILE%/Downloads/" + randomFilename + ".exe"
 	}
 
-	if fileScanCfg.Country == "" {
-		fileScanCfg.Country = defaultVPNCountry
-	}
-
-	if fileScanCfg.OS == "" {
-		fileScanCfg.OS = defaultOS
-	}
-
 	// Find a free VM to process this job.
-	vm := findFreeVM(s.vms, fileScanCfg.OS)
+	var vm *VM
+	for _, i := range [10]time.Duration{5, 4, 3, 2, 1} {
+		vm = findFreeVM(s.vms, fileScanCfg.OS)
+		if vm != nil {
+			break
+		}
+		logger.Infof("no VM currently available, sleep 5 seconds ...")
+		time.Sleep(i * time.Second)
+	}
 	if vm == nil {
-		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources
 	}
+
 	logger.Infof("VM [%s] with ID: %d was selected", vm.Name, vm.ID)
 	logger = logger.With(ctx, "VM", vm.Name)
 
