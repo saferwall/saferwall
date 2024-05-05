@@ -73,7 +73,7 @@ type Service struct {
 	logger      log.Logger
 	pub         pubsub.Publisher
 	sub         pubsub.Subscriber
-	vms         []VM
+	vms         []*VM
 	vmm         vmmanager.VMManager
 	randomizer  random.Ramdomizer
 	hasher      hasher.Hasher
@@ -113,7 +113,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	// Also, when we repair a broken VM, we want to refresh the list
 	// of domains, a potential solution is to fire a thread that sync
 	// the list of active domains every X minutes.
-	var vms []VM
+	var vms []*VM
 	for _, d := range dd {
 		vm := VM{
 			ID:        d.Dom.ID,
@@ -131,7 +131,8 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 			return nil, err
 		}
 
-		vms = append(vms, vm)
+		logger.Infof("%s VM (id: %v, ip: %s) running %s", vm.Name, vm.ID, vm.IP, vm.OS)
+		vms = append(vms, &vm)
 	}
 
 	// The number of concurrent workers have to match the number of
@@ -294,7 +295,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Reverting the VM to a clean state at the end of the analysis
 	// is safer than during the start of the analysis, as we instantly
 	// stop the malware from running further.
-	err = s.vmm.Revert(*vm.Dom, s.cfg.VirtMgr.SnapshotName)
+	err = s.vmm.Revert(vm.Dom, s.cfg.VirtMgr.SnapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
 

@@ -38,18 +38,18 @@ type VM struct {
 	// Indicates if the VM is healthy.
 	IsHealthy bool
 	// Pointer to the domain object.
-	Dom *libvirt.Domain
+	Dom libvirt.Domain
 }
 
 // findFreeVM iterates over the list of available VM and find
 // one which is currently not in use.
-func findFreeVM(vms []VM, preferredOS string) *VM {
+func findFreeVM(vms []*VM, preferredOS string) *VM {
 	var freeVM *VM
 	mu.Lock()
 	for _, vm := range vms {
 		if !vm.InUse && vm.IsHealthy && preferredOS == vm.OS {
 			vm.InUse = true
-			freeVM = &vm
+			freeVM = vm
 			break
 		}
 	}
