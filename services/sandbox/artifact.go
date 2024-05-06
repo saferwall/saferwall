@@ -111,8 +111,11 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 
 		// Pick the most representative detection name.
 		for _, match := range matches {
+			if categoryFromMeta(match) == "malware" {
+				artifact.Detection = match.Rule
+				break
+			}
 			artifact.Detection = match.Rule
-			break
 		}
 
 		artifacts = append(artifacts, artifact)

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/hillu/go-yara/v4"
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 )
 
@@ -38,6 +39,16 @@ func getPIDFromName(name string) (string, error) {
 		return "", errors.New("invalid artifact name")
 	}
 	return parts[1], nil
+}
+
+func categoryFromMeta(match yara.MatchRule) string {
+	for _, meta := range match.Metas {
+		if meta.Identifier == "category" {
+			return strings.ToLower(meta.Value.(string))
+		}
+	}
+
+	return ""
 }
 
 func (s *Service) scanArtifactsWithYara(artifacts []*pb.AnalyzeFileReply_Artifact) ([]MatchRule, error) {

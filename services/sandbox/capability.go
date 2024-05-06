@@ -20,7 +20,7 @@ type Capability struct {
 	// Rule ID which matched.
 	RuleID string `json:"rule_id"`
 	// Process identifier responsible for generating this capability.
-	ProcessID string `json:"-"`
+	ProcessID string `json:"pid"`
 	// Optional field indicating the malware family name.
 	Family string `json:"-"`
 }

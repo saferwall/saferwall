@@ -109,6 +109,13 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
+	//for _, dom := range dd {
+	//	err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
+	//	if err != nil {
+	//		logger.Errorf("failed to revert the VM: %v", err)
+	//	}
+	//}
+
 	// TODO what happens when len(vms) is 0.
 	// Also, when we repair a broken VM, we want to refresh the list
 	// of domains, a potential solution is to fire a thread that sync
@@ -133,6 +140,10 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 
 		logger.Infof("%s VM (id: %v, ip: %s) running %s", vm.Name, vm.ID, vm.IP, vm.OS)
 		vms = append(vms, &vm)
+	}
+
+	if len(vms) == 0 {
+		return nil, errors.New("no VM is running")
 	}
 
 	// The number of concurrent workers have to match the number of
