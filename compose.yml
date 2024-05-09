@@ -1,5 +1,3 @@
-version: "3.9"
-
 # Use this docker-compose file to setup the test environment before running the tests.
 
 services:
