@@ -144,20 +144,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// Determine file format.
-	var fileFormat string
-	var fileExt string
-	for k, v := range typeMap {
-		if strings.Contains(magicRes, k) {
-			fileFormat = v
-			break
-		}
-	}
-	if len(fileFormat) == 0 {
-		fileFormat = "unknown"
-	}
+	fileFormat := magic.Shorten(magicRes)
 	logger.Debugf("file format is: %s", fileFormat)
 
 	// Determine file extension.
+	var fileExt string
 	if fileFormat != "unknown" {
 		fileExt = guessFileExtension(data, magicRes, fileFormat, tridRes)
 	} else {

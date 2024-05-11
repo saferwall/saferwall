@@ -203,11 +203,12 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	}
 	detRes.Events = generateEvents(bhvRulesMatch.Events)
 
-	// Run yara scan over the artifacts.
+	// Run yara scan over the artifacts to identify malicious processes.
 	yaraRulesMatch, err := s.scanArtifactsWithYara(res.Artifacts)
 	if err != nil {
 		logger.Errorf("failed to scan with artifacts with yara: %v", err)
 	}
+
 	// Generate artifacts.
 	detRes.Artifacts, err = s.generateArtifacts(res.Artifacts)
 	if err != nil {

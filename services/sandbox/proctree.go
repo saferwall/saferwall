@@ -45,7 +45,7 @@ func enrichProcTree(procTree ProcessTree, capabilities []Capability) ProcessTree
 		// detection name of the process.
 		for _, cap := range capabilities {
 			if cap.ProcessID == p.PID && cap.Category == "malware" {
-				p.Detection = cap.Description
+				p.Detection = cap.Family
 				break
 			}
 		}

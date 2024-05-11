@@ -9,6 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
+            // "program": "./cmd/services/pe/main.go",
             "program": "./cmd/services/sandbox/main.go",
             // "program": "./cmd/behavior/behavior.go",
             // "args": [

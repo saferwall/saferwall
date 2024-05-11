@@ -20,12 +20,15 @@ type Capability struct {
 	// Rule ID which matched.
 	RuleID string `json:"rule_id"`
 	// Process identifier responsible for generating this capability.
-	ProcessID string `json:"-"`
+	ProcessID string `json:"pid"`
+	// Optional field indicating the malware family name.
+	Family string `json:"-"`
 }
 
 func generateCapabilities(bhvRules []behavior.MatchRule, yaraRules []MatchRule) []Capability {
 	capabilities := make([]Capability, 0)
 	for _, rule := range bhvRules {
+		// Add family to the behavior rules.
 		capabilities = append(capabilities, Capability{
 			Description: rule.Description,
 			Severity:    rule.Severity,
@@ -43,6 +46,7 @@ func generateCapabilities(bhvRules []behavior.MatchRule, yaraRules []MatchRule) 
 			Category:    rule.Category,
 			RuleID:      rule.ID,
 			ProcessID:   rule.ProcessID,
+			Family:      rule.Family,
 			Module:      "yara",
 		})
 	}

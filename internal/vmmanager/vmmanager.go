@@ -40,7 +40,7 @@ type VMManager struct {
 // Domain represents a domain.
 type Domain struct {
 	// The domain object
-	Dom *libvirt.Domain
+	Dom libvirt.Domain
 	// IP address of the VM.
 	IP string
 	// Snapshot list the VM has.
@@ -130,29 +130,38 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 			return nil, err
 		}
 
-		// Get the guest IP address.
-		// Attempt first using DHCP leases.
+		// Get the guest IP address. Attempt first using DHCP leases.
 		addresses, err := vmm.Conn.DomainInterfaceAddresses(
 			d, uint32(libvirt.DomainInterfaceAddressesSrcLease), flagsUnused)
 		if err != nil {
 			return nil, err
 		}
-		// If that fails, try aquiring the IP via the guest agent, only appliable
-		// during dev.
-		if len(addresses) == 0 {
-			addresses, err = vmm.Conn.DomainInterfaceAddresses(
-				d, uint32(libvirt.DomainInterfaceAddressesSrcAgent), flagsUnused)
-			if err != nil {
-				return nil, err
-			}
+		if len(addresses) != 0 {
+			domains = append(domains, Domain{
+				Dom:       d,
+				IP:        addresses[0].Addrs[0].Addr,
+				Snapshots: names,
+			})
+			return domains, nil
 		}
+
+		// If that fails, try aquiring the IP via the qemu guest agent. This option
+		// comes handy for a dev environment where the host machine is not capable
+		// of running KVM. All domains running in the box should have the qemu
+		// guest agent installed, otherwise the following call fails.
+		addresses, err = vmm.Conn.DomainInterfaceAddresses(
+			d, uint32(libvirt.DomainInterfaceAddressesSrcAgent), flagsUnused)
+		if err != nil {
+			return nil, err
+		}
+
 		if len(addresses) == 0 {
 			return nil, errors.New("could not retrieve guest IP address")
 		}
 
 		// TODO: remove hardcoded indexes.
 		domains = append(domains, Domain{
-			Dom:       &d,
+			Dom:       d,
 			IP:        addresses[0].Addrs[1].Addr,
 			Snapshots: names,
 		})

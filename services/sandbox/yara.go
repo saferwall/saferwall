@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/hillu/go-yara/v4"
 	pb "github.com/saferwall/saferwall/internal/agent/proto"
 )
 
@@ -27,6 +28,8 @@ type MatchRule struct {
 	// This field is not always available as some behavior rules matches over
 	// multiple processes.
 	ProcessID string `json:"proc_id"`
+	// Family describes the family name of the malware.
+	Family string `json:"family"`
 }
 
 // Extract the process ID responsible for geneting this artifact from its name.
@@ -36,6 +39,16 @@ func getPIDFromName(name string) (string, error) {
 		return "", errors.New("invalid artifact name")
 	}
 	return parts[1], nil
+}
+
+func categoryFromMeta(match yara.MatchRule) string {
+	for _, meta := range match.Metas {
+		if meta.Identifier == "category" {
+			return strings.ToLower(meta.Value.(string))
+		}
+	}
+
+	return ""
 }
 
 func (s *Service) scanArtifactsWithYara(artifacts []*pb.AnalyzeFileReply_Artifact) ([]MatchRule, error) {
@@ -75,10 +88,22 @@ func (s *Service) scanArtifactsWithYara(artifacts []*pb.AnalyzeFileReply_Artifac
 					yaraMatch.Description = meta.Value.(string)
 				} else if meta.Identifier == "id" {
 					yaraMatch.ID = meta.Value.(string)
+				} else if meta.Identifier == "malware" {
+					yaraMatch.Family = strings.ToLower(meta.Value.(string))
 				}
 			}
 
-			yaraMatches = append(yaraMatches, yaraMatch)
+			// Skip duplicated matches.
+			found := false
+			for _, ym := range yaraMatches {
+				if ym == yaraMatch {
+					found = true
+					break
+				}
+			}
+			if !found {
+				yaraMatches = append(yaraMatches, yaraMatch)
+			}
 		}
 	}
 

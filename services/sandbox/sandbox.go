@@ -73,7 +73,7 @@ type Service struct {
 	logger      log.Logger
 	pub         pubsub.Publisher
 	sub         pubsub.Subscriber
-	vms         []VM
+	vms         []*VM
 	vmm         vmmanager.VMManager
 	randomizer  random.Ramdomizer
 	hasher      hasher.Hasher
@@ -109,11 +109,18 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
+	// for _, dom := range dd {
+	// 	err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
+	// 	if err != nil {
+	// 		logger.Errorf("failed to revert the VM: %v", err)
+	// 	}
+	// }
+
 	// TODO what happens when len(vms) is 0.
 	// Also, when we repair a broken VM, we want to refresh the list
 	// of domains, a potential solution is to fire a thread that sync
 	// the list of active domains every X minutes.
-	var vms []VM
+	var vms []*VM
 	for _, d := range dd {
 		vm := VM{
 			ID:        d.Dom.ID,
@@ -131,7 +138,12 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 			return nil, err
 		}
 
-		vms = append(vms, vm)
+		logger.Infof("%s VM (id: %v, ip: %s) running %s", vm.Name, vm.ID, vm.IP, vm.OS)
+		vms = append(vms, &vm)
+	}
+
+	if len(vms) == 0 {
+		return nil, errors.New("no VM is running")
 	}
 
 	// The number of concurrent workers have to match the number of
@@ -266,20 +278,22 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		fileScanCfg.DestPath = "%USERPROFILE%/Downloads/" + randomFilename + ".exe"
 	}
 
-	if fileScanCfg.Country == "" {
-		fileScanCfg.Country = defaultVPNCountry
-	}
-
-	if fileScanCfg.OS == "" {
-		fileScanCfg.OS = defaultOS
-	}
-
 	// Find a free VM to process this job.
-	vm := findFreeVM(s.vms, fileScanCfg.OS)
+	// Normally, we start as many concurent worker as the number of VM we have, however
+	// it's possible that clients requests a the same preferred OS multiple times.
+	var vm *VM
+	for i := 0; i < 3; i++ {
+		vm = findFreeVM(s.vms, fileScanCfg.OS)
+		if vm != nil {
+			break
+		}
+		logger.Infof("no VM currently available, sleep %s ...", defaultFileScanTimeout*time.Second)
+		time.Sleep(defaultFileScanTimeout * time.Second)
+	}
 	if vm == nil {
-		logger.Infof("no VM currently available, call 911")
 		return errNotEnoughResources
 	}
+
 	logger.Infof("VM [%s] with ID: %d was selected", vm.Name, vm.ID)
 	logger = logger.With(ctx, "VM", vm.Name)
 
@@ -294,7 +308,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Reverting the VM to a clean state at the end of the analysis
 	// is safer than during the start of the analysis, as we instantly
 	// stop the malware from running further.
-	err = s.vmm.Revert(*vm.Dom, s.cfg.VirtMgr.SnapshotName)
+	err = s.vmm.Revert(vm.Dom, s.cfg.VirtMgr.SnapshotName)
 	if err != nil {
 		logger.Errorf("failed to revert the VM: %v", err)
 
@@ -330,6 +344,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
 	procTreeKey := behaviorReportKey + "proc_tree.json"
+	screenshotsCount := len(res.Screenshots) / 2
 	payloads = []*pb.Message_Payload{
 		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
@@ -340,12 +355,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "capabilities", Body: toJSON(res.Capabilities), Kind: pb.Message_DBUPDATE},
-		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(screenshotsCount), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
 		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
+			Kind: pb.Message_DBUPDATE},
+		{Key: sha256, Path: "screenshots_count", Body: toJSON(screenshotsCount),
 			Kind: pb.Message_DBUPDATE},
 		{Key: sha256, Path: "behaviors." + behaviorReportID, Body: toJSON(behaviorReport),
 			Kind: pb.Message_DBUPDATE},
