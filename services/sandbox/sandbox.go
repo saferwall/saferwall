@@ -337,6 +337,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 	behaviorReport["sandbox_ver"] = res.Environment.SandboxVersion
 
+	// Create the `behavior` field in the file object.
+	screenshotsCount := len(res.Screenshots) / 2
+	defaultBehaviorReport := make(map[string]interface{})
+	defaultBehaviorReport["capabilities"] = res.Capabilities
+	defaultBehaviorReport["id"] = behaviorReportID
+	defaultBehaviorReport["screenshots_count"] = screenshotsCount
+
 	// If something went wrong during behavior analysis, we still want to
 	// upload the results back to the backend.
 	behaviorReportKey := sha256 + "/" + behaviorReportID + "/"
@@ -344,7 +351,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
 	procTreeKey := behaviorReportKey + "proc_tree.json"
-	screenshotsCount := len(res.Screenshots) / 2
 	payloads = []*pb.Message_Payload{
 		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
@@ -360,14 +366,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
-		{Key: sha256, Path: "behaviors." + behaviorReportID, Body: toJSON(behaviorReport),
+		// Add this behavior report to the list of behavior reports.
+		{Key: sha256, Path: "behavior_scans." + behaviorReportID, Body: toJSON(behaviorReport),
 			Kind: pb.Message_DBUPDATE},
 		// These fields are duplicated to the `file` resource to avoid a join.
-		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
-			Kind: pb.Message_DBUPDATE},
-		{Key: sha256, Path: "capabilities", Body: toJSON(res.Capabilities),
-			Kind: pb.Message_DBUPDATE},
-		{Key: sha256, Path: "screenshots_count", Body: toJSON(screenshotsCount),
+		{Key: sha256, Path: "default_behavior_report", Body: toJSON(defaultBehaviorReport),
 			Kind: pb.Message_DBUPDATE},
 	}
 
