@@ -282,13 +282,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Normally, we start as many concurent worker as the number of VM we have, however
 	// it's possible that clients requests a the same preferred OS multiple times.
 	var vm *VM
-	for _, i := range [10]time.Duration{5, 4, 3, 2, 1} {
+	for i := 0; i < 3; i++ {
 		vm = findFreeVM(s.vms, fileScanCfg.OS)
 		if vm != nil {
 			break
 		}
-		logger.Infof("no VM currently available, sleep 5 seconds ...")
-		time.Sleep(i * time.Second)
+		logger.Infof("no VM currently available, sleep %s ...", defaultFileScanTimeout*time.Second)
+		time.Sleep(defaultFileScanTimeout * time.Second)
 	}
 	if vm == nil {
 		return errNotEnoughResources
