@@ -109,12 +109,12 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
-	//for _, dom := range dd {
-	//	err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
-	//	if err != nil {
-	//		logger.Errorf("failed to revert the VM: %v", err)
-	//	}
-	//}
+	// for _, dom := range dd {
+	// 	err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
+	// 	if err != nil {
+	// 		logger.Errorf("failed to revert the VM: %v", err)
+	// 	}
+	// }
 
 	// TODO what happens when len(vms) is 0.
 	// Also, when we repair a broken VM, we want to refresh the list
@@ -344,6 +344,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sandboxLogKey := behaviorReportKey + "sandbox_log.json"
 	apiTraceKey := behaviorReportKey + "api_trace.json"
 	procTreeKey := behaviorReportKey + "proc_tree.json"
+	screenshotsCount := len(res.Screenshots) / 2
 	payloads = []*pb.Message_Payload{
 		{Key: apiTraceDocID, Path: "api_trace", Body: res.APITrace, Kind: pb.Message_DBUPDATE},
 		{Key: sysEventsDocID, Path: "sys_events", Body: toJSON(res.Events), Kind: pb.Message_DBUPDATE},
@@ -354,12 +355,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "scan_cfg", Body: toJSON(res.ScanCfg), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "capabilities", Body: toJSON(res.Capabilities), Kind: pb.Message_DBUPDATE},
-		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(len(res.Screenshots)), Kind: pb.Message_DBUPDATE},
+		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(screenshotsCount), Kind: pb.Message_DBUPDATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
 		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
+			Kind: pb.Message_DBUPDATE},
+		{Key: sha256, Path: "screenshots_count", Body: toJSON(screenshotsCount),
 			Kind: pb.Message_DBUPDATE},
 		{Key: sha256, Path: "behaviors." + behaviorReportID, Body: toJSON(behaviorReport),
 			Kind: pb.Message_DBUPDATE},

@@ -45,6 +45,8 @@ type Artifact struct {
 	Content []byte `json:"-"`
 	// The artifact kind: memfree, filecreate, ..
 	Kind ArtifactType `json:"kind"`
+	// The file type: PE, ELF, etc.
+	FileFormat string `json:"file_format"`
 	// The SHA256 hash of the artifact.
 	SHA256 string `json:"sha256"`
 	// Detection contains the family name of the malware if it is malicious,
@@ -53,7 +55,7 @@ type Artifact struct {
 	// List of all matched rules.
 	MatchedRules []string `json:"matched_rules"`
 	// The file type, i.e docx, dll, etc.
-	FileType string `json:"file_type"`
+	Magic string `json:"magic"`
 	// The arifact size in bytes.
 	Size uint64 `json:"size"`
 }
@@ -101,10 +103,13 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 		}
 
 		// File type.
-		artifact.FileType, err = magic.ScanBytes(artifact.Content)
+		artifact.Magic, err = magic.ScanBytes(artifact.Content)
 		if err != nil {
 			s.logger.Errorf("failed to detect file type from %s", artifact.Name)
 		}
+		// Determine file format.
+		artifact.FileFormat = magic.Shorten(artifact.Magic)
+		s.logger.Infof("artifact file format is: %s", artifact.FileFormat)
 
 		// File Size
 		artifact.Size = uint64(len(artifact.Content))
