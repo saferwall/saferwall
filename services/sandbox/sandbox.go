@@ -360,11 +360,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
 		{Key: apiTraceKey, Body: res.FullAPITrace, Kind: pb.Message_UPLOAD},
+		{Key: sha256, Path: "behaviors." + behaviorReportID, Body: toJSON(behaviorReport),
+			Kind: pb.Message_DBUPDATE},
+		// These fields are duplicated to the `file` resource to avoid a join.
 		{Key: sha256, Path: "default_behavior_id", Body: toJSON(behaviorReportID),
 			Kind: pb.Message_DBUPDATE},
-		{Key: sha256, Path: "screenshots_count", Body: toJSON(screenshotsCount),
+		{Key: sha256, Path: "capabilities", Body: toJSON(res.Capabilities),
 			Kind: pb.Message_DBUPDATE},
-		{Key: sha256, Path: "behaviors." + behaviorReportID, Body: toJSON(behaviorReport),
+		{Key: sha256, Path: "screenshots_count", Body: toJSON(screenshotsCount),
 			Kind: pb.Message_DBUPDATE},
 	}
 
