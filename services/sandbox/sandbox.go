@@ -109,12 +109,19 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
-	// for _, dom := range dd {
-	// 	err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
-	// 	if err != nil {
-	// 		logger.Errorf("failed to revert the VM: %v", err)
-	// 	}
-	// }
+	// only for debugging: revert the machine to their clean state.
+	if false {
+		for _, dom := range dd {
+			logger.Infof("reverting %s to: %s", dom.Dom.Name, cfg.VirtMgr.SnapshotName)
+			go func(dom vmmanager.Domain) {
+				err = conn.Revert(dom.Dom, cfg.VirtMgr.SnapshotName)
+				if err != nil {
+					logger.Errorf("failed to revert the VM: %v", err)
+				}
+			}(dom)
+		}
+		time.Sleep(30 * time.Second)
+	}
 
 	// TODO what happens when len(vms) is 0.
 	// Also, when we repair a broken VM, we want to refresh the list
