@@ -109,7 +109,7 @@ func (s *Service) generateArtifacts(resArtifacts []*pb.AnalyzeFileReply_Artifact
 		}
 		// Determine file format.
 		artifact.FileFormat = magic.Shorten(artifact.Magic)
-		s.logger.Infof("artifact file format is: %s", artifact.FileFormat)
+		s.logger.Infof("artifact %s file format is: %s", artifact.Name, artifact.FileFormat)
 
 		// File Size
 		artifact.Size = uint64(len(artifact.Content))
