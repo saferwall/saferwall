@@ -142,7 +142,7 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 				IP:        addresses[0].Addrs[0].Addr,
 				Snapshots: names,
 			})
-			return domains, nil
+			continue
 		}
 
 		// If that fails, try aquiring the IP via the qemu guest agent. This option

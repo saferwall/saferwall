@@ -8,7 +8,7 @@ ARG GITHUB_TOKEN
 
 ENV SANDBOX_RELEASE_VERSION=v0.8.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
-ENV SANDBOX_REPO_URL=https://github.com/saferwall/saferwall-sandbox
+ENV SANDBOX_REPO_URL=https://github.com/saferwall/windows-sandbox
 
 ENV YARA_VERSION=4.3.2
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
@@ -108,7 +108,7 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.6.0"
-LABEL description="Sandbox scan service"
+LABEL description="Malware Detonation Service"
 
 ENV USER saferwall
 ENV GROUP saferwall
