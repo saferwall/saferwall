@@ -11,6 +11,8 @@
             "mode": "debug",
             // "program": "./cmd/services/pe/main.go",
             "program": "./cmd/services/sandbox/main.go",
+            //"program": "./cmd/services/meta/main.go",
+            // "program": "./cmd/services/orchestrator/main.go",
             // "program": "./cmd/behavior/behavior.go",
             // "args": [
             //     "-path",

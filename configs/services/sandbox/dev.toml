@@ -44,5 +44,3 @@ lookupds = ["nsqlookupd:4161"]
 topic = "topic-sandbox"
 # Channel name used in conjunction with topic name.
 channel = "chan-sandbox"
-# The number of concurrent workers to process the jobs.
-concurrency = 1

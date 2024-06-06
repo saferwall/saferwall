@@ -200,11 +200,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 		logger.Debug("published messaged to topic-pe")
 
-		if err = s.pub.Publish(ctx, "topic-sandbox", m.Body); err != nil {
-			logger.Errorf("failed to publish message: %v", err)
-			return err
+		if !fileScanCfg.SkipDetonation {
+			if err = s.pub.Publish(ctx, "topic-sandbox", m.Body); err != nil {
+				logger.Errorf("failed to publish message: %v", err)
+				return err
+			}
+			logger.Debug("published messaged to topic-sandbox")
 		}
-		logger.Debug("published messaged to topic-sandbox")
 	}
 
 	// Always queue to the post-processor.

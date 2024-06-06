@@ -90,10 +90,10 @@ couchbase-operator:
         pod:
           spec: {}
         services:
-        - data
-        - index
-        - query
-        - search
+          - data
+          - index
+          - query
+          - search
         size: 1
         volumeMounts:
           default: couchbase
@@ -124,8 +124,8 @@ nsq:
         requests:
           storage: 1Gi
     extraArgs:
-    - --max-msg-size=10000000
-    - --log-level=error
+      - --max-msg-size=10000000
+      - --log-level=error
   nsqlookupd:
     enabled: true
     name: nsqlookupd
@@ -135,7 +135,7 @@ nsq:
         cpu: 100m
         memory: 100Mi
     extraArgs:
-    - --log-level=error
+      - --log-level=error
   nsqadmin:
     enabled: true
     replicaCount: 1
@@ -144,22 +144,22 @@ nsq:
         cpu: 100m
         memory: 100Mi
     extraArgs:
-    - --log-level=error
+      - --log-level=error
 
 ########### AWS-EFS-CSI-DRIVER ###########
 aws-efs-csi-driver:
   enabled: false
   storageClasses:
-  - name: efs-sc
-    parameters:
-      provisioningMode: efs-ap
-      fileSystemId: fs-id-here
-      directoryPerms: "700"
-      gidRangeStart: "1000"
-      gidRangeEnd: "2000"
-      basePath: "/dynamic_provisioning"
-    reclaimPolicy: Delete
-    volumeBindingMode: Immediate
+    - name: efs-sc
+      parameters:
+        provisioningMode: efs-ap
+        fileSystemId: fs-id-here
+        directoryPerms: "700"
+        gidRangeStart: "1000"
+        gidRangeEnd: "2000"
+        basePath: "/dynamic_provisioning"
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
 
 ########### NFS SERVER PROVISIONER ###########
 nfs-server-provisioner:
@@ -572,7 +572,7 @@ sandbox:
       cpu: 100m
   logLevel: debug
   virtManager:
-    network: ssh
+    network: ssh # or unix, if unix, ignore the following 4 fields <address -> sshKeyPath).
     address: 192.168.1.11
     user: sfw
     port: 22

@@ -32,6 +32,7 @@ include .env
 export
 
 # Include our internals makefiles.
+include build/mk/agent.mk
 include build/mk/aws.mk
 include build/mk/compose.mk
 include build/mk/couchbase.mk

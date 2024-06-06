@@ -49,12 +49,14 @@ type StorageCfg struct {
 }
 
 // FileScanCfg represents a file scanning config. This map to a 1:1 mapping between
-// the config stored in the main saferwall repo.
+// the config stored in the webapis repo.
 type FileScanCfg struct {
 	// SHA256 hash of the file.
 	SHA256 string `json:"sha256,omitempty"`
-	// Config used during dynamic file scan.
-	DynFileScanCfg `json:"dynamic,omitempty"`
+	// Disable Sandbox
+	SkipDetonation bool `json:"skip_detonation,omitempty"`
+	// Dynamic scan config
+	DynFileScanCfg `json:"scan_cfg,omitempty"`
 }
 
 // DynFileScanCfg represents the config used to detonate a file.

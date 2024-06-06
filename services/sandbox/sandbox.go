@@ -142,7 +142,8 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		// Ping the server inside the VM and validate it is healthy.
 		err = vm.ping()
 		if err != nil {
-			return nil, err
+			logger.Errorf("failed to ping domain %s: %v", vm.Name, err)
+			continue
 		}
 
 		logger.Infof("%s VM (id: %v, ip: %s) running %s", vm.Name, vm.ID, vm.IP, vm.OS)
