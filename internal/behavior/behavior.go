@@ -69,7 +69,7 @@ func New(behaviorRules string) (Scanner, error) {
 	L := luar.Init()
 
 	// Append the lua dependencies CPATH.
-	luaCode := fmt.Sprintf("package.cpath = package.cpath .. ';./%s/?.so'",
+	luaCode := fmt.Sprintf("package.cpath = package.cpath .. ';%s/?.so'",
 		behaviorRules)
 	err := L.DoString(luaCode)
 	if err != nil {

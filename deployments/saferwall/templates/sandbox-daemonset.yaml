@@ -11,7 +11,6 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/name: {{ template "saferwall.name" . }}-sandbox
-  replicas:  {{ .Values.sandbox.replicas }}
   template:
     metadata:
       labels:
@@ -37,6 +36,10 @@ spec:
           env:
             - name: SAFERWALL_DEPLOYMENT_KIND
               value: "prod"
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
       volumes:
       - name: samples
         persistentVolumeClaim:
