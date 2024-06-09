@@ -6,27 +6,6 @@ FROM golang:1.20-alpine AS build-stage
 
 ARG GITHUB_TOKEN
 
-ENV SANDBOX_RELEASE_VERSION=v0.8.0
-ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
-ENV SANDBOX_REPO_URL=https://github.com/saferwall/windows-sandbox
-
-ENV YARA_VERSION=4.3.2
-ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
-ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
-ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
-ENV YARA_RULES_VERSION=v0.0.2
-ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
-
-ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
-ENV BEHAVIOR_RULES_VERSION=v0.0.2
-ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
-
-ENV LUA_VERSION=5.4.6
-ENV LUA_DOWNLOAD_URL=https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
-ENV LUA_DOWNLOAD_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
-
-ENV FETCH_URL=https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64
-
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
 # Ca-certificates is required to call HTTPS endpoints.
@@ -34,6 +13,9 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Install Yara as sandbox service depends on it.
+ENV YARA_VERSION=4.4.0
+ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
+ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 RUN apk add --no-cache glib-dev autoconf automake libtool build-base \
 		linux-headers openssl-dev openssl-libs-static libmagic libmagic-static file-dev \
 	&& wget $YARA_DOWNLOAD_URL \
@@ -45,6 +27,10 @@ RUN apk add --no-cache glib-dev autoconf automake libtool build-base \
 	&& make install
 
 # Install Lua as behavior rule evaluation depends on it.
+# Install dependency packages.
+ENV LUA_VERSION=5.4.6
+ENV LUA_DOWNLOAD_URL=https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
+ENV LUA_DOWNLOAD_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
 RUN set -ex \
       && apk add --no-cache --virtual .lua-builddeps ca-certificates curl gcc \
 	  	libc-dev make readline-dev \
@@ -56,6 +42,27 @@ RUN set -ex \
       && apk del --no-network .lua-builddeps \
 	  && rm -rf /tmp/lua /tmp/lua.tar.gz \
 	  && lua -v
+
+# Install luarocks.
+ENV LUA_ROCKS_VER=3.11.1
+RUN cd /tmp \
+    && wget https://luarocks.org/releases/luarocks-${LUA_ROCKS_VER}.tar.gz \
+    && tar zxf luarocks-${LUA_ROCKS_VER}.tar.gz \
+    && cd luarocks-${LUA_ROCKS_VER} \
+    && ./configure \
+    && make build \
+    && make install \
+    && cd /tmp \
+    && rm -rf /tmp/* \
+	&& luarocks
+
+# Build rapidjson.
+# wget has precedence over curl and for luarocks >= 3.9 the flag --timestamping is crashing the wget "alpine version"
+RUN apk del wget \
+	&& apk add --no-cache cmake curl \
+	&& sed -i '/WGET/d' /usr/local/share/lua/5.4/luarocks/fs/tools.lua \
+	&& luarocks install rapidjson \
+	&& luarocks install lunajson
 
 # Set the Current Working Directory inside the container.
 WORKDIR $GOPATH/src/saferwall/sandbox/
@@ -71,11 +78,12 @@ RUN go mod download
 COPY . .
 
 # Download fetch.
+ENV FETCH_URL=https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64
 ADD ${FETCH_URL} fetch
 RUN chmod +x fetch
 
 # Build the binary.
-RUN go build -ldflags '-extldflags "-static"' -tags "luaa lua54 yara_static" \
+RUN go build  -ldflags '-extldflags "-static"' -tags "luaa lua54 yara_static" \
 	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
 # Build the binary.
@@ -84,18 +92,27 @@ RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
 	-o /go/bin/agent.exe cmd/agent/server/main.go
 
 # Download the sandbox components files.
+ENV SANDBOX_RELEASE_VERSION=v0.8.0
+ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
+ENV SANDBOX_REPO_URL=https://github.com/saferwall/windows-sandbox
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${SANDBOX_REPO_URL}" \
 	--tag="${SANDBOX_RELEASE_VERSION}" \
 	--release-asset="${SANDBOX_ARTIFACT_NAME}" /
 
 # Download behavior rules.
+ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
+ENV BEHAVIOR_RULES_VERSION=v0.0.3
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${BEHAVIOR_RULES_REPO}" \
 	--tag="${BEHAVIOR_RULES_VERSION}" \
 	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /
 
 # Download yara rules.
+ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
+ENV YARA_RULES_VERSION=v0.0.2
+ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${YARA_RULES_REPO}" \
 	--tag="${YARA_RULES_VERSION}" \
@@ -120,7 +137,7 @@ ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 ENV YARA_RULES_VERSION=v0.0.2
 ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
 
-ENV BEHAVIOR_RULES_VERSION=v0.0.2
+ENV BEHAVIOR_RULES_VERSION=v0.0.3
 ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
 
 # Set the Current Working Directory inside the container.
@@ -142,6 +159,9 @@ RUN cd rules/behavior \
 	&& tar zxvf ${BEHAVIOR_RULES_ARTIFACT_NAME} \
 	&& rm ${BEHAVIOR_RULES_ARTIFACT_NAME}
 
+COPY --from=build-stage	/usr/local/lib/lua/5.4/rapidjson.so rules/behavior/rapidjson.so
+COPY --from=build-stage	/usr/local/share/lua/5.4/lunajson.lua rules/behavior/lunajson.lua
+
 # Copy the yara rules.
 RUN mkdir -p rules/yara/
 COPY --from=build-stage ${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
@@ -154,6 +174,9 @@ RUN apk update && apk add --no-cache file 2>/dev/null || true
 
 # Copy the config files.
 COPY configs/services/sandbox/ conf/
+
+# Copy the SSH private key used for accessing the remote  libvirt RPC server.
+COPY build/data/id_rsa .
 
 # Create an app user so our program doesn't run as root.
 RUN addgroup -g 102 -S $GROUP \
