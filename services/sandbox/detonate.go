@@ -22,7 +22,7 @@ import (
 
 const (
 	defaultGRPCPort        = ":50051"
-	defaultFileScanTimeout = 10
+	defaultFileScanTimeout = 30
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
 	maxTraceLog            = 10000

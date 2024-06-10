@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"os"
 	"time"
 
 	gonsq "github.com/nsqio/go-nsq"
@@ -98,7 +99,8 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	var err error
 	s := Service{}
 
-	// retrieve the list of active domains.
+	// Retrieve the list of active domains.
+	logger.Infof("virt-manager config: %v, node IP: %v", cfg.VirtMgr, os.Getenv("NODE_IP"))
 	conn, err := vmmanager.New(cfg.VirtMgr.Network, cfg.VirtMgr.Address,
 		cfg.VirtMgr.Port, cfg.VirtMgr.User, cfg.VirtMgr.SSHKeyPath)
 	if err != nil {
@@ -109,7 +111,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 		return nil, err
 	}
 
-	// only for debugging: revert the machine to their clean state.
+	// Only for debugging: revert the domains to their clean state.
 	if false {
 		for _, dom := range dd {
 			logger.Infof("reverting %s to: %s", dom.Dom.Name, cfg.VirtMgr.SnapshotName)

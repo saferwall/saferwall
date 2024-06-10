@@ -97,6 +97,9 @@ func New(transport, address, port, user, sshKeyPath string) (VMManager, error) {
 		dialer := dialers.NewLocal(dialers.WithLocalTimeout(dialTimeout))
 		conn = libvirt.NewWithDialer(dialer)
 	case "ssh":
+		if address == "" {
+			address = os.Getenv("NODE_IP")
+		}
 		c, err := dialSSH(address, user, port, sshKeyPath)
 		if err != nil {
 			return VMManager{}, err

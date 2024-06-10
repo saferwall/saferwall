@@ -562,6 +562,7 @@ multiav:
 # Not available in community edition.
 sandbox:
   enabled: false
+  name: sandbox
   image:
     repository: saferwall/sandbox
     tag: latest
@@ -577,4 +578,4 @@ sandbox:
     user: sfw
     port: 22
     sshKeyPath: id_rsa
-    snapshot_name: clean-state-1
+    snapshotName: clean-state
