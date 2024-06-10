@@ -13,7 +13,7 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Install Yara as sandbox service depends on it.
-ENV YARA_VERSION=4.4.0
+ENV YARA_VERSION=4.3.2
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 RUN apk add --no-cache glib-dev autoconf automake libtool build-base \
@@ -83,7 +83,7 @@ ADD ${FETCH_URL} fetch
 RUN chmod +x fetch
 
 # Build the binary.
-RUN go build  -ldflags '-extldflags "-static"' -tags "luaa lua54 yara_static" \
+RUN go build -tags "luaa lua54 yara_static" \
 	-o /go/bin/sandbox-svc cmd/services/sandbox/main.go
 
 # Build the binary.
@@ -182,6 +182,10 @@ COPY build/data/id_rsa .
 RUN addgroup -g 102 -S $GROUP \
 	&& adduser -u 101 -S $USER -G $GROUP \
 	&& chown -R $USER:$GROUP /saferwall
+
+COPY --from=build-stage /usr/local/lib/libyara.so /usr/lib/libyara.so.10
+COPY --from=build-stage /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6
+COPY --from=build-stage /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 
 # Switch to our user.
 USER saferwall
