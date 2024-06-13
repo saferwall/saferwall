@@ -122,7 +122,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sha256 := fileScanCfg.SHA256
 	logger := s.logger.With(ctx, "sha256", sha256)
 
-	logger.Info("start processing")
+	logger.Info("start processing with config: %#v", fileScanCfg)
 
 	// Download the file from object storage and place it in a directory
 	// shared between all microservices.

@@ -155,7 +155,8 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 		addresses, err = vmm.Conn.DomainInterfaceAddresses(
 			d, uint32(libvirt.DomainInterfaceAddressesSrcAgent), flagsUnused)
 		if err != nil {
-			return nil, err
+			// TODO: log the warning.
+			continue
 		}
 
 		if len(addresses) == 0 {
