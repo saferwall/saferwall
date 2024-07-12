@@ -32,3 +32,6 @@ go-setup:	## Download and install go
 
 go-install-staticcheck: ## Install staticheck.
 	go install honnef.co/go/tools/cmd/staticcheck@latest
+
+go-install-golangci-lint:	## Install golangci-lint.
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.59.1
