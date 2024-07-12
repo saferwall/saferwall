@@ -26,7 +26,7 @@ require (
 	golang.org/x/crypto v0.23.0
 	golang.org/x/net v0.25.0
 	google.golang.org/grpc v1.62.1
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
