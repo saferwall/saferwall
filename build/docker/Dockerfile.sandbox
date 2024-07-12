@@ -92,7 +92,7 @@ RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
 	-o /go/bin/agent.exe cmd/agent/server/main.go
 
 # Download the sandbox components files.
-ENV SANDBOX_RELEASE_VERSION=v0.8.0
+ENV SANDBOX_RELEASE_VERSION=v0.9.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 ENV SANDBOX_REPO_URL=https://github.com/saferwall/windows-sandbox
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
@@ -131,7 +131,7 @@ ENV USER saferwall
 ENV GROUP saferwall
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
-ENV SANDBOX_RELEASE_VERSION=v0.8.0
+ENV SANDBOX_RELEASE_VERSION=v0.9.0
 ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 
 ENV YARA_RULES_VERSION=v0.0.2

@@ -10,22 +10,22 @@ require (
 	github.com/digitalocean/go-libvirt v0.0.0-20221205150000-2939327a8519
 	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.5.0
-	github.com/gabriel-vasile/mimetype v1.4.2
-	github.com/glaslos/ssdeep v0.3.3
-	github.com/go-enry/go-enry/v2 v2.8.2
-	github.com/google/uuid v1.4.0
+	github.com/gabriel-vasile/mimetype v1.4.4
+	github.com/glaslos/ssdeep v0.4.0
+	github.com/go-enry/go-enry/v2 v2.8.8
+	github.com/google/uuid v1.6.0
 	github.com/hillu/go-yara/v4 v4.3.2
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/saferwall/pe v1.5.2
-	github.com/spf13/viper v1.18.2
+	github.com/spf13/viper v1.19.0
 	github.com/stevedonovan/luar v0.0.0-20170518170841-22d247e53660
 	github.com/yeka/zip v0.0.0-20180914125537-d046722c6feb
-	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.21.0
-	golang.org/x/net v0.23.0
-	google.golang.org/grpc v1.61.0
+	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.23.0
+	golang.org/x/net v0.25.0
+	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
 )
 
@@ -43,7 +43,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
@@ -51,7 +51,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -66,9 +66,9 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/image v0.18.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
