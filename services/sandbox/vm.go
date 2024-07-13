@@ -86,12 +86,13 @@ func (vm *VM) ping() error {
 		return err
 	}
 
-	os := strings.ReplaceAll(sysInfo.FriendlyName, "Microsoft", "")
-	os = strings.ReplaceAll(os, "Professional", "")
-	os = strings.TrimSpace(os)
-	vm.OS = os + " " + sysInfo.Architecture
-	vm.AgentVersion = pingResult.ServerVersion
+	if strings.HasPrefix(sysInfo.FriendlyName, "Microsoft Windows 7") {
+		vm.OS = windows7
+	} else if strings.HasPrefix(sysInfo.FriendlyName, "Microsoft Windows 10") {
+		vm.OS = windows10
+	}
 
+	vm.AgentVersion = pingResult.ServerVersion
 	return nil
 }
 

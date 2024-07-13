@@ -34,6 +34,11 @@ var (
 	errNotEnoughResources = errors.New("failed to find a free VM")
 )
 
+const (
+	windows7  = "win-7"
+	windows10 = "win-10"
+)
+
 // Config represents our application config.
 type Config struct {
 	LogLevel      string             `mapstructure:"log_level"`
@@ -238,7 +243,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 
 	sha256 := fileScanCfg.SHA256
 	logger := s.logger.With(ctx, "sha256", sha256, "guid", behaviorReportID)
-	logger.Info("start processing")
+	logger.Infof("start processing sample with config: %#v", fileScanCfg.DynFileScanCfg)
 
 	// Update the state of the job to `processing`.
 	status := make(map[string]interface{})
@@ -297,7 +302,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		if vm != nil {
 			break
 		}
-		logger.Infof("no VM currently available, sleep %s ...", defaultFileScanTimeout*time.Second)
+		logger.Infof("no VM currently available that satisfies preferred OS: %s, sleep %s ...", fileScanCfg.OS,
+			defaultFileScanTimeout*time.Second)
 		time.Sleep(defaultFileScanTimeout * time.Second)
 	}
 	if vm == nil {
