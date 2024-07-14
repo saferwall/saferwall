@@ -1,6 +1,10 @@
 package ql
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/saferwall/saferwall/internal/ql/token"
+)
 
 const (
 	// MaxStringSize sets an upper bound on lengths of strings to be parsed
@@ -24,42 +28,47 @@ func NewLexer(input string) *Lexer {
 }
 
 // NextToken parses and returns the next token.
-func (l *Lexer) NextToken() Token {
-	var tok Token
+func (l *Lexer) NextToken() token.Token {
+	var tok token.Token
 
 	l.skipWhitespace()
 
 	switch l.ch {
 	case ':':
-		tok = NewToken(ASSIGN, l.ch)
+		tok = token.New(token.Colon, string(l.ch))
 	case ',':
-		tok = NewToken(COMMA, l.ch)
-	case '=':
-		tok = NewToken(EQUAL, l.ch)
+		tok = token.New(token.Comma, string(l.ch))
 	case '+':
-		tok = NewToken(GREATERTHAN, l.ch)
+		tok = token.New(token.Plus, string(l.ch))
 	case '-':
-		tok = NewToken(LESSERTHAN, l.ch)
+		tok = token.New(token.Minus, string(l.ch))
 	case '"':
-		tok.Type = STRING
-		tok.Literal = Literal(l.readString())
+		tok.Kind = token.StringLiteral
+		tok.Literal = token.Literal(l.readString())
 	case '[':
-		tok = NewToken(LBRACKET, l.ch)
+		tok = token.New(token.LBracket, string(l.ch))
 	case ']':
-		tok = NewToken(RBRACKET, l.ch)
+		tok = token.New(token.RBracket, string(l.ch))
 	case 0:
 		tok.Literal = ""
-		tok.Type = EOF
+		tok.Kind = token.EOF
 	default:
 		if isLetter(l.ch) {
-			tok.Literal = Literal(l.readIdentifier())
-			tok.Type = LookupIdent(string(tok.Literal))
+			ident := l.readIdentifier()
+			if modifier, ok := token.GetModifier(ident); ok {
+				tok.Literal = token.Literal(ident)
+				tok.Kind = modifier
+			} else {
+
+				tok.Literal = token.Literal(l.readIdentifier())
+				tok.Kind = token.StringLiteral
+			}
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = INT
-			tok.Literal = Literal(l.readNumber())
+			tok.Kind = token.IntegerLiteral
+			tok.Literal = token.Literal(l.readNumber())
 		} else {
-			tok = NewToken(ILLEGAL, l.ch)
+			tok = token.New(token.Unknown, string(l.ch))
 		}
 	}
 	l.readChar()
@@ -67,10 +76,10 @@ func (l *Lexer) NextToken() Token {
 }
 
 // Lex builds a lexeme slice by iterating and lexing the input.
-func (l *Lexer) Lex() []Token {
-	lexemes := make([]Token, 0)
+func (l *Lexer) Lex() []token.Token {
+	lexemes := make([]token.Token, 0)
 	tok := l.NextToken()
-	for tok.Type != EOF {
+	for tok.Kind != token.EOF {
 		lexemes = append(lexemes, tok)
 		tok = l.NextToken()
 	}

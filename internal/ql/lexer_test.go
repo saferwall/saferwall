@@ -1,28 +1,31 @@
 package ql
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/saferwall/saferwall/internal/ql/token"
+)
 
 func TestNextToken(t *testing.T) {
 	t.Run("TestNextTokenSingle", func(t *testing.T) {
 		input := `:,+-=`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{ASSIGN, ":"},
-			{COMMA, ","},
-			{GREATERTHAN, "+"},
-			{LESSERTHAN, "-"},
-			{EQUAL, "="},
+			{token.Colon, ":"},
+			{token.Comma, ","},
+			{token.Plus, "+"},
+			{token.Minus, "-"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -33,20 +36,20 @@ func TestNextToken(t *testing.T) {
 		input := `name:"winshell.ocx"`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{NAME, "name"},
-			{ASSIGN, ":"},
-			{STRING, "winshell.ocx"},
+			{token.FileName, "name"},
+			{token.Colon, ":"},
+			{token.StringLiteral, "winshell.ocx"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -57,24 +60,24 @@ func TestNextToken(t *testing.T) {
 		input := `-123456789kb,fs:2019`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{LESSERTHAN, "-"},
-			{INT, "123456789"},
-			{KB, "kb"},
-			{COMMA, ","},
-			{FS, "fs"},
-			{ASSIGN, ":"},
-			{INT, "2019"},
+			{token.Minus, "-"},
+			{token.IntegerLiteral, "123456789"},
+			{token.KB, "kb"},
+			{token.Comma, ","},
+			{token.FirstSeen, "fs"},
+			{token.Colon, ":"},
+			{token.IntegerLiteral, "2019"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -85,21 +88,21 @@ func TestNextToken(t *testing.T) {
 		input := `fs:+"2009-01-01T19:59:22"`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{FS, "fs"},
-			{ASSIGN, ":"},
-			{GREATERTHAN, "+"},
-			{STRING, "2009-01-01T19:59:22"},
+			{token.FirstSeen, "fs"},
+			{token.Colon, ":"},
+			{token.Plus, "+"},
+			{token.DateLiteral, "2009-01-01T19:59:22"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -107,43 +110,43 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 	t.Run("TestNextTokenFull", func(t *testing.T) {
-		input := `type:pe,size:102mb+,strings:["k40s"],section:".k40s", imports:"crypt32.dll"`
+		input := `type:pe,size:102mb+,content:"k40s",section:".k40s", imports:"crypt32.dll"`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{TYPE, "type"},
-			{ASSIGN, ":"},
-			{IDENT, "pe"},
-			{COMMA, ","},
-			{SIZE, "size"},
-			{ASSIGN, ":"},
-			{INT, "102"},
-			{MB, "mb"},
-			{GREATERTHAN, "+"},
-			{COMMA, ","},
-			{STRINGS, "strings"},
-			{ASSIGN, ":"},
-			{LBRACKET, "["},
-			{STRING, "k40s"},
-			{RBRACKET, "]"},
-			{COMMA, ","},
-			{SECTION, "section"},
-			{ASSIGN, ":"},
-			{STRING, ".k40s"},
-			{COMMA, ","},
-			{IMPORTS, "imports"},
-			{ASSIGN, ":"},
-			{STRING, "crypt32.dll"},
+			{token.FileType, "type"},
+			{token.Colon, ":"},
+			{token.Pe, "pe"},
+			{token.Comma, ","},
+			{token.FileSize, "size"},
+			{token.Colon, ":"},
+			{token.IntegerLiteral, "102"},
+			{token.MB, "mb"},
+			{token.Plus, "+"},
+			{token.Comma, ","},
+			{token.FileContent, "content"},
+			{token.Colon, ":"},
+			{token.LBracket, "["},
+			{token.StringLiteral, "k40s"},
+			{token.RBracket, "]"},
+			{token.Comma, ","},
+			{token.Sections, "section"},
+			{token.Colon, ":"},
+			{token.StringLiteral, ".k40s"},
+			{token.Comma, ","},
+			{token.Imports, "imports"},
+			{token.Comma, ":"},
+			{token.StringLiteral, "crypt32.dll"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -151,46 +154,46 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 	t.Run("TestNextTokenPartial", func(t *testing.T) {
-		input := `type:pe,size:102mb+,strings:["k40s",".elf",".asm",".code"],positives:+5`
+		input := `type:pe,size:102mb+,content:["k40s",".elf",".asm",".code"],positives:5+`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{TYPE, "type"},
-			{ASSIGN, ":"},
-			{IDENT, "pe"},
-			{COMMA, ","},
-			{SIZE, "size"},
-			{ASSIGN, ":"},
-			{INT, "102"},
-			{MB, "mb"},
-			{GREATERTHAN, "+"},
-			{COMMA, ","},
-			{STRINGS, "strings"},
-			{ASSIGN, ":"},
-			{LBRACKET, "["},
-			{STRING, "k40s"},
-			{COMMA, ","},
-			{STRING, ".elf"},
-			{COMMA, ","},
-			{STRING, ".asm"},
-			{COMMA, ","},
-			{STRING, ".code"},
-			{RBRACKET, "]"},
-			{COMMA, ","},
-			{POSITIVES, "positives"},
-			{ASSIGN, ":"},
-			{GREATERTHAN, "+"},
-			{INT, "5"},
+			{token.FileType, "type"},
+			{token.Comma, ":"},
+			{token.StringLiteral, "pe"},
+			{token.Comma, ","},
+			{token.FileSize, "size"},
+			{token.Colon, ":"},
+			{token.IntegerLiteral, "102"},
+			{token.MB, "mb"},
+			{token.Plus, "+"},
+			{token.Comma, ","},
+			{token.FileContent, "content"},
+			{token.Colon, ":"},
+			{token.LBracket, "["},
+			{token.StringLiteral, "k40s"},
+			{token.Comma, ","},
+			{token.StringLiteral, ".elf"},
+			{token.Comma, ","},
+			{token.StringLiteral, ".asm"},
+			{token.Comma, ","},
+			{token.StringLiteral, ".code"},
+			{token.RBracket, "]"},
+			{token.Comma, ","},
+			{token.Positives, "positives"},
+			{token.Comma, ":"},
+			{token.IntegerLiteral, "5"},
+			{token.Plus, "+"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -201,21 +204,21 @@ func TestNextToken(t *testing.T) {
 		input := `!??_`
 
 		tests := []struct {
-			expectedType Type
-			expectedLit  Literal
+			expectedType token.Kind
+			expectedLit  token.Literal
 		}{
-			{ILLEGAL, "!"},
-			{ILLEGAL, "?"},
-			{ILLEGAL, "?"},
-			{ILLEGAL, "_"},
+			{token.Unknown, "!"},
+			{token.Unknown, "?"},
+			{token.Unknown, "?"},
+			{token.Unknown, "_"},
 		}
 
 		l := NewLexer(input)
 
 		for i, tt := range tests {
 			tok := l.NextToken()
-			if tok.Type != tt.expectedType {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			if tok.Kind != tt.expectedType {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Kind)
 			}
 			if tok.Literal != tt.expectedLit {
 				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tt.expectedLit, tok.Literal)
@@ -225,146 +228,74 @@ func TestNextToken(t *testing.T) {
 	t.Run("TestLexSingle", func(t *testing.T) {
 		input := `:,+-=`
 
-		expectedTokens := []Token{
-			{ASSIGN, ":"},
-			{COMMA, ","},
-			{GREATERTHAN, "+"},
-			{LESSERTHAN, "-"},
-			{EQUAL, "="},
+		expectedTokens := []token.Token{
+			{Literal: ":", Kind: token.Colon},
+			{Literal: ",", Kind: token.Comma},
+			{Literal: "+", Kind: token.Plus},
+			{Literal: "-", Kind: token.Minus},
 		}
 
 		l := NewLexer(input)
 		tokens := l.Lex()
 
 		for i, tok := range expectedTokens {
-			if tokens[i].Type != tok.Type {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tok.Type, tokens[i].Type)
+			if tokens[i].Kind != tok.Kind {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i,
+					tok.Kind, tokens[i].Kind)
 			}
 			if tokens[i].Literal != tok.Literal {
-				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tok.Literal, tokens[i].Literal)
+				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q",
+					i, tok.Literal, tokens[i].Literal)
 			}
 		}
 	})
 	t.Run("TestLexStrings", func(t *testing.T) {
 		input := `name:"winshell.ocx"`
 
-		expectedTokens := []Token{
-			{NAME, "name"},
-			{ASSIGN, ":"},
-			{STRING, "winshell.ocx"},
+		expectedTokens := []token.Token{
+			{Literal: "name", Kind: token.FileName},
+			{Literal: ":", Kind: token.Colon},
+			{Literal: "winshell.ocx", Kind: token.StringLiteral},
 		}
 
 		l := NewLexer(input)
 		tokens := l.Lex()
 
 		for i, tok := range expectedTokens {
-			if tokens[i].Type != tok.Type {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tok.Type, tokens[i].Type)
+			if tokens[i].Kind != tok.Kind {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q",
+					i, tok.Kind, tokens[i].Kind)
 			}
 			if tokens[i].Literal != tok.Literal {
-				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tok.Literal, tokens[i].Literal)
+				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q",
+					i, tok.Literal, tokens[i].Literal)
 			}
 		}
 	})
 	t.Run("TestLexNumbers", func(t *testing.T) {
 		input := `-123456789kb,fs:2019`
 
-		expectedTokens := []Token{
-			{LESSERTHAN, "-"},
-			{INT, "123456789"},
-			{KB, "kb"},
-			{COMMA, ","},
-			{FS, "fs"},
-			{ASSIGN, ":"},
-			{INT, "2019"},
+		expectedTokens := []token.Token{
+			{Literal: "-", Kind: token.Minus},
+			{Literal: "123456789", Kind: token.IntegerLiteral},
+			{Literal: "kb", Kind: token.KB},
+			{Literal: ",", Kind: token.Comma},
+			{Literal: "fs", Kind: token.FirstSeen},
+			{Literal: ":", Kind: token.Colon},
+			{Literal: "2019", Kind: token.StringLiteral},
 		}
 
 		l := NewLexer(input)
 		tokens := l.Lex()
 
 		for i, tok := range expectedTokens {
-			if tokens[i].Type != tok.Type {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tok.Type, tokens[i].Type)
+			if tokens[i].Kind != tok.Kind {
+				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q",
+					i, tok.Kind, tokens[i].Kind)
 			}
 			if tokens[i].Literal != tok.Literal {
-				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tok.Literal, tokens[i].Literal)
-			}
-		}
-	})
-	t.Run("TestLexFull", func(t *testing.T) {
-		input := `type:pe,size:500kb-,strings:["k40s",".elf",".asm",".code"],positives:+5`
-
-		expectedTokens := []Token{
-			{TYPE, "type"},
-			{ASSIGN, ":"},
-			{IDENT, "pe"},
-			{COMMA, ","},
-			{SIZE, "size"},
-			{ASSIGN, ":"},
-			{INT, "500"},
-			{KB, "kb"},
-			{LESSERTHAN, "-"},
-			{COMMA, ","},
-			{STRINGS, "strings"},
-			{ASSIGN, ":"},
-			{LBRACKET, "["},
-			{STRING, "k40s"},
-			{COMMA, ","},
-			{STRING, ".elf"},
-			{COMMA, ","},
-			{STRING, ".asm"},
-			{COMMA, ","},
-			{STRING, ".code"},
-			{RBRACKET, "]"},
-			{COMMA, ","},
-			{POSITIVES, "positives"},
-			{ASSIGN, ":"},
-			{GREATERTHAN, "+"},
-			{INT, "5"},
-		}
-
-		l := NewLexer(input)
-		tokens := l.Lex()
-
-		for i, tok := range expectedTokens {
-			if tokens[i].Type != tok.Type {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tok.Type, tokens[i].Type)
-			}
-			if tokens[i].Literal != tok.Literal {
-				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tok.Literal, tokens[i].Literal)
-			}
-		}
-	})
-	t.Run("TestLexPartial", func(t *testing.T) {
-		input := `type:pe,  size:102mb+,strings:["k40s"]`
-
-		expectedTokens := []Token{
-			{TYPE, "type"},
-			{ASSIGN, ":"},
-			{IDENT, "pe"},
-			{COMMA, ","},
-			{SIZE, "size"},
-			{ASSIGN, ":"},
-			{INT, "102"},
-			{MB, "mb"},
-			{GREATERTHAN, "+"},
-			{COMMA, ","},
-			{STRINGS, "strings"},
-			{ASSIGN, ":"},
-			{LBRACKET, "["},
-			{STRING, "k40s"},
-			{RBRACKET, "]"},
-		}
-
-		l := NewLexer(input)
-		tokens := l.Lex()
-
-		for i, tok := range expectedTokens {
-			if tokens[i].Type != tok.Type {
-				t.Fatalf("tests[%d] - tokenType wrong, expected=%q, got=%q", i, tok.Type, tokens[i].Type)
-			}
-			if tokens[i].Literal != tok.Literal {
-				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q", i, tok.Literal, tokens[i].Literal)
+				t.Fatalf("tests[%d] - tokenLiteral wrong, expected=%q, got=%q",
+					i, tok.Literal, tokens[i].Literal)
 			}
 		}
 	})

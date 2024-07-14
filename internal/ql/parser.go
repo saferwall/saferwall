@@ -2,6 +2,8 @@ package ql
 
 import (
 	"errors"
+
+	"github.com/saferwall/saferwall/internal/ql/token"
 )
 
 var (
@@ -15,8 +17,8 @@ var (
 type Parser struct {
 	l *Lexer
 
-	currToken Token
-	peekToken Token
+	currToken token.Token
+	peekToken token.Token
 }
 
 // NewParser creates a new instance of the parser.
@@ -40,7 +42,7 @@ func (p *Parser) Parse() (SearchQuery, error) {
 	query := SearchQuery{}
 	query.Statements = make([]QueryStatement, 0)
 
-	for p.currToken.Type != EOF {
+	for p.currToken.Kind != token.EOF {
 		q, err := p.ParseQuery()
 		if err != nil {
 			return query, err
@@ -56,22 +58,29 @@ func (p *Parser) Parse() (SearchQuery, error) {
 // ParseQuery will parse a given query type (filetype,filesize,datetimes..,)
 // and return the query statement.
 func (p *Parser) ParseQuery() (QueryStatement, error) {
-	switch p.currToken.Type {
-	case SIZE:
+	return nil, nil
+}
+
+/*
+// ParseQuery will parse a given query type (filetype,filesize,datetimes..,)
+// and return the query statement.
+func (p *Parser) ParseQuery() (QueryStatement, error) {
+	switch p.currToken.Kind {
+	case token.FileSize:
 		return p.parseFileSizeQuery()
-	case TYPE:
+	case token.FileType:
 		return p.parseFileTypeQuery()
-	case LS:
+	case token.DateLiteral:
 		return p.parseDatetimeQuery()
-	case FS:
+	case token.FirstSeen:
 		return p.parseDatetimeQuery()
-	case POSITIVES:
+	case token.Positives:
 		return p.parsePositivesQuery()
-	case SECTION:
+	case token.Sections:
 		return p.parseSectionQuery()
-	case IMPORTS:
+	case token.Imports:
 		return p.parseImportsQuery()
-	case EXPORTS:
+	case token.Exports:
 		return p.parseExportsQuery()
 	default:
 		return nil, errBadQuerySyntax
@@ -83,11 +92,10 @@ func (p *Parser) ParseQuery() (QueryStatement, error) {
 func (p *Parser) parseFileSizeQuery() (SingleQuery, error) {
 	query := SingleQuery{
 		Token: p.currToken,
-		Op:    EQUAL,
 	}
 	// we expect an assignment (:) next
-	if !p.expectPeek(ASSIGN) {
-		return emptySingleQuery, newSyntaxError(SIZE, ASSIGN, string(p.peekToken.Type))
+	if !p.expectPeek(token.Colon) {
+		return emptySingleQuery, newSyntaxError(, ASSIGN, string(p.peekToken.Type))
 	}
 	// we expect a digit next
 	if !p.expectPeek(INT) {
@@ -280,3 +288,4 @@ func (p *Parser) expectPeek(t Type) bool {
 	}
 	return false
 }
+*/

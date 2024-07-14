@@ -2,6 +2,8 @@ package ql
 
 import (
 	"strings"
+
+	"github.com/saferwall/saferwall/internal/ql/token"
 )
 
 // Node represents an AST node
@@ -32,7 +34,7 @@ func (s SearchQuery) Literal() string {
 // such as type:elf or size:+100kb these operates with a single rhs value.
 // Such queries are parsed as {SIZE,=/>/<,100} or {TYPE,=,ELF}
 type SingleQuery struct {
-	Token
+	token.Token
 	Op    string
 	Value string
 }
