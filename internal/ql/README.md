@@ -14,7 +14,7 @@ import ql "github.com/saferwall/internal/ql"
 
 func main() {
 
-    exampleQuery := "type:pe, size:1mb+, ls:2021-03-01T00:00:00"
+    exampleQuery := "type:pe and size:1mb+  and ls:2021-03-01T00:00:00"
     n1ql := ql.NewParser().Parse(exampleQuery).Compile()
     fmt.Println(n1ql)
 }
@@ -29,7 +29,34 @@ SELECT * from bucket where filetype == "pe" AND filesize > 300 AND lastSubmissio
 
 ```
 
+
+
 ## Query Language Reference
+
+MODIFIER
+
+### Modifiers
+
+TODO: Add full list of supported modifiers.
+
+### Literals
+
+* Hexadecimal strings.
+* Integers.
+
+```
+"type": "file"
+"md5": "6468ee100d88c71d55dfdcf4e30f991e"
+"sha1": "5c520d2d7dc4c9e5d536d3aff998185657d40ac8"
+"sha256": "b102ed1018de0b7faea37ca86f27ba3025c0c70f28417ac3e9ef09d32617f801"
+"sha512": "41913eb5adaab42c7ebff547421c0faedede5a3356cb2aa8b92ab20320f73766101056853f450435281cf31e7f32603c62fbd88fa3a680b19abda5d8cc9a98ae"
+"ssdeep": "768:QzG3EG0IUJrd6dQar/MjfW33AMar6q3Fu:QKEG4Jx6Ky/Mjo3AMa13U"
+"crc32": "0x7017fca6"
+"size": 32768
+"magic": "PE32+ executable (GUI) x86-64, for MS Windows"
+"trid": [
+
+```
 
 ### File Information
 
