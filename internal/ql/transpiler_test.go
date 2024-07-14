@@ -46,7 +46,6 @@ func TestTranspiler(t *testing.T) {
 					t.Fatalf("test[%d] failed expected %s got %s", i, tt.out, got)
 				}
 			}
-
 		}
 	})
 }

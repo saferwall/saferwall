@@ -26,9 +26,7 @@ func TestDatetime(t *testing.T) {
 			}
 			if date.String() != tt.expectedUTC {
 				t.Fatalf("test[%d] expected date=%s got=%s", i, tt.expectedUTC, date.UTC())
-
 			}
 		}
-
 	})
 }
