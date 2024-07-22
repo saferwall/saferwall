@@ -45,7 +45,7 @@ AWS_EFS_TOKEN = example-efs
     - `make multiav-release`
     - `make multiav-release-go`
 
-6. Install Helm: `make helm-install`.
+6. Install Helm: `make helm/install`.
 7. Init cert manager: `make k8s-init-cert-manager` and couchbase crds: `make k8s-install-couchbase-crds`.
 8. Edit the `deployments/saferwall/values.yaml`
    - Set `efs-provisioner.enabled` to true.
@@ -62,7 +62,7 @@ AWS_EFS_TOKEN = example-efs
          authenticationTokenWebhook: true
          authorizationMode: Webhook
        ```
-9. Install helm chart: `make helm-release`.
+9. Install helm chart: `make helm/release`.
 
 ## Tips for deploying a production cluster
 

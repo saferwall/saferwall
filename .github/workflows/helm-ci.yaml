@@ -16,7 +16,7 @@ jobs:
           cd saferwall
           make kubectl-install
           make kind-install
-          make helm-install
+          make helm/install
 
       - name: Create Kind cluster
         run: |
@@ -26,7 +26,7 @@ jobs:
       - name: Helm Release
         run: |
           cd saferwall
-          make helm-release
+          make helm/release
 
       - name: Wait for pods to be ready
         run: kubectl wait --for=condition=Ready pods --all --timeout=900s

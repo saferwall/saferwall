@@ -32,14 +32,14 @@ It is __recommended__ to go with `kind` if you don't know know which one to choo
     - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
     - By default, saferwall will use only the free ones.
 6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`.
-7. Install Helm: `make helm-install`.
+7. Install Helm: `make helm/install`.
 8. Edit the `deployments/saferwall/values.yaml`
     - If you are interested to see the logs in EFK:
         - Set `elasticsearch.enabled` to true.
         - Set `kibana.enabled` to true.
         - Set `filebeat.enabled` to true.
     - Set `prometheus-operator.enabled` to true if you want to get metrics.
-9. Install helm chart: `make helm-release`.
+9. Install helm chart: `make helm/release`.
 10. Wait until the output of `watch | kubectl get pods` show all pods are running fine.
 11. Edit your host file to setup a dns entry for for the services running inside the cluster:
     - Minikube: `echo "$(minikube ip) mysaferwall.com api.mysaferwall.com" | sudo tee -a /etc/hosts`

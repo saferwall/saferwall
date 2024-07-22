@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Curate PE scan results [#378](https://github.com/saferwall/saferwall/pull/378).
 - Add `inlets-operator` and `metallb` charts [#376](https://github.com/saferwall/saferwall/pull/376). `inlets-operator` has been deleted later, and `metallb` is installed separately from the chart dependencies.
 - Add `kube-prometheus-stack` CRDs and experiment with k3s for local dev.
-- Add `workflow_dispatch` for `helm-release` and `release` services job.
+- Add `workflow_dispatch` for `helm/release` and `release` services job.
 
 ### Changed
 
