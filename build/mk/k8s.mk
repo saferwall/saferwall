@@ -124,6 +124,12 @@ k8s-install-promtail: ## Install Loki Distributed.
 		--version v$(PROMTAIL) \
 		--namespace monitoring
 
+k8s/install/nfs-client: ## Install nfs subdir external provisioner
+	helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    	--set nfs.server=$(NFS_SERVER) \
+    	--set nfs.path=$(NFS_PATH) \
+		--set storageClass.name=nfs
+
 COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
