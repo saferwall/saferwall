@@ -110,6 +110,8 @@ couchbase-operator:
 
 ########### NSQ ###########
 nsq:
+  image:
+    tag: v1.3.0
   enabled: true
   nsqd:
     name: nsqd
