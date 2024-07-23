@@ -14,7 +14,6 @@ jobs:
         run: |
           git clone https://github.com/saferwall/saferwall.git
           cd saferwall
-          make
           make kubectl/install
           make kind/install
           make helm/install
