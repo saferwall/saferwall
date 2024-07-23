@@ -14,14 +14,14 @@ jobs:
         run: |
           git clone https://github.com/saferwall/saferwall.git
           cd saferwall
-          make kubectl-install
-          make kind-install
+          make kubectl/install
+          make kind/install
           make helm/install
 
       - name: Create Kind cluster
         run: |
           cd saferwall
-          make kind-up
+          make kind/up
 
       - name: Helm Release
         run: |

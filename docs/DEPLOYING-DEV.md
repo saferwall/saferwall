@@ -16,8 +16,8 @@ It is __recommended__ to go with `kind` if you don't know know which one to choo
 # Deploying in Kind or Minikube
 
 1. Install `Docker`: `make docker-install`.
-2. Install `Kind`: `make kind-install` or Minikube: `make minikube-install`
-3. Install `Kubectl`: `make kubectl-install`
+2. Install `Kind`: `make kind/install` or Minikube: `make minikube-install`
+3. Install `Kubectl`: `make kubectl/install`
 4. __Minikube__ users only:
     - A hypervisor like `QEMU/KVM` or `Virtualbox` is required: For KVM/QEMU: `make kvm-install`, for VirtualBox: `make vbox-install`.
     - Edit the `.env` to specify which driver to use and number of cpus, ram and disk size:
@@ -31,7 +31,7 @@ It is __recommended__ to go with `kind` if you don't know know which one to choo
 5. _Optional_ step: build the paid anti-virus docker images.
     - Some AVs are not free and requires a license, you need to supply the licenses keys to be able to build the images. See [Building AV Images](#Building-AV-Images) on how to configure them.
     - By default, saferwall will use only the free ones.
-6. Create kind cluster: `make kind-up` or minikube cluster: `make minikube-up`.
+6. Create kind cluster: `make kind/up` or minikube cluster: `make minikube-up`.
 7. Install Helm: `make helm/install`.
 8. Edit the `deployments/saferwall/values.yaml`
     - If you are interested to see the logs in EFK:

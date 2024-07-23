@@ -1,5 +1,5 @@
 KUBECTL_VER = 1.28.6
-kubectl-install: ## Install kubectl.
+kubectl/install: ## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
 			curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl; \
@@ -36,7 +36,7 @@ k8s-kube-capacity: ## Install kube-capacity
 		&& sudo mv kube-capacity /usr/local/bin \
 		&& kube-capacity
 
-k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
+k8s-prepare:	k8s-kubectl/install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
 k8s-pf-nsq: ## Port fordward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
