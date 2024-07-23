@@ -1,5 +1,5 @@
 KIND_VERSION = 0.20.0
-kind-install: ## Install Kind for local kubernetes cluster deployements.
+kind/install: ## Install Kind for local kubernetes cluster deployements.
 	curl -o kind -sS -L https://kind.sigs.k8s.io/dl/v$(KIND_VERSION)/kind-linux-amd64
 	chmod +x kind
 	sudo mv kind /usr/local/bin
@@ -27,7 +27,7 @@ kind-deploy-ingress-nginx: ## Deploy ingress-nginx in Kind.
 kind-down:	## Delete Kind cluster.
 	kind delete clusters ${KIND_CLUSTER_NAME}
 
-kind-up: ## Deploy Kind cluster and install requirements.
+kind/up: ## Deploy Kind cluster and install requirements.
 	make kind-down || true
 	make kind-create-cluster
 	make kind-deploy-ingress-nginx

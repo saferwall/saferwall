@@ -13,9 +13,9 @@ dependencies:
   version: 1.8.0
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 4.9.1
+  version: 4.10.3
 - name: nsq
   repository: https://nsqio.github.io/helm-chart/
   version: 0.0.10
-digest: sha256:930050746c6f980f0f2fb287ae9120e5b2ab4a31c13da8149f3440234c405d7e
-generated: "2024-02-01T14:58:27.461188581+11:00"
+digest: sha256:9362573a2aee829dceddc0b329866d963e4559bbcaa507de66687a77a21de741
+generated: "2024-07-21T09:20:23.697750619+10:00"

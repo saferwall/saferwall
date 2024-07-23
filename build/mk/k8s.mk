@@ -1,5 +1,5 @@
 KUBECTL_VER = 1.28.6
-kubectl-install: ## Install kubectl.
+kubectl/install: ## Install kubectl.
 	@kubectl version --client | grep $(KUBECTL_VER); \
 		if [ $$? -eq 1 ]; then \
 			curl -LOsS https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VER)/bin/linux/amd64/kubectl; \
@@ -12,7 +12,7 @@ kubectl-install: ## Install kubectl.
 
 KUBECTX_VER = 0.9.5
 KUBECTX_URL= https://github.com/ahmetb/kubectx/releases/download/v$(KUBECTX_VER)/kubectx_v$(KUBECTX_VER)_linux_x86_64.tar.gz
-kubectx-install: ## Install kubectx
+k8s/install/kubectx: ## Install kubectx
 	wget -N $(KUBECTX_URL) -O /tmp/kubectx.tar.gz
 	tar zxvf /tmp/kubectx.tar.gz -C /tmp
 	sudo mv /tmp/kubectx /usr/local/bin/
@@ -21,7 +21,7 @@ kubectx-install: ## Install kubectx
 
 KUBENS_VER = 0.9.5
 KUBENS_URL = https://github.com/ahmetb/kubectx/releases/download/v$(KUBENS_VER)/kubens_v$(KUBENS_VER)_linux_x86_64.tar.gz
-kubens-install: ## Install Kubens
+k8s/install/kubens: ## Install Kubens
 	wget -N $(KUBENS_URL) -O /tmp/kubens.tar.gz
 	tar zxvf /tmp/kubens.tar.gz -C /tmp
 	sudo mv /tmp/kubens /usr/local/bin/
@@ -29,14 +29,14 @@ kubens-install: ## Install Kubens
 	kubens
 
 KUBE_CAPACITY_VER = 0.7.1
-k8s-kube-capacity: ## Install kube-capacity
+k8s/install/kube-capacity: ## Install kube-capacity
 	wget https://github.com/robscott/kube-capacity/releases/download/$(KUBE_CAPACITY_VER)/kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz -P /tmp
 	cd /tmp \
 		&& tar zxvf kube-capacity_$(KUBE_CAPACITY_VER)_Linux_x86_64.tar.gz \
 		&& sudo mv kube-capacity /usr/local/bin \
 		&& kube-capacity
 
-k8s-prepare:	k8s-kubectl-install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
+k8s-prepare:	k8s-kubectl/install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
 k8s-pf-nsq: ## Port fordward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
@@ -123,6 +123,12 @@ k8s-install-promtail: ## Install Loki Distributed.
 	helm install promtail grafana/promtail \
 		--version v$(PROMTAIL) \
 		--namespace monitoring
+
+k8s/install/nfs-client: ## Install nfs subdir external provisioner
+	helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    	--set nfs.server=$(NFS_SERVER) \
+    	--set nfs.path=$(NFS_PATH) \
+		--set storageClass.name=nfs
 
 COUCHBASE_OPERATOR=2.60.0
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.

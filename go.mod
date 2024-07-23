@@ -17,7 +17,7 @@ require (
 	github.com/hillu/go-yara/v4 v4.3.2
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/minio/minio-go/v7 v7.0.52
-	github.com/nsqio/go-nsq v1.0.8
+	github.com/nsqio/go-nsq v1.1.0
 	github.com/saferwall/pe v1.5.2
 	github.com/spf13/viper v1.19.0
 	github.com/stevedonovan/luar v0.0.0-20170518170841-22d247e53660

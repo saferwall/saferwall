@@ -61,7 +61,7 @@ kops-create-efs:				## Create AWS EFS file system
 kops-create-mount-targers:		## Create mount targets
 	sudo apt update -qq && sudo apt install -qq jq
 	$(eval FS_ID = $(shell aws efs describe-file-systems --query 'FileSystems[0].FileSystemId'))
-	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))	
+	$(eval SEC_GROUP = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].SecurityGroups[?GroupName==`nodes.${KOPS_CLUSTER_NAME}`]' --output text | head -n 1 | cut -d '	' -f1))
 	$(eval SUBNET = $(shell aws ec2 describe-instances --query 'Reservations[*].Instances[*].[SecurityGroups[0].GroupName==`nodes.${KOPS_CLUSTER_NAME}`, SubnetId]'  | jq '.[1][0][1]'  | tr -d '"'))
 	aws efs create-mount-target \
 		--file-system-id $(FS_ID) \
@@ -117,8 +117,8 @@ saferwall: ## Deploy the cluster
 	make kops-install
 	make kops-cluster
 	make helm-install
-	make helm-add-repos
-	make helm-update-dep
+	make helm/repos
+	make helm/update/dep
 	make k8s-init-cert-manager
 	# Install a release
-	make helm-release
+	make helm/release

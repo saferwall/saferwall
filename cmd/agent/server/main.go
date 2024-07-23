@@ -140,6 +140,16 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 
 	logger.Info("start processing")
 
+	// Force syncing the time to avoid all sort of timing issues.
+	out, err := utils.ExecCmd("net", "start", "w32time")
+	if err != nil {
+		logger.Errorf("failed to start w32time service: %v", err)
+	}
+	out, err = utils.ExecCmd("w32tm", "/resync")
+	if err != nil {
+		logger.Errorf("failed to resync time: %v", err)
+	}
+
 	// The config comes from the client as a JSON file.
 	// This is explicitly left as map<string>interface{}
 	// as we don't want to cause any un-marshalling issues
@@ -147,7 +157,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// side has to be carefully written as updating the VMs
 	// is expensive.
 	var scanCfg map[string]interface{}
-	err := json.Unmarshal(in.Config, &scanCfg)
+	err = json.Unmarshal(in.Config, &scanCfg)
 	if err != nil {
 		logger.Errorf("failed to unmarshal json config: %v", err)
 		return nil, err
@@ -189,7 +199,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	defer cancel()
 
 	controllerPath := filepath.Join(s.agentPath, s.cfg.ControllerFilename)
-	out, err := utils.ExecCmdWithContext(ctx, controllerPath, "-c", configPath)
+	out, err = utils.ExecCmdWithContext(ctx, controllerPath, "-c", configPath)
 
 	// We want to check first the context error to see if the timeout
 	// was executed. In any case, we try to collect if they are any
@@ -440,6 +450,7 @@ func run(logger log.Logger, configFile string) error {
 	}
 
 	// update the logger according to the config.
+	_ = os.Remove(c.LogFile)
 	logger = log.NewCustomWithFile(c.LogLevel, c.LogFile).With(context.TODO(), "version", constants.Version)
 
 	// the console window should be hidden in prod.
