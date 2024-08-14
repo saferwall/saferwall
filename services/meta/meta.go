@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/glaslos/tlsh"
 	gonsq "github.com/nsqio/go-nsq"
 	"github.com/saferwall/saferwall/internal/exiftool"
 	"github.com/saferwall/saferwall/internal/log"
@@ -116,6 +117,15 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Get crypto hashes.
 	r := crypto.HashBytes(data)
 
+	// Calculate TLSH.
+	tlshHash := ""
+	tlshByte, err := tlsh.HashBytes(data)
+	if err != nil {
+		logger.Errorf("failed to hash file with tlsh: %v", err)
+	} else {
+		tlshHash = tlshByte.String()
+	}
+
 	// Get exif metadata.
 	exif, err := exiftool.Scan(filePath)
 	if err != nil {
@@ -193,6 +203,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: sha256, Path: "sha256", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA256)},
 		{Key: sha256, Path: "sha512", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SHA512)},
 		{Key: sha256, Path: "ssdeep", Kind: pb.Message_DBUPDATE, Body: toJSON(r.SSDeep)},
+		{Key: sha256, Path: "tlsh", Kind: pb.Message_DBUPDATE, Body: toJSON(tlshHash)},
 		{Key: sha256, Path: "size", Kind: pb.Message_DBUPDATE, Body: toJSON(int64(len(data)))},
 		{Key: sha256, Path: "exif", Kind: pb.Message_DBUPDATE, Body: toJSON(exif)},
 		{Key: sha256, Path: "trid", Kind: pb.Message_DBUPDATE, Body: toJSON(tridRes)},
