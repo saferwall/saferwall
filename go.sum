@@ -38,6 +38,8 @@ github.com/gabriel-vasile/mimetype v1.4.4 h1:QjV6pZ7/XZ7ryI2KuyeEDE8wnh7fHP9YnQy
 github.com/gabriel-vasile/mimetype v1.4.4/go.mod h1:JwLei5XPtWdGiMFB5Pjle1oEeoSeEuJfJE+TtfvdB/s=
 github.com/glaslos/ssdeep v0.4.0 h1:w9PtY1HpXbWLYgrL/rvAVkj2ZAMOtDxoGKcBHcUFCLs=
 github.com/glaslos/ssdeep v0.4.0/go.mod h1:il4NniltMO8eBtU7dqoN+HVJ02gXxbpbUfkcyUvNtG0=
+github.com/glaslos/tlsh v0.3.0 h1:fG6WAKNmIOsIH57X5B0lnNGCdLHM2dLs+M/pOlRjHRA=
+github.com/glaslos/tlsh v0.3.0/go.mod h1:Fg7YBN7EUtifZmdJrQOQHvebtw5RF89IX7nWFsmaqeE=
 github.com/go-enry/go-enry/v2 v2.8.8 h1:EhfxWpw4DQ3WEFB1Y77X8vKqZL0D0EDUUWYDUAIv9/4=
 github.com/go-enry/go-enry/v2 v2.8.8/go.mod h1:9yrj4ES1YrbNb1Wb7/PWYr2bpaCXUGRt0uafN0ISyG8=
 github.com/go-enry/go-oniguruma v1.2.1 h1:k8aAMuJfMrqm/56SG2lV9Cfti6tC4x8673aHCcBk+eo=

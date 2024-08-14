@@ -12,6 +12,7 @@ require (
 	github.com/djherbis/times v1.5.0
 	github.com/gabriel-vasile/mimetype v1.4.4
 	github.com/glaslos/ssdeep v0.4.0
+	github.com/glaslos/tlsh v0.3.0
 	github.com/go-enry/go-enry/v2 v2.8.8
 	github.com/google/uuid v1.6.0
 	github.com/hillu/go-yara/v4 v4.3.2
