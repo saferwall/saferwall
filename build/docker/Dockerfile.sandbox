@@ -98,25 +98,27 @@ ENV SANDBOX_REPO_URL=https://github.com/saferwall/windows-sandbox
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${SANDBOX_REPO_URL}" \
 	--tag="${SANDBOX_RELEASE_VERSION}" \
-	--release-asset="${SANDBOX_ARTIFACT_NAME}" /
+	--release-asset="${SANDBOX_ARTIFACT_NAME}" /tmp
+RUN for file in /tmp/sandbox-*; do mv "$file" "/tmp/sandbox.zip"; done
 
 # Download behavior rules.
 ENV BEHAVIOR_RULES_REPO=https://github.com/saferwall/behavior-rules
-ENV BEHAVIOR_RULES_VERSION=v0.0.3
-ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-v*
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${BEHAVIOR_RULES_REPO}" \
-	--tag="${BEHAVIOR_RULES_VERSION}" \
-	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /
+	--tag=">0.0.1" \
+	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /tmp
+RUN for file in /tmp/behavior-rules-*; do mv "$file" "/tmp/behavior-rules.tar.gz"; done
+
 
 # Download yara rules.
 ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
-ENV YARA_RULES_VERSION=v0.0.2
-ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
+ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-v*
 RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--repo="${YARA_RULES_REPO}" \
-	--tag="${YARA_RULES_VERSION}" \
-	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /
+	--tag=">0.0.1" \
+	--release-asset="${YARA_RELEASE_ARTIFACT_NAME}" /tmp
+RUN for file in /tmp/yara-rules-*; do mv "$file" "/tmp/yara-rules.yara"; done
 
 ############################
 # STEP 2 build a small image
@@ -131,14 +133,9 @@ ENV USER saferwall
 ENV GROUP saferwall
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
-ENV SANDBOX_RELEASE_VERSION=v0.9.0
-ENV SANDBOX_ARTIFACT_NAME=sandbox-${SANDBOX_RELEASE_VERSION}.zip
 
-ENV YARA_RULES_VERSION=v0.0.2
-ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules-${YARA_RULES_VERSION}.yara
-
-ENV BEHAVIOR_RULES_VERSION=v0.0.3
-ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules-${BEHAVIOR_RULES_VERSION}.tar.gz
+ENV YARA_RELEASE_ARTIFACT_NAME=yara-rules.yara
+ENV BEHAVIOR_RULES_ARTIFACT_NAME=behavior-rules.tar.gz
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
@@ -150,21 +147,22 @@ COPY --from=build-stage /go/bin/sandbox-svc .
 COPY --from=build-stage /go/bin/agent.exe .
 
 # Copy the sandbox zip package.
-COPY --from=build-stage ${SANDBOX_ARTIFACT_NAME} package.zip
+COPY --from=build-stage /tmp/sandbox.zip package.zip
 
 # Copy the behavior rules zip files.
 RUN mkdir -p rules/behavior
-COPY --from=build-stage ${BEHAVIOR_RULES_ARTIFACT_NAME} rules/behavior
+COPY --from=build-stage /tmp/${BEHAVIOR_RULES_ARTIFACT_NAME} rules/behavior
 RUN cd rules/behavior \
 	&& tar zxvf ${BEHAVIOR_RULES_ARTIFACT_NAME} \
 	&& rm ${BEHAVIOR_RULES_ARTIFACT_NAME}
 
-COPY --from=build-stage	/usr/local/lib/lua/5.4/rapidjson.so rules/behavior/rapidjson.so
-COPY --from=build-stage	/usr/local/share/lua/5.4/lunajson.lua rules/behavior/lunajson.lua
-
 # Copy the yara rules.
 RUN mkdir -p rules/yara/
-COPY --from=build-stage ${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
+COPY --from=build-stage /tmp/${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
+
+# Copy LUA dependencies.
+COPY --from=build-stage	/usr/local/lib/lua/5.4/rapidjson.so rules/behavior/rapidjson.so
+COPY --from=build-stage	/usr/local/share/lua/5.4/lunajson.lua rules/behavior/lunajson.lua
 
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt
