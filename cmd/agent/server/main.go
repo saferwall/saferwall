@@ -188,7 +188,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 		return nil, err
 	}
 
-	// Add 10 seconds to the timeout to account for bootstrapping the
+	// Add 20 seconds to the timeout to account for bootstrapping the
 	// sample execution: loading driver, etc.
 	timeout := time.Duration(scanCfg["timeout"].(float64)+20) * time.Second
 	deadline := time.Now().Add(timeout)
@@ -218,7 +218,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// available on disk for collection.
 	apiTrace, err := utils.ReadAll(filepath.Join(s.agentPath, "apilog.jsonl"))
 	if err != nil {
-		logger.Error("failed to read api trace log, reason: %v", err)
+		logger.Errorf("failed to read api trace log, reason: %v", err)
 	} else {
 		logger.Infof("APIs trace logs size is: %d bytes", len(apiTrace))
 	}
@@ -248,7 +248,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			return nil
 		})
 	if err != nil {
-		s.logger.Error("failed to collect screenshots, reason: %v", err)
+		s.logger.Errorf("failed to collect screenshots, reason: %v", err)
 	} else {
 		s.logger.Infof("screenshot collection terminated: %d screenshots acquired", len(screenshots))
 	}
@@ -304,7 +304,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			return nil
 		})
 	if err != nil {
-		logger.Error("failed to collect artifacts, reason: %v", err)
+		logger.Errorf("failed to collect artifacts, reason: %v", err)
 	} else {
 		logger.Infof("artifacts collection terminated: %d artifact acquired", len(artifacts))
 	}
@@ -312,7 +312,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// Collect the controller logs.
 	controllerLog, err := utils.ReadAll(filepath.Join(s.agentPath, "logs", "controller.log"))
 	if err != nil {
-		logger.Error("failed to read controller log, reason: %v", err)
+		logger.Errorf("failed to read controller log, reason: %v", err)
 	} else {
 		logger.Infof("controller logs size is: %d bytes", len(controllerLog))
 	}
@@ -320,7 +320,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// Collect the process tree data.
 	procTreeLog, err := utils.ReadAll(filepath.Join(s.agentPath, "proc_tree.jsonl"))
 	if err != nil {
-		logger.Error("failed to read process tree data, reason: %v", err)
+		logger.Errorf("failed to read process tree data, reason: %v", err)
 	} else {
 		logger.Infof("process tree data size is: %d bytes", len(procTreeLog))
 	}
@@ -328,7 +328,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	// Keep the agent log the last thing to read.
 	agentLog, err := utils.ReadAll(filepath.Join(s.agentPath, s.cfg.LogFile))
 	if err != nil {
-		logger.Error("failed to read agent log, reason: %v", err)
+		logger.Errorf("failed to read agent log, reason: %v", err)
 	} else {
 		logger.Infof("agent logs size is: %d bytes", len(agentLog))
 	}

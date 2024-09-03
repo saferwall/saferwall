@@ -148,7 +148,7 @@ func (vmm *VMManager) Domains() ([]Domain, error) {
 			continue
 		}
 
-		// If that fails, try aquiring the IP via the qemu guest agent. This option
+		// If that fails, try acquiring the IP via the qemu guest agent. This option
 		// comes handy for a dev environment where the host machine is not capable
 		// of running KVM. All domains running in the box should have the qemu
 		// guest agent installed, otherwise the following call fails.
