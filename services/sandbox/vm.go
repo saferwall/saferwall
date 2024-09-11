@@ -47,7 +47,7 @@ func findFreeVM(vms []*VM, preferredOS string) *VM {
 	var freeVM *VM
 	mu.Lock()
 	for _, vm := range vms {
-		// Kepp looking if the VM is in use or unhealthy.
+		// Keep looking if the VM is in use or unhealthy.
 		if vm.InUse || !vm.IsHealthy {
 			continue
 		}

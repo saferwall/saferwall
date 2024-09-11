@@ -218,7 +218,7 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	// Generate capabilities.
 	detRes.Capabilities = generateCapabilities(bhvRulesMatch.Rules, yaraRulesMatch)
 
-	// This has to run last, by the time all rules / behavior are extarcted.
+	// This has to run last, by the time all rules / behavior are extracted.
 	detRes.ProcessTree = enrichProcTree(processes, detRes.Capabilities)
 
 	return detRes, nil
