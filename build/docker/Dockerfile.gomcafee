@@ -4,7 +4,7 @@
 
 FROM golang:1.20-alpine AS build-stage
 
-ENV VENDOR mcafee
+ENV VENDOR=mcafee
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -40,7 +40,7 @@ LABEL version="0.6.0"
 LABEL description="mcafee linux version with nsq consumer"
 
 # Environment variables.
-ENV MCAFEE_DB_UPDATE_DATE	/av_db_update_date.txt
+ENV MCAFEE_DB_UPDATE_DATE=/av_db_update_date.txt
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall

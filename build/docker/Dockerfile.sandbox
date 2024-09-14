@@ -129,8 +129,8 @@ LABEL maintainer="https://github.com/saferwall"
 LABEL version="0.6.0"
 LABEL description="Malware Detonation Service"
 
-ENV USER saferwall
-ENV GROUP saferwall
+ENV USER=saferwall
+ENV GROUP=saferwall
 ENV ENGLISH_DICT_URL https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
 

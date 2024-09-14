@@ -4,7 +4,7 @@
 
 FROM golang:1.20-alpine AS build-stage
 
-ENV VENDOR kaspersky
+ENV VENDOR=kaspersky
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -40,8 +40,8 @@ LABEL version="0.6.0"
 LABEL description="Kaspersky Anti-Virus for Linux File Servers in a docker container"
 
 # Environment variables.
-ENV KASPERSKY_INSTALL_DIR		/opt/kaspersky
-ENV KASPERSKY_DB_UPDATE_DATE	/av_db_update_date.txt
+ENV KASPERSKY_INSTALL_DIR=/opt/kaspersky
+ENV KASPERSKY_DB_UPDATE_DATE=/av_db_update_date.txt
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall
