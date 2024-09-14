@@ -4,7 +4,7 @@
 
 FROM golang:1.20-alpine AS build-stage
 
-ENV VENDOR bitdefender
+ENV VENDOR=bitdefender
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -40,8 +40,8 @@ LABEL version="0.6.0"
 LABEL description="bitdefender linux version with nsq consumer"
 
 # Environment variables.
-ENV BITDEFENDER_DB_UPDATE_DATE	/av_db_update_date.txt
-ENV BITDEFENDER_INSTALL_DIR 	/opt/BitDefender-scanner/
+ENV BITDEFENDER_DB_UPDATE_DATE=/av_db_update_date.txt
+ENV BITDEFENDER_INSTALL_DIR=/opt/BitDefender-scanner/
 
 # Set the Current Working Directory inside the container.
 WORKDIR /saferwall

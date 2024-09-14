@@ -182,7 +182,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 				Key:  sha256,
 				Path: "tags." + s.cfg.EngineName,
 				Kind: pb.Message_DBUPDATE,
-				Body: toJSON(parsedDet.Family),
+				Body: toJSON([]string{parsedDet.Family}),
 			})
 		}
 	}
