@@ -34,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM saferwall/meta:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.6.0"
+LABEL version="0.7.0"
 LABEL description="saferwall static metadata extractor with nsq consumer"
 
 # Set the Current Working Directory inside the container.
