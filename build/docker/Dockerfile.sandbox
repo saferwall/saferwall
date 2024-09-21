@@ -126,7 +126,7 @@ RUN for file in /tmp/yara-rules-*; do mv "$file" "/tmp/yara-rules.yara"; done
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.6.0"
+LABEL version="0.7.0"
 LABEL description="Malware Detonation Service"
 
 ENV USER=saferwall

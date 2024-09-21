@@ -34,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 FROM alpine:latest
 LABEL maintainer="https://github.com/saferwall"
-LABEL version="0.6.0"
+LABEL version="0.7.0"
 LABEL description="PE scan service"
 
 ENV USER=saferwall
