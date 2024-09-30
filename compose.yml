@@ -66,7 +66,7 @@ services:
         -db,
         /saferwall/db,
         -tpl,
-        /saferwall/templates
+        /saferwall/templates,
       ]
     restart: always
 
@@ -89,7 +89,7 @@ services:
     image: saferwall/orchestrator:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/orchestrator-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/orchestrator-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
       - /saferwall:/saferwall/storage
@@ -100,19 +100,14 @@ services:
       - couchbase
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/aggregator-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/aggregator-svc, -config, /saferwall/conf/]
     restart: always
 
   postprocessor:
     image: saferwall/postprocessor:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint:
-      [
-        /saferwall/postprocessor-svc,
-        -config,
-        /saferwall/conf/
-      ]
+    entrypoint: [/saferwall/postprocessor-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
     restart: always
@@ -121,7 +116,7 @@ services:
     image: saferwall/pe:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/pe-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/pe-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -129,7 +124,7 @@ services:
     image: saferwall/gometa:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/meta-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -137,7 +132,7 @@ services:
     image: saferwall/goavira:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/avira-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -145,7 +140,7 @@ services:
     image: saferwall/goclamav:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/clamav-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -153,7 +148,7 @@ services:
     image: saferwall/gocomodo:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/comodo-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -161,7 +156,7 @@ services:
     image: saferwall/gowindefender:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/windefender-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/windefender-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
@@ -169,7 +164,7 @@ services:
     image: saferwall/sandbox:latest
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
-    entrypoint: [ /saferwall/sandbox-svc, -config, /saferwall/conf/ ]
+    entrypoint: [/saferwall/sandbox-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
 
