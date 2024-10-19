@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/disintegration/imaging"
+	"github.com/kovidgoyal/imaging"
 	agent "github.com/saferwall/saferwall/internal/agent"
 	"github.com/saferwall/saferwall/internal/log"
 	"github.com/saferwall/saferwall/internal/utils"

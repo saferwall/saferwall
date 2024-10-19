@@ -32,7 +32,7 @@ type MatchRule struct {
 	Family string `json:"family"`
 }
 
-// Extract the process ID responsible for geneting this artifact from its name.
+// Extract the process ID responsible for generating this artifact from its name.
 func getPIDFromName(name string) (string, error) {
 	parts := strings.Split(name, "__")
 	if len(parts) < 2 {

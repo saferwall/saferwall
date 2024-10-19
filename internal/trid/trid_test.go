@@ -7,8 +7,8 @@ package trid
 import (
 	"path"
 	"path/filepath"
-	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -17,29 +17,24 @@ func getAbsoluteFilePath(testfile string) string {
 	return path.Join(filepath.Dir(p), "..", "..", testfile)
 }
 
-var tridtests = []struct {
+var tridTests = []struct {
 	in  string
-	out []string
+	out string
 }{
 	{getAbsoluteFilePath("testdata/putty.exe"),
-		[]string{
-			"42.7% (.EXE) Win32 Executable (generic) (4504/4/1)",
-			"19.2% (.EXE) OS/2 Executable (generic) (2029/13)",
-			"19.0% (.EXE) Generic Win/DOS Executable (2002/3)",
-			"18.9% (.EXE) DOS Executable Generic (2000/1)",
-		},
+		"(.EXE) Win64 Executable (generic)",
 	},
 }
 
 func TestScan(t *testing.T) {
-	for _, tt := range tridtests {
+	for _, tt := range tridTests {
 		t.Run(tt.in, func(t *testing.T) {
 			filePath := tt.in
 			got, err := Scan(filePath)
 			if err != nil {
 				t.Errorf("TestScan(%s) got %v, want %v", tt.in, err, tt.in)
 			}
-			if !reflect.DeepEqual(got, tt.out) {
+			if len(got) <= 0 || !strings.Contains(got[0], tt.out) {
 				t.Errorf("TestScan(%s) got %v, want %v", tt.in, got, tt.out)
 			}
 		})

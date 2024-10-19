@@ -122,7 +122,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sha256 := fileScanCfg.SHA256
 	logger := s.logger.With(ctx, "sha256", sha256)
 
-	logger.Info("start processing with config: %#v", fileScanCfg)
+	logger.Infof("start processing with config: %#v", fileScanCfg)
 
 	// Download the file from object storage and place it in a directory
 	// shared between all microservices.
@@ -151,7 +151,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Set the file analysis status to `processing`.
 	payloads := []*pb.Message_Payload{
 		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE,
-			Body: toJSON(micro.Processing)},
+			Body: toJSON(micro.FileScanProgressProcessing)},
 	}
 	// Serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}

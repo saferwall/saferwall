@@ -246,12 +246,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	logger.Infof("start processing sample with config: %#v", fileScanCfg.DynFileScanCfg)
 
 	// Update the state of the job to `processing`.
-	status := make(map[string]interface{})
+	bhvDoc := make(map[string]interface{})
 	now := time.Now().Unix()
-	status["sha256"] = sha256
-	status["timestamp"] = now
-	status["type"] = "behavior"
-	status["status"] = micro.Processing
+	bhvDoc["sha256"] = sha256
+	bhvDoc["timestamp"] = now
+	bhvDoc["type"] = "behavior"
+	bhvDoc["status"] = micro.FileScanProgressProcessing
+	bhvDoc["doc"] = micro.DocMetadata{CreatedAt: now, LastUpdated: now, Version: 1}
 
 	// Create also a new doc for api trace.
 	apiTraceDoc := make(map[string]interface{})
@@ -266,7 +267,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	sysEventsDocID := behaviorReportID + "::" + "events"
 
 	payloads := []*pb.Message_Payload{
-		{Key: behaviorReportID, Body: toJSON(status), Kind: pb.Message_DBCREATE},
+		{Key: behaviorReportID, Body: toJSON(bhvDoc), Kind: pb.Message_DBCREATE},
 		{Key: apiTraceDocID, Body: toJSON(apiTraceDoc), Kind: pb.Message_DBCREATE},
 		{Key: sysEventsDocID, Body: toJSON(sysEventsDoc), Kind: pb.Message_DBCREATE},
 	}
@@ -294,7 +295,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// Find a free VM to process this job.
-	// Normally, we start as many concurent worker as the number of VM we have, however
+	// Normally, we start as many concurrent worker as the number of VM we have, however
 	// it's possible that clients requests a the same preferred OS multiple times.
 	var vm *VM
 	for i := 0; i < 3; i++ {
@@ -378,7 +379,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		{Key: behaviorReportID, Path: "artifacts", Body: toJSON(res.Artifacts), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "capabilities", Body: toJSON(res.Capabilities), Kind: pb.Message_DBUPDATE},
 		{Key: behaviorReportID, Path: "screenshots_count", Body: toJSON(screenshotsCount), Kind: pb.Message_DBUPDATE},
-		{Key: behaviorReportID, Path: "status", Body: toJSON(micro.Finished), Kind: pb.Message_DBCREATE},
+		{Key: behaviorReportID, Path: "status", Body: toJSON(micro.FileScanProgressFinished), Kind: pb.Message_DBCREATE},
 		{Key: agentLogKey, Body: res.AgentLog, Kind: pb.Message_UPLOAD},
 		{Key: sandboxLogKey, Body: res.SandboxLog, Kind: pb.Message_UPLOAD},
 		{Key: procTreeKey, Body: toJSON(res.ProcessTree), Kind: pb.Message_UPLOAD},
