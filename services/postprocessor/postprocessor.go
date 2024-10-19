@@ -176,11 +176,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// Set the file analysis status to `finished` and set the `last_scan` to now.
+	now := time.Now().Unix()
 	payloads := []*pb.Message_Payload{
 		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE,
-			Body: toJSON(micro.Finished)},
+			Body: toJSON(micro.FileScanProgressFinished)},
 		{Key: sha256, Path: "last_scanned", Kind: pb.Message_DBUPDATE,
-			Body: toJSON(time.Now().Unix())},
+			Body: toJSON(now)},
+		{Key: sha256, Path: "doc.last_updated", Kind: pb.Message_DBUPDATE,
+			Body: toJSON(now)},
 	}
 
 	// Include fields that has been missing in previous versions of the documents.

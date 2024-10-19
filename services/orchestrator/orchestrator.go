@@ -151,7 +151,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	// Set the file analysis status to `processing`.
 	payloads := []*pb.Message_Payload{
 		{Key: sha256, Path: "status", Kind: pb.Message_DBUPDATE,
-			Body: toJSON(micro.Processing)},
+			Body: toJSON(micro.FileScanProgressProcessing)},
 	}
 	// Serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}

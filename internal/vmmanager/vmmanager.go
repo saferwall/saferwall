@@ -28,7 +28,7 @@ const (
 	flagsUnused = 0
 
 	// Maximum snapshot to get.
-	maxSnapshotLen = 3
+	maxSnapshotLen = 5
 
 	defaultUnixSock = "/var/run/libvirt/libvirt-sock"
 )
