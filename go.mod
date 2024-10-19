@@ -10,7 +10,6 @@ require (
 	github.com/blackironj/periodic v0.0.0-20210406113836-e5d89825b482
 	github.com/couchbase/gocb/v2 v2.6.6
 	github.com/digitalocean/go-libvirt v0.0.0-20221205150000-2939327a8519
-	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.6.0
 	github.com/gabriel-vasile/mimetype v1.4.4
 	github.com/glaslos/ssdeep v0.4.0
@@ -19,6 +18,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hillu/go-yara/v4 v4.3.2
 	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
+	github.com/kovidgoyal/imaging v1.6.3
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/saferwall/pe v1.5.2
@@ -68,7 +68,7 @@ require (
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
