@@ -20,7 +20,7 @@ go-test:	## Test packages
 go-lint:	## Test packages
 	staticcheck ./...
 
-GO_VERSION = 1.21.5
+GO_VERSION = 1.21.13
 go-setup:	## Download and install go
 	curl -O https://dl.google.com/go/go$(GO_VERSION).linux-amd64.tar.gz
 	tar -xvf go$(GO_VERSION).linux-amd64.tar.gz
