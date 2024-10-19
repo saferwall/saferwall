@@ -22,7 +22,7 @@ var tridTests = []struct {
 	out string
 }{
 	{getAbsoluteFilePath("testdata/putty.exe"),
-		"(.EXE) Win32 Executable (generic)",
+		"(.EXE) Win64 Executable (generic)",
 	},
 }
 
