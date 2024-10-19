@@ -1,6 +1,6 @@
 module github.com/saferwall/saferwall
 
-go 1.20
+go 1.21
 
 require (
 	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765
