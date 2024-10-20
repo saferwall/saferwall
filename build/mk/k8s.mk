@@ -159,4 +159,4 @@ k8s-get-restarted-pods: ## Get pods who restarted at least once.
 	kubectl get pods -A | awk '$$5>0'
 
 k8s-restart-deployment: ## Fetch new container images by restarting all `saferwall` pods.
-	kubectl get deployments | grep saferwall | awk '{ print $#1}' | xargs kubectl rollout restart deployments
+	kubectl get deployments | grep saferwall | awk '{ print $$1}' | xargs kubectl rollout restart deployments
