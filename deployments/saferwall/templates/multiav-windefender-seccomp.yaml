@@ -1,5 +1,5 @@
 ## Seccomp installer for Windows Defender
-{{- if .Values.multiav.enabled }}
+{{- if false }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

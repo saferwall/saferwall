@@ -32,7 +32,7 @@ helm/repos:	## Add the required Helm Charts repositories.
 
 helm/release:		## Install Helm release.
 	make helm/repos
-	make k8s-init-cert-manager
+	make k8s/init-cert-manager
 	make k8s-install-couchbase-crds
 	cd $(ROOT_DIR)/deployments/saferwall \
 		&& helm dependency update \

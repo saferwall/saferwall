@@ -73,38 +73,38 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
-CERT_MANAGER_VER=1.13.3
-k8s-init-cert-manager: ## Init cert-manager
+CERT_MANAGER_VER=1.16.1
+k8s/init-cert-manager: ## Init cert-manager
 	# Install the chart.
 	helm install cert-manager jetstack/cert-manager \
 		--namespace cert-manager \
 		--create-namespace \
 		--version v$(CERT_MANAGER_VER) \
-		--set installCRDs=true
+		--set crds.enabled=true
 	# Verify the installation.
 	kubectl wait --namespace cert-manager \
 	--for=condition=ready pod \
 	--selector=app.kubernetes.io/instance=cert-manager \
 	--timeout=90s
 
-METALLB_VERSION=0.13.12
-k8s-install-metallb: ## Install Metallb helm chart.
+METALLB_VERSION=0.14.18
+k8s/install-metallb: ## Install Metallb helm chart.
 	# Create namespace.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/namespace.yaml
 	# Install the chart.
 	helm install metallb metallb/metallb \
-		--namespace metallb-system
+		--namespace metallb-system \
 		--version v$(METALLB_VERSION)
 	# Verify the installation.
 	kubectl wait --namespace metallb-system \
 	--for=condition=ready pod \
 	--selector=app.kubernetes.io/instance=metallb \
-	--timeout=60s
+	--timeout=90s
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-KUBE_PROMETHEUS_STACK=56.2.0
-k8s-install-kube-prometheus-stack: ## Install Kube Prometheus Stack.
+KUBE_PROMETHEUS_STACK=65.4.0
+k8s/install/kube-prometheus-stack: ## Install Kube Prometheus Stack.
 	helm install prometheus prometheus-community/kube-prometheus-stack \
 		--version v$(KUBE_PROMETHEUS_STACK) \
 		--create-namespace \
@@ -130,7 +130,7 @@ k8s/install/nfs-client: ## Install nfs subdir external provisioner
     	--set nfs.path=$(NFS_PATH) \
 		--set storageClass.name=nfs
 
-COUCHBASE_OPERATOR=2.60.0
+COUCHBASE_OPERATOR=2.64.1
 k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
 
