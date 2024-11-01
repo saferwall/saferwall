@@ -47,7 +47,7 @@ k8s-pf-grafana: ## Port fordward grafana dashboard service.
 	deployment/prometheus-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
-k8s-pf-couchbase: ## Port fordward couchbase ui service.
+k8s/pf/couchbase: ## Port fordward couchbase ui service.
 	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
@@ -111,7 +111,7 @@ k8s/install/kube-prometheus-stack: ## Install Kube Prometheus Stack.
 		--namespace prometheus
 
 LOKI= 5.42.1
-k8s-install-loki: ## Install Loki.
+k8s/install-loki: ## Install Loki.
 	helm install loki grafana/loki \
 		--version v$(LOKI) \
 		-f $(ROOT_DIR)/build/k8s/loki-values.yaml \
@@ -119,7 +119,7 @@ k8s-install-loki: ## Install Loki.
 		--create-namespace
 
 PROMTAIL= 6.15.5
-k8s-install-promtail: ## Install Loki Distributed.
+k8s/install-promtail: ## Install Loki Distributed.
 	helm install promtail grafana/promtail \
 		--version v$(PROMTAIL) \
 		--namespace monitoring
@@ -131,32 +131,32 @@ k8s/install/nfs-client: ## Install nfs subdir external provisioner
 		--set storageClass.name=nfs
 
 COUCHBASE_OPERATOR=2.64.1
-k8s-install-couchbase-crds: ## Install couchbase operator CRDs.
+k8s/install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
 
-k8s-rm-cert-manager-crds: ## Delete cert-manager crd objects.
+k8s/rm-cert-manager-crds: ## Delete cert-manager crd objects.
 	kubectl get crd | grep cert-manager | xargs --no-run-if-empty kubectl delete crd
 	kubectl delete namespace cert-manager
 
-k8s-rm-couchbase-crds: ## Delete couchbase crd objects.
+k8s/rm-couchbase-crds: ## Delete couchbase crd objects.
 	kubectl get crd | grep couchbase | xargs --no-run-if-empty kubectl delete crd
 
 k8s-events: ## Get Kubernetes cluster events.
 	kubectl get events --sort-by='.metadata.creationTimestamp'
 
-k8s-delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
+k8s/delete-terminating-pods: ## Force delete pods stuck at `Terminating` status
 	for p in $$(kubectl get pods | grep Terminating | awk '{print $$1}'); \
 	 do kubectl delete pod $$p --grace-period=0 --force;done
 
-k8s-delete-erroring-pods: ## Force delete pods stuck at `Error` status
+k8s/delete-erroring-pods: ## Force delete pods stuck at `Error` status
 	for p in $$(kubectl get pods | grep Error | awk '{print $$1}'); \
 	 do kubectl delete pod $$p --grace-period=0 --force;done
 
-k8s-delete-evicted-pods: ## Clean up all evicted pods
+k8s/delete-evicted-pods: ## Clean up all evicted pods
 	kubectl get pods | grep Evicted | awk '{print $$1}' | xargs kubectl delete pod
 
-k8s-get-restarted-pods: ## Get pods who restarted at least once.
+k8s/get-restarted-pods: ## Get pods who restarted at least once.
 	kubectl get pods -A | awk '$$5>0'
 
-k8s-restart-deployment: ## Fetch new container images by restarting all `saferwall` pods.
+k8s/restart-deployment: ## Fetch new container images by restarting all `saferwall` pods.
 	kubectl get deployments | grep saferwall | awk '{ print $$1}' | xargs kubectl rollout restart deployments

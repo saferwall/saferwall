@@ -46,7 +46,7 @@ AWS_EFS_TOKEN = example-efs
     - `make multiav-release-go`
 
 6. Install Helm: `make helm/install`.
-7. Init cert manager: `make k8s-init-cert-manager` and couchbase crds: `make k8s-install-couchbase-crds`.
+7. Init cert manager: `make k8s-init-cert-manager` and couchbase crds: `make k8s/install-couchbase-crds`.
 8. Edit the `deployments/saferwall/values.yaml`
    - Set `efs-provisioner.enabled` to true.
    - Set `couchbase-operator.cluster.volumeClaimTemplates.spec.storageClassName` to `default`.
