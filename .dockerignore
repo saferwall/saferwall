@@ -56,3 +56,6 @@ _work/
 externals/
 .path
 .runner
+
+# Dockerfiles
+**/Dockerfile.*

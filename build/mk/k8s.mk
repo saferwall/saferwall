@@ -38,11 +38,11 @@ k8s/install/kube-capacity: ## Install kube-capacity
 
 k8s-prepare:	k8s-kubectl/install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
-k8s-pf-nsq: ## Port fordward NSQ admin service.
+k8s/pf/nsq: ## Port fordward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
-k8s-pf-grafana: ## Port fordward grafana dashboard service.
+k8s/pf/grafana: ## Port fordward grafana dashboard service.
 	kubectl port-forward --namespace prometheus \
 	deployment/prometheus-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
@@ -51,15 +51,15 @@ k8s/pf/couchbase: ## Port fordward couchbase ui service.
 	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
-k8s-pf-hubble: ## Port fordward hubble ui service.
+k8s/pf/hubble: ## Port fordward hubble ui service.
 	kubectl port-forward -n kube-system svc/hubble-ui 12000:80 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
 k8s-pf: ## Port forward all services.
-	make k8s-pf-nsq &
-	make k8s-pf-couchbase &
-	make k8s-pf-grafana &
-	make k8s-pf-kibana &
+	make k8s/pf/nsq &
+	make k8s/pf/couchbase &
+	make k8s/pf/grafana &
+	make k8s/pf/kibana &
 
 k8s-delete-all-objects: ## Delete all objects
 	kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
