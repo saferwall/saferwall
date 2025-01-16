@@ -59,7 +59,7 @@ func run(logger log.Logger) error {
 	}
 
 	// Create the behavior scanner.
-	scanner, err := behavior.New(*flagBhvLuaPath)
+	scanner, err := behavior.New(*flagBhvLuaPath, logger)
 	if err != nil {
 		return err
 	}

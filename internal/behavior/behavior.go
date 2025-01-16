@@ -9,12 +9,15 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/aarzilli/golua/lua"
+	"github.com/saferwall/saferwall/internal/log"
 	"github.com/stevedonovan/luar"
+
+	"github.com/aarzilli/golua/lua"
 )
 
 type Scanner struct {
-	L *lua.State
+	L      *lua.State
+	Logger log.Logger
 }
 
 // MatchRule describes a matched behavior rule.
@@ -56,17 +59,18 @@ type Event struct {
 
 // ScanResult represents the behavior rules scan results.
 type ScanResult struct {
-	Rules  []MatchRule  `json:"matches"`
-	Events []Event `json:"events"`
+	Rules  []MatchRule `json:"matches"`
+	Events []Event     `json:"events"`
 }
 
 const (
 	behaviorLuaFile = "behavior.lua"
 )
 
-func New(behaviorRules string) (Scanner, error) {
+func New(behaviorRules string, logger log.Logger) (Scanner, error) {
 
 	L := luar.Init()
+	L.OpenLibs()
 
 	// Append the lua dependencies CPATH.
 	luaCode := fmt.Sprintf("package.cpath = package.cpath .. ';%s/?.so'",
@@ -83,8 +87,18 @@ func New(behaviorRules string) (Scanner, error) {
 		return Scanner{}, err
 	}
 
-	return Scanner{L: L}, nil
+	return Scanner{L: L, Logger: logger}, nil
 
+}
+
+// Go function to unmarshal JSON into a slice of MyStruct
+func unmarshalJSON(data []byte) interface{} {
+	var result interface{}
+	err := json.Unmarshal(data, &result)
+	if err != nil {
+		return nil
+	}
+	return result
 }
 
 // Scan a behavior report and extract system events and matching rules.
@@ -93,6 +107,11 @@ func (s Scanner) Scan(apiTrace []byte) (ScanResult, error) {
 	// Run the rule matching.
 	eval := luar.NewLuaObjectFromName(s.L, "Eval")
 	defer eval.Close()
+
+	luar.Register(s.L, "", luar.Map{
+		"json_decode": unmarshalJSON,
+		"print":       s.Logger.Info,
+	})
 
 	// Using `Call` we would get a generic `[]interface{}`, which is awkward to
 	// work with. But the return type can be specified:
@@ -108,7 +127,6 @@ func (s Scanner) Scan(apiTrace []byte) (ScanResult, error) {
 	}
 
 	scanResult := ScanResult{}
-
 	err = json.Unmarshal(v, &scanResult)
 	if err != nil {
 		return ScanResult{}, err
