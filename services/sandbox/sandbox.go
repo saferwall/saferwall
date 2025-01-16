@@ -201,7 +201,7 @@ func New(cfg Config, logger log.Logger) (*Service, error) {
 	}
 
 	// Init the lua state.
-	s.bhvScanner, err = behavior.New(cfg.BehaviorRules)
+	s.bhvScanner, err = behavior.New(cfg.BehaviorRules, logger)
 	if err != nil {
 		return nil, err
 	}

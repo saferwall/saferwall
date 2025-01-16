@@ -44,6 +44,9 @@ const (
 	// default file scan timeout in seconds.
 	defaultFileScanTimeout = 30
 
+	// default install path.
+	defaultInstallPath = "C:\\saferwall"
+
 	// Hides the window and activates another window.
 	SW_HIDE = 0
 )
@@ -358,6 +361,11 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	if !ok || scanCfg["dest_path"] == "" {
 		randomFilename := s.randomizer.Random()
 		scanCfg["dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
+	}
+
+	_, ok = scanCfg["hide_paths"]
+	if !ok {
+		scanCfg["hide_paths"] = defaultInstallPath
 	}
 
 	// For path expansion to work in Windows, we need to replace the
