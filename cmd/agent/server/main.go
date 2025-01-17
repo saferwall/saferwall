@@ -363,14 +363,14 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 		scanCfg["dest_path"] = "%USERPROFILE%//Downloads//" + randomFilename + ".exe"
 	}
 
+	// For path expansion to work in Windows, we need to replace the
+	// `%` with `$`.
+	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
+
 	_, ok = scanCfg["hide_paths"]
 	if !ok {
 		scanCfg["hide_paths"] = defaultInstallPath
 	}
-
-	// For path expansion to work in Windows, we need to replace the
-	// `%` with `$`.
-	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)
