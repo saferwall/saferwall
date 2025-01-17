@@ -1,6 +1,6 @@
 # VIEWING THE CLUSTER LOGS
 
-- Port forward kibana service: `make k8s-pf-kibana`
+- Port forward kibana service: `make k8s/pf/kibana`
 - Check if Kibana's dashboard is up and running: http://localhost:5601/
 - Next, we need to create an index, go to: http://localhost:5601/app/management/kibana/indexPatterns/create
 - In the `index pattern name field`, select `filebeat-*`:

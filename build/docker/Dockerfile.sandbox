@@ -13,7 +13,7 @@ RUN apk update && apk add --no-cache git ca-certificates tzdata \
 	&& update-ca-certificates 2>/dev/null || true
 
 # Install Yara as sandbox service depends on it.
-ENV YARA_VERSION=4.3.2
+ENV YARA_VERSION=4.4.0
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 RUN apk add --no-cache glib-dev autoconf automake libtool build-base \
@@ -56,12 +56,11 @@ RUN cd /tmp \
     && rm -rf /tmp/* \
 	&& luarocks
 
-# Build rapidjson.
+# Install behavior-rules deps.
 # wget has precedence over curl and for luarocks >= 3.9 the flag --timestamping is crashing the wget "alpine version"
 RUN apk del wget \
 	&& apk add --no-cache cmake curl \
 	&& sed -i '/WGET/d' /usr/local/share/lua/5.4/luarocks/fs/tools.lua \
-	&& luarocks install rapidjson \
 	&& luarocks install lunajson
 
 # Set the Current Working Directory inside the container.
@@ -109,7 +108,6 @@ RUN GITHUB_OAUTH_TOKEN="${GITHUB_TOKEN}" ./fetch \
 	--tag=">0.0.1" \
 	--release-asset="${BEHAVIOR_RULES_ARTIFACT_NAME}" /tmp
 RUN for file in /tmp/behavior-rules-*; do mv "$file" "/tmp/behavior-rules.tar.gz"; done
-
 
 # Download yara rules.
 ENV YARA_RULES_REPO=https://github.com/saferwall/yara-rules
@@ -161,8 +159,7 @@ RUN mkdir -p rules/yara/
 COPY --from=build-stage /tmp/${YARA_RELEASE_ARTIFACT_NAME} rules/yara/
 
 # Copy LUA dependencies.
-COPY --from=build-stage	/usr/local/lib/lua/5.4/rapidjson.so rules/behavior/rapidjson.so
-COPY --from=build-stage	/usr/local/share/lua/5.4/lunajson.lua rules/behavior/lunajson.lua
+COPY --from=build-stage        /usr/local/share/lua/5.4/lunajson.lua rules/behavior/lunajson.lua
 
 # Download english dictionary
 ADD ${ENGLISH_DICT_URL} words.txt
@@ -182,8 +179,6 @@ RUN addgroup -g 102 -S $GROUP \
 	&& chown -R $USER:$GROUP /saferwall
 
 COPY --from=build-stage /usr/local/lib/libyara.so /usr/lib/libyara.so.10
-COPY --from=build-stage /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6
-COPY --from=build-stage /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 
 # Switch to our user.
 USER saferwall

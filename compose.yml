@@ -2,7 +2,7 @@
 
 services:
   couchbase:
-    image: couchbase/server:7.2.0
+    image: couchbase/server:7.6.1
     ports:
       - "8091:8091"
       - "8092:8092"
@@ -13,14 +13,14 @@ services:
       - couchbase_data:/opt/couchbase/var
 
   nsqlookupd:
-    image: nsqio/nsq:v1.2.1
+    image: nsqio/nsq:v1.3.0
     command: /nsqlookupd --log-level=error
     ports:
       - 4160:4160
       - 4161:4161
 
   nsqd:
-    image: nsqio/nsq:v1.2.1
+    image: nsqio/nsq:v1.3.0
     command: >
       /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=${EXTERNAL_IP} --max-msg-size=1413820683 --log-level=error
     environment:
@@ -32,7 +32,7 @@ services:
       - 4151:4151
 
   nsqadmin:
-    image: nsqio/nsq:v1.2.1
+    image: nsqio/nsq:v1.3.0
     command: >
       /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=error
     depends_on:

@@ -6,7 +6,7 @@ package main
 
 import (
 	"github.com/hillu/go-yara/v4"
-	goyara "github.com/saferwall/saferwall/internal/yara"
+	"github.com/saferwall/saferwall/internal/yara"
 
 	"errors"
 	"flag"
