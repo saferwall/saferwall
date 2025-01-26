@@ -11,6 +11,7 @@ reset_pwd_token_expiration = {{ .Values.webapis.token.expiration }} # represents
 max_file_size = {{ .Values.webapis.max_file_size }} # Maximum file size to allow for samples in MB.
 max_avatar_file_size = {{ .Values.webapis.max_avatar_file_size }} # Maximum avatar size to allow for user profile picture in KB.
 samples_zip_password = "{{ .Values.webapis.samples_zip_password }}" # Password used to zip the samples during file download.
+recaptcha_key = "{{ .Values.webapis.recaptcha_key }}" # Google ReCaptcha v3 secret key.
 
 [ui]
 address = '{{ printf "https://%s" .Values.saferwall.hostname }}' # DSN for the frontend.
