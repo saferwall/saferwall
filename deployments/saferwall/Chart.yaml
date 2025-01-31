@@ -2,8 +2,8 @@ apiVersion: v2
 name: saferwall
 description: A hackable malware sandbox for the 21st Century
 type: application
-version: 0.7.0
-appVersion: 0.7.0
+version: 0.8.0
+appVersion: 0.8.0
 home: https://saferwall.com
 icon: https://saferwall.com/favicon.png
 sources:
@@ -17,7 +17,7 @@ dependencies:
     version: 5.0.15
     condition: minio.enabled
   - name: couchbase-operator
-    version: 2.64.1
+    version: 2.70.0
     repository: https://couchbase-partners.github.io/helm-charts/
     condition: couchbase-operator.enabled
   - name: aws-efs-csi-driver
