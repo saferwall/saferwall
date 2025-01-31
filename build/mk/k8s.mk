@@ -130,7 +130,7 @@ k8s/install/nfs-client: ## Install nfs subdir external provisioner
     	--set nfs.path=$(NFS_PATH) \
 		--set storageClass.name=nfs
 
-COUCHBASE_OPERATOR=2.64.1
+COUCHBASE_OPERATOR=2.70.0
 k8s/install-couchbase-crds: ## Install couchbase operator CRDs.
 	kubectl apply -f https://raw.githubusercontent.com/couchbase-partners/helm-charts/couchbase-operator-$(COUCHBASE_OPERATOR)/charts/couchbase-operator/crds/couchbase.crds.yaml
 
