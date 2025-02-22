@@ -38,22 +38,22 @@ k8s/install/kube-capacity: ## Install kube-capacity
 
 k8s-prepare:	k8s-kubectl/install k8s-kube-capacity k8s-minikube-start ## Install minikube, kubectl, kube-capacity and start a cluster
 
-k8s/pf/nsq: ## Port fordward NSQ admin service.
+k8s/pf/nsq: ## Port forward NSQ admin service.
 	kubectl port-forward svc/$(SAFERWALL_RELEASE_NAME)-nsqadmin 4171:4171 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 4171 ; sleep 5 ; done
 
-k8s/pf/grafana: ## Port fordward grafana dashboard service.
+k8s/pf/grafana: ## Port forward grafana dashboard service.
 	kubectl port-forward --namespace prometheus \
-	deployment/prometheus-grafana 3000:3000 --address='0.0.0.0' &
+		deployment/prometheus-grafana 3000:3000 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 3000 ; sleep 5 ; done
 
-k8s/pf/couchbase: ## Port fordward couchbase ui service.
+k8s/pf/couchbase: ## Port forward couchbase ui service.
 	kubectl port-forward svc/couchbase-cluster-ui 8091:8091 --address='0.0.0.0' &
 	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
 
-k8s/pf/hubble: ## Port fordward hubble ui service.
+k8s/pf/hubble: ## Port forward hubble ui service.
 	kubectl port-forward -n kube-system svc/hubble-ui 12000:80 --address='0.0.0.0' &
-	while true ; do nc -vz 127.0.0.1 8091 ; sleep 5 ; done
+	while true ; do nc -vz 127.0.0.1 12000 ; sleep 5 ; done
 
 k8s-pf: ## Port forward all services.
 	make k8s/pf/nsq &
@@ -103,7 +103,7 @@ k8s/install-metallb: ## Install Metallb helm chart.
 	# Create an IP adress pool and L2 advertisement.
 	kubectl apply -f $(ROOT_DIR)/build/k8s/metallb/pool.yaml
 
-KUBE_PROMETHEUS_STACK=65.4.0
+KUBE_PROMETHEUS_STACK=69.2.0
 k8s/install/kube-prometheus-stack: ## Install Kube Prometheus Stack.
 	helm install prometheus prometheus-community/kube-prometheus-stack \
 		--version v$(KUBE_PROMETHEUS_STACK) \
@@ -158,5 +158,8 @@ k8s/delete-evicted-pods: ## Clean up all evicted pods
 k8s/get-restarted-pods: ## Get pods who restarted at least once.
 	kubectl get pods -A | awk '$$5>0'
 
-k8s/restart-deployment: ## Fetch new container images by restarting all `saferwall` pods.
+k8s/restart/deployment: ## Fetch new container images by restarting all `saferwall` pods.
 	kubectl get deployments | grep saferwall | awk '{ print $$1}' | xargs kubectl rollout restart deployments
+
+k8s/restart/deployment/multiav: ## Fetch new multi-av images by restarting all `multiav` pods.
+	kubectl get deployments | grep multiav | awk '{ print $$1}' | xargs kubectl rollout restart deployments

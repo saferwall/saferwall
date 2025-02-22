@@ -199,7 +199,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// if the file format is PE, run the ML classifier.
+	// If the file format is PE, run the ML classifier.
 	if file["file_format"] == "pe" {
 		if _, ok := file["pe"]; ok {
 			res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
@@ -212,7 +212,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
-	// Update multiav `first_scan` if needed.
+	// Update multi-av `first_scan` if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})

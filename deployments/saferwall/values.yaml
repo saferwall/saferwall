@@ -30,6 +30,7 @@ saferwall:
   couchbase:
     # Name of the couchbase bucket.
     bucketName: "sfw"
+    ftsIndexName: "sfw._default.sfw_fts"
   # AWS s3 config.
   minio:
     region: us-east-1
