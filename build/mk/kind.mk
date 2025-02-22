@@ -1,5 +1,5 @@
 KIND_VERSION = 0.20.0
-kind/install: ## Install Kind for local kubernetes cluster deployements.
+kind/install: ## Install Kind for local kubernetes cluster deployment.
 	curl -o kind -sS -L https://kind.sigs.k8s.io/dl/v$(KIND_VERSION)/kind-linux-amd64
 	chmod +x kind
 	sudo mv kind /usr/local/bin

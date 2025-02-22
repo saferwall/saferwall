@@ -168,13 +168,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	payloads := []*pb.Message_Payload{
 		{
 			Key:  sha256,
-			Path: "multiav.last_scan." + s.cfg.EngineName,
+			Path: "multiav.last_scan.detections." + s.cfg.EngineName,
 			Kind: pb.Message_DBUPDATE,
 			Body: toJSON(result),
 		},
 	}
 
-	// get the multiav tag.
+	// Get the multi-av tag.
 	if r.Infected && len(r.Output) > 0 {
 		parsedDet := avlabel.Parse(s.cfg.EngineName, r.Output)
 		if len(parsedDet.Family) > 0 {

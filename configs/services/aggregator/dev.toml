@@ -23,7 +23,7 @@ password = "password"
 bucket_name = "sfw"
 
 [storage]
-# Deployement kind, possible values: aws, minio, local.
+# Deployment kind, possible values: aws, minio, local.
 deployment_kind = "minio"
 # Bucket name where artifacts are stored.
 bucket = "saferwall-artifacts"

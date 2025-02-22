@@ -21,13 +21,14 @@ server = '{{ template "couchbaseUri" . }}' # DSN for connecting to the database
 username = {{ index .Values "couchbase-operator" "cluster" "security" "username" | quote }} # Username used to access the db.
 password = {{ index .Values "couchbase-operator" "cluster" "security" "password" | quote }} # Password used to access the db.
 bucket_name = "{{ .Values.saferwall.couchbase.bucketName }}" # Name of the couchbase bucket.
+fts_index = "{{ .Values.saferwall.couchbase.ftsIndexName }}" # Name of the couchbase FTS index.
 
 [nsq]
 address = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150' # The data source name (DSN) for connecting to the broker server (NSQD).
 topic = "topic-filescan" # Topic name to produce to.
 
 [storage]
-deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployement kind, possible values: aws, minio, local.
+deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployment kind, possible values: aws, minio, local.
 files_container_name = "{{ .Values.webapis.storage.filesContainer }}" # Container name for samples.
 avatars_container_name = "{{ .Values.webapis.storage.avatarContainer }}" # Container name for avatars.
     {{ if eq .Values.saferwall.storage.deploymentKind "aws" }}

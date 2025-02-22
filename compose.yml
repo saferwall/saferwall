@@ -80,7 +80,7 @@ services:
     depends_on:
       - webapis
 
-  ml:
+  ml-pipeline:
     image: saferwall/ml-pipeline:latest
     ports:
       - "8001:8001"

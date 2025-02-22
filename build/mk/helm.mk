@@ -48,6 +48,6 @@ helm/upgrade:	## Upgrade a given release.
 	cd $(ROOT_DIR)/deployments/ \
 		&& helm upgrade $(SAFERWALL_RELEASE_NAME) saferwall
 
-helm/update/dep: # Update Helm deployement dependecies
+helm/update/dep: # Update Helm deployment dependecies
 	cd  $(ROOT_DIR)/deployments \
 		&& helm dependency update saferwall

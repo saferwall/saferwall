@@ -2,7 +2,7 @@
 log_level = "{{ .Values.sandbox.logLevel }}"
 # Shared volume between all microservices.
 shared_volume = "{{ .Values.saferwall.storage.sharedVolume }}"
-# Text file contaning a list of english words.
+# Text file containing a list of english words.
 english_words = "words.txt"
 # Path to the yara rules directory.
 yara_rules = "./rules/yara"
@@ -10,7 +10,7 @@ yara_rules = "./rules/yara"
 behavior_rules = "./rules/behavior"
 
 [agent]
-# Destinary directory inside the guest where the agent is deployed.
+# Destination directory inside the guest where the agent is deployed.
 dest_dir = "C:\\saferwall\\"
 # The sandbox binary components.
 package_name = "/saferwall/package.zip"
