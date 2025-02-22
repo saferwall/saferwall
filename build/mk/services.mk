@@ -1,4 +1,4 @@
-svc-build:		## Build a microservice docker container
+svc/build:		## Build a microservice docker container
 	@echo "${GREEN} [*] =============== Build $(SVC) Microservice =============== ${RESET}"
 	$(eval BUILD_ARGS := --build-arg GITHUB_USER=$(GITHUB_USER) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN))
 	make docker-build ARGS="$(BUILD_ARGS)" IMG=$(SVC) \
@@ -9,7 +9,7 @@ svc-build:		## Build a microservice docker container
 			DOCKER_FILE=build/docker/Dockerfile.$(SVC) DOCKER_DIR=. ; \
 	fi
 
-svc-release:	## Build and release a microservice docker container
+svc/release:	## Build and release a microservice docker container
 	@echo "${GREEN} [*] =============== Build and Release $(SVC) Microservice =============== ${RESET}"
 	$(eval BUILD_ARGS := --build-arg GITHUB_USER=$(GITHUB_USER) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN))
 	make docker-release ARGS="$(BUILD_ARGS)" IMG=$(SVC) \

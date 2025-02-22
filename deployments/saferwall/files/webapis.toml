@@ -28,7 +28,7 @@ address = '{{ printf "%s-%s" .Release.Name .Values.nsq.nsqd.name }}:4150' # The 
 topic = "topic-filescan" # Topic name to produce to.
 
 [storage]
-deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployement kind, possible values: aws, minio, local.
+deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployment kind, possible values: aws, minio, local.
 files_container_name = "{{ .Values.webapis.storage.filesContainer }}" # Container name for samples.
 avatars_container_name = "{{ .Values.webapis.storage.avatarContainer }}" # Container name for avatars.
     {{ if eq .Values.saferwall.storage.deploymentKind "aws" }}

@@ -28,7 +28,7 @@ bucket_name = "{{ .Values.saferwall.couchbase.bucketName }}"
 
 [storage]
 # Kind of deployment used to host object storage.
-deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployement kind, possible values: aws, minio, local.
+deployment_kind = "{{ .Values.saferwall.storage.deploymentKind }}" # Deployment kind, possible values: aws, minio, local.
 # Bucket name where artifacts are stored.
 bucket = "{{ .Values.webapis.storage.artifactsContainer }}"
     {{ if eq .Values.saferwall.storage.deploymentKind "aws"  }}

@@ -19,7 +19,7 @@ channel = "chan-filescan"
 concurrency = 1
 
 [storage]
-# Deployement kind, possible values: aws, minio, local.
+# Deployment kind, possible values: aws, minio, local.
 deployment_kind = "minio"
 # Bucket name where samples are stored.
 bucket = "saferwall-samples"
