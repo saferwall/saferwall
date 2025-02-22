@@ -156,14 +156,14 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	for _, v := range sleepRange {
 		logger.Debugf("iteration: %d", v)
 		time.Sleep(v * time.Second)
-		var multiav map[string]interface{}
-		err := s.db.Lookup(ctx, sha256, "multiav.last_scan", &multiav)
+		var multiavCount int
+		err := s.db.Lookup(ctx, sha256, "multiav.last_scan.stats.engines_count", &multiavCount)
 		if err != nil {
 			logger.Errorf("failed to read document: %v", err)
 		}
 		// TODO: not everything deployment has 14 engines.
-		logger.Debugf("finish av scanners: %d", len(multiav))
-		if len(multiav) == 14 {
+		logger.Debugf("finish av scanners: %d", multiavCount)
+		if multiavCount == 14 {
 			break
 		}
 	}
@@ -217,12 +217,6 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Debugf("multiav res: %v", file["multiav"])
 		multiav := file["multiav"].(map[string]interface{})
 		if _, ok := multiav["first_scan"]; !ok {
-			payloads = append(payloads, &pb.Message_Payload{
-				Key:  sha256,
-				Path: "multiav.first_scan",
-				Kind: pb.Message_DBUPDATE,
-				Body: toJSON(multiav["last_scan"])})
-		} else if len(multiav["first_scan"].(map[string]interface{})) == 0 {
 			payloads = append(payloads, &pb.Message_Payload{
 				Key:  sha256,
 				Path: "multiav.first_scan",

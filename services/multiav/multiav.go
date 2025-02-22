@@ -168,7 +168,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	payloads := []*pb.Message_Payload{
 		{
 			Key:  sha256,
-			Path: "multiav.last_scan.detections" + s.cfg.EngineName,
+			Path: "multiav.last_scan.detections." + s.cfg.EngineName,
 			Kind: pb.Message_DBUPDATE,
 			Body: toJSON(result),
 		},
