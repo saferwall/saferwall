@@ -26,6 +26,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	// Represents the number of AV engines.
+	countAVEngines = 14
+)
+
 // Config represents our application config.
 type Config struct {
 	LogLevel     string             `mapstructure:"log_level"`
@@ -156,14 +161,15 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	for _, v := range sleepRange {
 		logger.Debugf("iteration: %d", v)
 		time.Sleep(v * time.Second)
-		var multiavCount int
-		err := s.db.Lookup(ctx, sha256, "multiav.last_scan.stats.engines_count", &multiavCount)
+		var multiav map[string]interface{}
+		err := s.db.Lookup(ctx, sha256, "multiav.last_scan.detections", &multiav)
 		if err != nil {
 			logger.Errorf("failed to read document: %v", err)
+			continue
 		}
 		// TODO: not everything deployment has 14 engines.
-		logger.Debugf("finish av scanners: %d", multiavCount)
-		if multiavCount == 14 {
+		logger.Debugf("finish av scanners: %d", len(multiav))
+		if len(multiav) == countAVEngines {
 			break
 		}
 	}
@@ -212,6 +218,29 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		}
 	}
 
+	// Set multi-av stats.
+	var detections map[string]interface{}
+	positives := 0
+	if _, ok := file["multiav"]; ok {
+		multiav := file["multiav"].(map[string]interface{})
+		if _, ok := multiav["last_scan"]; ok {
+			lastScan := multiav["last_scan"].(map[string]interface{})
+			if _, ok := lastScan["detections"]; ok {
+				detections = lastScan["detections"].(map[string]interface{})
+				for _, mav := range detections {
+					scanResult := mav.(map[string]interface{})
+					if scanResult["infected"].(bool) {
+						positives++
+					}
+				}
+				payloads = append(payloads, &pb.Message_Payload{
+					Key: sha256, Path: "multiav.last_scan.stats.positives", Kind: pb.Message_DBUPDATE, Body: toJSON(positives)})
+				payloads = append(payloads, &pb.Message_Payload{
+					Key: sha256, Path: "multiav.last_scan.stats.engines_count", Kind: pb.Message_DBUPDATE, Body: toJSON(len(detections))})
+			}
+		}
+	}
+
 	// Update multi-av `first_scan` if needed.
 	if _, ok := file["multiav"]; ok {
 		logger.Debugf("multiav res: %v", file["multiav"])
@@ -222,6 +251,11 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 				Path: "multiav.first_scan",
 				Kind: pb.Message_DBUPDATE,
 				Body: toJSON(multiav["last_scan"])})
+			payloads = append(payloads, &pb.Message_Payload{
+				Key: sha256, Path: "multiav.first_scan.stats.positives", Kind: pb.Message_DBUPDATE, Body: toJSON(positives)})
+			payloads = append(payloads, &pb.Message_Payload{
+				Key: sha256, Path: "multiav.first_scan.stats.engines_count", Kind: pb.Message_DBUPDATE, Body: toJSON(len(detections))})
+
 		} else {
 			logger.Debugf("multiav first_scan already set to: %v",
 				multiav["first_scan"])
