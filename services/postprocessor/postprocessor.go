@@ -206,14 +206,15 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	}
 
 	// If the file format is PE, run the ML classifier.
+	mlClassification := ml.ClassifierPrediction{}
 	if file["file_format"] == "pe" {
 		if _, ok := file["pe"]; ok {
-			res, err := ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
+			mlClassification, err = ml.PEClassPrediction(s.cfg.MLAddress, toJSON(file))
 			if err != nil {
 				logger.Errorf("failed to get ml classification results: %v", err)
 			} else {
 				payloads = append(payloads, &pb.Message_Payload{
-					Key: sha256, Path: "ml.pe", Kind: pb.Message_DBUPDATE, Body: toJSON(res)})
+					Key: sha256, Path: "ml.pe", Kind: pb.Message_DBUPDATE, Body: toJSON(mlClassification)})
 			}
 		}
 	}
@@ -261,6 +262,16 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 				multiav["first_scan"])
 		}
 	}
+
+	// Classify the file.
+	fileClassification := "benign"
+	if positives >= 3 || mlClassification.Class == "Label.MALICIOUS" {
+		fileClassification = "malicious"
+	} else if positives > 0 && positives < 3 {
+		fileClassification = "suspicious"
+	}
+	payloads = append(payloads, &pb.Message_Payload{
+		Key: sha256, Path: "classification", Kind: pb.Message_DBUPDATE, Body: toJSON(fileClassification)})
 
 	// Serialize the message using protobuf.
 	msg := &pb.Message{Sha256: sha256, Payload: payloads}
