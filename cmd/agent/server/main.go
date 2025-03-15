@@ -4,6 +4,8 @@
 
 //go:build windows
 
+// Go 1.20.14 is the last supported version in Windows 7.
+// TODO: add some build tags to adjust go mod accordingly.
 // Package server implements a server for AgentServer service.
 package main
 
