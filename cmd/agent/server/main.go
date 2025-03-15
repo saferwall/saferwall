@@ -148,7 +148,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	if err != nil {
 		logger.Errorf("failed to start w32time service: %v", err)
 	}
-	out, err = utils.ExecCmd("w32tm", "/resync")
+	out, err = utils.ExecCmd("w32tm", "/resync", "/force")
 	if err != nil {
 		logger.Errorf("failed to resync time: %v", err)
 	}
