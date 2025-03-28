@@ -12,6 +12,7 @@ import (
 	"io"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/kovidgoyal/imaging"
 	agent "github.com/saferwall/saferwall/internal/agent"
@@ -26,6 +27,7 @@ const (
 	defaultVPNCountry      = "USA"
 	defaultOS              = "Windows 7 64-bit"
 	maxTraceLog            = 10000
+	maxWaitForVMTimeout    = 10 * time.Minute
 )
 
 const (
@@ -88,7 +90,8 @@ func (s *Service) detonate(logger log.Logger, vm *VM,
 	cfg config.FileScanCfg) (DetonationResult, error) {
 
 	detRes := DetonationResult{}
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), maxWaitForVMTimeout)
+	defer cancel()
 
 	// Establish a gRPC connection to the agent server running inside the guest.
 	client, err := agent.New(vm.IP + defaultGRPCPort)

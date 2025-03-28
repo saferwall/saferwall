@@ -46,9 +46,6 @@ const (
 	// default file scan timeout in seconds.
 	defaultFileScanTimeout = 30
 
-	// default install path.
-	defaultInstallPath = "C:\\saferwall"
-
 	// Hides the window and activates another window.
 	SW_HIDE = 0
 )
@@ -368,11 +365,6 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	// For path expansion to work in Windows, we need to replace the
 	// `%` with `$`.
 	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
-
-	_, ok = scanCfg["hide_paths"]
-	if !ok {
-		scanCfg["hide_paths"] = defaultInstallPath
-	}
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)

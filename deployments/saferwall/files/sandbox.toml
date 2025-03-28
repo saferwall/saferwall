@@ -48,3 +48,9 @@ lookupds = [
 topic = "topic-sandbox"
 # Channel name used in conjunction with topic name.
 channel = "chan-sandbox"
+
+[sandbox]
+# Log level verbosity.
+log_level = "info"
+# File paths to hide.
+hide_paths = "C:\\saferwall"
