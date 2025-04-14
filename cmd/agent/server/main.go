@@ -4,6 +4,8 @@
 
 //go:build windows
 
+// Go 1.20.14 is the last supported version in Windows 7.
+// TODO: add some build tags to adjust go mod accordingly.
 // Package server implements a server for AgentServer service.
 package main
 
@@ -43,9 +45,6 @@ const (
 
 	// default file scan timeout in seconds.
 	defaultFileScanTimeout = 30
-
-	// default install path.
-	defaultInstallPath = "C:\\saferwall"
 
 	// Hides the window and activates another window.
 	SW_HIDE = 0
@@ -90,11 +89,11 @@ type server struct {
 func (s *server) Ping(ctx context.Context, in *emptypb.Empty) (
 	*pb.PingReply, error) {
 
-	s.logger.Infof("received a ping request")
+	s.logger.Info("received a ping request")
 
 	_, os, _, _, _, err := wapi.GetSystemProfile()
 	if err != nil {
-		s.logger.Error("getting system profile info failed, reason: :%v", err)
+		s.logger.Errorf("getting system profile info failed, reason: %v", err)
 		return nil, err
 	}
 
@@ -103,7 +102,7 @@ func (s *server) Ping(ctx context.Context, in *emptypb.Empty) (
 	// Get system information.
 	sysInfo, err := json.Marshal(os)
 	if err != nil {
-		s.logger.Error("marshalling system profile info failed, reason: :%v", err)
+		s.logger.Errorf("marshalling system profile info failed, reason: %v", err)
 		return nil, err
 	}
 
@@ -120,14 +119,14 @@ func (s *server) Deploy(ctx context.Context, in *pb.DeployRequest) (
 	s.agentPath = in.Path
 
 	if err := archiver.Unarchive(in.Package, s.agentPath); err != nil {
-		s.logger.Error("failed to unarchive package, reason: :%v", err)
+		s.logger.Errorf("failed to unarchive package, reason: %v", err)
 		return nil, err
 	}
 
 	verFile := filepath.Join(s.agentPath, "VERSION")
 	ver, err := utils.ReadAll(verFile)
 	if err != nil {
-		s.logger.Error("reading sandbox version file failed, reason: :%v", err)
+		s.logger.Errorf("reading sandbox version file failed, reason: %v", err)
 		return nil, err
 	}
 
@@ -148,7 +147,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 	if err != nil {
 		logger.Errorf("failed to start w32time service: %v", err)
 	}
-	out, err = utils.ExecCmd("w32tm", "/resync")
+	out, err = utils.ExecCmd("w32tm", "/resync", "/force")
 	if err != nil {
 		logger.Errorf("failed to resync time: %v", err)
 	}
@@ -279,7 +278,7 @@ func (s *server) Analyze(ctx context.Context, in *pb.AnalyzeFileRequest) (
 			return nil
 		})
 	if err != nil {
-		logger.Error("failed to collect api buffers, reason: %v", err)
+		logger.Errorf("failed to collect api buffers, reason: %v", err)
 	} else {
 		logger.Infof("api buffers collection terminated: %d api buffers acquired",
 			len(apiBuffers))
@@ -366,11 +365,6 @@ func (s *server) genSandboxConfig(scanCfg map[string]interface{}) (
 	// For path expansion to work in Windows, we need to replace the
 	// `%` with `$`.
 	scanCfg["dest_path"] = utils.Resolve(scanCfg["dest_path"].(string))
-
-	_, ok = scanCfg["hide_paths"]
-	if !ok {
-		scanCfg["hide_paths"] = defaultInstallPath
-	}
 
 	configTemplate := filepath.Join(s.agentPath, s.cfg.TemplateFilename)
 	tpl, err := template.ParseFiles(configTemplate)

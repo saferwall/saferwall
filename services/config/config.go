@@ -61,6 +61,8 @@ type FileScanCfg struct {
 
 // DynFileScanCfg represents the config used to detonate a file.
 type DynFileScanCfg struct {
+	// Log level verbosity.
+	LogLevel string `json:"log_level"`
 	// Destination path where the sample will be located in the VM.
 	DestPath string `json:"dest_path"`
 	// Arguments used to run the sample.
@@ -71,4 +73,6 @@ type DynFileScanCfg struct {
 	Country string `json:"country"`
 	// Operating System used to run the sample.
 	OS string `json:"os"`
+	// Directories to hide.
+	HidePaths string `json:"hide_paths"`
 }

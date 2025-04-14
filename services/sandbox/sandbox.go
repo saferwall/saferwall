@@ -50,6 +50,7 @@ type Config struct {
 	VirtMgr       VirtManagerCfg     `mapstructure:"virt_manager"`
 	Producer      config.ProducerCfg `mapstructure:"producer"`
 	Consumer      config.ConsumerCfg `mapstructure:"consumer"`
+	Sandbox       SandboxCfg         `mapstructure:"sandbox"`
 }
 
 // AgentCfg represents the guest agent config.
@@ -69,6 +70,12 @@ type VirtManagerCfg struct {
 	User         string `mapstructure:"user"`
 	SSHKeyPath   string `mapstructure:"ssh_key_path"`
 	SnapshotName string `mapstructure:"snapshot_name"`
+}
+
+// SandboxCfg represents the sandbox config.
+type SandboxCfg struct {
+	LogLevel  string `mapstructure:"log_level"`
+	HidePaths string `mapstructure:"hide_paths"`
 }
 
 // Service represents the sandbox scan service. It adheres to the nsq.Handler
@@ -288,11 +295,12 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if fileScanCfg.Timeout == 0 {
 		fileScanCfg.Timeout = defaultFileScanTimeout
 	}
-
 	if fileScanCfg.DestPath == "" {
 		randomFilename := s.randomizer.Random()
 		fileScanCfg.DestPath = "%USERPROFILE%/Downloads/" + randomFilename + ".exe"
 	}
+	fileScanCfg.LogLevel = s.cfg.Sandbox.LogLevel
+	fileScanCfg.HidePaths = s.cfg.Sandbox.HidePaths
 
 	// Find a free VM to process this job.
 	// Normally, we start as many concurrent worker as the number of VM we have, however
@@ -303,8 +311,8 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		if vm != nil {
 			break
 		}
-		logger.Infof("no VM currently available that satisfies preferred OS: %s, sleep %s ...", fileScanCfg.OS,
-			defaultFileScanTimeout*time.Second)
+		logger.Infof("no VM currently available that satisfies preferred OS: %s, sleep %s ...",
+			fileScanCfg.OS, defaultFileScanTimeout*time.Second)
 		time.Sleep(defaultFileScanTimeout * time.Second)
 	}
 	if vm == nil {
@@ -319,7 +327,7 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 	if errDetonation != nil {
 		logger.Errorf("behavior analysis failed with: %v", errDetonation)
 	} else {
-		logger.Infof("behavior analysis succeeded")
+		logger.Info("behavior analysis succeeded")
 	}
 
 	// Reverting the VM to a clean state at the end of the analysis
@@ -330,13 +338,13 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		logger.Errorf("failed to revert the VM: %v", err)
 
 		// Mark the VM as non healthy so we can repair it.
-		logger.Infof("marking the VM as stale")
+		logger.Info("marking the VM as stale")
 		vm.markStale()
 
 	} else {
 		// Free the VM for next job now, then continue on processing
 		// sandbox results.
-		logger.Infof("freeing the VM")
+		logger.Info("freeing the VM")
 		vm.free()
 	}
 
