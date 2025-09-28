@@ -1,0 +1,43 @@
+apiVersion: "couchbase.com/v2"
+kind: "CouchbaseCluster"
+metadata:
+  name: {{ template  "saferwall.fullname" . }}-cb-cluster
+  namespace: couchbase
+spec:
+  antiAffinity: true
+  buckets:
+    managed: true
+  cluster:
+    dataServiceMemoryQuota: {{ .Values.couchbase.data_service_memory_quota }}
+    indexServiceMemoryQuota: {{ .Values.couchbase.index_service_memory_quota }}
+    searchServiceMemoryQuota: {{ .Values.couchbase.search_service_memory_quota }}
+    queryServiceMemoryQuota: {{ .Values.couchbase.query_service_memory_quota }}
+    analyticsServiceMemoryQuota: 1Gi
+  image: couchbase/server:7.6.3
+  security:
+    adminSecret: cb-admin-secret
+  servers:
+  - autoscaleEnabled: false
+    name: sfw-cluster
+    pod:
+      spec:
+        nodeSelector:
+          couchbase: "true"
+    services:
+    - data
+    - index
+    - query
+    - search
+    size: 3
+    volumeMounts:
+      default: couchbase
+      data: couchbase
+      index: couchbase
+  volumeClaimTemplates:
+  - metadata:
+      name: couchbase
+    spec:
+      storageClassName: {{ .Values.couchbase.sc_name }}
+      resources:
+        requests:
+          storage: {{ .Values.couchbase.storage }}

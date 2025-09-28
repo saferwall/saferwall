@@ -1,0 +1,17 @@
+apiVersion: couchbase.com/v2
+kind: CouchbaseBucket
+metadata:
+  name: {{ .Values.couchbase.bucket_name }}
+  namespace: couchbase
+  labels:
+    cluster: {{ template  "saferwall.fullname" . }}-cb-cluster
+spec:
+  compressionMode: passive
+  conflictResolution: seqno
+  enableFlush: false
+  enableIndexReplica: true
+  evictionPolicy: valueOnly
+  ioPriority: low
+  memoryQuota: 1Gi
+  name: {{ .Values.couchbase.bucket_name }}
+  replicas: 1
