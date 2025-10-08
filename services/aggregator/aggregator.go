@@ -75,6 +75,7 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 		opts.AccessKey = cfg.Storage.Minio.AccessKey
 		opts.SecretKey = cfg.Storage.Minio.SecretKey
 		opts.MinioEndpoint = cfg.Storage.Minio.Endpoint
+		opts.UseSSL = cfg.Storage.Minio.UseSSL
 	case "local":
 		opts.LocalRootDir = cfg.Storage.Local.RootDir
 	}
