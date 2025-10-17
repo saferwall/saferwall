@@ -15,7 +15,7 @@ func TestMagicScan(t *testing.T) {
 	}{
 		{
 			"../../testdata/putty.exe",
-			"PE32 executable for MS Windows 5.01 (GUI), Intel i386, 7 sections",
+			"PE32 executable (GUI) Intel 80386, for MS Windows, 7 sections",
 		},
 		{
 			"",
