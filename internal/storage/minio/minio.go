@@ -24,14 +24,14 @@ type Service struct {
 	client *miniogo.Client
 }
 
-func New(endpoint, accessKey, secretKey string) (Service, error) {
+func New(endpoint, accessKey, secretKey string, useSSL bool) (Service, error) {
 
 	// New returns an Amazon S3 compatible client object.
 	// API compatibility (v2 or v4) is automatically
 	// determined based on the Endpoint value.
 	s3Client, err := miniogo.New(endpoint, &miniogo.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-		Secure: false,
+		Secure: useSSL,
 	})
 	if err != nil {
 		return Service{}, nil

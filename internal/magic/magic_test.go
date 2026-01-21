@@ -15,7 +15,7 @@ func TestMagicScan(t *testing.T) {
 	}{
 		{
 			"../../testdata/putty.exe",
-			"PE32 executable (GUI) Intel 80386, for MS Windows",
+			"PE32 executable (GUI) Intel 80386, for MS Windows, 7 sections",
 		},
 		{
 			"",
@@ -27,13 +27,10 @@ func TestMagicScan(t *testing.T) {
 		filePath := tt.in
 		got, err := Scan(filePath)
 		if err != nil {
-			t.Errorf("TestMagicScan(%s) got %v, want %v",
-				tt.in, err, tt.in)
+			t.Errorf("TestMagicScan(%s) got %v, want %v", tt.in, err, tt.out)
 		}
 		if got != tt.out {
-			t.Errorf("TestMagicScan(%s) got %v, want %v",
-				tt.in, got, tt.out)
+			t.Errorf("TestMagicScan(%s) got %v, want %v", tt.in, got, tt.out)
 		}
-
 	}
 }

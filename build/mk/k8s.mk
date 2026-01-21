@@ -73,7 +73,7 @@ k8s-dump-tls-secrets: ## Dump TLS secrets
 	kubectl get secret $(HELM_SECRET_TLS_NAME) -o jsonpath="{.data['tls\.key']}" | base64 --decode  >> tls.key
 	openssl pkcs12 -export -out saferwall.p12 -inkey tls.key -in tls.crt -certfile ca.crt
 
-CERT_MANAGER_VER=1.16.1
+CERT_MANAGER_VER=1.18.2
 k8s/init-cert-manager: ## Init cert-manager
 	# Install the chart.
 	helm install cert-manager jetstack/cert-manager \

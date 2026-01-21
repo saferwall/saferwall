@@ -1,6 +1,7 @@
 module github.com/saferwall/saferwall
 
-go 1.23
+go 1.24
+
 require (
 	github.com/aarzilli/golua v0.0.0-20210507130708-11106aa57765
 	github.com/aws/aws-sdk-go v1.44.234

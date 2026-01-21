@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -78,6 +79,7 @@ func New(cfg Config, logger log.Logger) (Service, error) {
 		opts.AccessKey = cfg.Storage.Minio.AccessKey
 		opts.SecretKey = cfg.Storage.Minio.SecretKey
 		opts.MinioEndpoint = cfg.Storage.Minio.Endpoint
+		opts.UseSSL = cfg.Storage.Minio.UseSSL
 	case "local":
 		opts.LocalRootDir = cfg.Storage.Local.RootDir
 	}
@@ -139,8 +141,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 		context.Background(), time.Duration(time.Second*30))
 	defer cancelFn()
 
+	key := getKeyFromSha256(sha256)
 	if err := s.storage.Download(
-		downloadCtx, s.cfg.Storage.Bucket, sha256, file); err != nil {
+		downloadCtx, s.cfg.Storage.Bucket, key, file); err != nil {
 		logger.Errorf("failed downloading file: %v", err)
 		return err
 	}
@@ -223,4 +226,9 @@ func (s *Service) HandleMessage(m *gonsq.Message) error {
 func toJSON(v interface{}) []byte {
 	b, _ := json.Marshal(v)
 	return b
+}
+
+// getKeyFromSha256 construct a key for downloading files from object storage.
+func getKeyFromSha256(sha256 string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", sha256[0:2], sha256[2:4], sha256[4:6], sha256)
 }

@@ -31,6 +31,7 @@ type MinioCfg struct {
 	Region    string `mapstructure:"region"`
 	SecretKey string `mapstructure:"secret_key"`
 	AccessKey string `mapstructure:"access_key"`
+	UseSSL    bool   `mapstructure:"use_ssl"`
 }
 
 // LocalFsCfg represents local file system storage data.

@@ -41,6 +41,7 @@ type Options struct {
 	MinioEndpoint string
 	LocalRootDir  string
 	Bucket        string
+	UseSSL        bool
 }
 
 func New(kind string, opts Options) (Storage, error) {
@@ -72,7 +73,7 @@ func New(kind string, opts Options) (Storage, error) {
 		return svc, nil
 
 	case "minio":
-		svc, err := minio.New(opts.MinioEndpoint, opts.AccessKey, opts.SecretKey)
+		svc, err := minio.New(opts.MinioEndpoint, opts.AccessKey, opts.SecretKey, opts.UseSSL)
 		if err != nil {
 			return nil, err
 		}
