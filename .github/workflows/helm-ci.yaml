@@ -6,7 +6,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies (kubectl/kind/helm)
         run: |
@@ -34,11 +34,11 @@ jobs:
 
       - name: Check success
         run: |
-            curl -k -I https://mysaferwall.com
-            curl -k -X POST https://api.mysaferwall.com/v1/users/ \
-              -H 'Content-Type: application/json' \
-              -d '{"username":"mrrobot","password":"password", "email": "mrrobot@mysaferwall.com"}'
-            curl -k -I -X GET https://api.mysaferwall.com/v1/users/mrrobot
+          curl -k -I https://mysaferwall.com
+          curl -k -X POST https://api.mysaferwall.com/v1/users/ \
+            -H 'Content-Type: application/json' \
+            -d '{"username":"mrrobot","password":"password", "email": "mrrobot@mysaferwall.com"}'
+          curl -k -I -X GET https://api.mysaferwall.com/v1/users/mrrobot
 
       - name: Cleanup
         run: |
