@@ -2,25 +2,29 @@
 
 services:
   couchbase:
-    image: couchbase/server:7.6.1
+    image: couchbase/server:7.6.3
     ports:
       - "8091:8091"
       - "8092:8092"
       - "8093:8093"
       - "8094:8094"
       - "11210:11210"
+    ulimits:
+      nofile:
+        soft: 200000
+        hard: 200000
     volumes:
       - couchbase_data:/opt/couchbase/var
 
   nsqlookupd:
-    image: nsqio/nsq:v1.3.0
+    image: nsqio/nsq:latest
     command: /nsqlookupd --log-level=error
     ports:
       - 4160:4160
       - 4161:4161
 
   nsqd:
-    image: nsqio/nsq:v1.3.0
+    image: nsqio/nsq:latest
     command: >
       /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=${EXTERNAL_IP} --max-msg-size=1413820683 --log-level=error
     environment:
@@ -32,7 +36,7 @@ services:
       - 4151:4151
 
   nsqadmin:
-    image: nsqio/nsq:v1.3.0
+    image: nsqio/nsq:latest
     command: >
       /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=error
     depends_on:
