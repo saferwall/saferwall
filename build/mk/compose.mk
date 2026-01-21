@@ -8,4 +8,4 @@ compose/up: ##  Start docker-compose (args: SVC: name of the service to exclude)
 compose/up/ui-dev:	## Start docker-compose (args: SVC: name of the service to exclude)
 	@echo "${YELLOW} [*] =============== Docker Compose Up Minimum =============== ${RESET}"
 	docker compose config --services | grep -v 'comodo\|windefender\|sandbox\|ui' \
-		| xargs docker compose up
+		| xargs docker compose up --no-build

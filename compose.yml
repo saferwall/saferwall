@@ -9,6 +9,10 @@ services:
       - "8093:8093"
       - "8094:8094"
       - "11210:11210"
+    ulimits:
+      nofile:
+        soft: 200000
+        hard: 200000
     volumes:
       - couchbase_data:/opt/couchbase/var
 
