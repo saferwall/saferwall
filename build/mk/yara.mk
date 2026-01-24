@@ -1,8 +1,9 @@
-YARA_VERSION = 4.4.0
+YARA_VERSION = 4.5.5
 YARA_ARCHIVE = ${YARA_VERSION}.tar.gz
 YARA_DOWNLOAD_URL = https://github.com/VirusTotal/yara/archive/v${YARA_ARCHIVE}
 
 yara-install:	# Install yara
+	sudo apt-get update -y
 	sudo apt-get install automake libtool make gcc pkg-config -y
 	sudo apt-get install libssl-dev libglib2.0-0 libmagic-dev -y
 	wget ${YARA_DOWNLOAD_URL}

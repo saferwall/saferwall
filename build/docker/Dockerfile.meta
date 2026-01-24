@@ -54,7 +54,7 @@ RUN echo "Installing DiE..." \
 	&& mv /tmp/die_lin64_portable/ $DIE_DIR
 
 ####### Installing Yara #######
-ENV YARA_VERSION=4.4.0
+ENV YARA_VERSION=4.5.5
 ENV YARA_ARCHIVE=$YARA_VERSION.tar.gz
 ENV YARA_DOWNLOAD_URL=https://github.com/VirusTotal/yara/archive/v$YARA_ARCHIVE
 

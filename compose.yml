@@ -4,15 +4,24 @@ services:
   couchbase:
     image: couchbase/server:7.6.3
     ports:
-      - "8091:8091"
-      - "8092:8092"
-      - "8093:8093"
-      - "8094:8094"
-      - "11210:11210"
+      - "8091:8091" # Web UI
+      - "8092:8092" # Query service
+      - "8093:8093" # Query service
+      - "8094:8094" # Search service
+      - "11210:11210" # Data Service
     ulimits:
       nofile:
         soft: 200000
         hard: 200000
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'code=$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8091/pools); [ "$$code" = "200" ] || [ "$$code" = "401" ]',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
     volumes:
       - couchbase_data:/opt/couchbase/var
 
@@ -22,6 +31,20 @@ services:
     ports:
       - 4160:4160
       - 4161:4161
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4161/ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   nsqd:
     image: nsqio/nsq:latest
@@ -30,19 +53,49 @@ services:
     environment:
       - "EXTERNAL_IP=${EXTERNAL_IP}"
     depends_on:
-      - nsqlookupd
+      nsqlookupd:
+        condition: service_healthy
     ports:
       - 4150:4150
       - 4151:4151
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4151/ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   nsqadmin:
     image: nsqio/nsq:latest
     command: >
       /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=error
     depends_on:
-      - nsqlookupd
+      nsqlookupd:
+        condition: service_healthy
     ports:
       - 4171:4171
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4171/ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   minio:
     image: minio/minio:latest
@@ -55,9 +108,21 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
   webapis:
     image: saferwall/webapis:latest
+    depends_on:
+      couchbase:
+        condition: service_healthy
+      nsqd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
@@ -72,17 +137,31 @@ services:
         -tpl,
         /saferwall/templates,
       ]
-    restart: always
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/healthcheck/",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   ui:
     image: saferwall/ui:latest
+    depends_on:
+      webapis:
+        condition: service_healthy
     ports:
       - "3000:3000"
     environment:
       PUBLIC_API_URL: http://localhost:8080/v1/
       PUBLIC_AVATAR_API_URL: https://avatar.saferwall.com/{username}
-    depends_on:
-      - webapis
 
   ml-pipeline:
     image: saferwall/ml-pipeline:latest
@@ -91,6 +170,9 @@ services:
 
   orchestrator:
     image: saferwall/orchestrator:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/orchestrator-svc, -config, /saferwall/conf/]
@@ -101,23 +183,32 @@ services:
   aggregator:
     image: saferwall/aggregator:latest
     depends_on:
-      - couchbase
+      couchbase:
+        condition: service_healthy
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/aggregator-svc, -config, /saferwall/conf/]
-    restart: always
 
   postprocessor:
     image: saferwall/postprocessor:latest
+    depends_on:
+      couchbase:
+        condition: service_healthy
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/postprocessor-svc, -config, /saferwall/conf/]
     volumes:
       - /samples:/samples
-    restart: always
 
   pe:
     image: saferwall/pe:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/pe-svc, -config, /saferwall/conf/]
@@ -126,6 +217,9 @@ services:
 
   meta:
     image: saferwall/gometa:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/meta-svc, -config, /saferwall/conf/]
@@ -134,6 +228,9 @@ services:
 
   avira:
     image: saferwall/goavira:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/avira-svc, -config, /saferwall/conf/]
@@ -142,6 +239,9 @@ services:
 
   clamav:
     image: saferwall/goclamav:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/clamav-svc, -config, /saferwall/conf/]
@@ -150,6 +250,9 @@ services:
 
   comodo:
     image: saferwall/gocomodo:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/comodo-svc, -config, /saferwall/conf/]
@@ -158,6 +261,9 @@ services:
 
   windefender:
     image: saferwall/gowindefender:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/windefender-svc, -config, /saferwall/conf/]
@@ -166,6 +272,9 @@ services:
 
   sandbox:
     image: saferwall/sandbox:latest
+    depends_on:
+      nsqd:
+        condition: service_healthy
     environment:
       - SAFERWALL_DEPLOYMENT_KIND=dev
     entrypoint: [/saferwall/sandbox-svc, -config, /saferwall/conf/]
