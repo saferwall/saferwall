@@ -35,20 +35,18 @@ Saferwall allows you to analyze, triage and classify threats in just minutes.
 ## Batteries Included
 
 - Static Analysis:
-
   - File metadata, packer identification and crypto hashes.
   - String (ASCII/Unicode and ASM) extraction.
   - [PE (Portable Executable) file parser](https://github.com/saferwall/pe).
   - [ELF (Executable Linkable Format) file parser](https://github.com/saferwall/elf).
 
 - Dynamic Analysis:
-
   - Automated Malware Analysis using a Hypervisor based VM.
   - Intercepting OS System Calls to build an execution trace of executable files.
   - Generate detailed reports and gain insight into malware behavior.
   - Choose which API's to trace, grab _screenshots_ and file changes as well as memory dumps.
 
-- Multiple AV scanner supporting major vendors:
+- Multiple AV scanner (see [disclaimer](#multiav-licenses)) supporting major vendors :
 
   | Vendors     | status             | Vendors          | status             |
   | ----------- | ------------------ | ---------------- | ------------------ |
@@ -106,6 +104,10 @@ Here is a basic workflow of what happens when a new file is submitted:
 - Consumer fetches the file and copies it to the nfs share avoiding to pull the sample on every container.
 - Consumer starts scanning routines for static information such as (File metadata, File format details...)
 - Consumer calls asynchronously scanning services (like AV scanners) via gRPC calls and waits for results.
+
+## MultiAV Licenses
+
+> Saferwall does not distribute, bundle, or license any third-party antivirus software. Users are solely responsible for obtaining proper licenses and ensuring compliance with the terms of each antivirus vendor. The project does not encourage or endorse the use of home or personal antivirus editions in commercial, server, or multi-user environments. The authors and contributors assume no liability for misuse of this software.
 
 ## Acknowledgements
 
