@@ -74,6 +74,9 @@ docker-rm-image-tags:	## Delete all tags from image, {IMG} as argument.
 docker-get-ip:			## Get container IP addr
 	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(IMG)
 
+docker-get-ips:			## Get all containers IP addresses
+	docker compose ps -q | xargs docker inspect --format '{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+
 docker-daemon-restart:	## Restart docker daemon & reload config
 	sudo systemctl daemon-reload
 	sudo systemctl restart docker
